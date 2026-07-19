@@ -1,5 +1,5 @@
 title: DHBW Folien-Handout
-author: DHBW Quarto Template
+author: Prof. Dr.-Ing. Daniel Klünder
 version: 1.0.0
 quarto-required: ">=1.4.0"
 contributes:
@@ -22,7 +22,7 @@ contributes:
         - simple
         - ../../../assets/styles/slides.scss
         - ../../../assets/styles/handout.scss
-      logo: ../../../assets/logo-template.svg
+      logo: ../../../assets/dhbw_logo.svg
       include-in-header:
         - text: |
             <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -2,10 +2,10 @@ project:
   type: website
 
 website:
-  title: "[Modulname]"
-  description: "Vorlesung [Modulname] ([Modulkürzel]) an der DHBW Stuttgart"
-  site-url: https://[GITHUB-USER].github.io/[REPO]/
-  favicon: assets/logo-template.svg
+  title: "Mikrocomputertechnik 1"
+  description: "Vorlesung Mikrocomputertechnik 1 (MCT1) an der DHBW Stuttgart"
+  site-url: https://dantschi.github.io/mct1/
+  favicon: assets/dhbw_logo.svg
   sidebar:
     style: floating
     contents:
@@ -14,7 +14,7 @@ website:
       - section: "Vorlesungen"
         contents: vorlesungen/*
   page-footer:
-    left: "[Modulkürzel] · DHBW Stuttgart"
+    left: "MCT1 · DHBW Stuttgart"
     right: "CC BY 4.0"
 
 format:
@@ -42,7 +42,7 @@ format:
     theme:
       - simple
       - assets/styles/slides.scss
-    logo: assets/logo-template.svg
+    logo: assets/dhbw_logo.svg
     slide-number: true
     chalkboard: false
     preview-links: auto

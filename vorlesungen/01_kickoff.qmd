@@ -1,7 +1,7 @@
 ---
 title: "01 · Kickoff"
-subtitle: "[Modulname] · DHBW Stuttgart"
-author: "[Dozent:in]"
+subtitle: "Mikrocomputertechnik 1 · DHBW Stuttgart"
+author: "Prof. Dr.-Ing. Daniel Klünder"
 # Vortrag:  quarto preview vorlesungen/01_kickoff.qmd
 #           (Notizen nur mit Taste S)
 # Handout:  quarto render vorlesungen/01_kickoff.qmd --profile handout --to pdf
@@ -9,74 +9,76 @@ author: "[Dozent:in]"
 format: revealjs
 ---
 
-## Willkommen zur [Modulkürzel]
+## Willkommen zur MCT1
 
-- Modul: **[Modulname]**
-- Fokus: **[Schwerpunkt / Themenfeld]**
-- Zielgruppe: [Zielgruppe, z. B. Bachelor …]
+- Modul: **Mikrocomputertechnik 1**
+- Fokus: **Rechnerarchitektur am Beispiel der RISC-V ISA**
+- Zielgruppe: Studierende im Bachelor Elektro- und Informationstechnik
 
 ::: notes
-Kurzer Begrüßungstext und organisatorischer Einstieg. Lernziele und Semesterrahmen kurz einordnen.
+Kurzer Begrüßungstext und organisatorischer Einstieg. Lernziele und Semesterrahmen kurz einordnen: Wir verstehen, wie ein Prozessor Programme ausführt — von der Maschinenbefehlsebene bis zum Datenpfad.
 :::
 
 ## Was Sie erwarten können
 
-1. [Themenblock 1]
-2. [Themenblock 2]
-3. [Themenblock 3]
-4. [Themenblock 4]
+1. Zahlendarstellung und Maschinenbefehle
+2. RISC-V Instruction Set Architecture (ISA)
+3. Assemblerprogrammierung und Toolchain
+4. Prozessoraufbau: Datenpfad und Pipeline
 
 ::: notes
-Roten Faden des Semesters skizzieren und Erwartungen an Vorbereitung sowie Mitarbeit klären.
+Roten Faden des Semesters skizzieren und Erwartungen an Vorbereitung sowie Mitarbeit klären. RISC-V dient als durchgängiges Lehrbeispiel — die Konzepte sind auf andere Architekturen übertragbar.
 :::
 
 ## Didaktischer Aufbau
 
 Wir bauen Verständnis Schicht für Schicht auf:
 
-$$\text{[Ebene 1]} \rightarrow \text{[Ebene 2]} \rightarrow \text{[Ebene 3]} \rightarrow \text{[Ebene 4]}$$
+$$\text{ISA} \rightarrow \text{Assembler} \rightarrow \text{Datenpfad} \rightarrow \text{Pipeline}$$
 
 ::: notes
-Diesen Aufbau als roten Faden etablieren und an einem kurzen Beispiel aus dem Modul veranschaulichen.
+Diesen Aufbau als roten Faden etablieren: Zuerst die Schnittstelle zwischen Hard- und Software (ISA), dann die Programmierung auf Maschinenebene, anschließend die Hardware-Realisierung und zuletzt Leistungssteigerung durch Pipelining.
 :::
 
 ## Beispiel: Übersicht
 
 ```{mermaid}
 graph LR
-  A[Konzept A] --> B[Konzept B]
-  B --> C[Konzept C]
+  A[Programm] --> B[RISC-V ISA]
+  B --> C[Prozessor]
   style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
-Betonen, dass dies eine vereinfachte Übersicht ist. Später mit detaillierteren Darstellungen gegenüberstellen.
+Betonen, dass die ISA die zentrale Schnittstelle ist: Software spricht RISC-V-Befehle, Hardware führt sie aus. Später mit detaillierteren Darstellungen (Befehlsklassen, Registersatz, Speicherzugriffe) gegenüberstellen.
 :::
 
 ## Tools im Kurs
 
-- **[Tool 1]** – [Beschreibung/Tools]
-- **[Tool 2]** – [Beschreibung/Tools]
+- **Ripes** – visueller RISC-V-Simulator (Assembler, Datenpfad, Pipeline)
+- **RISC-V GNU Toolchain** – Assembler, Linker und Cross-Compiler
 
 ::: notes
-Wichtigste Tools kurz zeigen. Studierende sollen sie früh einrichten bzw. bookmarken.
+Wichtigste Tools kurz zeigen. Studierende sollen Ripes früh installieren bzw. bookmarken; die Toolchain kommt bei Assembler- und C-Übungen zum Einsatz.
 :::
 
 ## Literatur
 
-**[Autor:innen]**  
-*[Werktitel]*
+**Sarah L. Harris, David Money Harris**  
+*Digital Design and Computer Architecture — RISC-V Edition*
+
+Vertiefung: **Patterson / Hennessy** — *Computer Organization and Design* (RISC-V)
 
 ::: notes
-Zentrale Referenz vorstellen und empfehlen, parallel zur Vorlesung zu lesen.
+Harris & Harris als zentrale Referenz vorstellen und empfehlen, parallel zur Vorlesung zu lesen. Patterson/Hennessy als Vertiefung für Architektur und Performance nennen.
 :::
 
 ## Nächste Schritte
 
 - Organisationsfragen klären
-- Materialien / Tools einrichten
+- Ripes einrichten
 - Erste Übungen vorbereiten
 
 ::: notes
