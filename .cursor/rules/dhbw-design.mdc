@@ -21,10 +21,32 @@ alwaysApply: false
 | Sekundärtext | `#86868B` | Captions, Meta |
 | Akzent DHBW Rot | `#E2001A` | Nur sparsam: Links, Highlights, Fortschrittsbalken, Mermaid-Akzente |
 
+## Typografie auf Folien
+
+- Kein flächiges `**Label:**`-Bolding in Bullet Points (wirkt „laut“ und erschwert das Lesen)
+- Listen standardmäßig in normaler Schriftstärke; Bold nur sparsam für echte Kontraste (max. 0–1 Hervorhebung pro Folie)
+- Überschriften (`#` / `##`) behalten `font-weight: 600`
+
+## Platzknappheit & Layout
+
+Reihenfolge bei Overflow (Titel + Bullets + Diagramm/Code):
+
+1. Inhalt kürzen oder Diagramm vereinfachen (z. B. `graph LR` statt hoher `graph BT`-Stacks)
+2. Mermaid über die zentrale `max-height`-Regel in `slides.scss` skalieren lassen
+3. Erst dann gezielt Zweispaltigkeit
+
+Zweispaltigkeit (`:::: {.columns}` …) ist die **Ausnahme**, nicht der Standard:
+
+- Links: max. 3–5 kurze Bullets
+- Rechts: genau eine Grafik **oder** ein kurzer Codeblock
+- Schrift nur leicht kleiner, wenn nötig — Hörsaal-Lesbarkeit beachten
+- Nicht für Titelfolien, lange Listen oder breite Tabellen
+
 ## Mermaid
 
-- Palette: Weiß / `#E5E5EA` / `#F5F5F7` / sparsam `#E2001A` — kein Lila/Magenta.
-- Cluster-Tokens in SCSS: `$mermaid-fg-color--lighter: #E5E5EA`, `$mermaid-fg-color--lightest: #F5F5F7`.
-- Folien: zusätzliche SVG-Overrides unter `.reveal .mermaid` in `slides.scss` (Default-Nodes Hairline, Cluster hellgrau); Diagramme mit `max-height: min(48vh, 420px)`.
+- Fence immer mit Engine-Klammern: ` ```{mermaid} ` (ohne `{}` wird Mermaid oft als Codeblock gerendert)
+- Palette: Weiß / `#E5E5EA` / `#F5F5F7` / sparsam `#E2001A` — kein Lila/Magenta
+- Cluster-Tokens in SCSS: `$mermaid-fg-color--lighter: #E5E5EA`, `$mermaid-fg-color--lightest: #F5F5F7`
+- Folien: SVG-Overrides unter `.reveal .mermaid` in `slides.scss`; Diagramme mit `max-height: min(48vh, 420px)`
 - Didaktische Hervorhebungen im Markdown mit DHBW-Rot und **immer** `!important`:  
   `style [Knoten] fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important;`
