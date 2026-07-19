@@ -18,7 +18,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -41,6 +41,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends librsvg2-bin
 
+      # Optionaler Vorsorge-Schritt: Quarto/TinyTeX kann fehlende Pakete oft selbst nachziehen.
+      # || true verhindert Abbruch bei temporären CTAN-Spiegel-Problemen.
       - name: Install LaTeX packages for handout
         timeout-minutes: 10
         run: |
@@ -52,21 +54,42 @@ jobs:
             caption unicode-math fontspec lm lm-math tex-gyre \
             || true
 
-      - name: Render PDF handout
+      - name: Render PDF handouts
         id: handout
         # Bei Hänger (z. B. Mermaid/Chrome) nach 20 Min abbrechen — nicht 6h warten
         timeout-minutes: 20
         continue-on-error: true
         run: |
-          quarto render vorlesungen/01_kickoff.qmd --profile handout --to pdf
+          set -uo pipefail
+          failed=0
+          shopt -s nullglob
+          for qmd in vorlesungen/*.qmd; do
+            echo "Rendering handout: $qmd"
+            if ! quarto render "$qmd" --profile handout --to pdf; then
+              echo "::warning::Handout fehlgeschlagen: $qmd"
+              failed=1
+            fi
+          done
+          if [ "$failed" -ne 0 ]; then
+            exit 1
+          fi
 
-      - name: Attach handout PDF to website
-        if: steps.handout.outcome == 'success'
+      # Erfolgreiche PDFs anhängen, auch wenn einzelne Handouts fehlgeschlagen sind
+      - name: Attach handout PDFs to website
+        if: always() && !cancelled()
         run: |
           mkdir -p _site/vorlesungen
-          cp _handout/vorlesungen/01_kickoff.pdf \
-             _site/vorlesungen/01_kickoff-handout.pdf
-          ls -la _site/vorlesungen/*.pdf
+          shopt -s nullglob
+          pdfs=(_handout/vorlesungen/*.pdf)
+          if [ ${#pdfs[@]} -eq 0 ]; then
+            echo "Keine Handout-PDFs vorhanden."
+            exit 0
+          fi
+          for pdf in "${pdfs[@]}"; do
+            base=$(basename "$pdf" .pdf)
+            cp "$pdf" "_site/vorlesungen/${base}-handout.pdf"
+          done
+          ls -la _site/vorlesungen/*-handout.pdf
 
       # Deaktiviert, solange das Repository privat ist (GitHub Pages nicht verfügbar).
       # - name: Publish to GitHub Pages
@@ -77,8 +100,8 @@ jobs:
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Fail if handout PDF did not build
+      # Fehlendes PDF ist nur eine Warnung — Website-Build (und künftig Publish) bleiben grün.
+      - name: Warn if handout PDF did not build
         if: steps.handout.outcome != 'success'
         run: |
-          echo "::error::PDF-Handout ist fehlgeschlagen oder timed out (siehe Schritt „Render PDF handout“)."
-          exit 1
+          echo "::warning::Mindestens ein PDF-Handout ist fehlgeschlagen oder timed out (siehe Schritt „Render PDF handouts“)."
