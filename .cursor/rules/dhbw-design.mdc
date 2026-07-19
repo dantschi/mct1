@@ -23,5 +23,8 @@ alwaysApply: false
 
 ## Mermaid
 
-- Die globalen Farben für Mermaid (Weiß/Grau) werden zentral über SCSS-Variablen in der `slides.scss`/`custom.scss` erzwungen. Didaktische Hervorhebungen (z. B. der aktive Datenpfad) erfolgen weiterhin im Markdown mit dem DHBW-Rot (`style [Knoten] fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important;`).
-- Bei Inline-Styles **immer** `!important` anhängen, damit sie die SCSS-Regeln überschreiben.
+- Palette: Weiß / `#E5E5EA` / `#F5F5F7` / sparsam `#E2001A` — kein Lila/Magenta.
+- Cluster-Tokens in SCSS: `$mermaid-fg-color--lighter: #E5E5EA`, `$mermaid-fg-color--lightest: #F5F5F7`.
+- Folien: zusätzliche SVG-Overrides unter `.reveal .mermaid` in `slides.scss` (Default-Nodes Hairline, Cluster hellgrau); Diagramme mit `max-height: min(48vh, 420px)`.
+- Didaktische Hervorhebungen im Markdown mit DHBW-Rot und **immer** `!important`:  
+  `style [Knoten] fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important;`

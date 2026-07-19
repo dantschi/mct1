@@ -1,6 +1,6 @@
 ---
-title: "01 · Kickoff"
-subtitle: "Einführung bis Register File & Speicherarchitektur"
+title: "Mikrocomputertechnik 1"
+subtitle: "Duale Hochschule Baden-Württemberg Stuttgart - Studiengang Elektro- und Informationstechnik"
 author: "Prof. Dr.-Ing. Daniel Klünder"
 # Vortrag:  quarto preview vorlesungen/01_kickoff.qmd
 #           (Notizen nur mit Taste S)
@@ -9,12 +9,14 @@ author: "Prof. Dr.-Ing. Daniel Klünder"
 format: revealjs
 ---
 
+# Einleitung und Grundlagen
+
 ## Modul: Mikrocomputertechnik 1
 
-- **Studiengang:** Elektro- und Informationstechnik
-- **Modulverantwortung:** DHBW Stuttgart
-- **Schwerpunkt:** RISC-V Architektur und Hardware-nahe Programmierung
-- **Zielsetzung:** Verständnis des Datenpfads von der Logik bis zur Software
+- Studiengang: Elektro- und Informationstechnik
+- Modulverantwortung: DHBW Stuttgart
+- Schwerpunkt: RISC-V Architektur und Hardware-nahe Programmierung
+- Zielsetzung: Verständnis des Datenpfads von der Logik bis zur Software
 
 ::: notes
 Herzlich willkommen zur ersten Vorlesung im Modul Mikrocomputertechnik 1, kurz MCT 1. Ich freue mich, Sie in diesem Semester in die Computerarchitektur einzuführen. Wir vollziehen den Brückenschlag zwischen abstrakter Software und greifbarer Hardware: Sie lernen nicht nur, wie man programmiert, sondern was im Silizium passiert, wenn eine Instruktion ausgeführt wird. Ziel ist ein mechanisches Verständnis eines modernen Mikroprozessors — am Beispiel der RISC-V-Architektur.
@@ -22,11 +24,11 @@ Herzlich willkommen zur ersten Vorlesung im Modul Mikrocomputertechnik 1, kurz M
 
 ## Agenda für den Kickoff
 
-1. **Orga & Abstraktion:** Rahmen und Schichtenmodell
-2. **Datenrepräsentation:** Hex, Zweierkomplement, Endianness
-3. **Kombinatorik & ALU:** MUX, Addierer, Rechenwerk
-4. **Zeit & Sequenz:** Takt, Flip-Flops, Register
-5. **Register File & Speicher:** Von Neumann vs. Harvard
+1. Orga & Abstraktion: Rahmen und Schichtenmodell
+2. Datenrepräsentation: Hex, Zweierkomplement, Endianness
+3. Kombinatorik & ALU: MUX, Addierer, Rechenwerk
+4. Zeit & Sequenz: Takt, Flip-Flops, Register
+5. Register File & Speicher: Von Neumann vs. Harvard
 
 ```{mermaid}
 graph LR
@@ -47,10 +49,10 @@ Heute legen wir das Fundament: von Datenrepräsentation über kombinatorische Lo
 
 ## Über den Dozenten
 
-- **Name:** Prof. Dr.-Ing. Daniel Klünder
-- **Fachgebiet:** Mikrocomputertechnik / Rechnerarchitektur
-- **Kontakt:** über Moodle und E-Mail
-- **Sprechstunde:** Donnerstags, 14:00–15:00 Uhr (oder nach Vereinbarung)
+- Name: Prof. Dr.-Ing. Daniel Klünder
+- Fachgebiet: Mikrocomputertechnik / Rechnerarchitektur
+- Kontakt: über Moodle und E-Mail
+- Sprechstunde: Donnerstags, 14:00–15:00 Uhr (oder nach Vereinbarung)
 
 ::: notes
 Kurzer Überblick zu mir. Mein Hintergrund liegt in der technischen Informatik und der hardwarenahen Entwicklung. Mir ist eine interaktive Vorlesung wichtig: Fragen bitte sofort stellen. Nutzen Sie die Sprechstunde, wenn Konzepte unklar bleiben. Ziel ist nicht das „Sieben“ durch die Klausur, sondern greifbares Verständnis.
@@ -58,11 +60,11 @@ Kurzer Überblick zu mir. Mein Hintergrund liegt in der technischen Informatik u
 
 ## Organisatorisches & Spielregeln
 
-- **Umfang:** gemäß Modulhandbuch (Vorlesung + Praktikum)
-- **Prüfungsleistung:** schriftliche Klausur am Ende des Semesters
-- **Praxisanteil:** Laborübungen sind essentiell für den Lernerfolg
-- **Eigenverantwortung:** Vor- und Nachbereitung der Inhalte wird erwartet
-- **Kommunikation:** Ankündigungen über das DHBW Moodle
+- Umfang: gemäß Modulhandbuch (Vorlesung + Praktikum)
+- Prüfungsleistung: schriftliche Klausur am Ende des Semesters
+- Praxisanteil: Laborübungen sind essentiell für den Lernerfolg
+- Eigenverantwortung: Vor- und Nachbereitung der Inhalte wird erwartet
+- Kommunikation: Ankündigungen über das DHBW Moodle
 
 | Einheit | Typ | Fokus |
 |---------|-----|-------|
@@ -76,11 +78,11 @@ Das Modul schließt mit einer schriftlichen Klausur ab — Theorie und Praxis (z
 
 ## Skript & OER-Konzept
 
-- **Kein Mitschreiben nötig:** Materialien sind digital verfügbar
-- **Open Educational Resource:** CC BY 4.0 (exkl. Logos)
-- **Single Source of Truth:** das GitHub-Repository
-- **Lebendes Dokument:** Pull Requests sind willkommen
-- **Dozenten-Skript:** PDF-Handout mit ausführlichen Begleittexten
+- Kein Mitschreiben nötig: Materialien sind digital verfügbar
+- Open Educational Resource: CC BY 4.0 (exkl. Logos)
+- Single Source of Truth: das GitHub-Repository
+- Lebendes Dokument: Pull Requests sind willkommen
+- Dozenten-Skript: PDF-Handout mit ausführlichen Begleittexten
 
 ```{mermaid}
 graph TD
@@ -113,9 +115,9 @@ Harris & Harris in der RISC-V-Edition ist unsere zentrale Referenz — didaktisc
 ## Die Werkzeuge im Praktikum
 
 - **Theorie allein reicht nicht** — Verständnis entsteht durch Übung
-- **Venus:** RISC-V-Assembler schreiben und testen
-- **Ripes:** visueller Datenpfad- und Pipeline-Simulator
-- **RISC-V GNU Toolchain:** Assembler, Linker, Cross-Compiler
+- Venus: RISC-V-Assembler schreiben und testen
+- Ripes: visueller Datenpfad- und Pipeline-Simulator
+- RISC-V GNU Toolchain: Assembler, Linker, Cross-Compiler
 - Browserbasiert bzw. lokal installierbar; Fokus auf akademische Lehre
 
 ```text
@@ -144,12 +146,12 @@ Erstes Kernkonzept: Abstraktion. Bevor wir uns in Bits und Gattern verlieren: Wa
 
 ## Das Komplexitätsproblem
 
-- **Schiere Menge:** moderne Prozessoren mit Milliarden Transistoren
-- **Dimension:** Strukturen im Bereich weniger Nanometer
-- **Kognitive Limits:** kein Mensch behält Milliarden Bauteile im Kopf
-- **Fehleranfälligkeit:** ein falsch verbundener Transistor kann das System zerstören
+- Schiere Menge: moderne Prozessoren mit Milliarden Transistoren
+- Dimension: Strukturen im Bereich weniger Nanometer
+- Kognitive Limits: kein Mensch behält Milliarden Bauteile im Kopf
+- Fehleranfälligkeit: ein falsch verbundener Transistor kann das System zerstören
 
-**Herausforderung:** Wie organisiert man die Entwicklung eines solchen Systems?
+Herausforderung: Wie organisiert man die Entwicklung eines solchen Systems?
 
 ::: notes
 Stellen Sie sich den Entwurf eines modernen SoCs vor: zig Milliarden Transistoren. Transistor für Transistor zu planen übersteigt jede kognitive Kapazität. Ein Designfehler kann Millionen Chips wertlos machen. Die Ingenieursfrage seit den 1970ern: Wie baut man Maschinen, deren Komplexität unsere eigene Kapazität weit übersteigt?
@@ -157,11 +159,11 @@ Stellen Sie sich den Entwurf eines modernen SoCs vor: zig Milliarden Transistore
 
 ## Die Lösung: Teile und Herrsche
 
-- **Divide and Conquer:** Zerlegung in lösbare Teilprobleme
-- **Kapselung:** innere Funktionsweise als Black Box
-- **Schnittstellen:** klare Regeln der Kommunikation zwischen Modulen
-- **Hierarchien:** Module aus Sub-Modulen
-- **Wiederverwendbarkeit:** einmal entworfen, vielfach genutzt
+- Divide and Conquer: Zerlegung in lösbare Teilprobleme
+- Kapselung: innere Funktionsweise als Black Box
+- Schnittstellen: klare Regeln der Kommunikation zwischen Modulen
+- Hierarchien: Module aus Sub-Modulen
+- Wiederverwendbarkeit: einmal entworfen, vielfach genutzt
 
 ```{mermaid}
 graph TD
@@ -184,11 +186,11 @@ Antwort auf extreme Komplexität: Divide and Conquer. Aus Transistoren ein Gatte
 
 ## Was ist Abstraktion?
 
-- **Kernprinzip:** bewusstes Ausblenden irrelevanter Details
-- **Fokus:** wesentliche Eigenschaften auf einer Ebene
-- **Black Box:** man weiß *was*, nicht zwingend *wie*
-- **Verträge:** Kommunikation über APIs, ISAs, Protokolle
-- **Management:** mächtigstes Werkzeug gegen Komplexität
+- Kernprinzip: bewusstes Ausblenden irrelevanter Details
+- Fokus: wesentliche Eigenschaften auf einer Ebene
+- Black Box: man weiß *was*, nicht zwingend *wie*
+- Verträge: Kommunikation über APIs, ISAs, Protokolle
+- Management: mächtigstes Werkzeug gegen Komplexität
 
 ```{mermaid}
 graph LR
@@ -205,29 +207,20 @@ Abstraktion heißt bewusstes Weglassen. Beim Autofahren: Pedal drücken beschleu
 
 ## Das Schichtenmodell der IT
 
-- Vom Naturgesetz bis zur Applikation
-- Typisch in mehrere Schichten unterteilt
-- Spezialisierung: oft Fokus auf eine bis zwei Schichten
-- Isolation: Probleme einer Schicht bleiben lokal
-- **Unser Fokus in MCT1:** Digitaltechnik, Mikroarchitektur und ISA
+- Vom Naturgesetz bis zur Applikation — Spezialisierung oft auf 1–2 Schichten
+- Unser Fokus in MCT1: Digitaltechnik, Mikroarchitektur und ISA
 
 ```{mermaid}
-graph BT
-  A[Physik] --> B[Bauelemente]
-  B --> C[Analogtechnik]
-  C --> D[Digitaltechnik]
-  D --> E[Mikroarchitektur]
-  E --> F[Architektur / ISA]
-  F --> G[Betriebssystem]
-  G --> H[Software / App]
+graph LR
+  A[Physik] --> B[Digitaltechnik]
+  B --> C[Mikroarchitektur]
+  C --> D[ISA]
+  D --> E[Software]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style D fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style E fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style F fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style G fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style H fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
@@ -280,9 +273,9 @@ Für den Prozessor ist absolut alles eine Zahl. String, JPEG, ausführbarer Befe
 
 ## Das Bit und das Byte
 
-- **Bit:** kleinste Informationseinheit (Binary Digit, 0 oder 1)
-- **Nibble:** genau 4 Bits (Halb-Byte)
-- **Byte:** genau 8 Bits — kleinste adressierbare Speichereinheit
+- Bit: kleinste Informationseinheit (Binary Digit, 0 oder 1)
+- Nibble: genau 4 Bits (Halb-Byte)
+- Byte: genau 8 Bits — kleinste adressierbare Speichereinheit
 - Skalierung: Kilobyte (KB), Megabyte (MB), Gigabyte (GB)
 
 ```{mermaid}
@@ -304,11 +297,11 @@ Vokabeln fürs Semester: Bit, Byte (8 Bits) als Standard-Container des Speichers
 
 ## Das Word (Wortbreite)
 
-- **Word:** natürliche Datenbreite einer Architektur
+- Word: natürliche Datenbreite einer Architektur
 - Bits, die der Prozessor typischerweise in einem Schritt verarbeitet
-- **RISC-V RV32I:** Wortbreite exakt 32 Bits
-- **Half-Word:** 16 Bits (2 Bytes)
-- **Double-Word:** 64 Bits (relevant für RV64)
+- RISC-V RV32I: Wortbreite exakt 32 Bits
+- Half-Word: 16 Bits (2 Bytes)
+- Double-Word: 64 Bits (relevant für RV64)
 
 | Byte 3 | Byte 2 | Byte 1 | Byte 0 |
 |:------:|:------:|:------:|:------:|
@@ -416,7 +409,7 @@ Compiler und Assembler brauchen die Basis: `10` ist dezimal zehn, `0b10` ist zwe
 
 ## Interaktive Übung: Konvertierung
 
-**Ziel:** Hex-Wert `0xCAFEBABE` in Binär
+Ziel: Hex-Wert `0xCAFEBABE` in Binär
 
 | Hex | Dezimal | Binär |
 |-----|---------|-------|
@@ -542,17 +535,15 @@ Mechanischer Algorithmus, in Hardware leicht: invertieren, dann +1. Damit ist di
 
 ## Rechenbeispiel: Aus +5 wird −5
 
-- Format: 8 Bit
-- $+5$: `0000 0101`
-- Invertieren: `1111 1010`
-- $+1$: `1111 1011` (= $-5$)
-- MSB = 1 → negativ
+- Format: 8 Bit · MSB = 1 ⇒ negativ
 
 ```{mermaid}
-graph TD
+graph LR
   A["0000 0101 / +5"] -->|Invertieren| B["1111 1010"]
-  B -->|Addiere 1| C["1111 1011 / -5"]
+  B -->|"+1"| C["1111 1011 / -5"]
   style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
@@ -665,8 +656,8 @@ Wohin mit EF — Adresse 0x00 oder 0x03?
 
 ## Big-Endian vs. Little-Endian
 
-- **Big-Endian:** MSB an die kleinste Adresse (wie von links nach rechts lesen)
-- **Little-Endian:** LSB an die kleinste Adresse
+- Big-Endian: MSB an die kleinste Adresse (wie von links nach rechts lesen)
+- Little-Endian: LSB an die kleinste Adresse
 - Name aus *Gullivers Reisen* (an welcher Seite das Ei aufschlagen?)
 - Netzwerke oft Big-Endian; viele PCs Little-Endian
 
@@ -719,9 +710,9 @@ Zweiter großer Block: Wir wissen, wie Daten als Bits kodiert werden — jetzt: 
 
 ## Kombinatorik vs. Sequenzielle Logik
 
-- **Kombinatorisch:** Ausgang nur von aktuellen Eingängen; gedächtnislos
+- Kombinatorisch: Ausgang nur von aktuellen Eingängen; gedächtnislos
 - Beispiele: Gatter, Multiplexer, Addierer, ALU
-- **Sequenziell:** Ausgang hängt auch vom vorherigen Zustand ab
+- Sequenziell: Ausgang hängt auch vom vorherigen Zustand ab
 - Taktung: Flip-Flops/Register speichern Zustände
 
 | Eigenschaft | Kombinatorisch | Sequenziell |
@@ -737,10 +728,10 @@ Zwei Fundamentalkategorien: Kombinatorik wie eine Waage — reagiert nur auf den
 ## Refresher: Die grundlegenden Logikgatter
 
 - Logikgatter = elementare Bausteine der Hardware-Abstraktion
-- **AND:** Ausgang 1, wenn alle Eingänge 1
-- **OR:** Ausgang 1, wenn mindestens ein Eingang 1
-- **XOR:** Ausgang 1, wenn Eingänge unterschiedlich
-- **NOT:** invertiert das Signal
+- AND: Ausgang 1, wenn alle Eingänge 1
+- OR: Ausgang 1, wenn mindestens ein Eingang 1
+- XOR: Ausgang 1, wenn Eingänge unterschiedlich
+- NOT: invertiert das Signal
 - Ab jetzt: Gatter als Black Boxes mit bekanntem Verhalten
 
 ::: notes
@@ -926,7 +917,7 @@ Bei $1+1$ gibt es keine „2“ — wir schreiben 0 und Carry 1. Summenspalte = 
 - Eingänge: $A$, $B$
 - Ausgänge: Summe $S$, Carry Out $C_{out}$
 - $S = A \oplus B$,\quad $C_{out} = A \cdot B$
-- **Problem:** kein Carry-In von einer vorherigen Stelle
+- Problem: kein Carry-In von einer vorherigen Stelle
 
 ```{mermaid}
 graph LR
@@ -1083,7 +1074,7 @@ Aus dem Zweierkomplement-Block: Bits kippen und +1. Der MUX vor $B$ liefert $\ov
 ## Das Zero-Flag (Null-Erkennung)
 
 - Status-Flags neben dem Ergebnis $Y$
-- **Zero-Flag ($Z$):** 1, wenn Ergebnis exakt 0
+- Zero-Flag ($Z$): 1, wenn Ergebnis exakt 0
 - Hardware: oft großes NOR über alle Ergebnis-Bits
 - Vergleich $A == B$: rechne $A - B$; $Z=1$ ⇒ gleich
 
@@ -1158,7 +1149,7 @@ Letzter großer Grundlagenblock: MUX und ALU haben wir — aber kein Gedächtnis
 - Kein Mechanismus, ein Ergebnis „einzufrieren“
 - Fallen die Eingänge weg, ist das Ergebnis weg
 - Laufzeitunterschiede → temporäre Glitches
-- **Fazit:** Mit einer ALU allein lassen sich keine Programme ausführen
+- Fazit: Mit einer ALU allein lassen sich keine Programme ausführen
 
 ::: notes
 Metapher: ALU wie ein Rohrsystem — ohne Pumpe läuft es leer. Für $C = A + B$ und später $D = C + 5$ brauchen wir Schleusen: Ergebnisse müssen überleben, wenn sich die Eingänge ändern.
@@ -1199,8 +1190,8 @@ CLK vom Quarz-Oszillator: Bei 3 GHz tickt das Metronom drei Milliarden Mal pro S
 ## Flankensteuerung (Edge-Triggering)
 
 - Reaktion nicht auf konstanten Pegel, sondern auf den Übergang
-- **Steigende Flanke:** $0 \rightarrow 1$
-- **Fallende Flanke:** $1 \rightarrow 0$
+- Steigende Flanke: $0 \rightarrow 1$
+- Fallende Flanke: $1 \rightarrow 0$
 - RISC-V / die meisten CPUs: Speichern primär bei steigender Flanke
 
 ```text
@@ -1259,9 +1250,9 @@ OR mit Feedback: kurze 1 am Eingang → Ausgang 1 → rückgekoppelt → bleibt 
 ## Das D-Flip-Flop (D-FF)
 
 - Wichtigster 1-Bit-Speicher der Architektur
-- **D (Data):** neuer Wert
-- **Q:** aktuell gespeicherter Wert
-- **CLK (Dreieck):** flankengesteuerter Takteingang
+- D (Data): neuer Wert
+- Q: aktuell gespeicherter Wert
+- CLK (Dreieck): flankengesteuerter Takteingang
 - Ignoriert $D$, bis die steigende Flanke an CLK eintrifft
 
 ::: notes
@@ -1288,8 +1279,8 @@ Kamera-Metapher prägt sich ein: Motiv ändert sich, Foto nicht — bis zum näc
 ## Physikalische Limits: Setup- und Hold-Time
 
 - Der „Klick“ ist nicht unendlich kurz
-- **Setup-Time:** $D$ muss *vor* der Flanke stabil sein
-- **Hold-Time:** $D$ muss *nach* der Flanke stabil bleiben
+- Setup-Time: $D$ muss *vor* der Flanke stabil sein
+- Hold-Time: $D$ muss *nach* der Flanke stabil bleiben
 - Verletzung → Metastabilität („verschwommenes Bild“)
 - Konsequenz: ALU muss fertig sein, bevor die Setup-Zone beginnt
 
@@ -1301,9 +1292,11 @@ flowchart LR
     B --> C[Flanke]
     C --> D[Hold]
   end
+  style Zyklus fill:#F5F5F7,stroke:#E5E5EA,stroke-width:1.5px
   style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:1.5px
-  style D fill:#FFFFFF,stroke:#E2001A,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
@@ -1334,7 +1327,7 @@ graph TD
 
 - Problem: sonst Speichern bei *jedem* Takt
 - Oft soll ein Register unverändert bleiben
-- **WE / EN:** Erlaubnis-Pin
+- WE / EN: Erlaubnis-Pin
 - WE = 0: Flanke ignorieren; WE = 1: bei Flanke speichern
 
 ```c
@@ -1395,27 +1388,23 @@ Physik der Distanz: RAM-Zugriff ist teuer. Register File = Werkbank — Daten ei
 
 ## Architektur des Register Files
 
-Befehl `add x3, x1, x2` in einem Durchlauf braucht:
+Befehl `add x3, x1, x2` in einem Durchlauf:
 
-- Zwei gleichzeitige Lesezugriffe (Operanden)
-- Einen Schreibzugriff (Ergebnis)
-- Adress-Ports: $A1$, $A2$ (lesen), $A3$ (schreiben)
-- Daten-Ports: $RD1$, $RD2$ (aus), $WD3$ (ein) + $WE3$
+- Lesen: $A1$/$A2$ → $RD1$/$RD2$ · Schreiben: $A3$, $WD3$, freigegeben durch $WE3$
 
 ```{mermaid}
 graph LR
   A1[A1] --> RF[Register File]
   A2[A2] --> RF
-  A3[A3] --> RF
-  WD3[WD3] --> RF
-  WE3[WE3] -.-> RF
   RF --> RD1[RD1]
   RF --> RD2[RD2]
+  WD3[WD3] --> RF
+  A3[A3] --> RF
   style RF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
 ```
 
 ::: notes
-A1/A2 wählen die Quellregister → Daten an RD1/RD2 zur ALU. Ergebnis zurück auf WD3; A3 + WE3 wählen das Zielregister.
+A1/A2 wählen die Quellregister → Daten an RD1/RD2 zur ALU. Ergebnis zurück auf WD3; A3 und Write-Enable WE3 wählen das Zielregister.
 :::
 
 ## Interner Aufbau: Lesen (kombinatorisch)
@@ -1526,8 +1515,8 @@ Binary landet im RAM; die CPU holt den ersten Befehl (Fetch). Load holt Daten �
 - 1940er (John von Neumann)
 - Ein gemeinsamer Speicher für Code und Daten
 - Ein gemeinsamer Bus
-- **Vorteil:** flexibel
-- **Nachteil (Flaschenhals):** nicht gleichzeitig Instruktion lesen und Daten speichern
+- Vorteil: flexibel
+- Nachteil (Flaschenhals): nicht gleichzeitig Instruktion lesen und Daten speichern
 
 ```{mermaid}
 graph LR
@@ -1545,8 +1534,8 @@ Standard in PCs/Macs: Code und Daten sind Zahlen im selben Speicher. Flexibel, a
 
 - Getrennte Speicher für Instruktionen und Daten
 - Zwei physische Busse zur CPU
-- **Vorteil:** Fetch und Datenzugriff parallel möglich
-- **Nachteil:** starre Grenzen zwischen den Speichern
+- Vorteil: Fetch und Datenzugriff parallel möglich
+- Nachteil: starre Grenzen zwischen den Speichern
 
 ```{mermaid}
 graph LR
@@ -1562,7 +1551,7 @@ Harvard (Mark I): getrennte Welten — kein Buskonflikt, aber kein „Ausborgen�
 ## Der RISC-V-Kompromiss im Labor
 
 - Moderne CPUs oft hybrid (außen Von Neumann, innen Harvard-Caches)
-- In **Ripes:** zunächst reine Harvard-Architektur
+- In Ripes: zunächst reine Harvard-Architektur
 - Separates Instruction Memory und Data Memory
 - Grund: Single-Cycle-Datenpfad ohne Buskonflikt
 

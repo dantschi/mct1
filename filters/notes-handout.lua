@@ -51,7 +51,7 @@ function Pandoc(doc)
         new_blocks:insert(pandoc.RawBlock("latex", "\\begin{notesblock}"))
         new_blocks:insert(pandoc.RawBlock(
           "latex",
-          "{\\bfseries\\color{dhbwred}Skript / Dozententext}\\par\\medskip"
+          "{\\bfseries\\color{dhbwred}Notizen}\\par\\medskip"
         ))
         for _, nb in ipairs(note_blocks) do
           new_blocks:insert(nb)

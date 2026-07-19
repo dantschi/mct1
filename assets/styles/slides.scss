@@ -27,12 +27,14 @@ $font-family-sans-serif: "Inter", "SF Pro Display", "Segoe UI", system-ui, sans-
 $presentation-font-size-root: 32px !default;
 
 // --- Mermaid (Quarto-native SCSS-Variablen, Apple × DHBW) ---------------------
-// Keine SVG-!important-Overrides — Quarto themisiert darüber die Diagramme.
 $mermaid-bg-color: #FFFFFF;
 $mermaid-node-bg-color: #FFFFFF;
 $mermaid-node-fg-color: #1D1D1F;
 $mermaid-edge-color: #86868B;
 $mermaid-fg-color: #1D1D1F;
+// Cluster/Subgraph: explizit hellgrau — nicht lighten($body-color) (wird sonst dunkel)
+$mermaid-fg-color--lighter: #E5E5EA;
+$mermaid-fg-color--lightest: #F5F5F7;
 $mermaid-label-bg-color: #FFFFFF;
 $mermaid-label-fg-color: #1D1D1F;
 $mermaid-font-family: $font-family-sans-serif;
@@ -181,8 +183,43 @@ $mermaid-font-family: $font-family-sans-serif;
 // =============================================================================
 // Mermaid / Diagramme & Callouts
 // =============================================================================
+// DHBW-Palette absichern (Weiß / Hairline-Grau / sparsam Rot).
+// Didaktische Hervorhebungen weiter per Inline-style … !important in .qmd.
 .reveal .mermaid {
-  margin: 1.5rem auto;
+  margin: 1.25rem auto;
+  max-width: 100%;
+  max-height: min(48vh, 420px);
+}
+
+.reveal .mermaid svg {
+  max-width: 100%;
+  max-height: min(48vh, 420px);
+  width: auto;
+  height: auto;
+}
+
+.reveal .mermaid .node rect,
+.reveal .mermaid .node circle,
+.reveal .mermaid .node ellipse,
+.reveal .mermaid .node polygon,
+.reveal .mermaid .node path {
+  fill: $bg-slide !important;
+  // Ohne !important: Inline-style … stroke:#E2001A … !important bleibt Akzent
+  stroke: $hairline;
+}
+
+.reveal .mermaid .cluster rect {
+  fill: $bg-code !important;
+  stroke: $hairline !important;
+}
+
+.reveal .mermaid .edgePath .path,
+.reveal .mermaid .flowchart-link {
+  stroke: $text-secondary !important;
+}
+
+.reveal .mermaid marker {
+  fill: $text-secondary !important;
 }
 
 .reveal .callout {
