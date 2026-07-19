@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64" role="img" aria-label="Logo-Platzhalter">
+  <!-- Generischer Template-Platzhalter  durch Ihr Hochschul-/Modullogo ersetzen -->
+  <rect width="240" height="64" rx="10" fill="#F5F5F7"/>
+  <rect x="12" y="12" width="40" height="40" rx="8" fill="#FFFFFF" stroke="#E5E5EA" stroke-width="1.5"/>
+  <rect x="20" y="28" width="24" height="4" rx="2" fill="#E2001A"/>
+  <text x="68" y="30" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="600" fill="#1D1D1F">[Logo]</text>
+  <text x="68" y="48" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="400" fill="#86868B">Platzhalter ersetzen</text>
+</svg>

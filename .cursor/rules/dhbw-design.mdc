@@ -1,0 +1,27 @@
+---
+description: Design-Richtlinien Apple-Look + DHBW für Folien, Website und SCSS
+globs: "**/*.{scss,css,qmd}"
+alwaysApply: false
+---
+
+# Design-Richtlinien (Apple + DHBW)
+
+Ästhetik: minimalistisch, modern („Apple-Look“ / Jony Ive).
+
+- Viel Whitespace, weiche Schatten, abgerundete Ecken — keine harten Rahmen
+- Typografie: Sans-Serif (Inter / San Francisco), Zeilenabstand 1.6
+
+## Farben (strikt)
+
+| Rolle | Wert | Verwendung |
+|-------|------|------------|
+| Hintergrund Folien | `#FFFFFF` | Reveal.js |
+| Hintergrund Website | `#F5F5F7` | Quarto-Site |
+| Haupttext | `#1D1D1F` | Body |
+| Sekundärtext | `#86868B` | Captions, Meta |
+| Akzent DHBW Rot | `#E2001A` | Nur sparsam: Links, Highlights, Fortschrittsbalken, Mermaid-Akzente |
+
+## Mermaid
+
+- Die globalen Farben für Mermaid (Weiß/Grau) werden zentral über SCSS-Variablen in der `slides.scss`/`custom.scss` erzwungen. Didaktische Hervorhebungen (z. B. der aktive Datenpfad) erfolgen weiterhin im Markdown mit dem DHBW-Rot (`style [Knoten] fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important;`).
+- Bei Inline-Styles **immer** `!important` anhängen, damit sie die SCSS-Regeln überschreiben.

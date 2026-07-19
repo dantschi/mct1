@@ -1,0 +1,28 @@
+---
+description: Tech-Stack und Quarto/Markdown-Konventionen für DHBW-Vorlesungsinhalte
+globs: "**/*.{qmd,scss,css,md}"
+alwaysApply: false
+---
+
+# Tech-Stack
+
+- **Framework:** Quarto (Websites, PDFs, Reveal.js)
+- **Sprachen:** Markdown (`.qmd`), SCSS; weitere Sprachen je nach Modul (z. B. C, Assembler, Python)
+- **Diagramme:** Mermaid.js nativ in Quarto (` ```mermaid `). Die globalen Farben für Mermaid (Weiß/Grau) werden zentral über SCSS-Variablen in der `slides.scss`/`custom.scss` erzwungen. Didaktische Hervorhebungen (z. B. der aktive Datenpfad) erfolgen weiterhin im Markdown mit dem DHBW-Rot. Bei Inline-Styles **immer** `!important` anhängen, damit sie die SCSS-Regeln überschreiben:
+
+```mermaid
+style Beispiel fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important;
+```
+
+# Quarto / Markdown
+
+- Neue Reveal.js-Folien immer mit `---` oder `##` (Level-2-Header) trennen
+- Sprechtexte für den Dozenten **immer** in `::: notes` … `:::` — darin didaktische Tipps (z. B. Verwechslungsgefahr verwandter Begriffe)
+- Pro Vorlesung zwei Formate: `revealjs` (Vortrag, Notes nur Speaker View) und `handout-revealjs` (Skript: Folie oben, Notes unten; PDF über Druckansicht **E**, A4 Hochformat)
+- Code-Blöcke immer mit passender Sprache taggen für Syntax-Highlighting
+
+```markdown
+::: notes
+Hier auf die Verwechslungsgefahr verwandter Fachbegriffe hinweisen.
+:::
+```

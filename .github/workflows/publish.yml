@@ -1,0 +1,83 @@
+name: Publish Quarto Website
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    # Früher abbrechen statt bis 6h zu hängen
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          tinytex: true
+
+      - name: Render website
+        uses: quarto-dev/quarto-actions/render@v2
+
+      # --- PDF-Handout (kann an Mermaid/Chrome scheitern; Website trotzdem publishen) ---
+      - name: Install Chrome Headless Shell (Mermaid → PNG)
+        timeout-minutes: 10
+        run: quarto install chrome-headless-shell --no-prompt
+
+      - name: Install rsvg (optional diagram conversion)
+        timeout-minutes: 5
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends librsvg2-bin
+
+      - name: Install LaTeX packages for handout
+        timeout-minutes: 10
+        run: |
+          tlmgr update --self || true
+          # tex-gyre: TeX Gyre Heros/Cursor (PDF-Fonts in _quarto*.yml)
+          tlmgr install \
+            tcolorbox needspace sectsty xcolor pgf environ trimspaces \
+            pdfcol fancyvrb framed booktabs setspace float mdwtools \
+            caption unicode-math fontspec lm lm-math tex-gyre \
+            || true
+
+      - name: Render PDF handout
+        id: handout
+        # Bei Hänger (z. B. Mermaid/Chrome) nach 20 Min abbrechen — nicht 6h warten
+        timeout-minutes: 20
+        continue-on-error: true
+        run: |
+          quarto render vorlesungen/01_kickoff.qmd --profile handout --to pdf
+
+      - name: Attach handout PDF to website
+        if: steps.handout.outcome == 'success'
+        run: |
+          mkdir -p _site/vorlesungen
+          cp _handout/vorlesungen/01_kickoff.pdf \
+             _site/vorlesungen/01_kickoff-handout.pdf
+          ls -la _site/vorlesungen/*.pdf
+
+      - name: Publish to GitHub Pages
+        uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: gh-pages
+          render: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fail if handout PDF did not build
+        if: steps.handout.outcome != 'success'
+        run: |
+          echo "::error::PDF-Handout ist fehlgeschlagen oder timed out (siehe Schritt „Render PDF handout“)."
+          exit 1
