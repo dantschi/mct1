@@ -68,13 +68,14 @@ jobs:
              _site/vorlesungen/01_kickoff-handout.pdf
           ls -la _site/vorlesungen/*.pdf
 
-      - name: Publish to GitHub Pages
-        uses: quarto-dev/quarto-actions/publish@v2
-        with:
-          target: gh-pages
-          render: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Deaktiviert, solange das Repository privat ist (GitHub Pages nicht verfügbar).
+      # - name: Publish to GitHub Pages
+      #   uses: quarto-dev/quarto-actions/publish@v2
+      #   with:
+      #     target: gh-pages
+      #     render: false
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Fail if handout PDF did not build
         if: steps.handout.outcome != 'success'
