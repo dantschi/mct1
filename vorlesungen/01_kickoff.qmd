@@ -31,7 +31,7 @@ Herzlich willkommen zur ersten Vorlesung im Modul Mikrocomputertechnik 1, kurz M
 5. Register File & Speicher
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A[Daten] --> B[ALU] --> C[Takt] --> D[RF] --> E[Memory]
@@ -85,7 +85,7 @@ Das Modul schließt mit einer schriftlichen Klausur ab — Theorie und Praxis (z
 - Pull Requests willkommen
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A[Markdown] --> B[Folien]
@@ -168,7 +168,7 @@ Stellen Sie sich den Entwurf eines modernen SoCs vor: zig Milliarden Transistore
 - Hierarchien aus Sub-Modulen · Wiederverwendbarkeit
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A[System] --> B[Modul]
@@ -188,7 +188,7 @@ Antwort auf extreme Komplexität: Divide and Conquer. Aus Transistoren ein Gatte
 - Black Box: *was*, nicht zwingend *wie* · Verträge (API/ISA)
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   Input[Eingabe] --> B[Black Box] --> Output[Ausgabe]
@@ -206,7 +206,7 @@ Abstraktion heißt bewusstes Weglassen. Beim Autofahren: Pedal drücken beschleu
 - Fokus MCT1: Digitaltechnik · Mikroarchitektur · ISA
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A[Physik] --> B[Digital] --> C[µArch] --> D[ISA] --> E[Software]
@@ -230,7 +230,7 @@ Das Schichtenmodell ordnet die Welt von der Physik bis zur App. Die meisten Inge
 - Zweierkomplement für die ALU
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph TD
   A["Spannung 3.3V"] --> B["Binär 1"]
@@ -275,7 +275,7 @@ Für den Prozessor ist absolut alles eine Zahl. String, JPEG, ausführbarer Befe
 - Skalierung: Kilobyte (KB), Megabyte (MB), Gigabyte (GB)
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph TD
   A[1 Byte] --> B[Nibble High]
@@ -369,7 +369,7 @@ Der Trick: Nibble und Hex-Ziffer haben dieselbe Kardinalität — 1-zu-1-Zuordnu
 4. Hex-Ziffern wieder aneinanderfügen
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph TD
   A["1101 1010 0011 1111"] --> B["1101"]
@@ -437,7 +437,7 @@ Resultat: 0b 1100 1010 1111 1110 1011 1010 1011 1110
 - Fallstrick: Sign Extension
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A[+Zahl] --> B[Algorithmus] --> C[-Zahl]
@@ -470,7 +470,7 @@ Auf Papier reicht ein Querstrich. Auf dem Chip: 32 Bits im Register. Zwei getren
 - Restliche Bits: absoluter Betrag
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A["1"] -->|Vorzeichen: Minus| B["000 0101"]
@@ -546,7 +546,7 @@ Mechanischer Algorithmus, in Hardware leicht: invertieren, dann +1. Damit ist di
 - 8 Bit: invertieren, dann $+1$ · MSB = 1 ⇒ negativ
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A["+5"] -->|NOT| B[Einerkompl.] -->|+1| C["-5"]
@@ -593,7 +593,7 @@ Bei RV32I: 32-Bit-Register, harte Grenzen. Overflow: vom Maximalpositiven ins Ex
 - RISC-V: `lb` (Load Byte mit Sign Extension)
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A["8-Bit: -5"] --> B["32-Bit: Sign Ext."]
@@ -615,7 +615,7 @@ Häufiger Laborfehler: $-5$ als 8 Bit laden und links mit Nullen auffüllen → 
 - Big-Endian vs. Little-Endian
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph TD
   A[CPU] -->|0x00| B[RAM Byte]
@@ -700,7 +700,7 @@ Im Labor: `DEADBEEF` erscheint im Speicher als `EF BE AD DE` — kein Simulatorf
 - Fundament für ALU und Routing (MUX)
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A[A] --> C[Logik] --> Y[Y]
@@ -1040,7 +1040,7 @@ Kreis zur Abstraktion: Transistor → Gatter → Addierer → 32-Bit-ALU. Ab der
 - Vorbereitung auf sequenzielle Schaltungstechnik
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A[Kombinatorik] -->|Ohne Gedächtnis| B[Daten fließen sofort ab]
@@ -1074,7 +1074,7 @@ Metapher: ALU wie ein Rohrsystem — ohne Pumpe läuft es leer. Für $C = A + B$
 - Weiterfluss erst beim Öffnen der Schleusen
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A[ALU-Ausgang] -->|fließendes Datum| B[Schleuse / Speicher]
@@ -1133,7 +1133,7 @@ Edge-Triggering: Bei konstantem CLK-Pegel passiert im Speicher nichts. Nur im Mo
 - Setup-/Hold-Time als zeitliche Parameter
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A[Eingang] --> B[Sequenzielle Logik]
@@ -1155,7 +1155,7 @@ Aus kombinatorischen Gattern per Rückkopplung ein Gedächtnis bauen → D-Flip-
 - Zustand bleibt, bis ein externes Signal ihn überschreibt
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   Eingang --> OR[OR]
@@ -1203,7 +1203,7 @@ Kamera-Metapher prägt sich ein: Motiv ändert sich, Foto nicht — bis zum näc
 - Verletzung → Metastabilität · ALU muss rechtzeitig fertig sein
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A[ALU] --> B[Setup] --> C[Flanke] --> D[Hold]
@@ -1225,7 +1225,7 @@ Zu hoher Takt → ALU zu langsam → Setup verletzt → undefinierte Zustände /
 - Gemeinsames CLK-Signal an alle — synchroner „Auslöser“
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph TD
   Bus[32-Bit Data In] -->|Bit 31| FF31[D-FF 31]
@@ -1280,7 +1280,7 @@ Ab jetzt: Viereck mit $D$, $Q$, WE und Dreieck. Innere Rückkopplungen und Setup
 - RISC-V-Konvention: u. a. hartverdrahtetes $x0$
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A[Register File] -->|Operanden| B[ALU]
@@ -1311,7 +1311,7 @@ Befehl `add x3, x1, x2` in einem Durchlauf:
 - Lesen: $A1$/$A2$ → $RD1$/$RD2$ · Schreiben: $A3$, $WD3$, freigegeben durch $WE3$
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A1[A1] --> RF[Register File]
@@ -1335,7 +1335,7 @@ A1/A2 wählen die Quellregister → Daten an RD1/RD2 zur ALU. Ergebnis zurück a
 - Lesen **ohne Takt** — asynchron/kombinatorisch
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   R1[Reg x1] --> MUX["32:1 MUX"]
@@ -1411,7 +1411,7 @@ Kein eigener MOVE-Befehl nötig — Addition mit Null recycelt die ALU-Hardware.
 - Vorbereitung auf den Single-Cycle-Datenpfad in Ripes
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   A[CPU] <-->|Befehle & Daten| B[(Arbeitsspeicher)]
@@ -1443,7 +1443,7 @@ Binary landet im RAM; die CPU holt den ersten Befehl (Fetch). Load holt Daten �
 - Nachteil (Flaschenhals): nicht gleichzeitig Instruktion lesen und Daten speichern
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   CPU[CPU] <-->|Bus Flaschenhals| RAM[Gemeinsamer Speicher]
@@ -1464,7 +1464,7 @@ Standard in PCs/Macs: Code und Daten sind Zahlen im selben Speicher. Flexibel, a
 - Nachteil: starre Grenzen zwischen den Speichern
 
 ```{mermaid}
-%%| fig-width: 5.2
+%%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
   IM[(Instruction Memory)] -->|Befehls-Bus| CPU[CPU]

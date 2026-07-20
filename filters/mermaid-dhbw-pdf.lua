@@ -1,12 +1,13 @@
--- Constrain all images in LaTeX/PDF handouts to the text width.
--- Mermaid cells are already rendered to PNG before pandoc filters run,
--- so CodeBlock-based theming does not apply; Image attributes do.
+-- Handout-PDF: Bilder nicht auf volle Textbreite aufblasen.
+-- Mermaid-PNGs und SVG-Schaltungen behalten ihre natuerliche Groesse;
+-- LaTeX-adjustbox in _quarto-handout.yml begrenzt nur das Maximum.
 
 function Image(el)
   if not FORMAT:match("latex") then
     return nil
   end
-  el.attributes["width"] = "100%"
+  -- Explizite width=100% aus Quarto/Mermaid entfernen (sonst Stretch auf \linewidth)
+  el.attributes["width"] = nil
   el.attributes["height"] = nil
   return el
 end
