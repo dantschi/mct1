@@ -779,7 +779,7 @@ Routing-Problem: Manchmal `R1 + R2`, manchmal `R1 + 5` (Immediate). Der zweite A
 ## Die Logik des 2:1-Multiplexers
 
 - Wahrheitstabelle beschreibt das Verhalten
-- Boole'sche Gleichung: $Y = (\overline{S} \cdot A) + (S \cdot B)$
+- Boole'sche Gleichung: $Y = (\overline{S} \land A) \lor (S \land B)$
 - $S = 0$: Term mit $B$ wird 0 → $Y = A$
 - $S = 1$: Term mit $A$ wird 0 → $Y = B$
 
@@ -791,7 +791,7 @@ Routing-Problem: Manchmal `R1 + R2`, manchmal `R1 + 5` (Immediate). Der zweite A
 | 1 | X | 1 | 1 |
 
 ::: notes
-Plus = OR, Punkt = AND. Bei $S=0$ wird $\overline{S}=1$, also $Y=A$; der $B$-Term fällt weg. „X“ = Don't Care: Der nicht gewählte Eingang ist egal.
+$\land$ = AND, $\lor$ = OR. Bei $S=0$ wird $\overline{S}=1$, also $Y=A$; der $B$-Term fällt weg. „X“ = Don't Care: Der nicht gewählte Eingang ist egal.
 :::
 
 ## Der Multiplexer in reiner Hardware
@@ -895,7 +895,7 @@ Bei $1+1$ gibt es keine „2“ — wir schreiben 0 und Carry 1. Summenspalte = 
 - Nur zwei Gatter: XOR und AND
 - Eingänge: $A$, $B$
 - Ausgänge: Summe $S$, Carry Out $C_{out}$
-- $S = A \oplus B$,\quad $C_{out} = A \cdot B$
+- $S = A \oplus B$,\quad $C_{out} = A \land B$
 - Problem: kein Carry-In von einer vorherigen Stelle
 
 ![Halbaddierer aus XOR- und AND-Gatter](../assets/images/half-adder.svg)
