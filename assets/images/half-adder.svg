@@ -18,7 +18,7 @@
   <rect class="gate accent" x="220" y="40" width="80" height="56" rx="4" ry="4"/>
   <text class="sym" x="260.0" y="75.0" text-anchor="middle">=1</text>
   <rect class="gate" x="220" y="160" width="80" height="56" rx="4" ry="4"/>
-  <text class="sym" x="260.0" y="195.0" text-anchor="middle">&</text>
+  <text class="sym" x="260.0" y="195.0" text-anchor="middle">&amp;</text>
   <path class="wire" d="M 300 68 L 380 68"/>
   <path class="wire" d="M 372 63 L 380 68 L 372 73" fill="none"/>
   <text class="pin" x="395" y="72" text-anchor="start">S</text>

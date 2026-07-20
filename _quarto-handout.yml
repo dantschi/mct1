@@ -38,7 +38,10 @@ format:
     citecolor: dhbwred
     keep-tex: false
     mermaid-format: png
+    mermaid:
+      theme: base
     filters:
+      - filters/mermaid-dhbw-pdf.lua
       - filters/notes-handout.lua
     include-in-header:
       - text: |
@@ -50,6 +53,17 @@ format:
           \definecolor{mutedgray}{HTML}{86868B}
           \usepackage{needspace}
           \usepackage[most]{tcolorbox}
+          % Grafiken niemals über den Textspiegel hinaus (Mermaid-PNGs / SVG-PDFs)
+          \usepackage{graphicx}
+          \usepackage[export]{adjustbox}
+          \let\dhbwOldIncludegraphics\includegraphics
+          \renewcommand{\includegraphics}[2][]{%
+            \dhbwOldIncludegraphics[max width=\linewidth,max height=0.40\textheight,keepaspectratio,#1]{#2}%
+          }
+          \makeatletter
+          \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+          \def\maxheight{\ifdim\Gin@nat@height>0.40\textheight0.40\textheight\else\Gin@nat@height\fi}
+          \makeatother
           % Global lesbarer Fließtext (kein helles Reveal-Grau)
           \AtBeginDocument{%
             \color{softblack}%

@@ -19,11 +19,11 @@
   <path class="wire" d="M 246 65 L 280 65 L 280 95 L 320 95"/>
   <path class="wire" d="M 50 110 L 280 110 L 280 115 L 320 115"/>
   <rect class="gate" x="320" y="80" width="70" height="50" rx="4" ry="4"/>
-  <text class="sym" x="355.0" y="112.0" text-anchor="middle">&</text>
+  <text class="sym" x="355.0" y="112.0" text-anchor="middle">&amp;</text>
   <path class="wire" d="M 140 50 L 140 192 L 320 192"/>
   <path class="wire" d="M 50 220 L 320 220"/>
   <rect class="gate" x="320" y="180" width="70" height="50" rx="4" ry="4"/>
-  <text class="sym" x="355.0" y="212.0" text-anchor="middle">&</text>
+  <text class="sym" x="355.0" y="212.0" text-anchor="middle">&amp;</text>
   <path class="wire" d="M 390 105 L 420 105 L 420 142 L 460 142"/>
   <path class="wire" d="M 390 205 L 420 205 L 420 168 L 460 168"/>
   <rect class="gate accent" x="460" y="130" width="70" height="50" rx="4" ry="4"/>

@@ -34,5 +34,5 @@ Hier auf die Verwechslungsgefahr verwandter Fachbegriffe hinweisen.
 # Quarto / Reveal.js Guidelines
 
 - **Folien-Layout:** Nutze NIEMALS `center: true` in der `_quarto.yml` oder im YAML-Header, da dies zu vertikalem Überlauf führt. Das Format ist fest auf 16:9 (1280×720) eingestellt.
-- **Mermaid-Diagramme:** Setze NIEMALS eine manuelle `fontSize` über Mermaid-Init-Direktiven. Die Skalierung erfolgt automatisch.
+- **Mermaid-Diagramme:** Setze NIEMALS eine manuelle `fontSize` über Mermaid-Init-Direktiven. Die Skalierung erfolgt automatisch. Für PDF-Handouts sind `theme: base` und DHBW-`themeVariables` (Farben) sowie `%%| fig-width: 5.2` erlaubt — sonst greifen Mermaid-Defaultfarben und breite PNGs.
 - **Überlauf:** Wenn eine Folie extrem viel Text oder einen riesigen Code-Block enthält (z. B. komplexe Assembler-Beispiele), füge der Folien-Überschrift zwingend die Klasse `{.scrollable}` hinzu, um das Abschneiden von Inhalten zu verhindern.
