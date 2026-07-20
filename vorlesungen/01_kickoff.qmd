@@ -712,14 +712,13 @@ Zwei Fundamentalkategorien: Kombinatorik wie eine Waage — reagiert nur auf den
 ## Refresher: Die grundlegenden Logikgatter
 
 - Logikgatter = elementare Bausteine der Hardware-Abstraktion
-- AND: Ausgang 1, wenn alle Eingänge 1
-- OR: Ausgang 1, wenn mindestens ein Eingang 1
-- XOR: Ausgang 1, wenn Eingänge unterschiedlich
-- NOT: invertiert das Signal
+- AND · OR · XOR · NOT — IEC-60617-Symbole
 - Ab jetzt: Gatter als Black Boxes mit bekanntem Verhalten
 
+![IEC-60617 Logikgatter AND, OR, XOR und NOT](../assets/images/logic-gates-refresher.svg)
+
 ::: notes
-Kurzer Digitaltechnik-Rückblick. Wir sprechen nicht mehr über einzelne MOSFETs in einem NAND — wir arbeiten auf Gatterebene. XOR wird zentral für die Addition. Die ANSI-Schaltsymbole sehen Sie im RISC-V-Datenpfad ständig.
+Kurzer Digitaltechnik-Rückblick. Wir sprechen nicht mehr über einzelne MOSFETs in einem NAND — wir arbeiten auf Gatterebene. XOR wird zentral für die Addition. Die Schaltsymbole folgen IEC 60617 (rechteckig: `&`, `≥1`, `=1`, NOT mit Negationskreis).
 :::
 
 ## Das „Weichen“-Problem im Datenpfad
@@ -729,14 +728,7 @@ Kurzer Digitaltechnik-Rückblick. Wir sprechen nicht mehr über einzelne MOSFETs
 - Gesucht: elektronisch schaltbare „Eisenbahnweiche“
 - Steuerung über ein separates Steuersignal
 
-```{mermaid}
-graph LR
-  A[Datenquelle 1] --> C{Weiche}
-  B[Datenquelle 2] --> C
-  S[Steuersignal] -.-> C
-  C --> D[Ziel z. B. ALU]
-  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
+![Digitale Weiche als 2:1-Multiplexer im Datenpfad](../assets/images/mux-weichen.svg)
 
 ::: notes
 Routing-Problem: Manchmal `R1 + R2`, manchmal `R1 + 5` (Immediate). Der zweite ALU-Eingang muss umschaltbar sein — Register-File oder Instruktionswort. Wir brauchen eine digitale Weiche.
@@ -747,17 +739,10 @@ Routing-Problem: Manchmal `R1 + R2`, manchmal `R1 + 5` (Immediate). Der zweite A
 - Lösung für das Weichen-Problem
 - Mehrere Dateneingänge (z. B. $A$, $B$), ein Ausgang $Y$
 - Select-Signal $S$ bestimmt den durchgeschalteten Eingang
-- Symbol: stehendes Trapez
+- Symbol: Rechteck (IEC 60617) mit Select-Eingang
 - Häufigster Routing-Baustein in der Architektur
 
-```{mermaid}
-graph LR
-  A[Eingang A] -->|0| MUX[MUX]
-  B[Eingang B] -->|1| MUX
-  S[Select S] -.-> MUX
-  MUX --> Y[Ausgang Y]
-  style MUX fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
+![2:1-Multiplexer mit Eingängen A/B, Select S und Ausgang Y](../assets/images/mux-2to1-block.svg)
 
 ::: notes
 2-zu-1-MUX: Eingänge A und B, Ausgang Y, Select S. Bei $S=0$ fließt A nach Y, bei $S=1$ fließt B. Die Control-Unit steuert die Weiche.
@@ -788,18 +773,7 @@ Plus = OR, Punkt = AND. Bei $S=0$ wird $\overline{S}=1$, also $Y=A$; der $B$-Ter
 - Zwei AND-Gatter sperren bzw. freigeben $A$ und $B$
 - OR führt die freigegebenen Pfade zusammen
 
-```{mermaid}
-graph LR
-  S[S] --> NOT[NOT]
-  NOT --> AND1[AND]
-  A[A] --> AND1
-  S --> AND2[AND]
-  B[B] --> AND2
-  AND1 --> OR[OR]
-  AND2 --> OR
-  OR --> Y[Y]
-  style OR fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
+![2:1-Multiplexer aus NOT-, AND- und OR-Gattern nach IEC 60617](../assets/images/mux-2to1-gates.svg)
 
 ::: notes
 $S$ geht einmal direkt (Pfad B) und einmal invertiert (Pfad A) in die AND-Gatter — Verriegelung: immer nur ein Pfad offen. Das OR sammelt das aktive Signal.
@@ -840,14 +814,7 @@ Software springt in einen Zweig. Hardware: A und B liegen permanent an; der MUX 
 - Ein gemeinsames Select-Signal $S$ für alle Slices
 - In Diagrammen: Bus mit Querstrich und Breite (`/32`)
 
-```{mermaid}
-graph LR
-  A["Bus A /32"] --> MUX[MUX]
-  B["Bus B /32"] --> MUX
-  S["S /1"] -.-> MUX
-  MUX --> Y["Bus Y /32"]
-  style MUX fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
+![32-Bit-Bus-Multiplexer mit gemeinsamem Select-Signal](../assets/images/mux-32bit-bus.svg)
 
 ::: notes
 Ein Blockschaltbild-MUX meint eine Batterie aus 32 Weichen. Ein Bit $S$ klappt alle synchron um — das ganze Word von B fließt durch.
@@ -862,14 +829,7 @@ Ein Blockschaltbild-MUX meint eine Batterie aus 32 Weichen. Ein Bit $S$ klappt a
 - Halbaddierer als Grundbaustein
 - Kaskadierung für große Wortbreiten
 
-```{mermaid}
-graph LR
-  A[Zahl 1] --> ADD["(+)"]
-  B[Zahl 2] --> ADD
-  ADD --> S[Summe]
-  ADD --> C[Übertrag / Carry]
-  style ADD fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
+![Addierer-Blockschaltbild mit Summe und Carry](../assets/images/adder-overview.svg)
 
 ::: notes
 Signale leiten wir mit dem MUX — jetzt rechnen. Keine Magie: Grundschul-Additionsregeln mit Gattern nachbauen. Zuerst 1 Bit, dann 32 Bit.
@@ -910,16 +870,7 @@ Bei $1+1$ gibt es keine „2“ — wir schreiben 0 und Carry 1. Summenspalte = 
 - $S = A \oplus B$,\quad $C_{out} = A \cdot B$
 - Problem: kein Carry-In von einer vorherigen Stelle
 
-```{mermaid}
-graph LR
-  A[A] --> XOR[XOR]
-  B[B] --> XOR
-  XOR --> S[Summe S]
-  A --> AND[AND]
-  B --> AND
-  AND --> Cout[Carry Out]
-  style XOR fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
+![Halbaddierer aus XOR- und AND-Gatter](../assets/images/half-adder.svg)
 
 ::: notes
 „Halb“, weil nur zwei Operanden — reicht für die LSB-Stelle. Weiter links brauchen wir drei Eingänge: $A$, $B$ und den Übertrag der rechten Spalte.
@@ -932,15 +883,7 @@ graph LR
 - Intern: typisch zwei Halbaddierer + OR
 - Standard-Rechenzelle in jedem Prozessor
 
-```{mermaid}
-graph LR
-  A[A] --> FA[Full Adder]
-  B[B] --> FA
-  Cin[Carry In] --> FA
-  FA --> S[Summe S]
-  FA --> Cout[Carry Out]
-  style FA fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
+![Volladdierer aus zwei Halbaddierern und OR-Gatter](../assets/images/full-adder.svg)
 
 ::: notes
 $C_{in}$ kommt von der vorherigen Stelle. Als Systemarchitekten: Volladdierer fortan als Black Box — elementarer ALU-Baustein.
@@ -950,14 +893,7 @@ $C_{in}$ kommt von der vorherigen Stelle. Als Systemarchitekten: Volladdierer fo
 
 - 32 Volladdierer · Carry von Bit $i$ nach $i+1$
 
-```{mermaid}
-graph LR
-  FA0[FA0] -->|Cout| FA1[FA1] -->|Cout| FA2[FA2] -->|Cout| FA3[FA3]
-  style FA0 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style FA1 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style FA2 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style FA3 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
+![Ripple-Carry-Adder: Kaskade von vier Volladdierern](../assets/images/ripple-carry-adder.svg)
 
 ::: notes
 32 Volladdierer nebeneinander, Carry-Kette von Bit 0 bis 31 — exakt wie mit dem Stift. Name: Ripple-Carry-Adder.
@@ -985,15 +921,7 @@ Logisch korrekt, physikalisch langsam bei 32/64 Bit. Der kritische Pfad diktiert
 - Vereint Addierer und Routing (MUX)
 - Reagiert auf Control Signals aus der Instruktion
 
-```{mermaid}
-graph LR
-  A[Operand A] --> ALU[ALU]
-  B[Operand B] --> ALU
-  CTRL[ALU Control] -.-> ALU
-  ALU --> RES[Ergebnis]
-  ALU --> Z[Zero Flag]
-  style ALU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
+![ALU-Blockschaltbild mit Operanden, Steuerung, Ergebnis und Zero-Flag](../assets/images/alu-overview.svg)
 
 ::: notes
 MUX + Volladdierer → ALU. In Software `C = A + B` landet hier. Multifunktional: addieren, subtrahieren, bitweise Verknüpfen.
@@ -1015,17 +943,7 @@ Daten fließen parallel in alle Rechenpfade; der MUX wirft unerwünschte Ergebni
 
 - Parallel: AND · OR · FA → MUX → $Y$ (ALUControl)
 
-```{mermaid}
-graph LR
-  A[A/B] --> AND[AND] -->|00| MUX[MUX] --> Y[Y]
-  A --> OR[OR] -->|01| MUX
-  A --> FA[FA] -->|10| MUX
-  CTRL[Ctrl] -.-> MUX
-  style MUX fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style AND fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style OR fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style FA fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
+![1-Bit-ALU: parallele AND/OR/FA-Pfade mit Ausgangs-MUX](../assets/images/alu-1bit-structure.svg)
 
 ::: notes
 Beispiel-Kodierung: `00` AND, `01` OR, `10` Addierer; `11` oft Reserve. Genau dieses Muster skaliert auf 32 Bit.
@@ -1035,14 +953,7 @@ Beispiel-Kodierung: `00` AND, `01` OR, `10` Addierer; `11` oft Reserve. Genau di
 
 - $A - B = A + \overline{B} + 1$ · MUX vor $B$, $C_{in}=1$
 
-```{mermaid}
-graph LR
-  B[B] --> MUXB[MUX] --> ADD[FA]
-  B --> NOT[NOT] --> MUXB
-  A[A] --> ADD
-  Cin["Cin=1"] --> ADD
-  style ADD fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
+![Subtraktion in der ALU: NOT und MUX vor dem Volladdierer](../assets/images/alu-subtract.svg)
 
 ::: notes
 Aus dem Zweierkomplement-Block: Bits kippen und +1. Der MUX vor $B$ liefert $\overline{B}$; das $+1$ kommt als Carry-In. Reines Routing macht aus dem Addierer einen Subtrahierer.
@@ -1072,13 +983,7 @@ Wichtigstes Flag für bedingte Sprünge in RISC-V. Control Unit liest $Z$ und en
 
 - 32 Slices · gemeinsame ALUControl · Carry wie RCA
 
-```{mermaid}
-graph LR
-  ALU0[ALU0] -.-> ALU1[ALU1] -.-> ALU31[ALU31]
-  style ALU1 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style ALU0 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style ALU31 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
+![32-Bit-ALU als Kaskade von 1-Bit-Slices](../assets/images/alu-32bit-cascade.svg)
 
 ::: notes
 32 Scheiben, Carry verbunden, gemeinsame Steuerung — der Motor für Integer-Arithmetik und Logik.

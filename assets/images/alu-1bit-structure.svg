@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="300" viewBox="0 0 620 300" role="img">
+  <style>
+.gate { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .wire { fill: none; stroke: #86868B; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+  .bubble { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .lbl { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 500; }
+  .sym { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; }
+  .accent { stroke: #E2001A; }
+  .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; }
+  </style>
+  <text class="pin" x="40" y="54" text-anchor="end">A</text>
+  <text class="pin" x="40" y="94" text-anchor="end">B</text>
+  <path class="wire" d="M 50 50 L 120 50 L 120 46 L 200 46"/>
+  <path class="wire" d="M 120 50 L 120 116 L 200 116"/>
+  <path class="wire" d="M 120 50 L 120 186 L 200 186"/>
+  <path class="wire" d="M 50 90 L 150 90 L 150 62 L 200 62"/>
+  <path class="wire" d="M 150 90 L 150 132 L 200 132"/>
+  <path class="wire" d="M 150 90 L 150 202 L 200 202"/>
+  <rect class="gate" x="200" y="30" width="70" height="48" rx="4" ry="4"/>
+  <text class="sym" x="235.0" y="61.0" text-anchor="middle">&</text>
+  <rect class="gate" x="200" y="100" width="70" height="48" rx="4" ry="4"/>
+  <text class="sym" x="235.0" y="131.0" text-anchor="middle">≥1</text>
+  <rect class="gate" x="200" y="170" width="70" height="48" rx="4" ry="4"/>
+  <text class="sym" x="235.0" y="201.0" text-anchor="middle">FA</text>
+  <path class="wire" d="M 270 54 L 340 54 L 340 100 L 380 100"/>
+  <path class="wire" d="M 270 124 L 360 124 L 360 130 L 380 130"/>
+  <path class="wire" d="M 270 194 L 340 194 L 340 160 L 380 160"/>
+  <text class="pin" x="360" y="96" text-anchor="end">00</text>
+  <text class="pin" x="360" y="126" text-anchor="end">01</text>
+  <text class="pin" x="360" y="156" text-anchor="end">10</text>
+  <rect class="gate accent" x="380" y="80" width="90" height="100" rx="4" ry="4"/>
+  <text class="sym" x="425.0" y="137.0" text-anchor="middle">MUX</text>
+  <path class="wire" d="M 470 130 L 540 130"/>
+  <path class="wire" d="M 532 125 L 540 130 L 532 135" fill="none"/>
+  <text class="pin" x="555" y="134" text-anchor="start">Y</text>
+  <rect class="gate" x="380" y="220" width="90" height="48" rx="4" ry="4"/>
+  <text class="sym" x="425.0" y="251.0" text-anchor="middle">Ctrl</text>
+  <path class="wire" d="M 425 220 L 425 180"/>
+
+</svg>

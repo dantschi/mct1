@@ -187,12 +187,14 @@ $mermaid-font-family: $font-family-sans-serif;
 // DHBW-Palette absichern (Weiß / Hairline-Grau / sparsam Rot).
 // Quarto ersetzt <pre.mermaid> zur Laufzeit durch <svg.mermaid-js> — Skalierung
 // über assets/scripts/mermaid-fit.js (Zoom auf .mermaid-fit), nicht hier per max-height.
-.reveal .mermaid,
-.reveal .mermaid-fit {
-  margin: 0.6rem auto 0;
+.reveal .slides section img {
+  max-height: min(52vh, 480px);
+  width: auto;
   max-width: 100%;
-  text-align: center;
+  margin: 0.5rem auto;
+  display: block;
 }
+
 
 .reveal svg.mermaid-js {
   max-width: none;

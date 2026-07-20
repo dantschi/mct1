@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="150" viewBox="0 0 860 150" role="img">
+  <style>
+.gate { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .wire { fill: none; stroke: #86868B; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+  .bubble { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .lbl { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 500; }
+  .sym { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; }
+  .accent { stroke: #E2001A; }
+  .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; }
+  </style>
+  <text class="pin" x="40" y="55" text-anchor="end">A</text>
+  <text class="pin" x="40" y="85" text-anchor="end">B</text>
+  <path class="wire" d="M 45 52 L 80 52"/>
+  <path class="wire" d="M 45 82 L 80 82"/>
+  <rect class="gate" x="80" y="40" width="80" height="56" rx="4" ry="4"/>
+  <text class="sym" x="120.0" y="75.0" text-anchor="middle">&</text>
+  <path class="wire" d="M 160 68 L 210 68"/>
+  <path class="wire" d="M 202 63 L 210 68 L 202 73" fill="none"/>
+  <text class="pin" x="220" y="72" text-anchor="start">Y</text>
+  <text class="pin" x="120" y="120" text-anchor="middle">AND</text>
+  <text class="pin" x="240" y="55" text-anchor="end">A</text>
+  <text class="pin" x="240" y="85" text-anchor="end">B</text>
+  <path class="wire" d="M 245 52 L 280 52"/>
+  <path class="wire" d="M 245 82 L 280 82"/>
+  <rect class="gate" x="280" y="40" width="80" height="56" rx="4" ry="4"/>
+  <text class="sym" x="320.0" y="75.0" text-anchor="middle">≥1</text>
+  <path class="wire" d="M 360 68 L 410 68"/>
+  <path class="wire" d="M 402 63 L 410 68 L 402 73" fill="none"/>
+  <text class="pin" x="420" y="72" text-anchor="start">Y</text>
+  <text class="pin" x="320" y="120" text-anchor="middle">OR</text>
+  <text class="pin" x="440" y="55" text-anchor="end">A</text>
+  <text class="pin" x="440" y="85" text-anchor="end">B</text>
+  <path class="wire" d="M 445 52 L 480 52"/>
+  <path class="wire" d="M 445 82 L 480 82"/>
+  <rect class="gate" x="480" y="40" width="80" height="56" rx="4" ry="4"/>
+  <text class="sym" x="520.0" y="75.0" text-anchor="middle">=1</text>
+  <path class="wire" d="M 560 68 L 610 68"/>
+  <path class="wire" d="M 602 63 L 610 68 L 602 73" fill="none"/>
+  <text class="pin" x="620" y="72" text-anchor="start">Y</text>
+  <text class="pin" x="520" y="120" text-anchor="middle">XOR</text>
+  <text class="pin" x="640" y="72" text-anchor="end">A</text>
+  <path class="wire" d="M 645 68 L 680 68"/>
+  <rect class="gate" x="680" y="40" width="70" height="56" rx="4" ry="4"/>
+  <text class="sym" x="715.0" y="75.0" text-anchor="middle">1</text>
+  <circle class="bubble" cx="750" cy="68" r="6"/>
+  <path class="wire" d="M 756 68 L 800 68"/>
+  <path class="wire" d="M 792 63 L 800 68 L 792 73" fill="none"/>
+  <text class="pin" x="810" y="72" text-anchor="start">Y</text>
+  <text class="pin" x="715" y="120" text-anchor="middle">NOT</text>
+
+</svg>

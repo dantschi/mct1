@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="230" viewBox="0 0 540 230" role="img">
+  <style>
+.gate { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .wire { fill: none; stroke: #86868B; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+  .bubble { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .lbl { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 500; }
+  .sym { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; }
+  .accent { stroke: #E2001A; }
+  .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; }
+  </style>
+  <text class="pin" x="40" y="95" text-anchor="start">Quelle 1</text>
+  <text class="pin" x="40" y="155" text-anchor="start">Quelle 2</text>
+  <text class="pin" x="295" y="40" text-anchor="middle">Steuer</text>
+  <path class="wire" d="M 120 92 L 240 92"/>
+  <path class="wire" d="M 120 152 L 240 152"/>
+  <path class="wire" d="M 295 50 L 295 70"/>
+  <rect class="gate accent" x="240" y="70" width="110" height="120" rx="4" ry="4"/>
+  <text class="sym" x="295.0" y="137.0" text-anchor="middle">MUX</text>
+  <path class="wire" d="M 350 130 L 450 130"/>
+  <path class="wire" d="M 442 125 L 450 130 L 442 135" fill="none"/>
+  <text class="pin" x="465" y="134" text-anchor="start">ALU</text>
+
+</svg>

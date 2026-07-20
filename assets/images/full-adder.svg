@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="310" viewBox="0 0 620 310" role="img">
+  <style>
+.gate { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .wire { fill: none; stroke: #86868B; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+  .bubble { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .lbl { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 500; }
+  .sym { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; }
+  .accent { stroke: #E2001A; }
+  .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; }
+  </style>
+  <text class="pin" x="30" y="58" text-anchor="end">A</text>
+  <text class="pin" x="30" y="98" text-anchor="end">B</text>
+  <text class="pin" x="30" y="158" text-anchor="end">Cin</text>
+  <path class="wire" d="M 40 55 L 160 55"/>
+  <path class="wire" d="M 40 95 L 160 95"/>
+  <rect class="gate" x="160" y="40" width="90" height="70" rx="4" ry="4"/>
+  <text class="sym" x="205.0" y="82.0" text-anchor="middle">HA</text>
+  <path class="wire" d="M 250 60 L 340 60"/>
+  <path class="wire" d="M 40 155 L 300 155 L 300 90 L 340 90"/>
+  <rect class="gate" x="340" y="40" width="90" height="70" rx="4" ry="4"/>
+  <text class="sym" x="385.0" y="82.0" text-anchor="middle">HA</text>
+  <path class="wire" d="M 430 60 L 530 60"/>
+  <path class="wire" d="M 522 55 L 530 60 L 522 65" fill="none"/>
+  <text class="pin" x="545" y="64" text-anchor="start">S</text>
+  <path class="wire" d="M 205 110 L 205 218 L 280 218"/>
+  <path class="wire" d="M 385 110 L 385 280 L 250 280 L 250 242 L 280 242"/>
+  <rect class="gate accent" x="280" y="200" width="80" height="56" rx="4" ry="4"/>
+  <text class="sym" x="320.0" y="235.0" text-anchor="middle">≥1</text>
+  <path class="wire" d="M 360 228 L 450 228"/>
+  <path class="wire" d="M 442 223 L 450 228 L 442 233" fill="none"/>
+  <text class="pin" x="465" y="232" text-anchor="start">Cout</text>
+
+</svg>

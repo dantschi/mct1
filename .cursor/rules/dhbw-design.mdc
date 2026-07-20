@@ -1,6 +1,6 @@
 ---
 description: Design-Richtlinien Apple-Look + DHBW für Folien, Website und SCSS
-globs: "**/*.{scss,css,qmd}"
+globs: "**/*.{scss,css,qmd,svg}"
 alwaysApply: false
 ---
 
@@ -57,3 +57,22 @@ Zweispaltigkeit ist die **Ausnahme**, nicht der Standard:
 
 - NIEMALS `center: true` (YAML) — verursacht vertikalen Überlauf; Format fest 16:9 (`1280`×`720`, `margin: 0.08`)
 - Bei extrem dichtem Inhalt (lange Codeblöcke): Überschrift mit `{.scrollable}`
+
+### Workflow: Logikschaltungen & SVG-Generierung
+
+- **Trigger:** Wenn der User nach einer "Logikschaltung", einem "Gatter-Layout" oder dem "Zeichnen einer Schaltung" fragt, generierst du NIEMALS Mermaid-Code, sondern schreibst IMMER direkt eine saubere, rohe `.svg`-Datei in den Ordner `assets/images/`.
+- **DIN-Norm (IEC 60617):** Verwende ZWINGEND die europäische Norm für Schaltsymbole.
+  - Logikgatter sind strikt rechteckige Boxen (`<rect>`).
+  - Text-Symbole zentriert in der Box: AND = `&`, OR = `>=1`, XOR = `=1`, Buffer = `1`.
+  - Negationen (z. B. bei NAND, NOR, NOT) werden NICHT durch amerikanische Formen, sondern durch einen kleinen Kreis (`<circle>`) direkt am Ausgang der Rechtecke gezeichnet.
+- **Styling (DHBW/Apple):**
+  - Gatter-Hintergrund: `#FFFFFF`
+  - Gatter-Rahmen (Stroke): `#E5E5EA` (stroke-width: 2)
+  - Verbindungslinien und Pfeile: `#86868B`
+  - Text (Labels & Symbole): `#1D1D1F`, Schriftart `Inter, sans-serif`
+  - Lege am Anfang des SVGs einen `<style>`-Block für diese Farben an.
+- **Agentic Self-Correction & Browser-Check (PFLICHT):**
+  1. Berechne die X/Y-Koordinaten für Boxen und Pfade (`<path>`) systematisch. Führe Linien immer rechtwinklig (orthogonal).
+  2. Speichere das generierte SVG zunächst temporär ab.
+  3. Nutze deine internen Browser-/Terminal-Tools, um das SVG zu validieren. Prüfe logisch, ob sich `<rect>`-Koordinaten überlappen oder Linien quer durch Boxen laufen.
+  4. Korrigiere die Koordinaten iterativ, bis das Layout sauber, lesbar und kreuzungsfrei ist, bevor du dem User Vollzug meldest. Binde das finale SVG dann als `![Beschreibung](assets/images/dateiname.svg)` in die angeforderte Markdown-Folie ein.

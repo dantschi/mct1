@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="240" viewBox="0 0 560 240" role="img">
+  <style>
+.gate { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .wire { fill: none; stroke: #86868B; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+  .bubble { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .lbl { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 500; }
+  .sym { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; }
+  .accent { stroke: #E2001A; }
+  .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; }
+  </style>
+  <text class="pin" x="40" y="90" text-anchor="end">A</text>
+  <text class="pin" x="40" y="150" text-anchor="end">B</text>
+  <text class="pin" x="290" y="40" text-anchor="middle">ALUControl</text>
+  <path class="wire" d="M 50 86 L 220 86"/>
+  <path class="wire" d="M 50 146 L 220 146"/>
+  <path class="wire" d="M 290 48 L 290 60"/>
+  <rect class="gate accent" x="220" y="60" width="140" height="140" rx="4" ry="4"/>
+  <text class="sym" x="290.0" y="137.0" text-anchor="middle">ALU</text>
+  <path class="wire" d="M 360 110 L 450 110"/>
+  <path class="wire" d="M 442 105 L 450 110 L 442 115" fill="none"/>
+  <text class="pin" x="465" y="114" text-anchor="start">Result</text>
+  <path class="wire" d="M 360 160 L 450 160"/>
+  <path class="wire" d="M 442 155 L 450 160 L 442 165" fill="none"/>
+  <text class="pin" x="465" y="164" text-anchor="start">Zero</text>
+
+</svg>
