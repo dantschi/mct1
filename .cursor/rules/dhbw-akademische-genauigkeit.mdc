@@ -40,3 +40,12 @@ Wo möglich konkrete Bezüge zu den Kurs-Tools herstellen:
 ## Formeln & Notation
 
 Zwingend LaTeX (`$...$` oder `$$...$$`) für Formeln, Gleichungen und formale Notation.
+
+### Workflow: Mathematische Notation (Boolesche Algebra)
+
+- **Logik-Gleichungen:** Verwende für Boolesche Algebra und Logik-Gleichungen in LaTeX-Umgebungen AUSSCHLIESSLICH die formale Aussagenlogik-Notation:
+  - **AND (Und):** Verwende IMMER `\land` (das "Dach"-Symbol). Nutze für Logik NIEMALS `\cdot`, `&` oder `*`.
+  - **OR (Oder):** Verwende IMMER `\lor` (das umgedrehte "Dach"). Nutze für Logik NIEMALS `+` oder `|`.
+  - **NOT (Negation):** Verwende IMMER `\overline{...}` (gerader Strich über der gesamten Variablen oder dem Term). Nutze NIEMALS `\neg`, `\sim`, `!` oder ein Hochkomma.
+  - **XOR (Exklusives Oder):** Verwende `\oplus`.
+- **Beispiel:** Die Gleichung "Y = (A und nicht B) oder C" MUSS als `Y = (A \land \overline{B}) \lor C` geschrieben werden.

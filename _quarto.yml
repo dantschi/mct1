@@ -47,6 +47,8 @@ format:
     chalkboard: false
     preview-links: auto
     center: false
+    # r-stretch kollidiert mit SVG-Schaltungen (Höhe oft 0 → unsichtbar)
+    auto-stretch: false
     width: 1280
     height: 720
     margin: 0.08

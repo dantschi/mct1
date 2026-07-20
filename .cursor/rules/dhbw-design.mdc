@@ -55,6 +55,7 @@ Zweispaltigkeit ist die **Ausnahme**, nicht der Standard:
 
 ## Reveal.js-Leinwand
 
+- Reveal.js-Leinwand: `auto-stretch: false` in `_quarto.yml` — sonst setzt Quarto `r-stretch` auf das letzte Bild und SVG-Schaltungen kollabieren oft auf Höhe 0 (unsichtbar).
 - NIEMALS `center: true` (YAML) — verursacht vertikalen Überlauf; Format fest 16:9 (`1280`×`720`, `margin: 0.08`)
 - Bei extrem dichtem Inhalt (lange Codeblöcke): Überschrift mit `{.scrollable}`
 
@@ -72,6 +73,7 @@ Zweispaltigkeit ist die **Ausnahme**, nicht der Standard:
   - Text (Labels & Symbole): `#1D1D1F`, Schriftart `Inter, sans-serif`
   - Lege am Anfang des SVGs einen `<style>`-Block für diese Farben an.
   - XML: Das AND-Symbol **immer** als `&amp;` escapen (`<text>&amp;</text>`), sonst fehlt das Zeichen in PDF-Konvertern (svglib/rsvg).
+- **Einbindung in Folien:** `![Beschreibung](../assets/images/dateiname.svg)` — kein Mermaid; bei Bedarf explizit `{.nostretch}`.
 - **Agentic Self-Correction & Browser-Check (PFLICHT):**
   1. Berechne die X/Y-Koordinaten für Boxen und Pfade (`<path>`) systematisch. Führe Linien immer rechtwinklig (orthogonal).
   2. Speichere das generierte SVG zunächst temporär ab.
