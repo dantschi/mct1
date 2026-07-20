@@ -63,8 +63,8 @@ $mermaid-font-family: $font-family-sans-serif;
 .reveal .slides section section {
   background-color: $bg-slide !important;
   color: $text-primary;
-  // Großzügiges Atmen: Innenabstand der Folie
-  padding: 1.5rem 2rem !important;
+  // Kompakter Innenabstand — verhindert Abschneiden am Folienrand
+  padding: 0.5rem 2rem !important;
 }
 
 // Titel vertikal & horizontal zentrieren (inkl. Title-Slide)
@@ -79,12 +79,12 @@ $mermaid-font-family: $font-family-sans-serif;
   align-items: center !important;
 }
 
-// Alle Level-2-Folien (##) ebenfalls zentriert — Kickoff-Stil
+// Inhaltsfolien oben ausrichten (kein vertikales Zentrieren — verhindert Abschneiden)
 .reveal .slides > section {
   text-align: center;
   display: flex !important;
   flex-direction: column !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   align-items: center !important;
 }
 
@@ -109,7 +109,8 @@ $mermaid-font-family: $font-family-sans-serif;
 
 .reveal p,
 .reveal li {
-  line-height: 1.6;
+  line-height: 1.4;
+  margin-bottom: 0.5em;
   color: $text-primary;
 }
 

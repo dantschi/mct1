@@ -31,7 +31,6 @@ Herzlich willkommen zur ersten Vorlesung im Modul Mikrocomputertechnik 1, kurz M
 5. Register File & Speicher
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Daten] --> B[ALU] --> C[Takt] --> D[RF] --> E[Memory]
   style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -84,7 +83,6 @@ Das Modul schließt mit einer schriftlichen Klausur ab — Theorie und Praxis (z
 - Pull Requests willkommen
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Markdown] --> B[Folien]
   A --> C[PDF]
@@ -166,7 +164,6 @@ Stellen Sie sich den Entwurf eines modernen SoCs vor: zig Milliarden Transistore
 - Hierarchien aus Sub-Modulen · Wiederverwendbarkeit
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[System] --> B[Modul]
   B --> C[Sub-Modul]
@@ -185,7 +182,6 @@ Antwort auf extreme Komplexität: Divide and Conquer. Aus Transistoren ein Gatte
 - Black Box: *was*, nicht zwingend *wie* · Verträge (API/ISA)
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   Input[Eingabe] --> B[Black Box] --> Output[Ausgabe]
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -202,7 +198,6 @@ Abstraktion heißt bewusstes Weglassen. Beim Autofahren: Pedal drücken beschleu
 - Fokus MCT1: Digitaltechnik · Mikroarchitektur · ISA
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Physik] --> B[Digital] --> C[µArch] --> D[ISA] --> E[Software]
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -225,7 +220,6 @@ Das Schichtenmodell ordnet die Welt von der Physik bis zur App. Die meisten Inge
 - Zweierkomplement für die ALU
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph TD
   A["Spannung 3.3V"] --> B["Binär 1"]
   B --> C[Hexadezimal]
@@ -269,7 +263,6 @@ Für den Prozessor ist absolut alles eine Zahl. String, JPEG, ausführbarer Befe
 - Skalierung: Kilobyte (KB), Megabyte (MB), Gigabyte (GB)
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph TD
   A[1 Byte] --> B[Nibble High]
   A --> C[Nibble Low]
@@ -362,7 +355,6 @@ Der Trick: Nibble und Hex-Ziffer haben dieselbe Kardinalität — 1-zu-1-Zuordnu
 4. Hex-Ziffern wieder aneinanderfügen
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph TD
   A["1101 1010 0011 1111"] --> B["1101"]
   A --> C["1010"]
@@ -429,7 +421,6 @@ Resultat: 0b 1100 1010 1111 1110 1011 1010 1011 1110
 - Fallstrick: Sign Extension
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[+Zahl] --> B[Algorithmus] --> C[-Zahl]
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -461,7 +452,6 @@ Auf Papier reicht ein Querstrich. Auf dem Chip: 32 Bits im Register. Zwei getren
 - Restliche Bits: absoluter Betrag
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A["1"] -->|Vorzeichen: Minus| B["000 0101"]
   B -->|Betrag: 5| C["-5"]
@@ -536,7 +526,6 @@ Mechanischer Algorithmus, in Hardware leicht: invertieren, dann +1. Damit ist di
 - 8 Bit: invertieren, dann $+1$ · MSB = 1 ⇒ negativ
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A["+5"] -->|NOT| B[Einerkompl.] -->|+1| C["-5"]
   style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -582,7 +571,6 @@ Bei RV32I: 32-Bit-Register, harte Grenzen. Overflow: vom Maximalpositiven ins Ex
 - RISC-V: `lb` (Load Byte mit Sign Extension)
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A["8-Bit: -5"] --> B["32-Bit: Sign Ext."]
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -603,7 +591,6 @@ Häufiger Laborfehler: $-5$ als 8 Bit laden und links mit Nullen auffüllen → 
 - Big-Endian vs. Little-Endian
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph TD
   A[CPU] -->|0x00| B[RAM Byte]
   A -->|0x01| C[RAM Byte]
@@ -687,7 +674,6 @@ Im Labor: `DEADBEEF` erscheint im Speicher als `EF BE AD DE` — kein Simulatorf
 - Fundament für ALU und Routing (MUX)
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[A] --> C[Logik] --> Y[Y]
   B[B] --> C
@@ -744,7 +730,6 @@ Kurzer Digitaltechnik-Rückblick. Wir sprechen nicht mehr über einzelne MOSFETs
 - Steuerung über ein separates Steuersignal
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Datenquelle 1] --> C{Weiche}
   B[Datenquelle 2] --> C
@@ -766,7 +751,6 @@ Routing-Problem: Manchmal `R1 + R2`, manchmal `R1 + 5` (Immediate). Der zweite A
 - Häufigster Routing-Baustein in der Architektur
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Eingang A] -->|0| MUX[MUX]
   B[Eingang B] -->|1| MUX
@@ -805,7 +789,6 @@ Plus = OR, Punkt = AND. Bei $S=0$ wird $\overline{S}=1$, also $Y=A$; der $B$-Ter
 - OR führt die freigegebenen Pfade zusammen
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   S[S] --> NOT[NOT]
   NOT --> AND1[AND]
@@ -858,7 +841,6 @@ Software springt in einen Zweig. Hardware: A und B liegen permanent an; der MUX 
 - In Diagrammen: Bus mit Querstrich und Breite (`/32`)
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A["Bus A /32"] --> MUX[MUX]
   B["Bus B /32"] --> MUX
@@ -881,7 +863,6 @@ Ein Blockschaltbild-MUX meint eine Batterie aus 32 Weichen. Ein Bit $S$ klappt a
 - Kaskadierung für große Wortbreiten
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Zahl 1] --> ADD["(+)"]
   B[Zahl 2] --> ADD
@@ -930,7 +911,6 @@ Bei $1+1$ gibt es keine „2“ — wir schreiben 0 und Carry 1. Summenspalte = 
 - Problem: kein Carry-In von einer vorherigen Stelle
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[A] --> XOR[XOR]
   B[B] --> XOR
@@ -953,7 +933,6 @@ graph LR
 - Standard-Rechenzelle in jedem Prozessor
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[A] --> FA[Full Adder]
   B[B] --> FA
@@ -972,7 +951,6 @@ $C_{in}$ kommt von der vorherigen Stelle. Als Systemarchitekten: Volladdierer fo
 - 32 Volladdierer · Carry von Bit $i$ nach $i+1$
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   FA0[FA0] -->|Cout| FA1[FA1] -->|Cout| FA2[FA2] -->|Cout| FA3[FA3]
   style FA0 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -1008,7 +986,6 @@ Logisch korrekt, physikalisch langsam bei 32/64 Bit. Der kritische Pfad diktiert
 - Reagiert auf Control Signals aus der Instruktion
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Operand A] --> ALU[ALU]
   B[Operand B] --> ALU
@@ -1039,7 +1016,6 @@ Daten fließen parallel in alle Rechenpfade; der MUX wirft unerwünschte Ergebni
 - Parallel: AND · OR · FA → MUX → $Y$ (ALUControl)
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[A/B] --> AND[AND] -->|00| MUX[MUX] --> Y[Y]
   A --> OR[OR] -->|01| MUX
@@ -1060,7 +1036,6 @@ Beispiel-Kodierung: `00` AND, `01` OR, `10` Addierer; `11` oft Reserve. Genau di
 - $A - B = A + \overline{B} + 1$ · MUX vor $B$, $C_{in}=1$
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   B[B] --> MUXB[MUX] --> ADD[FA]
   B --> NOT[NOT] --> MUXB
@@ -1098,7 +1073,6 @@ Wichtigstes Flag für bedingte Sprünge in RISC-V. Control Unit liest $Z$ und en
 - 32 Slices · gemeinsame ALUControl · Carry wie RCA
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   ALU0[ALU0] -.-> ALU1[ALU1] -.-> ALU31[ALU31]
   style ALU1 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -1133,7 +1107,6 @@ Kreis zur Abstraktion: Transistor → Gatter → Addierer → 32-Bit-ALU. Ab der
 - Vorbereitung auf sequenzielle Schaltungstechnik
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Kombinatorik] -->|Ohne Gedächtnis| B[Daten fließen sofort ab]
   C[Sequenziell] -->|Mit Gedächtnis| D[Daten warten auf den Takt]
@@ -1166,7 +1139,6 @@ Metapher: ALU wie ein Rohrsystem — ohne Pumpe läuft es leer. Für $C = A + B$
 - Weiterfluss erst beim Öffnen der Schleusen
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[ALU-Ausgang] -->|fließendes Datum| B[Schleuse / Speicher]
   B -->|gefrorener Zustand| C[Neue Berechnung]
@@ -1224,7 +1196,6 @@ Edge-Triggering: Bei konstantem CLK-Pegel passiert im Speicher nichts. Nur im Mo
 - Setup-/Hold-Time als zeitliche Parameter
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Eingang] --> B[Sequenzielle Logik]
   B -->|Gedächtnis-Schleife| B
@@ -1245,7 +1216,6 @@ Aus kombinatorischen Gattern per Rückkopplung ein Gedächtnis bauen → D-Flip-
 - Zustand bleibt, bis ein externes Signal ihn überschreibt
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   Eingang --> OR[OR]
   OR --> Y[Ausgang]
@@ -1292,7 +1262,6 @@ Kamera-Metapher prägt sich ein: Motiv ändert sich, Foto nicht — bis zum näc
 - Verletzung → Metastabilität · ALU muss rechtzeitig fertig sein
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[ALU] --> B[Setup] --> C[Flanke] --> D[Hold]
   style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -1313,7 +1282,6 @@ Zu hoher Takt → ALU zu langsam → Setup verletzt → undefinierte Zustände /
 - Gemeinsames CLK-Signal an alle — synchroner „Auslöser“
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph TD
   Bus[32-Bit Data In] -->|Bit 31| FF31[D-FF 31]
   Bus -->|Bit 0| FF0[D-FF 0]
@@ -1367,7 +1335,6 @@ Ab jetzt: Viereck mit $D$, $Q$, WE und Dreieck. Innere Rückkopplungen und Setup
 - RISC-V-Konvention: u. a. hartverdrahtetes $x0$
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Register File] -->|Operanden| B[ALU]
   B -->|Ergebnis| A
@@ -1397,7 +1364,6 @@ Befehl `add x3, x1, x2` in einem Durchlauf:
 - Lesen: $A1$/$A2$ → $RD1$/$RD2$ · Schreiben: $A3$, $WD3$, freigegeben durch $WE3$
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A1[A1] --> RF[Register File]
   A2[A2] --> RF
@@ -1420,7 +1386,6 @@ A1/A2 wählen die Quellregister → Daten an RD1/RD2 zur ALU. Ergebnis zurück a
 - Lesen **ohne Takt** — asynchron/kombinatorisch
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   R1[Reg x1] --> MUX["32:1 MUX"]
   R2[Reg x2] --> MUX
@@ -1495,7 +1460,6 @@ Kein eigener MOVE-Befehl nötig — Addition mit Null recycelt die ALU-Hardware.
 - Vorbereitung auf den Single-Cycle-Datenpfad in Ripes
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[CPU] <-->|Befehle & Daten| B[(Arbeitsspeicher)]
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -1526,7 +1490,6 @@ Binary landet im RAM; die CPU holt den ersten Befehl (Fetch). Load holt Daten �
 - Nachteil (Flaschenhals): nicht gleichzeitig Instruktion lesen und Daten speichern
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   CPU[CPU] <-->|Bus Flaschenhals| RAM[Gemeinsamer Speicher]
   RAM --- C[Code]
@@ -1546,7 +1509,6 @@ Standard in PCs/Macs: Code und Daten sind Zahlen im selben Speicher. Flexibel, a
 - Nachteil: starre Grenzen zwischen den Speichern
 
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   IM[(Instruction Memory)] -->|Befehls-Bus| CPU[CPU]
   CPU <-->|Daten-Bus| DM[(Data Memory)]

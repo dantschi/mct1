@@ -8,11 +8,10 @@ alwaysApply: false
 
 - **Framework:** Quarto (Websites, PDFs, Reveal.js)
 - **Sprachen:** Markdown (`.qmd`), SCSS; RISC-V Assembler, C (GNU Toolchain); ggf. Python für Hilfsskripte
-- **Diagramme:** Mermaid.js nativ in Quarto — Fence **immer** mit Engine-Klammern (` ```{mermaid} `). Ohne `{}` wird der Block oft nur als Syntax-Highlighting-Code gerendert, nicht als Diagramm. **Kein UTF-8-BOM** in `.qmd`-Dateien (z. B. durch PowerShell `Set-Content -Encoding UTF8`) — sonst erkennt Quarto die Mermaid-Engine nicht und rendert `{mermaid}` als Codeblock. Für Hörsaal-Lesbarkeit in Folien: `%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%` direkt unter dem Fence; Skalierung über `assets/scripts/mermaid-fit.html` (in `_quarto.yml` bei `revealjs`). Farben (Weiß/Grau) zentral über SCSS; didaktische Akzente mit DHBW-Rot und `!important`:
+- **Diagramme:** Mermaid.js nativ in Quarto — Fence **immer** mit Engine-Klammern (` ```{mermaid} `). Ohne `{}` wird der Block oft nur als Syntax-Highlighting-Code gerendert, nicht als Diagramm. **Kein UTF-8-BOM** in `.qmd`-Dateien (z. B. durch PowerShell `Set-Content -Encoding UTF8`) — sonst erkennt Quarto die Mermaid-Engine nicht und rendert `{mermaid}` als Codeblock. Skalierung über `assets/scripts/mermaid-fit.html` und SCSS — **keine** manuelle `fontSize` per Mermaid-Init. Farben (Weiß/Grau) zentral über SCSS; didaktische Akzente mit DHBW-Rot und `!important`:
 
 ````markdown
 ```{mermaid}
-%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Eingang] --> B[Ausgang]
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -31,3 +30,9 @@ graph LR
 Hier auf die Verwechslungsgefahr verwandter Fachbegriffe hinweisen.
 :::
 ```
+
+# Quarto / Reveal.js Guidelines
+
+- **Folien-Layout:** Nutze NIEMALS `center: true` in der `_quarto.yml` oder im YAML-Header, da dies zu vertikalem Überlauf führt. Das Format ist fest auf 16:9 (1280×720) eingestellt.
+- **Mermaid-Diagramme:** Setze NIEMALS eine manuelle `fontSize` über Mermaid-Init-Direktiven. Die Skalierung erfolgt automatisch.
+- **Überlauf:** Wenn eine Folie extrem viel Text oder einen riesigen Code-Block enthält (z. B. komplexe Assembler-Beispiele), füge der Folien-Überschrift zwingend die Klasse `{.scrollable}` hinzu, um das Abschneiden von Inhalten zu verhindern.

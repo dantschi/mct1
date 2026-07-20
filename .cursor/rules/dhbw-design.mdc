@@ -9,7 +9,7 @@ alwaysApply: false
 Ästhetik: minimalistisch, modern („Apple-Look“ / Jony Ive).
 
 - Viel Whitespace, weiche Schatten, abgerundete Ecken — keine harten Rahmen
-- Typografie: Sans-Serif (Inter / San Francisco), Zeilenabstand 1.6
+- Typografie: Sans-Serif (Inter / San Francisco), Zeilenabstand 1.4 auf Folien
 
 ## Farben (strikt)
 
@@ -46,8 +46,14 @@ Zweispaltigkeit ist die **Ausnahme**, nicht der Standard:
 ## Mermaid
 
 - Fence immer mit Engine-Klammern: ` ```{mermaid} ` (ohne `{}` wird Mermaid oft als Codeblock gerendert)
+- **Keine** manuelle `fontSize` über `%%{init: …}%%` — Skalierung nur über SCSS / `mermaid-fit`
 - Palette: Weiß / `#E5E5EA` / `#F5F5F7` / sparsam `#E2001A` — kein Lila/Magenta
 - Cluster-Tokens in SCSS: `$mermaid-fg-color--lighter: #E5E5EA`, `$mermaid-fg-color--lightest: #F5F5F7`
-- Folien: SVG-Overrides und `zoom` unter `.reveal .mermaid` in `slides.scss` — **kein** globales `max-height` (macht flache Diagramme unleserlich)
+- Folien: SVG-Overrides unter `.reveal .mermaid` / `.mermaid-fit` in `slides.scss` — **kein** globales `max-height`
 - Didaktische Hervorhebungen im Markdown mit DHBW-Rot und **immer** `!important`:  
   `style [Knoten] fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important;`
+
+## Reveal.js-Leinwand
+
+- NIEMALS `center: true` (YAML) — verursacht vertikalen Überlauf; Format fest 16:9 (`1280`×`720`, `margin: 0.08`)
+- Bei extrem dichtem Inhalt (lange Codeblöcke): Überschrift mit `{.scrollable}`
