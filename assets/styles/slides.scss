@@ -143,8 +143,8 @@ $mermaid-font-family: $font-family-sans-serif;
   border-radius: $code-radius !important;
   border-left: $code-accent-width solid $dhbw-red !important;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-  padding: 1rem 1.25rem !important;
-  margin: 1.25rem auto !important;
+  padding: 0.7rem 1rem !important;
+  margin: 0.75rem auto !important;
   width: 100%;
   max-width: 900px;
   text-align: left;
@@ -154,8 +154,8 @@ $mermaid-font-family: $font-family-sans-serif;
 .reveal pre code,
 .reveal code {
   background: transparent !important;
-  font-size: 0.72em;
-  line-height: 1.55;
+  font-size: 0.62em;
+  line-height: 1.4;
   color: $text-primary;
 }
 
@@ -184,18 +184,26 @@ $mermaid-font-family: $font-family-sans-serif;
 // Mermaid / Diagramme & Callouts
 // =============================================================================
 // DHBW-Palette absichern (Weiß / Hairline-Grau / sparsam Rot).
-// Didaktische Hervorhebungen weiter per Inline-style … !important in .qmd.
-.reveal .mermaid {
-  margin: 1.25rem auto;
+// Quarto ersetzt <pre.mermaid> zur Laufzeit durch <svg.mermaid-js> — Skalierung
+// über assets/scripts/mermaid-fit.js (Zoom auf .mermaid-fit), nicht hier per max-height.
+.reveal .mermaid,
+.reveal .mermaid-fit {
+  margin: 0.6rem auto 0;
   max-width: 100%;
-  max-height: min(48vh, 420px);
+  text-align: center;
 }
 
-.reveal .mermaid svg {
-  max-width: 100%;
-  max-height: min(48vh, 420px);
-  width: auto;
+.reveal svg.mermaid-js {
+  max-width: none;
   height: auto;
+  display: inline-block;
+}
+
+// Folien mit Diagramm: oben ausrichten, damit Mermaid den Rest der Fläche nutzen kann
+.reveal .slides section:has(pre.mermaid),
+.reveal .slides section:has(.mermaid-fit) {
+  justify-content: flex-start !important;
+  padding-top: 1.1rem !important;
 }
 
 .reveal .mermaid .node rect,
@@ -229,6 +237,42 @@ $mermaid-font-family: $font-family-sans-serif;
   background: $bg-code !important;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   text-align: left;
+}
+
+// Zweispaltige Folien: linksbündig, etwas dichter
+.reveal .slides section:has(.columns) {
+  text-align: left !important;
+  align-items: stretch !important;
+}
+
+.reveal .columns {
+  display: flex !important;
+  gap: 1.25rem;
+  align-items: center;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.reveal .column {
+  text-align: left;
+}
+
+.reveal .column ul,
+.reveal .column ol {
+  display: block;
+  margin: 0;
+}
+
+// Tabellen kompakter
+.reveal table {
+  font-size: 0.78em;
+  margin: 0.6rem auto;
+}
+
+.reveal table th,
+.reveal table td {
+  padding: 0.25em 0.55em !important;
 }
 
 // Logo etwas zurückhaltender platzieren

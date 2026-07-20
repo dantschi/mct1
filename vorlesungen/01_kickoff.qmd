@@ -24,21 +24,19 @@ Herzlich willkommen zur ersten Vorlesung im Modul Mikrocomputertechnik 1, kurz M
 
 ## Agenda für den Kickoff
 
-1. Orga & Abstraktion: Rahmen und Schichtenmodell
-2. Datenrepräsentation: Hex, Zweierkomplement, Endianness
-3. Kombinatorik & ALU: MUX, Addierer, Rechenwerk
-4. Zeit & Sequenz: Takt, Flip-Flops, Register
-5. Register File & Speicher: Von Neumann vs. Harvard
+1. Orga & Abstraktion
+2. Datenrepräsentation
+3. Kombinatorik & ALU
+4. Zeit & Sequenz
+5. Register File & Speicher
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
-  A[Daten] --> B[ALU]
-  B --> C[Takt / FF]
-  C --> D[Register File]
-  D --> E[Memory]
+  A[Daten] --> B[ALU] --> C[Takt] --> D[RF] --> E[Memory]
+  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
@@ -60,17 +58,20 @@ Kurzer Überblick zu mir. Mein Hintergrund liegt in der technischen Informatik u
 
 ## Organisatorisches & Spielregeln
 
-- Umfang: gemäß Modulhandbuch (Vorlesung + Praktikum)
-- Prüfungsleistung: schriftliche Klausur am Ende des Semesters
-- Praxisanteil: Laborübungen sind essentiell für den Lernerfolg
-- Eigenverantwortung: Vor- und Nachbereitung der Inhalte wird erwartet
-- Kommunikation: Ankündigungen über das DHBW Moodle
-
-| Einheit | Typ | Fokus |
-|---------|-----|-------|
-| 1–4 | Vorlesung | Theorie & Architektur |
-| 5–8 | Labor | Assembler-Programmierung |
-| 9–12 | Labor | Prozessor-Datenpfad |
+:::: {.columns}
+::: {.column width="48%"}
+- Klausur am Semesterende
+- Labore essenziell
+- Ankündigungen: Moodle
+:::
+::: {.column width="52%"}
+| Einheit | Fokus |
+|---------|-------|
+| 1–4 VL | Theorie |
+| 5–8 Lab | Assembler |
+| 9–12 Lab | Datenpfad |
+:::
+::::
 
 ::: notes
 Das Modul schließt mit einer schriftlichen Klausur ab — Theorie und Praxis (z. B. kurze Assembler-Routinen lesen oder schreiben). Wichtigster Rat: Mikrocomputertechnik lernt man nicht durch bloßes Zuhören. Datenpfad und Assembler brauchen Übung. Nutzen Sie die Laborzeiten intensiv: Fehler einbauen, debuggen, Simulatoren ausreizen. Wer die Labore aktiv bearbeitet, hat in der Klausur einen klaren Vorteil.
@@ -78,17 +79,16 @@ Das Modul schließt mit einer schriftlichen Klausur ab — Theorie und Praxis (z
 
 ## Skript & OER-Konzept
 
-- Kein Mitschreiben nötig: Materialien sind digital verfügbar
-- Open Educational Resource: CC BY 4.0 (exkl. Logos)
-- Single Source of Truth: das GitHub-Repository
-- Lebendes Dokument: Pull Requests sind willkommen
-- Dozenten-Skript: PDF-Handout mit ausführlichen Begleittexten
+- OER unter CC BY 4.0 · Quelle auf GitHub
+- Handout-PDF mit Begleittext unter jeder Folie
+- Pull Requests willkommen
 
 ```{mermaid}
-graph TD
-  A[Markdown-Quellcode] --> B[Reveal.js Folien]
-  A --> C[PDF-Skript]
-  A --> D[GitHub Website]
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
+graph LR
+  A[Markdown] --> B[Folien]
+  A --> C[PDF]
+  A --> D[Website]
   style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
@@ -114,18 +114,21 @@ Harris & Harris in der RISC-V-Edition ist unsere zentrale Referenz — didaktisc
 
 ## Die Werkzeuge im Praktikum
 
-- **Theorie allein reicht nicht** — Verständnis entsteht durch Übung
-- Venus: RISC-V-Assembler schreiben und testen
-- Ripes: visueller Datenpfad- und Pipeline-Simulator
-- RISC-V GNU Toolchain: Assembler, Linker, Cross-Compiler
-- Browserbasiert bzw. lokal installierbar; Fokus auf akademische Lehre
-
+:::: {.columns}
+::: {.column width="46%"}
+- Venus: RISC-V-Assembler testen
+- Ripes: Datenpfad / Pipeline
+- GNU Toolchain: Assembler & C
+:::
+::: {.column width="54%"}
 ```text
-1. Code in Venus schreiben
-2. Logik-Fehler im Terminal debuggen
-3. Hex-Code in Ripes laden
-4. Signalwege im Datenpfad visuell verfolgen
+1. Code in Venus
+2. Debug im Terminal
+3. Hex → Ripes
+4. Datenpfad verfolgen
 ```
+:::
+::::
 
 ::: notes
 Zwei Simulatoren im Labor: Venus für Assembler, Register und Software-Fokus. Ripes zeigt den hardwareseitigen Datenpfad — im Einzelschritt sehen Sie Multiplexer, ALU und Registerschreibungen. Die GNU Toolchain kommt bei Assembler- und C-Übungen dazu. In der Vorlesung nutzen wir die Tools, um Theorie sofort sichtbar zu machen.
@@ -159,25 +162,17 @@ Stellen Sie sich den Entwurf eines modernen SoCs vor: zig Milliarden Transistore
 
 ## Die Lösung: Teile und Herrsche
 
-- Divide and Conquer: Zerlegung in lösbare Teilprobleme
-- Kapselung: innere Funktionsweise als Black Box
-- Schnittstellen: klare Regeln der Kommunikation zwischen Modulen
-- Hierarchien: Module aus Sub-Modulen
-- Wiederverwendbarkeit: einmal entworfen, vielfach genutzt
+- Divide and Conquer · Kapselung · klare Schnittstellen
+- Hierarchien aus Sub-Modulen · Wiederverwendbarkeit
 
 ```{mermaid}
-graph TD
-  A[System] --> B[Modul 1]
-  A --> C[Modul 2]
-  B --> D[Sub-Modul A]
-  B --> E[Sub-Modul B]
-  C --> F[Sub-Modul C]
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
+graph LR
+  A[System] --> B[Modul]
+  B --> C[Sub-Modul]
   style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style F fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
@@ -186,16 +181,13 @@ Antwort auf extreme Komplexität: Divide and Conquer. Aus Transistoren ein Gatte
 
 ## Was ist Abstraktion?
 
-- Kernprinzip: bewusstes Ausblenden irrelevanter Details
-- Fokus: wesentliche Eigenschaften auf einer Ebene
-- Black Box: man weiß *was*, nicht zwingend *wie*
-- Verträge: Kommunikation über APIs, ISAs, Protokolle
-- Management: mächtigstes Werkzeug gegen Komplexität
+- Irrelevante Details ausblenden · Fokus auf das Wesentliche
+- Black Box: *was*, nicht zwingend *wie* · Verträge (API/ISA)
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
-  Input[Eingabe] --> B[Black Box]
-  B --> Output[Ausgabe]
+  Input[Eingabe] --> B[Black Box] --> Output[Ausgabe]
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style Input fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style Output fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
@@ -207,15 +199,12 @@ Abstraktion heißt bewusstes Weglassen. Beim Autofahren: Pedal drücken beschleu
 
 ## Das Schichtenmodell der IT
 
-- Vom Naturgesetz bis zur Applikation — Spezialisierung oft auf 1–2 Schichten
-- Unser Fokus in MCT1: Digitaltechnik, Mikroarchitektur und ISA
+- Fokus MCT1: Digitaltechnik · Mikroarchitektur · ISA
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
-  A[Physik] --> B[Digitaltechnik]
-  B --> C[Mikroarchitektur]
-  C --> D[ISA]
-  D --> E[Software]
+  A[Physik] --> B[Digital] --> C[µArch] --> D[ISA] --> E[Software]
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style D fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -231,17 +220,16 @@ Das Schichtenmodell ordnet die Welt von der Physik bis zur App. Die meisten Inge
 
 ## Datenrepräsentation — Überblick
 
-- Der Weg von physikalischen Pegeln zu logischen Werten
-- Bedeutung von Wortbreiten in Prozessorarchitekturen
-- Die kognitive Herausforderung langer Binärketten
-- Einführung des Hexadezimalsystems als Schnittstelle
-- Das Konzept des Zweierkomplements für die ALU
+- Von Pegeln zu logischen Werten
+- Wortbreiten und Hexadezimal
+- Zweierkomplement für die ALU
 
 ```{mermaid}
-graph LR
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
+graph TD
   A["Spannung 3.3V"] --> B["Binär 1"]
   B --> C[Hexadezimal]
-  C --> D[Assembler / Software]
+  C --> D[Assembler]
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
@@ -254,18 +242,20 @@ Willkommen zurück aus der Pause. In diesem Block: Datenrepräsentation. Komplex
 
 ## Alles ist eine Zahl
 
-- Ein Prozessor kennt weder Texte noch Bilder noch Videos
-- Hardware kennt zwei Spannungszustände (z. B. 0 V und 3,3 V)
-- Abstraktion zu logischer 0 und logischer 1
-- Jeder Text (ASCII/UTF-8) ist am Ende eine Binärzahl
-- Jede RISC-V-Instruktion (z. B. Addition) ist eine 32-Bit-Zahl
-
+:::: {.columns}
+::: {.column width="46%"}
+- Nur Spannungszustände → Bits
+- Text, Bild, Befehl: alles Zahlen
+- Kontext entscheidet die Deutung
+:::
+::: {.column width="54%"}
 ```text
-// Speicherdump
-01001000 01100001 01101100 01101100 01101111
-// Text ("Hallo")? Fünf Zahlen? RISC-V-Befehl?
-// → Der Kontext entscheidet!
+01001000 … 01101111
+Text? Zahlen? Instruktion?
+→ Kontext!
 ```
+:::
+::::
 
 ::: notes
 Für den Prozessor ist absolut alles eine Zahl. String, JPEG, ausführbarer Befehl — auf dem Datenbus nur Nullen und Einsen. Physikalisch gibt es keinen Unterschied zwischen Pixel und Instruktion; die Interpretation liegt bei Architektur und Software. Unsere Aufgabe: Schaltungen entwerfen, die diese Bitströme korrekt und schnell verarbeiten.
@@ -279,6 +269,7 @@ Für den Prozessor ist absolut alles eine Zahl. String, JPEG, ausführbarer Befe
 - Skalierung: Kilobyte (KB), Megabyte (MB), Gigabyte (GB)
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph TD
   A[1 Byte] --> B[Nibble High]
   A --> C[Nibble Low]
@@ -315,17 +306,19 @@ Das Word klassifiziert den Prozessor: Breite der internen Busse und der ALU. Des
 
 ## Das Problem mit Binärzahlen
 
-- Hardware verarbeitet Binärzahlen perfekt und schnell
-- Das Gehirn ist für lange Ketten aus zwei Symbolen schlecht geeignet
-- Eine RISC-V-Instruktion: 32 Bit — schwer fehlerfrei zu lesen
-- Beim Debugging: hohe Fehleranfälligkeit durch „Verrutschen“
-- Verbal kaum kommunizierbar („Null Eins Eins Null…“)
-
+:::: {.columns}
+::: {.column width="42%"}
+- 32 Bit schwer lesbar
+- Ein Bit kippen → Absturz
+:::
+::: {.column width="58%"}
 ```text
-// Unterschied in unter 3 Sekunden?
-Instruktion 1: 00000000010100010000000010110011
-Instruktion 2: 00000000010100000000000010110011
+…0001010001…0110011
+…0001010000…0110011
+      ^
 ```
+:::
+::::
 
 ::: notes
 Hardware liebt Binär (Strom an/aus). Menschen nicht: 32 Bits flimmern. Ein gekipptes Bit in der Mitte kann das Programm abstürzen lassen. Wir brauchen eine kompaktere Repräsentation mit gleichem Wert.
@@ -369,6 +362,7 @@ Der Trick: Nibble und Hex-Ziffer haben dieselbe Kardinalität — 1-zu-1-Zuordnu
 4. Hex-Ziffern wieder aneinanderfügen
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph TD
   A["1101 1010 0011 1111"] --> B["1101"]
   A --> C["1010"]
@@ -431,18 +425,16 @@ Resultat: 0b 1100 1010 1111 1110 1011 1010 1011 1110
 
 ## Negative Zahlen — Überblick
 
-- Kein physikalisches Minus-Zeichen
-- Naiver Ansatz: Vorzeichen und Betrag (Sign-Magnitude)
-- Problem redundanter Nullwerte
-- Industriestandard: Zweierkomplement
-- Fallstrick: Vorzeichenerweiterung (Sign Extension)
+- Kein Minus-Transistor · Sign-Magnitude vs. Zweierkomplement
+- Fallstrick: Sign Extension
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
-  A[Positive Zahl] --> B[Algorithmus]
-  B --> C[Negative Zahl]
-  C --> B
+  A[+Zahl] --> B[Algorithmus] --> C[-Zahl]
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
@@ -469,6 +461,7 @@ Auf Papier reicht ein Querstrich. Auf dem Chip: 32 Bits im Register. Zwei getren
 - Restliche Bits: absoluter Betrag
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A["1"] -->|Vorzeichen: Minus| B["000 0101"]
   B -->|Betrag: 5| C["-5"]
@@ -481,11 +474,14 @@ Frühzeit der Computer: MSB zweckentfremden als Plus/Minus-Schalter, Rest = Betr
 
 ## Die +0 und die −0
 
+:::: {.columns}
+::: {.column width="46%"}
 - Sign-Magnitude: `0000` = $+0$, `1000` = $-0$
 - Mathematik kennt nur eine Null
 - Hardware-Vergleicher: `0000 ≠ 1000`
 - ALU-Schaltungsaufwand würde enorm steigen
-
+:::
+::: {.column width="54%"}
 ```c
 int a = +0; // 0000
 int b = -0; // 1000
@@ -495,6 +491,8 @@ if (a == b) {
     // Bitmuster sind unterschiedlich!
 }
 ```
+:::
+::::
 
 ::: notes
 Zwei Bitmuster für denselben Wert Null: `if (a == b)` vergleicht bitweise und scheitert. Zusatzschaltungen wären langsam und teuer — Sign-Magnitude ist damit ungeeignet.
@@ -535,12 +533,12 @@ Mechanischer Algorithmus, in Hardware leicht: invertieren, dann +1. Damit ist di
 
 ## Rechenbeispiel: Aus +5 wird −5
 
-- Format: 8 Bit · MSB = 1 ⇒ negativ
+- 8 Bit: invertieren, dann $+1$ · MSB = 1 ⇒ negativ
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
-  A["0000 0101 / +5"] -->|Invertieren| B["1111 1010"]
-  B -->|"+1"| C["1111 1011 / -5"]
+  A["+5"] -->|NOT| B[Einerkompl.] -->|+1| C["-5"]
   style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
@@ -580,17 +578,15 @@ Bei RV32I: 32-Bit-Register, harte Grenzen. Overflow: vom Maximalpositiven ins Ex
 
 ## Vorzeichenerweiterung (Sign Extension)
 
-- 8-Bit-Wert aus dem RAM → 32-Bit-Register
-- Positive Zahlen (MSB = 0): links mit `0` auffüllen
-- Negative Zahlen (MSB = 1): links mit `1` auffüllen
-- So bleibt der Zweierkomplement-Wert erhalten
-- RISC-V: z. B. `lb` (Load Byte mit Sign Extension)
+- 8-Bit → 32-Bit-Register: Vorzeichenbit nach links kopieren
+- RISC-V: `lb` (Load Byte mit Sign Extension)
 
 ```{mermaid}
-graph TD
-  A["8-Bit: 1111 1011 / -5"] --> B[32-Bit Register]
-  B --> C["11111111 … 11111011"]
-  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
+graph LR
+  A["8-Bit: -5"] --> B["32-Bit: Sign Ext."]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
@@ -604,14 +600,14 @@ Häufiger Laborfehler: $-5$ als 8 Bit laden und links mit Nullen auffüllen → 
 - RAM als lineares Array von Bytes
 - Adressen als „Hausnummern“
 - Byte-Adressierbarkeit als Standard
-- 32-Bit-Daten in 8-Bit-Fächer
 - Big-Endian vs. Little-Endian
 
 ```{mermaid}
-graph LR
-  A[CPU] -->|Adresse 0x00| B[RAM Byte]
-  A -->|Adresse 0x01| C[RAM Byte]
-  A -->|Adresse 0x02| D[RAM Byte]
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
+graph TD
+  A[CPU] -->|0x00| B[RAM Byte]
+  A -->|0x01| C[RAM Byte]
+  A -->|0x02| D[RAM Byte]
   style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
 ```
 
@@ -687,21 +683,18 @@ Im Labor: `DEADBEEF` erscheint im Speicher als `EF BE AD DE` — kein Simulatorf
 
 ## Kombinatorische Logik — Überblick
 
-- Übergang von abstrakten Zahlen zur physischen Hardware
-- Schaltungen ohne inneren Gedächtniszustand
-- Strikte Abhängigkeit: Ausgang nur von aktuellen Eingängen
-- Fundament für alle Rechenwerke (ALU)
-- Notwendigkeit steuerbarer Datenwege (Routing)
+- Kein Gedächtnis: Ausgang nur von aktuellen Eingängen
+- Fundament für ALU und Routing (MUX)
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
-  A[Eingang A] --> C[Logik-Schaltung]
-  B[Eingang B] --> C
-  C --> D[Ausgang Y]
+  A[A] --> C[Logik] --> Y[Y]
+  B[B] --> C
   style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Y fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
@@ -710,16 +703,21 @@ Zweiter großer Block: Wir wissen, wie Daten als Bits kodiert werden — jetzt: 
 
 ## Kombinatorik vs. Sequenzielle Logik
 
+:::: {.columns}
+::: {.column width="46%"}
 - Kombinatorisch: Ausgang nur von aktuellen Eingängen; gedächtnislos
 - Beispiele: Gatter, Multiplexer, Addierer, ALU
 - Sequenziell: Ausgang hängt auch vom vorherigen Zustand ab
 - Taktung: Flip-Flops/Register speichern Zustände
-
+:::
+::: {.column width="54%"}
 | Eigenschaft | Kombinatorisch | Sequenziell |
 |-------------|----------------|-------------|
 | Gedächtnis | Nein | Ja |
 | Takt-Abhängigkeit | Nein | Ja (meist) |
 | Primärer Zweck | Rechnen / Routen | Speichern (Zustand) |
+:::
+::::
 
 ::: notes
 Zwei Fundamentalkategorien: Kombinatorik wie eine Waage — reagiert nur auf den Ist-Zustand (Addierer, MUX). Sequenziell hat Gedächtnis (Flip-Flop behält eine 1). Der Prozessor vereint beides: Register speichern, kombinatorische ALUs rechnen.
@@ -746,6 +744,7 @@ Kurzer Digitaltechnik-Rückblick. Wir sprechen nicht mehr über einzelne MOSFETs
 - Steuerung über ein separates Steuersignal
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Datenquelle 1] --> C{Weiche}
   B[Datenquelle 2] --> C
@@ -767,6 +766,7 @@ Routing-Problem: Manchmal `R1 + R2`, manchmal `R1 + 5` (Immediate). Der zweite A
 - Häufigster Routing-Baustein in der Architektur
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Eingang A] -->|0| MUX[MUX]
   B[Eingang B] -->|1| MUX
@@ -805,6 +805,7 @@ Plus = OR, Punkt = AND. Bei $S=0$ wird $\overline{S}=1$, also $Y=A$; der $B$-Ter
 - OR führt die freigegebenen Pfade zusammen
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   S[S] --> NOT[NOT]
   NOT --> AND1[AND]
@@ -823,11 +824,14 @@ $S$ geht einmal direkt (Pfad B) und einmal invertiert (Pfad A) in die AND-Gatter
 
 ## Die Brücke zur Software: MUX = IF/ELSE
 
+:::: {.columns}
+::: {.column width="46%"}
 - Software: `if`/`else` als Kontrollfluss
 - Hardware: kein sequenzieller Sprung — alles existiert gleichzeitig
 - MUX filtert das unerwünschte Ergebnis weg
 - Ternärer Operator `? :` ≈ Software-MUX
-
+:::
+::: {.column width="54%"}
 ```c
 // MUX als ternärer Operator:
 int Y = (S == 1) ? B : A;
@@ -839,6 +843,8 @@ if (S == 1) {
     Y = A;
 }
 ```
+:::
+::::
 
 ::: notes
 Software springt in einen Zweig. Hardware: A und B liegen permanent an; der MUX wählt, was weiterfließt. Der ternäre Operator bildet genau dieses Verhalten ab.
@@ -852,6 +858,7 @@ Software springt in einen Zweig. Hardware: A und B liegen permanent an; der MUX 
 - In Diagrammen: Bus mit Querstrich und Breite (`/32`)
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A["Bus A /32"] --> MUX[MUX]
   B["Bus B /32"] --> MUX
@@ -874,6 +881,7 @@ Ein Blockschaltbild-MUX meint eine Batterie aus 32 Weichen. Ein Bit $S$ klappt a
 - Kaskadierung für große Wortbreiten
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Zahl 1] --> ADD["(+)"]
   B[Zahl 2] --> ADD
@@ -888,8 +896,8 @@ Signale leiten wir mit dem MUX — jetzt rechnen. Keine Magie: Grundschul-Additi
 
 ## Binäre Addition (mentales Modell)
 
-Vier Fälle für $A + B$:
-
+:::: {.columns}
+::: {.column width="50%"}
 | $A$ | $B$ | Summe | Carry |
 |:---:|:---:|:-----:|:-----:|
 | 0 | 0 | 0 | 0 |
@@ -897,15 +905,17 @@ Vier Fälle für $A + B$:
 | 1 | 0 | 1 | 0 |
 | 1 | 1 | 0 | 1 |
 
-- Summe $\leftrightarrow$ XOR-Gatter
-- Übertrag $\leftrightarrow$ AND-Gatter
-
+- Summe $\leftrightarrow$ XOR · Carry $\leftrightarrow$ AND
+:::
+::: {.column width="50%"}
 ```text
   1011  (11)
 + 0011  ( 3)
 -------
   1110  (14)
 ```
+:::
+::::
 
 ::: notes
 Bei $1+1$ gibt es keine „2“ — wir schreiben 0 und Carry 1. Summenspalte = XOR-Wahrheitstabelle, Carry = AND. Mathematik wird zu Logik.
@@ -920,6 +930,7 @@ Bei $1+1$ gibt es keine „2“ — wir schreiben 0 und Carry 1. Summenspalte = 
 - Problem: kein Carry-In von einer vorherigen Stelle
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[A] --> XOR[XOR]
   B[B] --> XOR
@@ -942,6 +953,7 @@ graph LR
 - Standard-Rechenzelle in jedem Prozessor
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[A] --> FA[Full Adder]
   B[B] --> FA
@@ -957,17 +969,16 @@ $C_{in}$ kommt von der vorherigen Stelle. Als Systemarchitekten: Volladdierer fo
 
 ## Kaskadierung: Ripple-Carry-Adder (RCA)
 
-- 32-Bit: 32 Volladdierer verketten
-- Wie schriftliche Addition: von rechts nach links
-- $C_{out}$ von Bit $i$ → $C_{in}$ von Bit $i+1$
-- Gesamt-Addierer = eine große Black Box
+- 32 Volladdierer · Carry von Bit $i$ nach $i+1$
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
-  FA0[FA Bit 0] -->|Cout| FA1[FA Bit 1]
-  FA1 -->|Cout| FA2[FA Bit 2]
-  FA2 -->|Cout| FA3[FA Bit 3]
+  FA0[FA0] -->|Cout| FA1[FA1] -->|Cout| FA2[FA2] -->|Cout| FA3[FA3]
   style FA0 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style FA1 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style FA2 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style FA3 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
@@ -997,6 +1008,7 @@ Logisch korrekt, physikalisch langsam bei 32/64 Bit. Der kritische Pfad diktiert
 - Reagiert auf Control Signals aus der Instruktion
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Operand A] --> ALU[ALU]
   B[Operand B] --> ALU
@@ -1024,24 +1036,19 @@ Daten fließen parallel in alle Rechenpfade; der MUX wirft unerwünschte Ergebni
 
 ## Struktur einer 1-Bit-ALU
 
-- $A$, $B$ parallel an AND, OR und Volladdierer
-- 3-zu-1-MUX wählt Ausgang $Y$
-- ALUControl (mind. 2 Bit) steuert den MUX
+- Parallel: AND · OR · FA → MUX → $Y$ (ALUControl)
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
-  A[A] --> AND[AND]
-  B[B] --> AND
-  A --> OR[OR]
-  B --> OR
-  A --> ADD[FA]
-  B --> ADD
-  AND -->|00| MUX[MUX]
-  OR -->|01| MUX
-  ADD -->|10| MUX
-  CTRL[ALUControl] -.-> MUX
-  MUX --> Y[Y]
+  A[A/B] --> AND[AND] -->|00| MUX[MUX] --> Y[Y]
+  A --> OR[OR] -->|01| MUX
+  A --> FA[FA] -->|10| MUX
+  CTRL[Ctrl] -.-> MUX
   style MUX fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style AND fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style OR fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style FA fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
@@ -1050,20 +1057,15 @@ Beispiel-Kodierung: `00` AND, `01` OR, `10` Addierer; `11` oft Reserve. Genau di
 
 ## Subtraktion elegant integrieren
 
-- Keine separate Subtraktions-Hardware nötig
-- Zweierkomplement: invertieren $+1$
-1. 2:1-MUX vor $B$: wählt $B$ oder $\overline{B}$
-2. $C_{in}$ des LSB-Addierers auf 1 setzen
-3. Ergebnis: $A + \overline{B} + 1 = A - B$
+- $A - B = A + \overline{B} + 1$ · MUX vor $B$, $C_{in}=1$
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
-  B[B] --> NOT[NOT]
-  B --> MUXB[MUX]
-  NOT --> MUXB
-  MUXB --> ADD[FA]
+  B[B] --> MUXB[MUX] --> ADD[FA]
+  B --> NOT[NOT] --> MUXB
   A[A] --> ADD
-  Cin["Cin = 1"] --> ADD
+  Cin["Cin=1"] --> ADD
   style ADD fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
 ```
 
@@ -1093,16 +1095,15 @@ Wichtigstes Flag für bedingte Sprünge in RISC-V. Control Unit liest $Z$ und en
 
 ## Die 32-Bit RISC-V ALU
 
-- 32× 1-Bit-ALU kaskadiert
-- ALUControl steuert alle Slices synchron
-- Carry-Kette wie beim RCA
-- Ab jetzt: Komplexität als Black Box abstrahieren
+- 32 Slices · gemeinsame ALUControl · Carry wie RCA
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
-  ALU0[1-Bit ALU 0] -.-> ALU1[1-Bit ALU 1]
-  ALU1 -.-> ALU31[1-Bit ALU 31]
+  ALU0[ALU0] -.-> ALU1[ALU1] -.-> ALU31[ALU31]
   style ALU1 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style ALU0 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style ALU31 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
@@ -1132,6 +1133,7 @@ Kreis zur Abstraktion: Transistor → Gatter → Addierer → 32-Bit-ALU. Ab der
 - Vorbereitung auf sequenzielle Schaltungstechnik
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Kombinatorik] -->|Ohne Gedächtnis| B[Daten fließen sofort ab]
   C[Sequenziell] -->|Mit Gedächtnis| D[Daten warten auf den Takt]
@@ -1164,6 +1166,7 @@ Metapher: ALU wie ein Rohrsystem — ohne Pumpe läuft es leer. Für $C = A + B$
 - Weiterfluss erst beim Öffnen der Schleusen
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[ALU-Ausgang] -->|fließendes Datum| B[Schleuse / Speicher]
   B -->|gefrorener Zustand| C[Neue Berechnung]
@@ -1189,17 +1192,22 @@ CLK vom Quarz-Oszillator: Bei 3 GHz tickt das Metronom drei Milliarden Mal pro S
 
 ## Flankensteuerung (Edge-Triggering)
 
+:::: {.columns}
+::: {.column width="46%"}
 - Reaktion nicht auf konstanten Pegel, sondern auf den Übergang
 - Steigende Flanke: $0 \rightarrow 1$
 - Fallende Flanke: $1 \rightarrow 0$
 - RISC-V / die meisten CPUs: Speichern primär bei steigender Flanke
-
+:::
+::: {.column width="54%"}
 ```text
 Clock: 00000000111111110000000011111111
               ^       ^       ^       ^
             Rise    Fall    Rise    Fall
 (Prozessor speichert typisch nur beim Rise)
 ```
+:::
+::::
 
 ::: notes
 Edge-Triggering: Bei konstantem CLK-Pegel passiert im Speicher nichts. Nur im Moment der steigenden Flanke öffnet der Tresor kurz, nimmt D auf und verriegelt wieder — danach hat die ALU Zeit bis zum nächsten Tick.
@@ -1216,6 +1224,7 @@ Edge-Triggering: Bei konstantem CLK-Pegel passiert im Speicher nichts. Nur im Mo
 - Setup-/Hold-Time als zeitliche Parameter
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Eingang] --> B[Sequenzielle Logik]
   B -->|Gedächtnis-Schleife| B
@@ -1236,6 +1245,7 @@ Aus kombinatorischen Gattern per Rückkopplung ein Gedächtnis bauen → D-Flip-
 - Zustand bleibt, bis ein externes Signal ihn überschreibt
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   Eingang --> OR[OR]
   OR --> Y[Ausgang]
@@ -1278,25 +1288,17 @@ Kamera-Metapher prägt sich ein: Motiv ändert sich, Foto nicht — bis zum näc
 
 ## Physikalische Limits: Setup- und Hold-Time
 
-- Der „Klick“ ist nicht unendlich kurz
-- Setup-Time: $D$ muss *vor* der Flanke stabil sein
-- Hold-Time: $D$ muss *nach* der Flanke stabil bleiben
-- Verletzung → Metastabilität („verschwommenes Bild“)
-- Konsequenz: ALU muss fertig sein, bevor die Setup-Zone beginnt
+- Setup: $D$ stabil *vor* der Flanke · Hold: *danach*
+- Verletzung → Metastabilität · ALU muss rechtzeitig fertig sein
 
 ```{mermaid}
-flowchart LR
-  subgraph Zyklus["Ein Taktzyklus"]
-    direction LR
-    A[ALU rechnet] --> B[Setup]
-    B --> C[Flanke]
-    C --> D[Hold]
-  end
-  style Zyklus fill:#F5F5F7,stroke:#E5E5EA,stroke-width:1.5px
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
+graph LR
+  A[ALU] --> B[Setup] --> C[Flanke] --> D[Hold]
   style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
@@ -1311,6 +1313,7 @@ Zu hoher Takt → ALU zu langsam → Setup verletzt → undefinierte Zustände /
 - Gemeinsames CLK-Signal an alle — synchroner „Auslöser“
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph TD
   Bus[32-Bit Data In] -->|Bit 31| FF31[D-FF 31]
   Bus -->|Bit 0| FF0[D-FF 0]
@@ -1364,6 +1367,7 @@ Ab jetzt: Viereck mit $D$, $Q$, WE und Dreieck. Innere Rückkopplungen und Setup
 - RISC-V-Konvention: u. a. hartverdrahtetes $x0$
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[Register File] -->|Operanden| B[ALU]
   B -->|Ergebnis| A
@@ -1393,6 +1397,7 @@ Befehl `add x3, x1, x2` in einem Durchlauf:
 - Lesen: $A1$/$A2$ → $RD1$/$RD2$ · Schreiben: $A3$, $WD3$, freigegeben durch $WE3$
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A1[A1] --> RF[Register File]
   A2[A2] --> RF
@@ -1415,6 +1420,7 @@ A1/A2 wählen die Quellregister → Daten an RD1/RD2 zur ALU. Ergebnis zurück a
 - Lesen **ohne Takt** — asynchron/kombinatorisch
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   R1[Reg x1] --> MUX["32:1 MUX"]
   R2[Reg x2] --> MUX
@@ -1489,6 +1495,7 @@ Kein eigener MOVE-Befehl nötig — Addition mit Null recycelt die ALU-Hardware.
 - Vorbereitung auf den Single-Cycle-Datenpfad in Ripes
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   A[CPU] <-->|Befehle & Daten| B[(Arbeitsspeicher)]
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -1519,6 +1526,7 @@ Binary landet im RAM; die CPU holt den ersten Befehl (Fetch). Load holt Daten �
 - Nachteil (Flaschenhals): nicht gleichzeitig Instruktion lesen und Daten speichern
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   CPU[CPU] <-->|Bus Flaschenhals| RAM[Gemeinsamer Speicher]
   RAM --- C[Code]
@@ -1538,6 +1546,7 @@ Standard in PCs/Macs: Code und Daten sind Zahlen im selben Speicher. Flexibel, a
 - Nachteil: starre Grenzen zwischen den Speichern
 
 ```{mermaid}
+%%{init: {'themeVariables': {'fontSize': '36px', 'fontFamily': 'Inter, sans-serif'}}}%%
 graph LR
   IM[(Instruction Memory)] -->|Befehls-Bus| CPU[CPU]
   CPU <-->|Daten-Bus| DM[(Data Memory)]
@@ -1550,19 +1559,20 @@ Harvard (Mark I): getrennte Welten — kein Buskonflikt, aber kein „Ausborgen�
 
 ## Der RISC-V-Kompromiss im Labor
 
-- Moderne CPUs oft hybrid (außen Von Neumann, innen Harvard-Caches)
-- In Ripes: zunächst reine Harvard-Architektur
-- Separates Instruction Memory und Data Memory
-- Grund: Single-Cycle-Datenpfad ohne Buskonflikt
-
+:::: {.columns}
+::: {.column width="46%"}
+- Ripes: Harvard (getrennte Memories)
+- Ziel: Single-Cycle ohne Buskonflikt
+:::
+::: {.column width="54%"}
 ```text
-Ausblick:
-1. Instruktion laden (Instruction Memory)
-2. Register lesen (Register File)
-3. Rechnen (ALU)
-4. Daten speichern (Data Memory)
-… idealerweise in einem Taktzyklus (Single-Cycle)
+1. Fetch (IM)
+2. Register lesen
+3. ALU
+4. Store (DM)
 ```
+:::
+::::
 
 ::: notes
 Nächste Schritte: In Ripes zwei Speicherblöcke — Fetch und Memory-Access parallel. Damit schließen wir den Kickoff: Sie haben die Bausteine für den vollständigen RISC-V-Datenpfad. Vielen Dank für Ihre Mitarbeit!

@@ -53,6 +53,8 @@ format:
           <link rel="preconnect" href="https://fonts.googleapis.com">
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
           <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    include-after-body:
+      - assets/scripts/mermaid-fit.html
 
   # ---------------------------------------------------------------------------
   # PDF-Artikel (optional, für reine Textskripte — nicht Folien-Handout)
