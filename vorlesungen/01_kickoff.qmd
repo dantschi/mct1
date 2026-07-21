@@ -1,4 +1,4 @@
-﻿---
+---
 title: "Mikrocomputertechnik 1"
 subtitle: "Duale Hochschule Baden-Württemberg Stuttgart - Studiengang Elektro- und Informationstechnik"
 author: "Prof. Dr.-Ing. Daniel Klünder"
