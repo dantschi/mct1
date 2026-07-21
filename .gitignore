@@ -39,8 +39,11 @@ vorlesungen/*.pdf
 # Lokale Workspace-Einstellungen
 .vscode/
 
-# ACHTUNG: Die Datei .cursorrules wird hier ABSICHTLICH NICHT
-# aufgeführt, da sie zwingend mit ins Repository soll, damit das
+# Lokale Folien-Reviews (Screenshots, Temporäre SVG-/PDF-Audits)
+.cursor/slide-review/
+
+# ACHTUNG: `.cursor/rules/` und ggf. `.cursorrules` werden hier ABSICHTLICH
+# NICHT ausgeschlossen — sie sollen mit ins Repository, damit das
 # KI-Wissen für zukünftige Semester erhalten bleibt.
 
 # -------------------------------------------------------------------
