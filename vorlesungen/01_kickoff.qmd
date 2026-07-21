@@ -1,4 +1,4 @@
----
+﻿---
 title: "Mikrocomputertechnik 1"
 subtitle: "Duale Hochschule Baden-Württemberg Stuttgart - Studiengang Elektro- und Informationstechnik"
 author: "Prof. Dr.-Ing. Daniel Klünder"
@@ -1024,6 +1024,8 @@ Wichtigstes Flag für bedingte Sprünge in RISC-V. Control Unit liest $Z$ und en
 - Oben: Operanden $A$, $B$ (32 Bit)
 - Unten: Ergebnis (32 Bit)
 - Seitlich: ALUControl und Flags (z. B. Zero)
+
+![Klassisches ALU-Schaltsymbol als Trapez mit Operanden, Steuerung und Zero-Flag](../assets/images/alu-symbol.svg)
 
 ::: notes
 Kreis zur Abstraktion: Transistor → Gatter → Addierer → 32-Bit-ALU. Ab der nächsten Einheit zeichnen wir nur noch das V-Symbol — Sie wissen, dass dahinter Multiplexer umklappen und Carry-Ketten laufen.
