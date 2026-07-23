@@ -1,10 +1,10 @@
 ---
-title: "Laborblatt 4: Funktionen & der Stack"
+title: "Übungsblatt 4: Funktionen & der Stack"
 subtitle: "Mikrocomputertechnik 1"
 ---
 
 ::: {.content-visible when-profile="solution"}
-> **Musterlösung** — nur für Dozierende
+> **Musterlösung**
 :::
 
 ## Zielsetzung

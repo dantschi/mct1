@@ -3,5 +3,5 @@ project:
 
 format:
   pdf:
-    subtitle: "Musterlösung — inklusive Dozenten-Lösungen"
+    subtitle: "Musterlösung"
     highlight-style: dracula

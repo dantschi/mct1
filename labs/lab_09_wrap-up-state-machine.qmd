@@ -1,10 +1,10 @@
 ---
-title: "Laborblatt 9: Wrap-Up & Finale (State Machine)"
+title: "Übungsblatt 9: Wrap-Up & Finale (State Machine)"
 subtitle: "Mikrocomputertechnik 1"
 ---
 
 ::: {.content-visible when-profile="solution"}
-> **Musterlösung** — nur für Dozierende
+> **Musterlösung**
 :::
 
 ## Zielsetzung

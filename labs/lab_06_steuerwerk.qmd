@@ -1,10 +1,10 @@
 ---
-title: "Laborblatt 6: Das Steuerwerk (Control Unit)"
+title: "Übungsblatt 6: Das Steuerwerk (Control Unit)"
 subtitle: "Mikrocomputertechnik 1"
 ---
 
 ::: {.content-visible when-profile="solution"}
-> **Musterlösung** — nur für Dozierende
+> **Musterlösung**
 :::
 
 ## Zielsetzung

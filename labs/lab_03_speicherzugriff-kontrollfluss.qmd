@@ -1,10 +1,10 @@
 ---
-title: "Laborblatt 3: Speicherzugriff & Kontrollfluss"
+title: "Übungsblatt 3: Speicherzugriff & Kontrollfluss"
 subtitle: "Mikrocomputertechnik 1"
 ---
 
 ::: {.content-visible when-profile="solution"}
-> **Musterlösung** — nur für Dozierende
+> **Musterlösung**
 :::
 
 ## Zielsetzung

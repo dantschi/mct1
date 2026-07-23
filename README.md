@@ -48,12 +48,12 @@ Interaktive Folien (Reveal.js) und PDF-Handouts (Folie + Skriptnotizen). Die Lin
 - Handout-PDF: druckbares Skript mit Folieninhalt und Notizen.
 - Quelltexte (Quarto Markdown) liegen unter [`vorlesungen/`](vorlesungen/).
 
-## Laborblätter
+## Übungsblätter
 
 Übungsblätter zur Vertiefung der Vorlesungseinheiten. Pro Blatt gibt es die **Studierenden-Version** (ohne Lösungen) und die **Musterlösung**.
 
-| Labor | Thema | Studierende | Musterlösung |
-|------:|-------|:-----------:|:------------:|
+| Übungsblatt | Thema | Studierende | Musterlösung |
+|------------:|-------|:-----------:|:------------:|
 | 1 | Datenrepräsentation und Logik-Refresher | [PDF](https://dantschi.github.io/mct1/labs/lab_01_datenrepraesentation-logik.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_01_datenrepraesentation-logik-musterloesung.pdf) |
 | 2 | RISC-V Basics & Venus Onboarding | [PDF](https://dantschi.github.io/mct1/labs/lab_02_riscv-basics-venus.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_02_riscv-basics-venus-musterloesung.pdf) |
 | 3 | Speicherzugriff & Kontrollfluss | [PDF](https://dantschi.github.io/mct1/labs/lab_03_speicherzugriff-kontrollfluss.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_03_speicherzugriff-kontrollfluss-musterloesung.pdf) |

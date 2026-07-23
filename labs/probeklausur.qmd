@@ -4,7 +4,7 @@ subtitle: "Bearbeitungszeit: 90 Minuten"
 ---
 
 ::: {.content-visible when-profile="solution"}
-> **Musterlösung** — nur für Dozierende
+> **Musterlösung**
 :::
 
 **Erlaubte Hilfsmittel:** Das offizielle RISC-V Green Card / Reference Sheet (wird ausgeteilt).

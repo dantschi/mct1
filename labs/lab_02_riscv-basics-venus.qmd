@@ -1,10 +1,10 @@
 ---
-title: "Laborblatt 2: RISC-V Basics & Venus Onboarding"
+title: "Übungsblatt 2: RISC-V Basics & Venus Onboarding"
 subtitle: "Mikrocomputertechnik 1"
 ---
 
 ::: {.content-visible when-profile="solution"}
-> **Musterlösung** — nur für Dozierende
+> **Musterlösung**
 :::
 
 ## Zielsetzung
