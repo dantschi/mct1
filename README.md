@@ -48,6 +48,24 @@ Interaktive Folien (Reveal.js) und PDF-Handouts (Folie + Skriptnotizen). Die Lin
 - Handout-PDF: druckbares Skript mit Folieninhalt und Notizen.
 - Quelltexte (Quarto Markdown) liegen unter [`vorlesungen/`](vorlesungen/).
 
+## Laborblätter
+
+Übungsblätter zur Vertiefung der Vorlesungseinheiten (PDF, Studierenden-Version ohne Musterlösungen).
+
+| Labor | Thema | PDF |
+|------:|-------|:---:|
+| 1 | Datenrepräsentation und Logik-Refresher | [PDF](https://dantschi.github.io/mct1/labs/lab_01_datenrepraesentation-logik.pdf) |
+| 2 | RISC-V Basics & Venus Onboarding | [PDF](https://dantschi.github.io/mct1/labs/lab_02_riscv-basics-venus.pdf) |
+| 3 | Speicherzugriff & Kontrollfluss | [PDF](https://dantschi.github.io/mct1/labs/lab_03_speicherzugriff-kontrollfluss.pdf) |
+| 4 | Funktionen & der Stack | [PDF](https://dantschi.github.io/mct1/labs/lab_04_funktionen-stack.pdf) |
+| 5 | Der Single-Cycle-Datenpfad | [PDF](https://dantschi.github.io/mct1/labs/lab_05_single-cycle-datenpfad.pdf) |
+| 6 | Das Steuerwerk (Control Unit) | [PDF](https://dantschi.github.io/mct1/labs/lab_06_steuerwerk.pdf) |
+| 7 | Performance & Pipelining | [PDF](https://dantschi.github.io/mct1/labs/lab_07_performance-pipelining.pdf) |
+| 8 | I/O & Systemarchitektur | [PDF](https://dantschi.github.io/mct1/labs/lab_08_io-systemarchitektur.pdf) |
+| 9 | Wrap-Up & Finale (State Machine) | [PDF](https://dantschi.github.io/mct1/labs/lab_09_wrap-up-state-machine.pdf) |
+
+Quelltexte liegen unter [`labs/`](labs/).
+
 ## Literatur
 
 Zentrale Referenz dieses Moduls:

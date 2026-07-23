@@ -1,0 +1,166 @@
+---
+title: "Laborblatt 7: Performance & Pipelining"
+subtitle: "Mikrocomputertechnik 1"
+---
+
+::: {.content-visible when-profile="solution"}
+> **Musterlösung** — nur für Dozierende
+:::
+
+## Zielsetzung
+
+In diesem Labor verlassen wir den ineffizienten Single-Cycle-Prozessor und aktivieren die Fließbandarbeit (Pipelining). Sie stellen den Ripes-Simulator auf das 5-Stage-Modell um und untersuchen, wie die Hardware mit Kollisionen (Hazards) umgeht. Sie lösen Data Hazards durch Forwarding, beobachten Pipeline-Bubbles (NOPs) bei Load-Use-Konflikten und analysieren fehlerhafte Instruktionen bei Sprüngen (Flushing).
+
+## Aufgabe 1: Latenz vs. Durchsatz
+
+Das Pipelining ist eine Architektur-Revolution, unterliegt aber physikalischen Gesetzen. Beantworten Sie folgende Fragen.
+
+### Latenz eines einzelnen Befehls {.unnumbered}
+
+Verkürzt die Einführung einer 5-stufigen Pipeline die Ausführungszeit (Latenz) eines einzelnen, isolierten Befehls (z. B. von Anfang IF bis Ende WB)? Was genau wird durch das Fließband gesteigert?
+
+### Idealer Speedup {.unnumbered}
+
+Wie hoch ist der theoretisch ideale Speedup (Leistungsgewinn) einer 5-stufigen Pipeline im Vergleich zum Single-Cycle-Prozessor? Nennen Sie einen Grund (Overhead/Imbalance), warum dieser ideale Faktor in der Realität nie exakt erreicht wird.
+
+### Ihre Lösung {.unnumbered}
+
+*(Notieren Sie Ihre Antworten hier.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 1**
+
+Latenz eines einzelnen Befehls:
+
+- Nein, die Latenz eines einzelnen Befehls wird nicht verkürzt; ein Befehl braucht weiterhin 5 Stufen (bzw. Zyklen), um komplett durchzulaufen.
+- Pipelining erhöht ausschließlich den Durchsatz (Throughput): Bei voll beladenem Fließband wird in jedem Taktzyklus ein Befehl fertiggestellt.
+
+Idealer Speedup:
+
+- Der ideale Speedup entspricht der Anzahl der Pipeline-Stufen, hier Faktor $5$.
+- In der Realität ist er geringer (z. B. ca. $4{,}3\times$), weil Pipeline-Register (Flip-Flops) Setup-Zeit benötigen (Overhead) und die Stufen physikalisch nie exakt gleich lang dauern — der Takt richtet sich nach der langsamsten Stufe (Imbalance).
+:::
+
+## Aufgabe 2: Data Hazard und Forwarding (Ripes)
+
+Stellen Sie in Ripes oben links zwingend den **5-Stage Processor** ein.
+
+Geben Sie folgenden Code ein:
+
+```asm
+.text
+li t0, 50
+li t1, 100
+add t2, t0, t1   # schreibt t2
+sub a0, t2, t0   # liest t2 sofort danach
+```
+
+Hinweis: `li` ist ein Pseudo-Befehl und expandiert in Ripes oft zu mehreren Maschinenbefehlen. Zählen Sie im Pipeline-Tab die echten Instruktionen.
+
+### RAW Data Hazard {.unnumbered}
+
+Warum entsteht zwischen dem `add`- und dem `sub`-Befehl ein Read-After-Write-(RAW)-Data-Hazard auf dem Fließband? In welchen Pipeline-Stufen befinden sich die beiden Befehle typischerweise, wenn `sub` in der Decode-Stufe `t2` lesen will?
+
+### Forwarding in Ripes {.unnumbered}
+
+Ticken Sie in Ripes mit Clock vorwärts, bis sich der `sub`-Befehl in der EX-Stufe befindet. Schauen Sie in den Processor-Tab: Aus welchem Pipeline-Register greift der Multiplexer das Forwarding-(Bypass)-Signal ab, um den Hazard aufzulösen, ohne das Fließband anzuhalten?
+
+### Ihre Lösung {.unnumbered}
+
+*(Notieren Sie Ihre Beobachtungen hier.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 2**
+
+RAW Data Hazard:
+
+- Der `add`-Befehl speichert sein Ergebnis formal erst am Ende in Stufe 5 (Write-Back) ins Register File.
+- Der direkt folgende `sub`-Befehl versucht `t2` bereits in Stufe 2 (Decode) auszulesen.
+- Zu diesem Zeitpunkt ist `add` typischerweise erst in EX — ohne Gegenmaßnahme würde `sub` veraltete Registerdaten lesen.
+
+Forwarding in Ripes:
+
+- Die Hardware rettet die Situation durch Forwarding (Bypassing).
+- Die Forwarding Unit schaltet den MUX vor der ALU um.
+- Die frischen Daten (`0x96` bzw. $150$) fließen über ein Rückführkabel direkt aus dem EX/MEM-Pipeline-Register in den ALU-Eingang von `sub`.
+- Kein Taktzyklus geht verloren.
+:::
+
+## Aufgabe 3: Load-Use-Stalls und Compiler-Scheduling
+
+Löschen Sie den Code und provozieren Sie die physikalische Grenze des Forwardings:
+
+```asm
+.data
+array: .word 42
+
+.text
+la s1, array
+lw t0, 0(s1)
+add a0, t0, t0
+```
+
+### Stall und Bubble {.unnumbered}
+
+Ticken Sie in Ripes vorwärts. Wechseln Sie in den Tab Pipeline (Zeit-Takt-Diagramm).
+
+1. Was passiert zwischen dem `lw`- und dem `add`-Befehl visuell (Bubble/Stall)?
+2. Warum konnte die Hardware diesen Konflikt nicht per Bypass-Kabel lösen?
+
+### Instruction Scheduling {.unnumbered}
+
+Werden Sie zum Compiler: Fügen Sie einen völlig unabhängigen Befehl (z. B. `addi a5, x0, 1`) exakt zwischen `lw` und `add` ein. Beobachten Sie erneut das Pipeline-Tab. Was hat sich durch dieses Instruction Scheduling verändert?
+
+### Ihre Lösung {.unnumbered}
+
+*(Notieren Sie Ihre Beobachtungen hier.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 3**
+
+Stall und Bubble:
+
+- Im Pipeline-Diagramm schiebt die Hardware einen grauen Platzhalter (NOP / Bubble) in die EX-Stufe ein; `add` wird in ID eingefroren (Stall).
+- Ein Bypass ist physikalisch unmöglich: Der RAM liefert die `lw`-Daten erst am Ende der MEM-Stufe, der `add` bräuchte sie aber schon am Anfang von EX — das wäre eine Zeitreise in die Vergangenheit.
+
+Instruction Scheduling:
+
+- Das unabhängige `addi` füllt die Takt-Lücke; die Bubble verschwindet aus dem Diagramm.
+- Während die CPU `addi` abarbeitet, hat der Speicher Zeit, die `lw`-Daten bereitzustellen.
+- Danach greift normales Forwarding; die Load-Use-Penalty (ein Takt) entfällt.
+:::
+
+## Aufgabe 4: Control Hazards und Flushing
+
+Bauen Sie eine kurze Endlosschleife, um Control Hazards (Sprünge) zu untersuchen:
+
+```asm
+.text
+li t0, 10
+Loop:
+addi t0, t0, -1
+bne t0, zero, Loop
+```
+
+### Flushing bei Branch Taken {.unnumbered}
+
+Ticken Sie mit der Clock, bis der `bne`-Befehl seine Entscheidung trifft (Branch Taken) und der Program Counter zurück zu `Loop` springt.
+
+Betrachten Sie das Pipeline-Tab:
+
+1. Was macht die CPU mit den ein oder zwei Befehlen, die sie blind in den vorderen Stufen (IF und/oder ID) hinter der Schleife geladen hatte?
+2. Wie nennt man diesen Vorgang?
+
+### Ihre Lösung {.unnumbered}
+
+*(Notieren Sie Ihre Beobachtungen hier.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 4**
+
+- Die CPU erkennt, dass spekulativ geladene Folge-Befehle falsch waren (der PC hat „gelogen“).
+- Sie vernichtet die falsch geladenen Instruktionen in IF/ID, damit sie keine Register zerstören.
+- Dieser Vorgang heißt Flushing.
+- In Ripes werden die Blöcke oft rot durchgestrichen (ungültig) und zu harmlosen NOP-Bubbles umgewandelt.
+- Das ist die Branch Penalty: Bei jedem genommenen Sprung kostet das Flushen Performance.
+:::

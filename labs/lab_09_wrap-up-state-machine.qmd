@@ -1,0 +1,222 @@
+---
+title: "Laborblatt 9: Wrap-Up & Finale (State Machine)"
+subtitle: "Mikrocomputertechnik 1"
+---
+
+::: {.content-visible when-profile="solution"}
+> **Musterlösung** — nur für Dozierende
+:::
+
+## Zielsetzung
+
+In diesem letzten Labor schließt sich der Kreis. Sie wiederholen die Werkzeugkette (Toolchain) und die Übersetzungsmuster von C zu Assembler. Anschließend nutzen Sie Ihre Kenntnisse in I/O, Kontrollfluss und Logik, um im Ripes-Simulator ein interaktives Mini-Projekt (Code-Schloss) als Endliche Zustandsmaschine (FSM) zu programmieren.
+
+## Aufgabe 1: Die Toolchain
+
+Wenn Sie in der Industrie ein C-Programm mit `gcc main.c` kompilieren, ruft das System im Hintergrund vier verkettete Werkzeuge auf.
+
+### Die vier Werkzeuge {.unnumbered}
+
+Benennen Sie diese vier Werkzeuge in der korrekten Reihenfolge.
+
+### Aufgabe des Linkers {.unnumbered}
+
+Welche spezifische Aufgabe übernimmt das letzte Werkzeug in dieser Kette? Warum ist das Programm nach Schritt 3 (Object-File `.o`) noch nicht ausführbar?
+
+### Ihre Lösung {.unnumbered}
+
+*(Notieren Sie Ihre Antworten hier.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 1**
+
+Die vier Werkzeuge:
+
+1. Preprocessor
+2. Compiler
+3. Assembler
+4. Linker
+
+Aufgabe des Linkers:
+
+- Der Linker klebt alle Object-Files (`.o`) und externe Bibliotheken (z. B. `libc`) zu einem ausführbaren Programm (z. B. `.elf` / `.exe`) zusammen.
+- Nach dem Assembler fehlen oft noch finale Adressen (z. B. für `jal` zu externen Funktionen oder globale Daten). Der Linker trägt diese Adressen nach.
+:::
+
+## Aufgabe 2: C-to-Assembly (Klausurvorbereitung)
+
+In der Klausur wird erwartet, dass Sie typische C-Kontrollstrukturen in RISC-V-Assembler übersetzen können. Übersetzen Sie die folgende `while`-Schleife.
+
+Hinweis: Variable `i` liegt in `s0`. Nutzen Sie das invertierte Bedingungsmuster (`bge`), wie es ein Compiler typischerweise tut.
+
+```c
+int i = 0;
+while (i < 10) {
+    i++;
+}
+```
+
+### Ihre Lösung {.unnumbered}
+
+*(Fügen Sie Ihren Assembler-Code hier ein.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 2**
+
+```asm
+    # Initialisierung
+    li s0, 0            # i = 0
+    li t0, 10           # Grenze = 10
+
+While_Start:
+    # Invertierte Abbruchbedingung (if i >= 10, break)
+    bge s0, t0, While_End
+
+    # Body
+    addi s0, s0, 1      # i++
+
+    j While_Start
+
+While_End:
+    # Weiter nach der Schleife
+```
+:::
+
+## Aufgabe 3: Pipelining und Hazards (Klausurvorbereitung)
+
+Betrachten Sie das folgende Code-Snippet in der 5-stufigen RISC-V-Pipeline:
+
+```asm
+lw t0, 0(a0)
+add t1, t0, t0
+```
+
+### Hazard-Typ {.unnumbered}
+
+Welches Hazard-Problem entsteht bei dieser Befehlsfolge?
+
+### Forwarding vs. Stall {.unnumbered}
+
+Kann dieses Problem allein durch Forwarding (Bypassing) ohne Zeitverlust gelöst werden? Erklären Sie, wie die Hardware im Pipeline-Raster (IF, ID, EX, MEM, WB) darauf reagieren muss.
+
+### Ihre Lösung {.unnumbered}
+
+*(Notieren Sie Ihre Antworten hier.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 3**
+
+Hazard-Typ:
+
+- Es entsteht ein Load-Use Hazard: `add` benötigt `t0` sofort, aber `lw` muss den Wert erst aus dem Arbeitsspeicher holen.
+
+Forwarding vs. Stall:
+
+- Nein, reines Forwarding reicht nicht.
+- Die RAM-Daten stehen erst am Ende der MEM-Stufe von `lw` bereit; `add` bräuchte sie schon am Anfang seiner EX-Stufe.
+- Die Hardware erzwingt einen Stall: `add` bleibt in ID stehen, eine Bubble (NOP) wird in EX eingeschoben — ein Takt Penalty. Danach kann Forwarding von MEM nach EX greifen.
+:::
+
+## Aufgabe 4: Finale — State Machine (Code-Schloss)
+
+Bauen Sie in Ripes eine Endliche Zustandsmaschine (FSM) als Code-Schloss. Fügen Sie im I/O-Tab ein **D-Pad** (typisch `0xF0000000`) und eine **LED Matrix** (typisch `0xF0000020`) hinzu. Basisadressen unten links ablesen.
+
+### FSM-Logik {.unnumbered}
+
+- Zustandsvariable: Register `s0` für den aktuellen Zustand ($0$, $1$, $2$ oder $3$).
+- Geheimcode: Tasten in der Reihenfolge **OBEN** $\rightarrow$ **UNTEN** $\rightarrow$ **RECHTS**.
+
+Verhalten:
+
+| Zustand | LED-Farbe | Hex | Erwartete Taste | Sonst |
+|:---:|:---|:---|:---|:---|
+| $0$ | Rot | `0x00FF0000` | OBEN $\rightarrow$ State $1$ | bleiben |
+| $1$ | Gelb | `0x00FFFF00` | UNTEN $\rightarrow$ State $2$ | zurück auf $0$ |
+| $2$ | Blau | `0x000000FF` | RECHTS $\rightarrow$ State $3$ | zurück auf $0$ |
+| $3$ | Grün | `0x0000FF00` | (offen) | bleibt für immer |
+
+D-Pad-Masken (Einheit 8): Links Bit $0$ ($1$), Rechts Bit $1$ ($2$), Oben Bit $2$ ($4$), Unten Bit $3$ ($8$).
+
+Entprellung: Nach erkanntem Tastendruck eine kurze Warteschleife (Debounce/Delay) einbauen, sonst rauscht ein Klick durch mehrere Zustände.
+
+### Ihre Lösung {.unnumbered}
+
+*(Fügen Sie Ihren Assembler-Code für Ripes hier ein.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 4**
+
+```asm
+.text
+    li s1, 0xF0000000   # D-Pad
+    li s2, 0xF0000020   # LED Matrix
+    li s0, 0            # State = 0
+
+Loop:
+    beq s0, zero, State_0
+    li t0, 1
+    beq s0, t0, State_1
+    li t0, 2
+    beq s0, t0, State_2
+    li t0, 3
+    beq s0, t0, State_3
+    j State_0           # Fallback
+
+# --- State 0: wartet auf OBEN ---
+State_0:
+    li t1, 0x00FF0000
+    sw t1, 0(s2)
+    lw t2, 0(s1)
+    beq t2, zero, Loop
+    jal ra, Debounce
+    andi t3, t2, 4      # OBEN = Bit 2
+    beq t3, zero, State_0_Wrong
+    li s0, 1
+    j Loop
+State_0_Wrong:
+    li s0, 0
+    j Loop
+
+# --- State 1: wartet auf UNTEN ---
+State_1:
+    li t1, 0x00FFFF00
+    sw t1, 0(s2)
+    lw t2, 0(s1)
+    beq t2, zero, Loop
+    jal ra, Debounce
+    andi t3, t2, 8      # UNTEN = Bit 3
+    beq t3, zero, State_Fail
+    li s0, 2
+    j Loop
+
+# --- State 2: wartet auf RECHTS ---
+State_2:
+    li t1, 0x000000FF
+    sw t1, 0(s2)
+    lw t2, 0(s1)
+    beq t2, zero, Loop
+    jal ra, Debounce
+    andi t3, t2, 2      # RECHTS = Bit 1
+    beq t3, zero, State_Fail
+    li s0, 3
+    j Loop
+
+# --- State 3: offen ---
+State_3:
+    li t1, 0x0000FF00
+    sw t1, 0(s2)
+    j Loop
+
+State_Fail:
+    li s0, 0
+    j Loop
+
+# --- Entprellung ---
+Debounce:
+    li t4, 10000
+Delay_Loop:
+    addi t4, t4, -1
+    bne t4, zero, Delay_Loop
+    ret
+```
+:::

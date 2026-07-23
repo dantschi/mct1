@@ -1,0 +1,7 @@
+project:
+  type: default
+
+format:
+  pdf:
+    subtitle: "Musterlösung — inklusive Dozenten-Lösungen"
+    highlight-style: dracula

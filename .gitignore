@@ -69,3 +69,8 @@ desktop.ini
 *.bin
 *.hex
 **/*.quarto_ipynb
+
+# Labor-PDFs (Build-Artefakte)
+labs/*.pdf
+labs/*.tex
+labs/_output/

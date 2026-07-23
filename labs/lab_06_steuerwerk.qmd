@@ -1,0 +1,145 @@
+---
+title: "Laborblatt 6: Das Steuerwerk (Control Unit)"
+subtitle: "Mikrocomputertechnik 1"
+---
+
+::: {.content-visible when-profile="solution"}
+> **Musterlösung** — nur für Dozierende
+:::
+
+## Zielsetzung
+
+In diesem Labor überprüfen wir die Meistertabelle der Control Unit aus der Vorlesung. Sie leiten die theoretischen Steuersignale für einen unbekannten Befehl (Transferleistung) deduktiv her. Anschließend nutzen Sie den Ripes-Simulator, um Ihre Vorhersagen (Paper-&-Pencil-Methode) an den Steuerleitungen des Datenpfads zu verifizieren.
+
+## Aufgabe 1: Die Meistertabelle (Wiederholung)
+
+Die Main Control Unit liest den 7-Bit-Opcode eines Maschinenbefehls und schaltet die Multiplexer und Enable-Pins des Datenpfads.
+
+### Das Signal `MemWrite` {.unnumbered}
+
+Warum ist das Signal `MemWrite` das potenziell gefährlichste Signal im gesamten Prozessor? Was passiert, wenn dieses Signal bei einer Addition (`add`) fälschlicherweise auf $1$ steht?
+
+### Don't Care bei `MemtoReg` {.unnumbered}
+
+Das Steuersignal `MemtoReg` steht bei den Befehlen `sw` (Store) und `beq` (Branch) in unserer Wahrheitstabelle auf dem Wert $X$ (Don't Care). Warum ist die Schalterstellung dieses Multiplexers in diesen Fällen völlig irrelevant für die CPU?
+
+### Ihre Lösung {.unnumbered}
+
+*(Notieren Sie Ihre Antworten hier.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 1**
+
+`MemWrite`:
+
+- `MemWrite` ist der Write-Enable-Pin für den Arbeitsspeicher (RAM).
+- Steht er fälschlicherweise auf $1$, speichert die CPU blind Daten im RAM.
+- Bei einer Addition würde die ALU-Summe als RAM-Adresse interpretiert und eine zufällige Zelle mit Müll überschrieben — Programmabsturz oder Datenkorruption.
+
+Don't Care bei `MemtoReg`:
+
+- `MemtoReg` wählt, ob ALU-Ergebnis oder RAM-Daten ins Register File geschrieben werden.
+- Bei `sw` und `beq` ist `RegWrite` zwingend $0$ (keine Registeränderung).
+- Die Tür zum Register File ist zu; die Daten prallen ab — die MUX-Stellung von `MemtoReg` ist daher egal ($X$).
+:::
+
+## Aufgabe 2: Transferleistung — Signale für `addi`
+
+In der Vorlesung haben wir die Signale für `add`, `lw`, `sw` und `beq` besprochen. Leiten Sie nun logisch die Signale für den Befehl `addi` (Add Immediate) her.
+
+Tipp: `addi t0, t1, 5` liest eine Konstante aus dem Befehlswort (wie `lw`), speichert aber ein Rechenergebnis ins Register File (wie `add`).
+
+Füllen Sie die folgende Zeile der Wahrheitstabelle aus ($0$, $1$ oder $X$):
+
+| Instruktion | `ALUSrc` | `MemtoReg` | `RegWrite` | `MemRead` | `MemWrite` | `Branch` | `ALUOp1` | `ALUOp0` |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `addi` | | | | | | | | |
+
+### Ihre Lösung {.unnumbered}
+
+*(Tragen Sie Ihre Werte hier ein.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 2**
+
+| Instruktion | `ALUSrc` | `MemtoReg` | `RegWrite` | `MemRead` | `MemWrite` | `Branch` | `ALUOp1` | `ALUOp0` |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `addi` | $1$ | $0$ | $1$ | $0$ | $0$ | $0$ | $0$ | $0$ |
+
+Begründung:
+
+- `ALUSrc` $= 1$: Die Konstante muss aus dem ImmGen in die ALU (wie bei `lw`).
+- `MemtoReg` $= 0$: Das ALU-Ergebnis (nicht der RAM) soll gespeichert werden (wie bei `add`).
+- `RegWrite` $= 1$: Das Zielregister muss überschrieben werden.
+- `MemRead`/`MemWrite` $= 0$: Der RAM ist unbeteiligt.
+- `Branch` $= 0$: kein Sprungbefehl.
+- `ALUOp` $= 00$: Laut Vorlesung erzwingt `ALUOp = 00` die Addition (wie bei der Adressrechnung von `lw`/`sw`). `addi` addiert immer `rs1 + Imm` — ohne funct7-Unterscheidung wie beim R-Type (`ALUOp = 10`).
+:::
+
+## Aufgabe 3: Verifikation in Ripes (Paper & Pencil)
+
+Wir überprüfen Ihre Vorhersagen aus Aufgabe 2 an der Hardware. Öffnen Sie den Ripes-Simulator und wählen Sie den **Single-Cycle Processor**.
+
+Schreiben Sie den folgenden Code:
+
+```asm
+.text
+addi t0, x0, 10
+```
+
+Wechseln Sie in den Processor-Tab und klicken Sie einmal auf Clock, sodass der `addi`-Befehl verarbeitet wird.
+
+Suchen Sie die Control Unit (Block namens Control oben im Diagramm). Beobachten Sie die abgehenden Steuerleitungen: hellgrün/dick $= 1$, dunkelrot/dünn $= 0$.
+
+### Aufgabenstellung {.unnumbered}
+
+Gleichen Sie die abgelesenen Kabelfarben in Ripes mit Ihrer Tabelle aus Aufgabe 2 ab.
+
+1. Welche Farbe hat das Kabel zum `ALUSrc`-Multiplexer?
+2. Welche Farbe hat das `RegWrite`-Kabel am Register File?
+
+### Ihre Lösung {.unnumbered}
+
+*(Notieren Sie Ihre Beobachtungen hier.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 3**
+
+- Das Kabel zu `ALUSrc` ist hellgrün ($1$): Der Multiplexer schaltet auf den Immediate-Eingang.
+- Das Kabel `RegWrite` am Register File ist ebenfalls hellgrün ($1$): Der Wert $10$ wird in `t0` geschrieben.
+- Das stimmt mit der hergeleiteten Matrix aus Aufgabe 2 überein.
+:::
+
+## Aufgabe 4: Der MUX-Beobachter
+
+Geben Sie den folgenden Code in Ripes ein:
+
+```asm
+.text
+li t0, 5
+add t1, t0, t0
+sw t1, 0(s1)
+beq t0, t1, Lbl
+Lbl:
+```
+
+Fokussieren Sie während des Durchklickens (Clock) ausschließlich den `MemtoReg`-Multiplexer ganz rechts vor dem Register File.
+
+### Aufgabenstellung {.unnumbered}
+
+Notieren Sie für jeden der vier Befehle, ob die Ripes-Steuerleitung für `MemtoReg` auf $1$ (grün), auf $0$ (rot) oder in einem anderen Zustand (z. B. ausgegraut für Don't Care) steht.
+
+Hinweis: `li` wird typischerweise zu `addi` assembliert.
+
+### Ihre Lösung {.unnumbered}
+
+*(Notieren Sie Ihre Beobachtungen hier.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 4**
+
+- `li` (bzw. `addi`): $0$ (rot) — ALU-Ergebnis wird ins Register geschrieben.
+- `add`: $0$ (rot) — ALU-Ergebnis wird ins Register geschrieben.
+- `sw`: ausgegraut / irrelevant (Don't Care $X$) — Register File via `RegWrite` $= 0$ abgeriegelt.
+- `beq`: ausgegraut / irrelevant (Don't Care $X$) — ebenfalls kein Register-Schreiben; MUX-Stellung physikalisch unwichtig.
+:::

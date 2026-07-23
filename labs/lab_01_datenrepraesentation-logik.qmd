@@ -1,0 +1,131 @@
+---
+title: "Laborblatt 1: Datenrepräsentation & Logik-Refresher"
+subtitle: "Mikrocomputertechnik 1"
+---
+
+::: {.content-visible when-profile="solution"}
+> **Musterlösung** — nur für Dozierende
+:::
+
+## Zielsetzung
+
+In diesem ersten Labor festigen Sie das theoretische Fundament der Computerarchitektur. Sie wandeln Zahlen zwischen verschiedenen Zahlensystemen um, bilden negative Zahlen im Zweierkomplement, analysieren die Speicherausrichtung (Endianness) und wiederholen die Grundlagen kombinatorischer Schaltungen.
+
+## Aufgabe 1: Zahlensysteme und Zweierkomplement
+
+Die RISC-V-Architektur rechnet intern ausschließlich mit Nullen und Einsen. Ein tiefes Verständnis der Datenrepräsentation ist für die spätere Assembler-Programmierung essenziell.
+
+### Dezimal zu Binär und Hexadezimal
+
+Wandeln Sie die Dezimalzahl 85 in eine 8-Bit-Binärzahl und in eine Hexadezimalzahl um.
+
+### Das Zweierkomplement
+
+Bei RISC-V gibt es kein separates Vorzeichen-Bit wie bei Sign-Magnitude. Negative Zahlen werden im Zweierkomplement dargestellt.
+Bilden Sie das 8-Bit-Zweierkomplement der Dezimalzahl $-85$. Zeigen Sie Ihre Rechenschritte (Invertieren und $+1$).
+
+### Ihre Lösung {.unnumbered}
+
+*(Notieren Sie Ihre Rechenwege hier.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 1**
+
+Zu 1.1:
+
+- Binär: $85 = 64 + 16 + 4 + 1$ $\rightarrow$ `0101 0101`
+- Hexadezimal: Nibble aufteilen $\rightarrow$ `0101` (5) und `0101` (5) $\rightarrow$ `0x55`
+
+Zu 1.2 ($-85$ im Zweierkomplement):
+
+1. Positive Binärzahl: `0101 0101`
+2. Alle Bits invertieren: `1010 1010`
+3. Eins addieren: `1010 1011`
+4. Ergebnis ($-85$): `1010 1011` (hexadezimal: `0xAB`)
+:::
+
+## Aufgabe 2: Speicherausrichtung (Endianness)
+
+Stellen Sie sich vor, Sie speichern das 32-Bit-Datenwort `0xAABBCCDD` in den Arbeitsspeicher. Die Startadresse (Basisadresse) lautet `0x1000`. Der Arbeitsspeicher ist byte-adressierbar (jedes Byte bekommt eine eigene Adresse).
+
+Wie sehen die Inhalte der Speicherzellen von Adresse `0x1000` bis `0x1003` in einer Little-Endian-Architektur (wie RISC-V) und in einer Big-Endian-Architektur aus? Füllen Sie die Tabelle aus.
+
+| Speicheradresse | Little-Endian (RISC-V) | Big-Endian |
+|:----------------|:----------------------:|:----------:|
+| `0x1000` | | |
+| `0x1001` | | |
+| `0x1002` | | |
+| `0x1003` | | |
+
+### Ihre Lösung {.unnumbered}
+
+*(Füllen Sie die Tabelle aus.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 2**
+
+Bei Little-Endian wird das Least Significant Byte (hier `DD`) an der niedrigsten Speicheradresse abgelegt. Big-Endian legt das Most Significant Byte (`AA`) zuerst ab.
+
+| Speicheradresse | Little-Endian (RISC-V) | Big-Endian |
+|:----------------|:----------------------:|:----------:|
+| `0x1000` | `DD` | `AA` |
+| `0x1001` | `CC` | `BB` |
+| `0x1002` | `BB` | `CC` |
+| `0x1003` | `AA` | `DD` |
+:::
+
+## Aufgabe 3: Kombinatorik (Der Multiplexer)
+
+Der Multiplexer (MUX) ist die Weiche unseres Datenpfads. Ein 2-zu-1-Multiplexer hat zwei Dateneingänge ($A$ und $B$), einen Steuereingang ($S$ für Select) und einen Ausgang ($Y$).
+
+Regel:
+
+- Wenn $S = 0$, wird Eingang $A$ durchgeschaltet ($Y = A$).
+- Wenn $S = 1$, wird Eingang $B$ durchgeschaltet ($Y = B$).
+
+Füllen Sie die vollständige Wahrheitstabelle für dieses Bauteil aus.
+
+| $S$ (Select) | $A$ | $B$ | $\rightarrow$ | $Y$ (Ausgang) |
+|:---:|:---:|:---:|:---:|:---:|
+| 0 | 0 | 0 | | |
+| 0 | 0 | 1 | | |
+| 0 | 1 | 0 | | |
+| 0 | 1 | 1 | | |
+| 1 | 0 | 0 | | |
+| 1 | 0 | 1 | | |
+| 1 | 1 | 0 | | |
+| 1 | 1 | 1 | | |
+
+### Ihre Lösung {.unnumbered}
+
+*(Tragen Sie die Ausgangswerte $Y$ in die Tabelle ein.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 3**
+
+| $S$ (Select) | $A$ | $B$ | $\rightarrow$ | $Y$ (Ausgang) | Erklärung |
+|:---:|:---:|:---:|:---:|:---:|:---|
+| 0 | 0 | 0 | | 0 | $S=0$ wählt $A$ ($A=0$) |
+| 0 | 0 | 1 | | 0 | $S=0$ wählt $A$ ($A=0$) |
+| 0 | 1 | 0 | | 1 | $S=0$ wählt $A$ ($A=1$) |
+| 0 | 1 | 1 | | 1 | $S=0$ wählt $A$ ($A=1$) |
+| 1 | 0 | 0 | | 0 | $S=1$ wählt $B$ ($B=0$) |
+| 1 | 0 | 1 | | 1 | $S=1$ wählt $B$ ($B=1$) |
+| 1 | 1 | 0 | | 0 | $S=1$ wählt $B$ ($B=0$) |
+| 1 | 1 | 1 | | 1 | $S=1$ wählt $B$ ($B=1$) |
+:::
+
+## Aufgabe 4: Architektur-Verständnis
+
+Erklären Sie in zwei bis drei kurzen Sätzen den fundamentalen Unterschied zwischen kombinatorischer Logik (z. B. ALU oder Multiplexer) und sequenzieller Logik (z. B. D-Flip-Flop oder Register File). Welches Bauteil benötigt zwingend ein Taktsignal (Clock)?
+
+### Ihre Lösung {.unnumbered}
+
+*(Notieren Sie Ihre Antwort hier.)*
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 4**
+
+- Kombinatorische Logik hat kein Gedächtnis. Der Ausgang ändert sich unmittelbar, wenn sich die Eingänge ändern. Es wird kein Takt (Clock) benötigt.
+- Sequenzielle Logik besitzt ein Gedächtnis (Speicher). Der Zustand (Ausgang) ändert sich nicht sofort, sondern erst bei einer auslösenden Taktflanke (Clock). Flip-Flops und das Register File benötigen daher zwingend ein Taktsignal.
+:::
