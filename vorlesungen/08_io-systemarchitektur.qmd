@@ -1,0 +1,1338 @@
+---
+title: "Mikrocomputertechnik 1"
+subtitle: "Einheit 8: I/O & Systemarchitektur"
+author: "Prof. Dr.-Ing. Daniel Klünder"
+# Vortrag:  quarto preview vorlesungen/08_io-systemarchitektur.qmd
+#           (Notizen nur mit Taste S)
+# Handout:  quarto render vorlesungen/08_io-systemarchitektur.qmd --profile handout --to pdf
+#           → _handout/vorlesungen/08_io-systemarchitektur.pdf
+format: revealjs
+---
+
+# I/O & Systemarchitektur
+
+## Die Brücke zur Außenwelt
+
+- Herzlich willkommen zur achten Vorlesung in Mikrocomputertechnik 1
+- Letzte Einheiten: Datenpfad, Steuerwerk, Pipelining
+- Unser 5-stufiger RISC-V-Prozessor ist schnell und logisch korrekt
+- Letztes Problem: der Chip ist taub und stumm
+- Heute: die Brücke zur Außenwelt (Input/Output)
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  CPU[CPU isoliert] <-->|I/O-Bus| Per[Peripherie]
+  style CPU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Per fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Willkommen zu Einheit 8. Datenpfad, Control Unit und Pipelining stehen. Der Chip rechnet isoliert: Ergebnisse bleiben im Silizium. Heute: Kommunikation mit Sensoren, Aktoren und dem Betriebssystem.
+:::
+
+## Agenda für den heutigen Tag
+
+1. Memory-Mapped I/O — wie spricht die CPU mit Peripherie?
+2. Schalter & LEDs — Ansteuerung und Entprellung
+3. Polling vs. Interrupts — nicht sinnlos warten
+4. Das CSR-System — versteckte Register für Systemzustände
+5. Syscalls & OS — Hilfe vom Betriebssystem (`ecall`)
+6. Labor (Ripes/Venus) — virtuelle LEDs und Konsolenausgaben
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  A[MMIO] --> B[LEDs]
+  B --> C[Interrupts]
+  C --> D[CSR]
+  D --> E[Syscalls]
+  style E fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Von der untersten Hardware bis zur OS-Abstraktion: LEDs, Polling vs. Interrupt, CSRs und `ecall`.
+:::
+
+## Rückblick: Der isolierte High-Speed-Chip
+
+- Status aus Einheit 7: Pipeline mit hohem Durchsatz
+- ALU, PC und RAM arbeiten fehlerfrei
+- Alle Daten bleiben auf dem Die gefangen
+- Kein Knopfdruck kann das laufende Programm beeinflussen
+
+```text
+Ein Prozessor ohne I/O ist wie ein Taschenrechner
+ohne Display und ohne Tasten: physikalisch nutzlos.
+```
+
+::: notes
+Die schnellste Pi-Berechnung hilft nicht, wenn das Ergebnis für immer in `s0` liegt.
+:::
+
+## Das Brain-in-a-Jar-Problem
+
+- Gedankenexperiment: Gehirn im Einmachglas
+- Rechnet und denkt — ohne Sinnesorgane
+- Unsere CPU ist genau dieses Gehirn
+- I/O ist das Nervensystem, das wir anschließen
+- Reize empfangen, Aktionen in der Welt auslösen
+
+::: notes
+I/O = Kamera, Mikrofon und Greifarme für das isolierte Gehirn.
+:::
+
+## Peripherie (Die Außenwelt)
+
+- Alles außer der reinen Recheneinheit: Peripherie
+- Input (Sensoren): Tastatur, Maus, Temperatur, Schalter, Netz (Empfang)
+- Output (Aktoren): Monitor, LED, Lautsprecher, Motor, Netz (Senden)
+- Frage: Wie anbinden, ohne für jedes Gerät ein neues Steuerwerk?
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Input[Tastatur / Sensor] -->|Daten| CPU((RISC-V CPU))
+  CPU -->|Daten| Output[Monitor / LED]
+  style CPU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Input fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Output fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Peripherie verbindet Bits mit Physik. Ziel: ein einheitliches Ansteuerungsmodell für RISC-V.
+:::
+
+# Memory-Mapped I/O
+
+## Wie spricht die CPU mit Peripherie?
+
+- Zwei historische Philosophien:
+- Port-Mapped I/O (Komplexität)
+- Memory-Mapped I/O (Einfachheit)
+- Intel x86: historisch oft Port-Mapped
+- ARM und RISC-V: konsequent Memory-Mapped I/O
+
+::: notes
+Spezielle I/O-Befehle vs. Illusion „Hardware ist Speicher“ — diese Wege spalten die Architekturen bis heute.
+:::
+
+## Port-Mapped I/O (x86)
+
+- Separater I/O-Bus und eigene ISA-Befehle: `IN`, `OUT`
+- Beispiel: `IN AL, 0x60` (klassischer Tastatur-Port)
+- Nachteile: komplexeres Steuerwerk, begrenzter Port-Raum, mehr Silizium
+
+```asm
+# Alter x86-Stil (Port-Mapped I/O):
+MOV DX, 0x03F8    # COM1
+OUT DX, AL        # Byte aus AL an den Port
+```
+
+::: notes
+Extra-Leitungen und Sonderbefehle: normale ALU-Befehle greifen auf Ports nicht zu.
+:::
+
+## Memory-Mapped I/O (MMIO)
+
+- RISC-V-Weg: kein neuer I/O-Bus, keine neuen Befehle
+- Philosophie: Hardware tarnen als Arbeitsspeicher
+- Kommunikation wie mit einer Array-Zelle im RAM
+- Bekannte Befehle: `lw` und `sw`
+
+::: notes
+Load/Store reichen: Thermometer und LED erscheinen als 32-Bit-Zellen im Adressraum.
+:::
+
+## Die Illusion des Speichers
+
+- CPU legt 32-Bit-Adresse auf den Bus — glaubt, sie spricht mit RAM
+- Adress-Decoder als Weiche
+- Spezielle Adressen (z. B. `0xF0000000`) schalten RAM ab und Peripherie an
+- Gerät legt Daten auf den Bus; CPU lädt ahnungslos nach `t0`
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  CPU[CPU lw/sw] -->|Adresse| Decoder{Adress-Weiche}
+  Decoder -->|0x1000| RAM[(Arbeitsspeicher)]
+  Decoder -->|0xF000| Hardware[LED Matrix]
+  style Decoder fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style CPU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style RAM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Hardware fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Betrug auf dem Mainboard: gleiche Pins, andere Chip-Select-Ziele.
+:::
+
+## Der Adressraum (Address Map)
+
+- 32-Bit-Adressraum: $2^{32} = 4\,294\,967\,296$ Bytes (4 GB)
+- Feste Address Map im Chip-Handbuch
+- Beispielhafte Aufteilung:
+- `0x00000000`–`0x0FFFFFFF`: Boot-ROM / Code
+- `0x10000000`–`0x7FFFFFFF`: RAM (Heap, Stack, `.data`)
+- `0xF0000000`–`0xFFFFFFFF`: MMIO (Sensoren, LEDs)
+
+```text
+lw aus 0x10000000 -> Array-Element im RAM
+lw aus 0xF0000000 -> z.B. Pixel/Sensor-Wert
+```
+
+::: notes
+Reviere abstecken: niedrige Adressen RAM, hoher Bereich Peripherie.
+:::
+
+## Der Adress-Decoder (Hardware)
+
+- Oft Teil des SoC / der Bridge-Logik
+- Jedes Bauteil: Chip-Select (`CS`)
+- `CS = 0`: Bauteil schläft; `CS = 1`: aktiv
+- Decoder: AND-Netzwerk auf oberen Adressbits (z. B. `0xF...`)
+
+::: notes
+Nur das adressierte Gerät wacht auf und bedient den Datenbus.
+:::
+
+## Load/Store für I/O
+
+- MMIO macht Bare-Metal-Assembler einfach
+- Schalter lesen = `lw`; Motor starten = `sw` mit 1
+
+```asm
+li s1, 0xF0000000   # Thermometer-Basis
+li s2, 0xF0000010   # Warn-LED
+
+lw t0, 0(s1)        # MMIO-Read
+li t1, 100
+blt t0, t1, Safe
+
+li t2, 1
+sw t2, 0(s2)        # MMIO-Write: Alarm-LED
+Safe:
+```
+
+::: notes
+Keine neuen Opcodes: Temperatur schwellenbasiert auf LED abbilden.
+:::
+
+# Praxis der MMIO (Schalter und LEDs)
+
+## Von der Theorie zur Laborpraxis
+
+- Input: D-Pad / Schalter
+- Einzelne Bits maskieren
+- Output: LED-Matrix
+- Gefahr: volatile Speicher (Compiler-Caches)
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[Schalter] -->|MMIO lw| B[Bit-Maskierung]
+  B --> C[Logik]
+  C -->|MMIO sw| D[LED Matrix]
+  style D fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Bit-Maskierung aus früheren Einheiten wird wieder gebraucht.
+:::
+
+## Input: Schalter und Taster
+
+- Beispiel: D-Pad an `0xF0000000`
+- `lw` liefert 32-Bit-Wort als Bit-Map
+- Jedes Bit = ein physikalischer Schalter (1 = gedrückt)
+
+| Bits 31:4 | Bit 3 | Bit 2 | Bit 1 | Bit 0 |
+|-----------|-------|-------|-------|-------|
+| 0… | Unten | Oben | Rechts | Links |
+
+::: notes
+Nicht als Dezimalzahl lesen: Bit 0 = Links, Bit 2 = Oben, …
+:::
+
+## Taster auslesen und maskieren
+
+- Problem: mehrere Tasten gleichzeitig (z. B. `0b0101`)
+- `beq` auf den Rohwert scheitert an Stör-Bits
+- Lösung: Bit isolieren mit `andi` und Maske
+
+```asm
+li s1, 0xF0000000
+lw t0, 0(s1)
+
+# Bit 2 (Oben): Maske 4 = 0b0100
+andi t1, t0, 4
+bne t1, zero, Jump
+```
+
+::: notes
+Diagonal-Druck ergibt Wert 5, nicht 4. AND filtert auf eine saubere 4 oder 0.
+:::
+
+## Output: Die LED-Matrix
+
+- Beispiel-Adresse `0xF0000020`
+- `sw` brennt Bit-Muster auf die Dioden
+- RGB oft als `0x00RRGGBB`
+- `0x00FF0000` → knallrot
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Reg[0x0000FF00] -->|sw| MMIO[0xF0000020]
+  MMIO --> LED[LED gruen]
+  style LED fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Reg fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style MMIO fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Hex-Farbe per Store Word: Computergrafik auf unterster Ebene.
+:::
+
+## Flüchtigkeit von I/O-Registern (Volatile)
+
+- RAM: geschrieben = gelesen (passiv)
+- MMIO: lebendig und flüchtig (volatile)
+- Schalter-Register ändert sich durch externe Physik — ohne `sw` der CPU
+
+```text
+RAM: Tresor — ändert sich nur, wenn ICH schreibe.
+I/O: Fenster — die Welt draußen ändert sich ständig.
+```
+
+::: notes
+Zwei aufeinanderfolgende `lw` können verschiedene Werte liefern.
+:::
+
+## Caching-Gefahren bei I/O
+
+- Zwei getrennte Gefahren:
+  - Compiler: ohne `volatile` eliminiert `-O3` wiederholte Loads
+  - Hardware-Cache: MMIO muss in der Memory Map non-cacheable sein
+- Bug: Knopfdruck wird nie bemerkt
+- In Assembler: jedes `lw` in der Schleife ist ein Bus-Zugriff
+
+```c
+/* gefährlich ohne volatile: */
+int *button = (int *)0xF0000000;
+while (*button == 0) { }
+
+/* Rettung (Compiler): */
+volatile int *button = (volatile int *)0xF0000000;
+```
+
+::: notes
+`volatile` zwingt den Compiler zu echten Loads. Separat: SoC/Page-Attribute müssen MMIO als non-cacheable markieren, sonst liefert der Cache veraltete Werte.
+:::
+
+## I/O-Module in Ripes (Vorschau)
+
+- Eigener I/O-Tab: virtuelle Boards einstecken
+- D-Pad, Switches, LED-Matrizen
+- Ripes emuliert den MMIO-Decoder
+- Mausklick auf Schalter → Bit im gespiegelten Adressraum
+
+::: notes
+Graue Registerzahlen verlassen: Hardware-Komponenten visuell verdrahten.
+:::
+
+## Das Memory-Map-Setup
+
+- Vor dem Code: Base Address der Peripherie ablesen (z. B. `0xF0000000`)
+- Falsche Adresse: Schreiben landet im normalen RAM
+- Profi-Praxis: Konstanten / BSP-Header
+
+```c
+#define LED_BASE    0xF0000020
+#define SWITCH_BASE 0xF0000000
+```
+
+::: notes
+In Ripes die Basisadresse der Komponente prüfen — sonst Heap statt LED.
+:::
+
+## Feedback-Loop (Das Echo)
+
+- Hello World der Hardware: Schalter spiegelt LED
+- Endlosschleife: `lw` Schalter, `sw` LED, Jump
+
+```asm
+li s1, 0xF0000000   # Schalter
+li s2, 0xF0000020   # LED
+
+Loop:
+    lw t0, 0(s1)
+    sw t0, 0(s2)
+    j Loop
+```
+
+::: notes
+CPU als intelligentes Übertragungskabel: Load, Store, Jump.
+:::
+
+## Entprellung (Debouncing)
+
+- Mechanische Taster prellen (Bouncing)
+- Millisekunden Chaos 1/0, bevor stabil 1
+- Pipeline fragt milliardenfach ab
+- Ein menschlicher Klick wird als Dutzende Klicks gezählt
+
+::: notes
+Counter-Variablen explodieren ohne Entprellung.
+:::
+
+## Software-Debouncing
+
+- Erste 1 erkannt: Druck erkannt
+- ~20 ms Signal ignorieren (Kontakte beruhigen)
+- Delay-Loop: Takte absichtlich verbrennen
+
+```asm
+li t1, 10000
+Delay:
+    addi t1, t1, -1
+    bne t1, zero, Delay
+```
+
+::: notes
+Software-Debouncing: nach der ersten Flanke warten, dann sauber weiterlesen.
+:::
+
+# Polling vs. Interrupts
+
+## Aktives Warten vs. Aufwecken
+
+- Ineffizienz im Echo-Design: Busy Waiting
+- Polling: Endlosschleife fragt ab
+- Interrupt: Hardware weckt die CPU (Türklingel)
+- Ausnahmen (Exceptions) vs. Interrupts
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  A[Warten] -->|Strom| B[Polling]
+  C[CPU bereit] -->|Hardware weckt| D[Interrupt]
+  style D fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Phase 3 beginnt: Polling verschwendet Energie. Als Nächstes das Interrupt-System moderner Computer.
+:::
+
+## Das Problem des Wartens
+
+- Pipeline-CPU z. B. bei 4 GHz: 4 Milliarden Takte pro Sekunde
+- Mensch: vielleicht alle 2 Sekunden ein Tastendruck
+- Zwischen zwei Klicks: etwa 8 Milliarden Taktzyklen
+- Frage: Was tut das Programm in der Zwischenzeit?
+
+```text
+Ein Mensch ist für einen Prozessor unvorstellbar langsam.
+Wartet die CPU auf uns, vergehen für sie "Jahrzehnte".
+```
+
+::: notes
+Hardwarewelt blitzschnell, physische Welt im Vergleich im Koma. Ein Tastendruck ist für die CPU ein Ereignis alle paar "Jahrhunderte". Was macht der Prozessor in den Milliarden Zyklen dazwischen?
+:::
+
+## Polling (Busy Waiting)
+
+- Naive Lösung: Polling (Abfragen) / Busy Waiting
+- Metapher: Kind auf dem Rücksitz — "Sind wir schon da?"
+- "Sind wir schon da?" $\rightarrow$ Nein … Nein … Ja!
+- CPU fragt in einer Endlosschleife das MMIO-Register ab, bis Bit = 1
+
+::: notes
+Geschäftiges Warten: ununterbrochen Load, Prüfen, Branch. Das klassische "Sind wir schon da?"-Syndrom.
+:::
+
+## Polling in Assembler
+
+- Wie das Echo-Programm: Wait-Schleife, solange Register = 0
+- Erst wenn die Hardware Bit 1 setzt, läuft nützlicher Code weiter
+
+```asm
+li s1, 0xF0000000       # Schalter-Adresse
+
+Wait:
+    lw t0, 0(s1)        # MMIO-Read
+    beq t0, zero, Wait  # noch 0? sofort wieder
+
+    # Knopf wurde gedrückt — weiter mit Nutzcode
+```
+
+::: notes
+Load und Branch milliardenfach: sinnlose Abfragen, während der Mensch überlegt.
+:::
+
+## Die Nachteile von Polling
+
+- Energieverschwendung: CPU unter Volllast, Hitze, leerer Akku
+- Keine Nebenläufigkeit: Browser, Audio, UI blockiert
+- In der Praxis nur noch Nischen (z. B. Ultra-Low-Latency)
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[Polling aktiv] -->|CPU 100%| B[Stromverbrauch]
+  A -->|blockiert| C[kein Multitasking]
+  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+```
+
+::: notes
+Polling saugt den Akku leer und tötet Multitasking. Für moderne Systeme architektonisch tödlich.
+:::
+
+## Die Hardware-Lösung: Die Türklingel
+
+- Paket erwarten: nicht stündlich an der Klinke rütteln (Polling)
+- Stattdessen: Türklingel einbauen
+- Normales Leben weiterführen; erst beim Klingeln reagieren
+- Rolle umkehren: Peripherie meldet sich, wenn Daten da sind
+
+::: notes
+Aktiv warten vs. Ereignis-getrieben: CPU widmet sich nützlicher Arbeit, bis das Gerät signalisiert.
+:::
+
+## Einführung von Interrupts
+
+- Türklingel-Prinzip = Interrupt (Unterbrechung)
+- Spezielle Pins verbinden Peripherie mit der CPU
+- Tastendruck: Stromimpuls auf den Interrupt-Pin
+- CPU speichert Kontext, springt zur ISR, kehrt danach zurück
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  CPU[CPU rechnet nützlich]
+  HW[Tastatur] -->|Interrupt-Puls| CPU
+  style HW fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style CPU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+```
+
+::: notes
+Rückgrat moderner Betriebssysteme: asynchrones Aufwecken statt Busy Waiting.
+:::
+
+## Der Ablauf eines Interrupts
+
+- Main-Programm läuft (z. B. Berechnung / Player)
+- Interrupt-Signal trifft den CPU-Pin
+- Hardware unterbricht; PC springt zur ISR
+- ISR verarbeitet die Eingabe
+- `mret`: Rückkehr ins Main-Programm
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  M1[Main] --> ISR[ISR]
+  ISR --> M2[Main weiter]
+  style ISR fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style M1 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style M2 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+```
+
+::: notes
+Zeitstrahl: Spiel läuft, Leertaste feuert Interrupt, ISR puffert den Event, `mret` setzt unsichtbar fort.
+:::
+
+## Exceptions vs. Interrupts
+
+| | Exceptions | Interrupts |
+|---|---|---|
+| Quelle | CPU-intern | Hardware-extern |
+| Auslöser | aktueller Befehl | unabhängig vom Code |
+| Timing | synchron | asynchron |
+| Beispiel | Illegal Instr., Access Fault | Timer, Tastendruck |
+
+::: notes
+Interrupts von außen und asynchron; Exceptions von innen und synchron am fehlerhaften Befehl. Beide unterbrechen — Ursachen verschieden.
+:::
+
+## Exceptions im Detail
+
+- Illegal Instruction: Decoder kennt den Opcode nicht
+- Access Fault: `lw`/`sw` auf gesperrte/ungültige Adresse (ohne MMU)
+- Page Fault: nur mit virtuellem Speicher (Paging)
+- Hinweis: Integer-Div/0 trappt in RISC-V nicht (anders als x86)
+- OS beendet oft mit Segmentation Fault
+
+```c
+int *ptr = NULL;
+int crash = *ptr;   /* typisch: Access Fault */
+```
+
+::: notes
+Nullpointer: Memory-Unit alarmiert. Bei RISC-V Integer-Division durch 0 entsteht kein Trap (Quotient = all-1s).
+:::
+
+## Der Regenschirm-Begriff: Traps
+
+- Exceptions und Interrupts teilen denselben Rettungsablauf
+- RISC-V-Dachbegriff: Trap (Falle)
+- Trap = Unterbrechung des Kontrollflusses ohne Branch/Jump
+- "Trap ausgelöst" = Notfall-Ablauf gestartet
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[Trap] --> B[Interrupts extern]
+  A --> C[Exceptions intern]
+  B --> D[Timer / Keyboard]
+  C --> E[Access Fault / ecall]
+  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+```
+
+::: notes
+In der RISC-V-Spezifikation: Trap = jedes erzwungene Verlassen des normalen Programmflusses Richtung OS/Handler.
+:::
+
+## Was passiert bei einem Trap?
+
+1. Rettungsanker: aktuellen PC merken (Rückkehr)
+2. Pipeline flushen: IF/ID hinter dem Ereignis löschen
+3. Sprung: PC auf feste Handler-Adresse setzen (ISR)
+
+```text
+Ein Trap ist ein erzwungener Hardware-Sprung
+an eine vom Betriebssystem vorbereitete Adresse.
+```
+
+::: notes
+Drei Hardware-Schritte: PC sichern, Pipeline säubern, PC auf Rettungscode setzen.
+:::
+
+## Die Gefahr des Clobberings
+
+- ISR ist normaler Assembler und nutzt `t0`, `s1`, `a0`, …
+- Trap kommt ohne Vorwarnung mittendrin
+- Die ABI gilt weiter — aber es gibt keinen Caller, der Temporaries rettet
+- Deshalb: Handler muss jedes genutzte Register selbst sichern
+
+::: notes
+Kein Caller bei asynchronen Interrupts: ungesicherte Temporaries zerstören den Kontext. Lösung: Kontextsicherung und CSRs.
+:::
+
+# Das CSR-System
+
+## Schattenregister für die Notaufnahme
+
+- Zustand retten, ohne User-Register zu zerstören
+- `x0`–`x31` sind durch Anwendercode belegt
+- Privilegienstufen (Ring-Sicherheit)
+- CSRs: unsichtbarer Speicherplatz im Chip
+- Befehle `csrr`, `csrw` und der ISR-Ablauf
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  User[Anwender-Code] -->|x0-x31| XReg[Integer-Register]
+  OS[Betriebssystem] -->|voller Zugriff| CSR[CSR-Hardware]
+  style CSR fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style User fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style XReg fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style OS fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+```
+
+::: notes
+Phase 4: Geheim-Tresor in der CPU, den der User nicht sieht — Fundament sicherer OS-Handler.
+:::
+
+## Die Beschränkung von RV32I
+
+- RV32I: genau 32 Integer-Register — vom Compiler ausgereizt
+- OS braucht Platz für Timer, Trap-Ursache, Puffer — oft vor sicherem Stack-Zugriff
+- Teufelskreis: Stack-Sicherung braucht `sp` — dem User-`sp` darf man nicht trauen
+
+```text
+Schatten-Register: vertrauenswürdig und nicht manipulierbar.
+```
+
+::: notes
+Handler darf User-Registern nicht vertrauen. Deshalb separate, sichere Hardware-Register.
+:::
+
+## Die CSRs (Control & Status Registers)
+
+- Extension Zicsr: separater Adressraum, bis zu 4096 CSRs
+- Kein RAM/MMIO — Flip-Flop-Bänke im Kern
+- Namen z. B. `mstatus`, `mtvec`, `mcause`
+- Normale Befehle (`add`, `lw`) greifen nicht zu
+
+::: notes
+CSRs sind für User-Code unsichtbar und abgekapselt.
+:::
+
+## Privilegienstufen (Privilege Levels)
+
+- Machine Mode (M): höchste Rechte, Boot; voller CSR-Zugriff (Firmware)
+- Supervisor Mode (S): großes OS (Linux); viele CSRs (z. B. Paging)
+- User Mode (U): Apps im Käfig; CSR-Zugriff $\rightarrow$ Trap
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  M[M-Mode höchste Rechte] --> S[S-Mode Kernel]
+  S --> U[U-Mode Apps]
+  style M fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style S fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style U fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+```
+
+::: notes
+Boot mit höchsten Privilegien, dann Herabstufung. Hardware verriegelt CSR-Türen im User Mode.
+:::
+
+## CSR-Befehle (Zicsr)
+
+- `csrr rd, csr`: CSR $\rightarrow$ normales x-Register
+- `csrw csr, rs1`: x-Register $\rightarrow$ CSR
+
+```asm
+csrr t0, mstatus     # Status nach t0
+li t1, 8             # Maske: Bit MIE
+csrrs x0, mstatus, t1  # nur Bits setzen (OR)
+```
+
+::: notes
+Brücke zwischen Schattenwelt und Integer-Registerbank. `csrw` überschreibt das ganze Register — Bits setzen mit `csrrs`.
+:::
+
+## Atomare CSR-Befehle
+
+- Gefahr: Interrupt zwischen `csrr` und `csrw` (Race Condition)
+- Lösung: `csrrw` — Read und Write in einer Instruktion (atomar)
+- Software-seitig ununterbrechbar (eine Instruktion)
+
+```asm
+li t1, 0x1
+csrrw t0, mstatus, t1  # t0 = alt; mstatus = t1
+```
+
+::: notes
+Atomarer Austausch verhindert verlorene Bits zwischen Read und Write.
+:::
+
+## CSR: mtvec (Trap-Vector)
+
+- Vier Kern-CSRs für Trap-Handling
+- `mtvec`: Basisadresse der ISR
+- Bei Trap: Hardware kopiert `mtvec` in den PC
+
+```text
+Boot des OS:
+  la t0, MeineRettungsRoutine
+  csrw mtvec, t0
+```
+
+::: notes
+Zentrale Notaufnahme-Adresse: Hardware springt blind dorthin.
+:::
+
+## CSR: mepc (Exception PC)
+
+- Wo wurde der User-Code unterbrochen?
+- Hardware kopiert den unterbrochenen PC automatisch nach `mepc`
+- Bei synchronen Exceptions/`ecall`: `mepc` zeigt auf den auslösenden Befehl
+- Handler muss typischerweise `mepc = mepc + 4` setzen, sonst Endlosschleife
+
+::: notes
+`mepc` = Rückflugticket. Ohne +4 kehrt `mret` zum selben `ecall` zurück. Simulatoren wie Venus erledigen das intern.
+:::
+
+## CSR: mcause (Cause)
+
+- Warum aufgeweckt? Tastendruck, Access Fault, Syscall?
+- Hardware schreibt Fehler-/Ursachencode nach `mcause`
+- MSB = 1: Interrupt; MSB = 0: Exception (zuerst prüfen)
+- Beispiele: 2 = Illegal Instruction; 8 = Environment Call (U-Mode)
+
+```asm
+csrr t0, mcause
+li t1, 8
+beq t0, t1, Syscall   # nach Interrupt-Bit-Check
+```
+
+::: notes
+Erste Handlung der ISR: Interrupt-Bit und Exception-Code lesen, dann abzweigen.
+:::
+
+## CSR: mstatus (Status)
+
+- Herz der Kontrolle; u. a. Bit MIE (Machine Interrupt Enable)
+- MIE = 1: Interrupts wahrnehmen; MIE = 0: taub
+- Beim Trap: Hardware setzt MIE automatisch auf 0 (kein Nesting)
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  ON[MIE = 1 an] -->|Trap| OFF[MIE = 0 taub]
+  OFF -->|mret| ON2[MIE <- MPIE]
+  style OFF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style ON fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style ON2 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+```
+
+::: notes
+Hauptschalter der Ohren: Notaufnahme darf nicht durch einen zweiten Interrupt zerrissen werden.
+:::
+
+## Der Trap-Handler (ISR)
+
+- Schritt 1: Kontextsicherung aller genutzten x-Register
+- Echter Kernel: zuerst `sp` mit `mscratch` tauschen (User-`sp` ist unsicher)
+- Unten: vereinfachte Lehr-Sequenz (Stack bereits gültig angenommen)
+
+```asm
+Trap_Handler:
+    # real: csrrw sp, mscratch, sp
+    addi sp, sp, -16
+    sw t0, 0(sp)
+    sw t1, 4(sp)
+    sw a0, 8(sp)
+```
+
+::: notes
+Produktionssysteme tauschen auf den Kernel-Stack. Die Kurzform dient nur der Lesbarkeit.
+:::
+
+## Kontext-Sicherung und Arbeit
+
+- Schritt 2: `mcause` lesen, Treiber, eigentliche Aufgabe
+- Schritt 3: Register spiegelverkehrt wiederherstellen
+
+```asm
+    csrr a0, mcause
+    call Lese_Tastatur
+
+    lw t0, 0(sp)
+    lw t1, 4(sp)
+    lw a0, 8(sp)
+    addi sp, sp, 16
+```
+
+::: notes
+Nach Sicherung freie Bahn; danach Zustand exakt wie vor dem Interrupt.
+:::
+
+## Die Rückkehr (mret)
+
+- Nicht `ret` — in `ra` steht nichts Brauchbares
+- Zieladresse liegt in `mepc`
+- `mret` (Machine Return) atomar:
+  - `mepc` $\rightarrow$ PC
+  - MIE wird aus MPIE wiederhergestellt (oft wieder 1)
+  - Privilegien zurück (oft U-Mode)
+
+```asm
+    mret    # zurück ins User-Programm
+```
+
+::: notes
+Bei Trap: MPIE <- MIE, MIE <- 0. Bei `mret`: MIE <- MPIE, plus Rücksprung und Ring-Herabstufung.
+:::
+
+## Zusammenfassung Trap-Ablauf
+
+- Lebenszyklus jedes Multitasking-OS
+- Ein Kern: scheinbar viele Programme + I/O ohne Absturz
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[User App] -->|Interrupt| B[PC nach mepc]
+  B --> C[Sprung mtvec]
+  C --> D[Kontext sichern]
+  D --> E[Treiber / Arbeit]
+  E --> F[Kontext laden]
+  F -->|mret| G[User App weiter]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style G fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style F fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+```
+
+::: notes
+Hardware fängt Signale und steuert CSRs; Kernel sichert Kontext und arbeitet. Timer-Interrupts verteilen Rechenzeit.
+:::
+
+# Syscalls & Das Betriebssystem
+
+## Absichtliche Traps und der Pförtner
+
+- Software kann absichtlich einen Trap auslösen
+- Mauer zwischen User und Hardware
+- OS als Pförtner
+- Befehl `ecall` und ABI-Verträge
+- Labor: Text auf die Venus-Konsole
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  User[C-Programm U-Mode] -->|ecall| OS[Kernel]
+  OS -->|MMIO| HW[Monitor / SSD]
+  style OS fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style User fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style HW fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+```
+
+::: notes
+Phase 5 beginnt: System Calls als Brücke vom User Mode in den privilegierten Kernel.
+:::
+
+## Software-Traps
+
+- Hardware kann die CPU per Interrupt unterbrechen
+- Kann ein User-Programm absichtlich einen Trap auslösen?
+- Ja: wenn C-/Assembler-Code die Hilfe des OS braucht
+- Absichtliche Software-Traps = System Calls (Syscalls)
+
+```text
+Ein Syscall ist wie ein roter Notfallknopf.
+Das Programm drückt ihn, friert sich ein und ruft das OS zu Hilfe.
+```
+
+::: notes
+Hardware-Interrupts sind nur die halbe Miete. User-Mode-Programme dürfen Monitor oder SSD nicht direkt anfassen — sie bitten das OS über Software-Traps um Hilfe.
+:::
+
+## Warum wir das OS brauchen
+
+- Warum nicht einfach `sw` direkt auf den Monitor?
+- Sicherheit: freier MMIO-Zugriff könnte die Platte zerstören; User-Mode sperrt MMIO hardwareseitig
+- Abstraktion: tausende Monitore/Treiber — das OS kapselt Hardware in einer universellen Schnittstelle
+
+::: notes
+Betriebssysteme existieren wegen Sicherheit und Bequemlichkeit: `print` statt Grafikkarten-Handbuch.
+:::
+
+## Der Pförtner (Das Betriebssystem)
+
+- OS im privilegierten Ring (S- oder M-Mode)
+- Verwaltet Hardware exklusiv
+- Agiert als Pförtner / Torwächter
+- Drucken = Formular ausfüllen, an die Kernel-Tür klopfen
+- Diese Formulare sind System Calls
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  User[User App] -->|Bitte drucken| OS[OS Kernel]
+  OS -->|geprüft erledigt| HW[Hardware / Monitor]
+  style OS fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style User fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style HW fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+```
+
+::: notes
+Türsteher vor der Hardware: Zettel (Syscall) prüfen, Treiber anstoßen, Kontrolle zurückgeben.
+:::
+
+## Der Befehl ecall
+
+- RISC-V-Klopfen an die Kernel-Tür: `ecall` (Environment Call)
+- Keine Operanden — steht nackt im Code
+- Decoder liest `ecall` $\rightarrow$ sofort Trap-Handler
+- Hardware-erzwungener Kontextwechsel
+
+```asm
+ecall    # aus U-Mode in den Kernel
+```
+
+::: notes
+Instruction Decoder erkennt `ecall`, löst absichtlich einen Trap aus: PC nach `mtvec`, Kernel erwacht.
+:::
+
+## System Calls (Die API des OS)
+
+- Hunderte Dienste: Datei, Netz, Zeit, Text drucken, …
+- Diese Liste = System Call API
+- Frage nach `ecall`: Welcher Service?
+- Antwort: Vertrag erfüllen — die Syscall-ABI
+
+::: notes
+Restaurant mit Speisekarte: Klingel (`ecall`) reicht nicht — Gericht muss vorher kommuniziert sein.
+:::
+
+## Die Syscall-ABI (Venus vs. Linux)
+
+- Vor `ecall` muss eine Service-ID gesetzt werden — Registerkonvention ist ABI-abhängig
+- Venus (Labor): ID in `a0`, Argumente in `a1`, `a2`, …
+- Linux / RARS: ID in `a7`, Argumente in `a0`, `a1`, …
+- Im Praktikum: Venus-Konvention verwenden
+
+```text
+Venus:  a0 = Service-ID,  a1 = Argument
+Linux:  a7 = Service-ID,  a0 = Argument
+```
+
+::: notes
+Venus folgt der SPIM/MARS-Tradition (ID in a0). Echte RISC-V-Linux-Systeme und RARS nutzen a7. Verwechslung ist die häufigste Laborfalle.
+:::
+
+## Code-Beispiel: Print Integer (Venus)
+
+- Service 1 in `a0`, Zahl 42 in `a1`, dann `ecall`
+- Venus kehrt danach zur nächsten Instruktion zurück (Handler intern)
+
+```asm
+li a0, 1        # Venus: Service Print Integer
+li a1, 42       # Argument
+ecall
+```
+
+::: notes
+Drei Zeilen unter Venus-ABI. Bare-Metal-Handler müssten zuvor `mepc += 4` setzen.
+:::
+
+## Code-Beispiel: Exit Program (Venus)
+
+- Endlosschleife am Code-Ende ist unsauber
+- Service 10 = Exit; keine Argumente; keine Rückkehr
+
+```asm
+li a0, 10       # Venus: Exit
+ecall
+```
+
+::: notes
+Professioneller Stil: nach dem Algorithmus Exit statt Endlosschleife.
+:::
+
+## Was macht ecall unter der Haube?
+
+- Decoder liest `ecall` $\rightarrow$ Hardware schaltet:
+  - PC des `ecall` $\rightarrow$ `mepc`
+  - `mcause` = 8 (Environment Call from U-Mode)
+  - PC $\rightarrow$ Adresse in `mtvec`
+- Handler: Ursache 8 $\rightarrow$ Syscall; Service-ID laut ABI lesen; oft `mepc += 4`
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  ecall -->|Trap| mcause[mcause = 8]
+  mcause --> Handler[Trap Handler]
+  Handler -->|Service-ID| Service[Syscall]
+  style mcause fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style ecall fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style Handler fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style Service fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+```
+
+::: notes
+Dieselbe Notaufnahme wie beim Hardware-Interrupt; Code 8 = absichtlicher User-Anruf. Venus verbirgt `mepc+4` und die Service-Auswertung.
+:::
+
+## Das Betriebssystem-Modell
+
+- Schichten-Modell: Abstraktion schützt vor harter Physik
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  App[User-App] -->|ecall| API[Syscall API]
+  API --> OS[OS Kernel / Trap Handler]
+  OS -->|MMIO lw/sw| HW[Hardware Register/LEDs]
+  style App fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style HW fill:#FFFFFF,stroke:#86868B,stroke-width:2px !important
+  style API fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style OS fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+```
+
+::: notes
+App → Syscall-Vertrag → Kernel → nackte Hardware. Im Berufsleben trifft man oft alle Schichten.
+:::
+
+# Praxis: Ripes & Venus
+
+## Dualer Laboreinsatz
+
+- Wechsel von Theorie zum Labor
+- Ripes vs. Venus: unterschiedliche Zwecke
+- Ripes: virtuelle MMIO-Hardware (LEDs)
+- Venus: Konsole über `ecall`
+- Typische I/O-Bugs und Clobbering-Warnung
+
+::: notes
+Theorie von Einheit 8 abgeschlossen: Bare-Metal und OS-Aufrufe mit beiden Werkzeugen.
+:::
+
+## Tool-Zweck im Labor
+
+- Zwei Welten: nackte Hardware (MMIO) vs. Abstraktion (Syscalls)
+- Ripes: Hardware-Simulator, Bare-Metal mit `lw`/`sw` auf MMIO
+- Venus: OS-Simulator, fängt `ecall` ab und simuliert Konsole
+
+```text
+Ripes  → Schalter-LED-Labor (Bare-Metal)
+Venus  → Print-/EVA-Labor mit `.data` (Syscalls)
+```
+
+::: notes
+Ripes = Physik ohne Linux; Venus = Kernel-Simulation mit Konsole.
+:::
+
+## Ripes I/O-Tab Setup
+
+- Reiter I/O in Ripes öffnen
+- Plus: Switches und LED Matrix hinzufügen
+- Ripes verdrahtet virtuell und vergibt MMIO-Adressen
+
+::: notes
+Steckbrett-Simulation inkl. Adress-Decoder.
+:::
+
+## Ripes: MMIO-Adressen prüfen
+
+- Bauteil anklicken $\rightarrow$ Konfiguration unten links
+- Base Address zwingend ablesen
+- Typisch: Switches `0xF0000000`, LEDs `0xF0000020`
+- Diese Adressen in Register laden für `lw`/`sw`
+
+| Gerät | Typ | Typische Adresse |
+|---|---|---|
+| Switches | Input (Bit-Map) | `0xF0000000` |
+| LED Matrix | Output (Wort-Array) | `0xF0000020` |
+
+::: notes
+Ohne Hausnummer ist der Code blind; Basisadresse oft in `s`-Register.
+:::
+
+## Labor-Aufgabe 1 (Ripes)
+
+- Hello Hardware: Endlosschleife liest Switches
+- Mit `and`-Maske prüfen: Schalter 3 an?
+- Ja: erste LED rot (`0x00FF0000`); nein: schwarz (`0x00000000`)
+- Offset der ersten LED: `0(Base)`
+
+```asm
+li s1, 0xF0000000      # Switches
+li s2, 0xF0000020      # LED-Matrix
+Loop:
+  lw t0, 0(s1)
+  andi t1, t0, 8       # Maske Bit 3
+  beq t1, zero, Off
+  li t2, 0x00FF0000    # Rot
+  j Store
+Off:
+  li t2, 0
+Store:
+  sw t2, 0(s2)
+  j Loop
+```
+
+::: notes
+Einheit 3 (Bits) + Einheit 8 (I/O): nicht nur „ungleich 0“, sondern exakt Schalter 3 maskieren.
+:::
+
+## Labor-Aufgabe 2 (Ripes)
+
+- Lauflicht (Knight-Rider): grüne LED wandert links $\rightarrow$ rechts
+- Offset-Pointer startet bei 0; Delay-Loop für Sichtbarkeit
+- Pointer += 4 für nächstes LED-Wort; am Ende zurücksetzen
+
+```asm
+# Lauflicht im I/O-Tab beobachten
+```
+
+::: notes
+Jede LED = 32 Bit; Pointer um 4 Bytes erhöhen, sonst unsichtbar schnell.
+:::
+
+## Wechsel zu Venus (OS-Simulation)
+
+- Ripes schließen, Venus öffnen; Konsole unten
+- Venus fängt `ecall` ab, wertet Service-ID in `a0` aus, schreibt in die Konsole
+- Keine harten MMIO-Adressen — Arbeit an das OS delegieren
+
+::: notes
+Paradigmenwechsel: vom Bare-Metal-Bus zur Syscall-API (Venus-ABI!).
+:::
+
+## Die Venus Syscall-Tabelle
+
+- Essenzielle Services für das Labor (ID immer in `a0`):
+
+| `a0` (ID) | Name | Argumente | Resultat |
+|---|---|---|---|
+| 1 | Print Integer | `a1` = Zahl | Zahl auf Konsole |
+| 4 | Print String | `a1` = Adresse | Text auf Konsole |
+| 10 | Exit | keine | Programm endet |
+
+```text
+Hinweis: Venus hat keinen interaktiven Read-Int (anders als RARS).
+Service 5 ist ggf. atoi (String	o Int), kein Tastatur-Input.
+```
+
+::: notes
+Labor nutzt Print und Exit. Interaktive Eingabe gehört nicht zum Standard-Venus.
+:::
+
+## Labor-Aufgabe 3 (Venus)
+
+- Hello World: `.data` mit `.string "Hello World!\n"`
+- `la a1, …` — Startadresse; `li a0, 4`; `ecall`
+- Sauber beenden: `li a0, 10` / `ecall`
+
+```asm
+la a1, msg
+li a0, 4
+ecall
+li a0, 10
+ecall
+```
+
+::: notes
+String-Adresse in a1, Service-ID 4 in a0 — Venus-ABI.
+:::
+
+## Labor-Aufgabe 4 (Venus)
+
+- EVA ohne Tastatur: Wert in `.data` (z. B. `n: .word 21`)
+- Laden, verdoppeln (Shift oder `add`), per Service 1 drucken
+- Optional: Prompt-String per Service 4 vorher ausgeben
+- Mit Service 10 beenden
+
+```asm
+lw t0, n
+slli a1, t0, 1   # *2
+li a0, 1
+ecall
+```
+
+::: notes
+EVA-Prinzip über Syscalls; Input kommt aus `.data`, nicht von der Konsole.
+:::
+
+## Debugging I/O (Best Practices)
+
+- Ripes LED schwarz?
+  - Basisadresse korrekt?
+  - Memory-Tab bei `0xF0…`: Farbmuster sichtbar?
+  - Im RAM, aber dunkel: Refresh; nicht im RAM: `sw`/Adresse prüfen
+- Venus stürzt bei `ecall`?
+  - ID in `a0`, Argument in `a1` (nicht a7/a0 wie bei Linux/RARS)
+  - String: Adresse mit `la` in `a1`; Integer: Wert in `a1`
+
+```text
+Simulator als Spion: Register vor ecall prüfen.
+```
+
+::: notes
+Memory-Tab verrät, ob `sw` traf; Venus: ID in `a0`, Payload in `a1`.
+:::
+
+## Clobbering bei ecall (Warnung)
+
+- `ecall` = ABI-Funktionsaufruf in den Kernel
+- Kernel darf Caller-Saved (`t0`–`t6`, `a0`–`a7`) zerstören
+- Schleifenzähler in `t0` + Print in der Schleife = Zähler weg
+- Lösung: vor `ecall` auf Stack sichern oder `s0`–`s11` nutzen
+
+::: notes
+Klassische Studenten-Falle: nach Syscall `t`-Register nie wieder vertrauenswürdig; Zähler in `s`-Registern halten.
+:::
+
+## Zusammenfassung Einheit 8
+
+- MMIO: Hardware als RAM-Adresse — ohne Sonderbefehle
+- Flüchtigkeit: MMIO ändert sich von selbst (Caching-Gefahr)
+- Polling vs. Interrupts: Busy Waiting vs. Türklingel
+- CSR-System: sichere Trap-Register (`mcause`, `mepc`, …)
+- Syscalls (`ecall`): Brücke vom User-Mode zum Kernel
+
+```text
+Von Transistoren bis zum Betriebssystem:
+das Ökosystem der Computerarchitektur ist durchdrungen.
+```
+
+::: notes
+Isolation durchbrochen: Bare-Metal-I/O und der Tanz CPU ↔ OS.
+:::
+
+## Q&A und Hands-On
+
+- Ripes oder Venus je nach Aufgabe öffnen
+- Syscall-Tabelle als Referenz
+- Arrays: Pointer +4 pro Wort; Strings: Null-Byte beachten
+- Viel Erfolg beim Bau der Brücke zur Außenwelt
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Theorie[I/O verstanden] --> Labor[Ripes und Venus]
+  Labor --> Analyse[LEDs und Konsole]
+  Analyse --> Win[Hardware Hacker]
+  style Win fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Theorie fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style Labor fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style Analyse fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+```
+
+::: notes
+Letzte Hands-On-Phase: Lauflicht in Ripes, EVA-Syscalls in Venus. Viel Erfolg!
+:::
