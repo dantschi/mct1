@@ -1,0 +1,1485 @@
+---
+title: "Mikrocomputertechnik 1"
+subtitle: "Einheit 5: Der Single-Cycle-Datenpfad"
+author: "Prof. Dr.-Ing. Daniel Klünder"
+# Vortrag:  quarto preview vorlesungen/05_single-cycle-datenpfad.qmd
+#           (Notizen nur mit Taste S)
+# Handout:  quarto render vorlesungen/05_single-cycle-datenpfad.qmd --profile handout --to pdf
+#           → _handout/vorlesungen/05_single-cycle-datenpfad.pdf
+format: revealjs
+---
+
+# Der Single-Cycle-Datenpfad
+
+## Von der Instruktion zur Hardware
+
+- Herzlich willkommen zur fünften Vorlesung in Mikrocomputertechnik 1
+- Bisher: Fokus auf die Software-Sicht (Assembler)
+- Heute: Brückenschlag zurück zur Hardware
+- Die Blackbox des RISC-V-Prozessors öffnen
+- Ziel: verstehen, wie eine Textzeile physikalisch Strom durch Leitungen leitet
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Soft[Software Code] -->|Maschinenwort| Hard[Hardware Transistoren]
+  style Soft fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Hard fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Herzlich willkommen zu Einheit 5. Assembler, Schleifen und Stack beherrschen Sie. Heute: Wie leitet der Chip aus 32 Bits ab, welche Leitungen unter Strom stehen? Logikgatter aus Einheit 1 verschmelzen mit dem Assembler aus Einheit 4.
+:::
+
+## Agenda für den heutigen Tag
+
+1. Die 5 Phasen — Lebenszyklus eines Maschinenbefehls
+2. Fetch und R-Type — Hardware für Berechnungen
+3. Load und Store — Arbeitsspeicher physikalisch einbinden
+4. Der Branch-Pfad — dem PC das Springen beibringen
+5. Das Gesamtbild — Zusammenführung über Multiplexer
+6. Ripes — visuelles Tracing auf den Logikgattern
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  A[Phasen] --> B[R-Type]
+  B --> C[Memory]
+  C --> D[Branch]
+  D --> E[Gesamter Datenpfad]
+  style E fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Bottom-up: erst die fünf Phasen, dann Bauteil für Bauteil von ADD über Speicher bis Branches. Am Ende setzen wir den Datenpfad in Ripes unter Strom.
+:::
+
+## Rückblick: Was wir bisher blind genutzt haben
+
+- Maschinenbefehl immer exakt 32 Bit breit
+- Instruction Formats: R, I, S, B
+- Register lesen und überschreiben (`t0`, `s0`, …)
+- ALU kann addieren und vergleichen
+- PC als logischer Zeiger im Code
+
+```asm
+# Wir wissen, WAS dieser Befehl tut:
+add t0, t1, t2
+
+# Aber WIE wird aus 0x007102B3 die ALU aktiviert?
+```
+
+::: notes
+Bisher Magie: Wer öffnet das Register File? Wer konfiguriert die ALU? Die CPU war Blackbox — heute öffnen wir sie.
+:::
+
+## Die Blackbox öffnen
+
+- Ein realer Prozessor: Milliarden Transistoren
+- Mikroskopische „Autobahnen“ — für Menschen nicht greifbar
+- Abstraktion: Blockdiagramme statt einzelner Elektronen
+- Fokus: Datenflüsse und Vernetzung der Komponenten
+
+::: notes
+Ingenieure abstrahieren zu Blöcken: Register File, ALU, Multiplexer — verbunden durch 32-Bit-Leitungsbündel.
+:::
+
+## Was ist ein Datenpfad (Datapath)?
+
+- Physikalische „Rohrleitung“ des Prozessors
+- Alles, was Daten verarbeitet oder transportiert: ALU, Register File, Speicher, Multiplexer
+- Nicht dazu: die Control Unit (Steuerwerk) — sie dirigiert nur
+- Der Datenpfad begrenzt die Maximalleistung des Chips
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Daten[(Daten)] --> Pipeline[Hardware-Leitungen]
+  Pipeline --> ALU((ALU))
+  ALU --> Ziel[(Speicher)]
+  style Pipeline fill:#F5F5F7,stroke:#86868B,stroke-width:1.5px
+  style ALU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Daten fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Ziel fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Datenpfad = Nutzdaten-Fluss. Steuerwerk = Hebel an den Ventilen. Heute exklusiv das Rohrleitungssystem.
+:::
+
+## Der Single-Cycle-Prozessor
+
+- Viele Steuerungsarten: Pipelining, Multi-Cycle, …
+- Heute: didaktisch zentrales Modell — Single-Cycle
+- Ein Maschinenbefehl in exakt einem Taktzyklus
+- Bei jeder steigenden Taktflanke ist ein Befehl fertig
+- Leicht verständlich, modern oft ineffizient (Vertiefung später)
+
+::: notes
+Ein Takt: Fetch bis Write-Back. Moderne Chips arbeiten anders — das Modell bleibt der Schlüssel zum Verständnis.
+:::
+
+## Die 5 Phasen
+
+- Logisch fünf Stationen, auch wenn alles in einem Takt geschieht
+- Universelles Schema vieler Architekturen
+- Datenfluss strikt von links nach rechts (Write-Back als Rückführung)
+- Abkürzungen: IF, ID, EX, MEM, WB
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  IF[1. Fetch] --> ID[2. Decode]
+  ID --> EX[3. Execute]
+  EX --> MEM[4. Memory]
+  MEM --> WB[5. Write-Back]
+  style IF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style ID fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style EX fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style MEM fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style WB fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Heiliger Gral der Rechnerarchitektur: Instruction Fetch, Decode, Execute, Memory, Write-Back — von Mikrocontroller bis Server.
+:::
+
+## Phase 1: Instruction Fetch (IF)
+
+- 32-Bit-Maschinencode aus dem Speicher holen
+- PC liefert die physikalische Adresse
+- Instruction Memory liefert die Instruktion
+- Parallel: Vorbereitung $PC + 4$ für den nächsten Befehl
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  PC[Program Counter] -->|Adresse| ROM[(Instruction Memory)]
+  ROM -->|32-Bit Instruction| Out[Instruktion]
+  style PC fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style ROM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Out fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Noch „dumm“: Adresse lesen, Wort liefern. Ein kleiner Addierer hält bereits $PC+4$ bereit.
+:::
+
+## Phase 2: Instruction Decode (ID)
+
+- 32-Bit-Wort entschlüsseln, Operanden bereitstellen
+- Felder: opcode, `rs1`, `rs2`, …
+- `rs1`/`rs2` an das Register File — Werte auf die Datenleitungen
+- Control Unit erzeugt Steuersignale aus dem Opcode
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Inst[32-Bit Instruction] --> Decoder
+  Decoder -->|rs1| RegFile[(Register File)]
+  Decoder -->|rs2| RegFile
+  RegFile -->|Data 1 und 2| Out
+  style Decoder fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Inst fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style RegFile fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Out fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Opcode analysieren, Registeradressen herausgreifen, Werte auf RD1/RD2 legen — kombinatorisch (reine Gatterlaufzeiten, ohne Taktzustand).
+:::
+
+## Phase 3: Execute (EX)
+
+- Mathematische oder logische Arbeit: die ALU
+- R-Type: zwei Registerwerte verknüpfen
+- Load/Store: Zieladresse = Base + Offset
+- Branch: Vergleich (z. B. Differenz auf Null)
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Data1[Register 1] --> ALU((ALU))
+  Data2[Register 2 / Immediate] --> ALU
+  ALU --> Result[ALU Result]
+  style ALU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Data1 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Data2 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Result fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Die ALU rechnet nicht nur bei `add`: bei `lw`/`sw` berechnet sie die RAM-Adresse (Base + Offset).
+:::
+
+## Phase 4: Memory (MEM)
+
+- Kommunikation mit dem Datenspeicher
+- Relevant für `lw`, `sw` und Verwandte
+- Andere Befehle: Bypass am RAM vorbei
+- `lw`: lesen; `sw`: schreiben an ALU-Adresse
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  ALU_Res[ALU Result] -->|Adresse| RAM[(Data Memory)]
+  WriteData[Register 2] -->|Write Data| RAM
+  RAM --> ReadData[Read Data]
+  style RAM fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style ALU_Res fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style WriteData fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style ReadData fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Bei `add` bleibt der Datenspeicher abgeriegelt; das ALU-Ergebnis fließt parallel weiter zum Write-Back.
+:::
+
+## Phase 5: Write-Back (WB)
+
+- Fertigen Wert in Zielregister `rd` ablegen
+- Rückführung zum Register File (visuell „nach links“)
+- `add`: ALU-Ergebnis; `lw`: RAM-Daten
+- `beq`/`sw`: kein Register-Schreiben — Phase inaktiv
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph RL
+  Result[ALU Result / RAM Data] -->|Schreibe in rd| RegFile[(Register File)]
+  style RegFile fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Result fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Mit dem Write-Back ist der Befehl vollständig abgearbeitet — bereit für den nächsten Takt.
+:::
+
+## Fetch und R-Type-Datenpfad
+
+- Aufbau des Hardware-Schaltplans beginnen
+- Fetch: Instruktion holen
+- PC und PC+4-Addierer
+- Verschaltung für `add`/`sub`
+- Timing innerhalb eines Taktes
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  PC --> ROM
+  ROM --> RegFile
+  RegFile --> ALU
+  style PC fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style ROM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style RegFile fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style ALU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Vom PC links nach rechts zum reinen Rechenpfad — R-Type ohne Datenspeicher.
+:::
+
+## Der Startpunkt: Der PC
+
+- Program Counter: spezielles 32-Bit-Register
+- Speichert den Ausführungszustand (State)
+- D-Flip-Flops: Update nur bei positiver Taktflanke
+- Während des Taktes: stabile Adresse am Ausgang
+
+::: notes
+Anker des Datenpfads. Flankengetriggert: neue Adresse einfrieren, bis zum nächsten Tick halten.
+:::
+
+## Instruction Memory (Befehlsspeicher)
+
+- Erstes Bauteil hinter dem PC
+- PC-Wert am Adress-Eingang
+- Single-Cycle-Modell: kombinatorische Ausgabe der Instruktion
+- Während der Ausführung: nur Lesen
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  PC((PC)) -->|Adresse| Mem[Instruction Memory]
+  Mem -->|32-Bit Instruction| Decoder
+  style Mem fill:#F5F5F7,stroke:#86868B,stroke-width:1.5px
+  style PC fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Decoder fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Adresse anlegen — nach kurzer Verzögerung liegt das 32-Bit-Wort am Ausgang. Fetch erledigt.
+:::
+
+## PC-Inkrementer ($PC + 4$)
+
+- Separater Hardware-Addierer (nicht die Haupt-ALU)
+- Fest verdrahtet: immer $+4$ zur PC-Adresse
+- Ergebnis zurück an den PC-Eingang — wartet auf die nächste Flanke
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  PC((PC)) --> Addierer[+4 Addierer]
+  Addierer -->|wartet auf Clock| PC
+  style Addierer fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style PC fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Kabel splitten: ein Strang zum Instruction Memory, einer zum $+4$-Addierer. Flip-Flops übernehmen erst beim Tick.
+:::
+
+## R-Type-Refresher
+
+- Instruktion liegt auf den Leitungen
+- Ziel: `add rd, rs1, rs2` physikalisch
+- Bits 19:15 = `rs1`, 24:20 = `rs2`, 11:7 = `rd`
+
+```text
+31          25 24  20 19  15 14  12 11   7 6      0
++-------------+------+------+------+------+--------+
+|   funct7    | rs2  | rs1  |funct3|  rd  | opcode |
++-------------+------+------+------+------+--------+
+                lesen  lesen         schreiben
+```
+
+::: notes
+32-Bit-Kabel aufspleißen: drei 5-Bit-Bündel für `rs1`, `rs2`, `rd` zum Register File.
+:::
+
+## Register lesen (ID)
+
+- Zwei Lese-Ports A1 und A2
+- `rs1`/`rs2` direkt angeschlossen
+- Kombinatorisch: Inhalte auf RD1 und RD2
+- Operanden physikalisch isoliert
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  RS1[Kabel rs1] --> A1
+  RS2[Kabel rs2] --> A2
+  A1 --> RegFile[(Register File)]
+  A2 --> RegFile
+  RegFile --> RD1[Daten RD1]
+  RegFile --> RD2[Daten RD2]
+  style RegFile fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Asynchron in der ID-Phase: Spannung an den Ports — Werte auf den Datenausgängen.
+:::
+
+## Die ALU (EX)
+
+- RD1 und RD2 in die ALU-Eingänge
+- Sofortige Verknüpfung (kombinatorisch)
+- Operation via ALU-Control (aus opcode/`funct3`)
+- Ergebnis am ALU-Ausgang
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  RD1 --> ALU((ALU))
+  RD2 --> ALU
+  Control[ALU Control] -.-> ALU
+  ALU --> Result[ALU Result]
+  style ALU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Control fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Kein Zwischenspeicher in der ALU: Gatterlaufzeiten, dann steht das Resultat. Execute-Phase erreicht.
+:::
+
+## Write-Back (WB)
+
+- Ergebnis zurück zur Werkbank
+- Leitung vom ALU-Ausgang zum WD-Port (Write Data)
+- Visuell der „rückwärts“-Pfad auf dem Plan
+- Bits warten am Register File
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph RL
+  ALURes[ALU Result] -->|zurueck| WD[Port WD]
+  WD --> Reg[(Register File)]
+  style Reg fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Bei R-Type wird MEM umgangen. Daten stehen an der Tür — noch nicht geschrieben.
+:::
+
+## Zieladresse (`rd`)
+
+- Schreibfach: Bits 11:7 (`rd`) an Port A3
+- Hardware für R-Type damit vollständig verdrahtet
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Inst[Bits 11:7] --> A3[Port A3]
+  A3 --> Reg[(Register File)]
+  style Reg fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+A3 sagt: „Schreibe die anliegenden Daten in Fach Nummer $rd$.“
+:::
+
+## Das RegWrite-Signal
+
+- Schutzventil: Steuerpin RegWrite (1 Bit)
+- RegWrite $= 1$: bei nächster Flanke in `rd` speichern
+- RegWrite $= 0$: Signale prallen ab (wichtig für `sw`/`beq`)
+
+::: notes
+Ohne RegWrite würde jedes Tick Register überschreiben. Nur bei erlaubtem Write-Back auf 1.
+:::
+
+## Der fertige R-Type-Pfad
+
+- Strom: PC → Instruction Memory → Register lesen → ALU → Write-Back
+- Kein Zugriff auf den Data Memory
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  PC --> ROM[Instruction Memory]
+  ROM -->|rs1 rs2 rd| Reg[Register File]
+  Reg -->|Daten| ALU
+  ALU -->|Ergebnis| Reg
+  style ALU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Synchronisierter Datenfluss ohne RAM. Als Nächstes: Timing — wann wird wirklich gespeichert?
+:::
+
+## Timing im Single-Cycle
+
+- Gatter arbeiten ununterbrochen; Signale breiten sich aus
+- Erst wenn EX/WB stabil: Ergebnis am Register-Eingang
+- Steigende Flanke am Taktende:
+  - Register File speichert (wenn RegWrite $= 1$)
+  - PC übernimmt $PC+4$
+- Sofort Start des nächsten Befehls
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[Ausbreitung: IF ID EX WB stabilisieren] --> B[Flanke: PC und rd speichern]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Während der Periode: Kombinatorik. Flanke: Zustände einfrieren. (Gantt-Darstellung bewusst als Phasen-Kette — handout-tauglich.)
+:::
+
+## Warum überschreiben wir nichts vorzeitig?
+
+- Fall: `rd` = `rs1`, z. B. `addi t0, t0, 1`
+- Alter Wert wird gelesen, durch ALU, steht am Schreib-Port
+- Flip-Flops ändern den Ausgang erst mit der Flanke
+- Deshalb ist $a = a + b$ gefahrlos
+
+```c
+t0 = t0 + t1;
+// Lesen und Schreiben im selben Takt — Flankensteuerung rettet uns
+```
+
+::: notes
+Klassische Klausurfrage: Lesen und Schreiben desselben Registers im Takt. Flankensteuerung hält den alten Wert stabil bis zum Tick.
+:::
+
+## Was passiert mit Phase 4 (MEM)?
+
+- Im reinen R-Type-Pfad fehlt der Data Memory
+- MEM existiert logisch, physikalisch Bypass
+- ALU-Ergebnis direkt zum Write-Back
+- Nächster Schritt: RAM für Load/Store einhängen, ohne R-Type zu zerstören
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  ALU -->|Bypass| WB[Write-Back]
+  RAM[(Data Memory)]
+  style RAM fill:#F5F5F7,stroke:#86868B,stroke-dasharray: 5 5
+  style ALU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style WB fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Ungenutzte Blöcke bleiben abgemeldet. Load/Store brauchen denselben Pfad — elegant erweitert, nicht neu erfunden.
+:::
+
+## Der Load/Store-Datenpfad
+
+- Konstanten (Immediates) in die ALU
+- Data Memory einbinden
+- Erster Ressourcenkonflikt — Multiplexer
+- Datenwege für `lw` und `sw`
+- Steuersignale MemRead / MemWrite
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Reg[Register] --> ALU
+  Imm[Immediate] --> ALU
+  ALU --> RAM[(Data Memory)]
+  style ALU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Reg fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Imm fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style RAM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Neue Leitungen erzeugen Kollisionen an ALU-Eingängen und Write-Back. Multiplexer als elektrische Weichen — nächster Bauabschnitt.
+:::
+
+
+## Das Problem mit I-Types
+
+- R-Type: beide Operanden aus dem Register File (`rs1`, `rs2`)
+- I-Type (`lw`, `addi`): kein `rs2` — stattdessen 12-Bit-Immediate
+- Die ALU hat 32-Bit-Eingänge
+- Die Konstante muss aus dem Befehlswort in die ALU gelangen
+
+```text
+31                            20 19    15 14    12 11     7 6        0
++-------------------------------+---------+---------+---------+----------+
+|          imm[11:0]            |   rs1   |  funct3 |    rd   |  opcode  |
++-------------------------------+---------+---------+---------+----------+
+                 diese 12 Bits muessen in die ALU
+```
+
+::: notes
+Für `lw` braucht die ALU Base + Offset. 12 Drähte an einen 32-Bit-Eingang zu löten reicht nicht — 20 Leitungen fehlen. Sign-Extension in Hardware ist nötig.
+:::
+
+## Immediate Generator (ImmGen)
+
+- Vereinfacht für I-Type: Bits 31:20 als 12-Bit-Immediate
+- S-/B-Formate nutzen andere Bitfelder — ImmGen kennt mehrere Layouts
+- 12-Bit-Eingang, 32-Bit-Ausgang
+- Aufgabe: Vorzeichenerweiterung (Sign-Extension) in Hardware
+- Beim I-Type: Bit 31 wird auf die oberen 20 Bits kopiert
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Inst[I-Type Bits 31:20] -->|12 Bits| ImmGen[Immediate Generator]
+  ImmGen -->|Sign Extension| Out[32-Bit Immediate]
+  style ImmGen fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Inst fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Out fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Einstieg am I-Type (`addi`, `lw`): ImmGen fächert das Vorzeichenbit auf. Bei Branches/Stores greifen andere Immediate-Layouts — dasselbe Bauteil, andere Verdrahtung der Instruktionsbits.
+:::
+
+## Der erste Konflikt (Kollision)
+
+- Zwei 32-Bit-Signale wollen denselben ALU-B-Eingang
+- `add`: Signal aus RD2 (Register File)
+- `lw`/`addi`: Signal aus ImmGen
+- Beide Kabel auf einen Kontakt = Kurzschluss
+
+::: notes
+Klassischer Ressourcenkonflikt. Lösung: elektronische Weiche — Multiplexer.
+:::
+
+## MUX 1: ALU-Source (`ALUSrc`)
+
+- Multiplexer: mehrere Eingänge, ein Ausgang
+- Steuerpin `ALUSrc`
+- `ALUSrc = 0`: RD2 zur ALU
+- `ALUSrc = 1`: Immediate zur ALU
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  RD2[Register RD2] -->|Eingang 0| MUX{MUX}
+  Imm[Immediate] -->|Eingang 1| MUX
+  Control[ALUSrc] -.->|Schalter| MUX
+  MUX -->|Sieger| ALU((ALU B))
+  style MUX fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style ALU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+MUX wie eine Bahnweiche: Control Unit stellt `ALUSrc`, Kurzschluss vermieden.
+:::
+
+## Load Word (`lw`) — die Adressierung
+
+- Mit MUX kann die ALU Konstanten verarbeiten
+- Bei `lw`: ALU berechnet nur die RAM-Adresse (Base + Offset)
+- Ergebnis = Hausnummer, kein „normales“ Rechenergebnis
+- Diese Adresse geht an den Datenspeicher
+
+```asm
+lw t0, 12(s1)
+# 1. ALUSrc = Immediate (12)
+# 2. ALU: s1 + 12
+# 3. Adresse am ALU-Ausgang
+```
+
+::: notes
+Base am A-Eingang, Offset über ImmGen/MUX am B-Eingang — Adresse für den Data Memory.
+:::
+
+## Data Memory (Datenspeicher)
+
+- Block in der MEM-Phase: Data Memory (RAM)
+- Address: Ausgang der ALU
+- Write Data: für Store
+- Read Data: gelesene Daten
+- Im Modell: kombinatorisches Lesen (wie Instruction Memory)
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  ALURes[ALU Adresse] --> Addr[Port Address]
+  Addr --> RAM[(Data Memory)]
+  RAM --> ReadData[Read Data]
+  style RAM fill:#F5F5F7,stroke:#86868B,stroke-width:1.5px
+  style ALURes fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Didaktisches Modell: getrennte Instruction- und Data-Memory-Blöcke. Adresse anlegen — Daten auf Read Data.
+:::
+
+## Daten aus dem RAM lesen
+
+- Read Data = Wert des `lw`
+- Write-Back: Leitung zurück zum WD-Port des Register Files
+- Ziel: bei der Flanke in `rd` speichern
+- Kollision: dort liegt bereits das ALU-Rückführkabel
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph RL
+  ReadData[Read Data] -->|zurueck| WD[Port WD]
+  WD --> Reg[(Register File)]
+  style Reg fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Zwei Kandidaten am WD-Port: ALU-Ergebnis (R-Type) vs. RAM-Daten (`lw`).
+:::
+
+## Der zweite Konflikt (`MemtoReg`)
+
+- WD empfängt nur ein 32-Bit-Signal
+- R-Type will ALU-Ergebnis; `lw` will RAM-Daten
+- Lösung: zweiter MUX vor dem Register File
+- Steuersignal: `MemtoReg`
+
+::: notes
+`MemtoReg = 1`: RAM durchlassen; `= 0`: ALU durchlassen.
+:::
+
+## Store Word (`sw`) — der Pfad
+
+- `sw`: `rs2` liefert die zu speichernden Daten
+- Wert liegt schon auf RD2 (ID-Phase)
+- Abzweig von RD2 zum Write-Data-Port des RAM (Bypass um die ALU)
+- ALU berechnet parallel Base + Offset als Adresse
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  RD2[Register RD2] -->|Bypass| WDRAM[Write Data RAM]
+  ALURes[ALU Base+Offset] --> AddrRAM[Address RAM]
+  WDRAM --> RAM[(Data Memory)]
+  AddrRAM --> RAM
+  style RAM fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Adresse wie bei `lw`; Datenpfad von RD2 direkt in den RAM-Schreibeingang.
+:::
+
+## Die Signale `MemWrite` und `MemRead`
+
+- Speicher braucht Schutzpins wie das Register File
+- `MemWrite = 1`: bei Flanke schreiben
+- `MemRead = 1`: Daten auf Read Data ausgeben
+- Bei `add`: beide 0 — RAM inaktiv
+
+::: notes
+RD2 wackelt oft am Speicher. Nur bei echtem Store öffnet `MemWrite` den Schreibpfad.
+:::
+
+## Store und das Register File
+
+- `sw` schreibt in den RAM, nicht in Register
+- S-Type: kein `rd` — auf dem rd-Kabel liegt Müll
+- `RegWrite` muss bei Store zwingend 0 sein
+- Sonst würde die Flanke ein Zufallsregister überschreiben
+
+```text
+Ohne RegWrite=0:
+MUX MemtoReg leitet immer etwas weiter —
+Store wuerde Register mit Muell beschreiben.
+```
+
+::: notes
+Zusammenspiel der Steuersignale: Store = RAM schreiben, Register File abgeriegelt.
+:::
+
+## Der Load/Store-Pfad erweitert
+
+- Rechnen (R-Type) und Speicherzugriff (I-/S-Type)
+- Multiplexer regeln den Verkehr
+- Es fehlt: dem PC das Springen beibringen
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  PC --> ROM --> RegFile
+  RegFile --> MUX1{ALUSrc} --> ALU
+  ALU --> RAM
+  RAM --> MUX2{MemtoReg} --> RegFile
+  style MUX1 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style MUX2 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Lineare Programme sind machbar. Nächste Stufe: Kontrollfluss — Branch-Datenpfad.
+:::
+
+## Der Branch-Datenpfad
+
+- Hardware für bedingte Entscheidungen
+- Problemstellung `beq`
+- ALU als Komparator (Zero-Ausgang)
+- Zweiter Addierer für das Branch-Target
+- Logische Verknüpfung der Sprungbedingung
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  ALU -->|Vergleich| Logik((AND))
+  Ziel[Branch-Addierer] -->|PC Target| MUX3{PCSrc}
+  Logik --> MUX3
+  style Logik fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style MUX3 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Register vergleichen und PC dynamisch setzen — wenn die Bedingung wahr ist.
+:::
+
+## Das Branch-Problem (`beq`)
+
+- `beq rs1, rs2, Label`: zwei Aufgaben in einem Takt
+- Bedingung: sind `rs1` und `rs2` gleich?
+- Navigation: neues PC-Ziel = aktueller PC + Offset
+- Beides braucht Addition/Subtraktion — nur eine Haupt-ALU
+
+```asm
+# Hardware-Sicht:
+# 1. rs1 == rs2 ?
+# 2. PC_neu = PC + Offset
+# wenn (1): PC = PC_neu
+```
+
+::: notes
+Ressourcenkonflikt: Vergleich und Target-Berechnung gleichzeitig — zweiter Addierer nötig.
+:::
+
+## Vergleich in Hardware (Subtraktion)
+
+- Trick: Subtraktion statt direktem Gleichheitstest
+- ALU: Ergebnis $= rs1 - rs2$
+- Identisch $\Rightarrow$ Ergebnis $= 0$
+- Dann war `beq` erfolgreich
+
+```text
+Wenn A == B, dann A - B == 0
+```
+
+::: notes
+Ungleich null $\Rightarrow$ ungleich. Hardware prüft, ob das ALU-Ergebnis nur Nullen enthält.
+:::
+
+## Die ALU und der Zero-Ausgang
+
+- Dedizierter 1-Bit-Ausgang: Zero (oft „Zero-Flag“ genannt)
+- NOR über alle 32 Ergebnisbits
+- Alle Bits 0 $\Rightarrow$ Zero $= 1$
+- Sonst Zero $= 0$
+- Das Datenwort der ALU wird bei Branches typisch verworfen
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  A[rs1] --> ALU
+  B[rs2] --> ALU
+  ALU --> Result[Result 32-Bit]
+  ALU --> Zero[Zero = 1]
+  style Zero fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style ALU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Hinweis Terminologie: In RISC-V-Datenpfaden ist Zero ein ALU-Ausgangspin, kein separates Statusregister wie bei x86. Ein Draht = Wahrheitsbit für den Branch.
+:::
+
+## Zieladresse berechnen (Navigation)
+
+- Haupt-ALU ist mit der Subtraktion belegt
+- Offset steckt im B-Type als zerrissenes Immediate
+- ImmGen setzt zusammen und sign-extended auf 32 Bit
+- Negative Offsets: Sprünge „nach oben“ (Schleifen)
+
+```text
+31             25 24    20 19    15 14    12 11      7 6        0
++----------------+---------+---------+---------+----------+----------+
+| imm[12|10:5]   |   rs2   |   rs1   |  funct3 |imm[4:1|11]|  opcode |
++----------------+---------+---------+---------+----------+----------+
+```
+
+::: notes
+ImmGen kennt auch das B-Format. Zweierkomplement erlaubt rückwärts gerichtete Sprünge.
+:::
+
+## Offset-Aufbereitung (Shift Left 1)
+
+- Immediate vor der PC-Addition um 1 Bit nach links ($\cdot 2$)
+- Instruktionen enden nie auf ungerader Byte-Adresse
+- Unterstes Bit der Distanz ist implizit 0 — Compiler speichert es nicht
+- Hardware hängt die 0 per Shift an — größere Sprungreichweite
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  ImmGen[32-Bit Immediate] --> SL1[Shift Left 1]
+  SL1 -->|Offset| Addierer
+  style SL1 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Vereinfachte Darstellung für RV32I: Wortausrichtung und B-Immediate-Skalierung. Details in Harris/Patterson und in Ripes nachvollziehbar.
+:::
+
+## Der Branch-Addierer
+
+- Zweiter, dedizierter Addierer (Haupt-ALU blockiert)
+- Eingang 1: aktueller PC
+- Eingang 2: aufbereitetes Offset
+- Ausgang: Branch Target
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  PC[Aktueller PC] --> Adder[Branch-Addierer]
+  Imm[Shifted Immediate] --> Adder
+  Adder --> Target[Branch Target]
+  style Adder fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Silizium für Parallelität: Vergleich und Target-Berechnung im selben Takt.
+:::
+
+## Der dritte Konflikt (PC-Update)
+
+- Am Taktende braucht der PC eine neue Adresse
+- Kandidat 1: $PC + 4$
+- Kandidat 2: Branch Target
+- Zwei Kabel am PC-Eingang — wieder MUX nötig
+
+::: notes
+Dritter Weichensteller: direkt vor dem PC-Register.
+:::
+
+## MUX 3: PC-Source (`PCSrc`)
+
+- MUX vor dem PC-Eingang
+- Port 0: linear ($PC + 4$)
+- Port 1: Branch Target
+- Steuersignal: `PCSrc`
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph RL
+  PC4[PC + 4] -->|Port 0| MUX{PCSrc MUX}
+  Target[Branch Target] -->|Port 1| MUX
+  MUX -->|Sieger| PC((PC))
+  style MUX fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Wer stellt `PCSrc`? Nur bei echtem, erfolgreichem Branch umschalten.
+:::
+
+## Wer steuert `PCSrc`? (Die Logik)
+
+- Zwei Bedingungen gleichzeitig:
+  - Befehl ist Branch (Control: Branch $= 1$)
+  - Vergleich erfolgreich (ALU: Zero $= 1$)
+- Verknüpfung mit AND-Gatter
+- $\mathrm{PCSrc} = \mathrm{Branch} \land \mathrm{Zero}$
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Branch[Control Branch=1] --> AND((AND))
+  Zero[ALU Zero=1] --> AND
+  AND -->|an MUX| MUX{PCSrc}
+  style AND fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Zufällige ALU-Null bei `sub` darf nicht springen — nur Branch-Opcode plus Zero.
+:::
+
+## Trace: Branch Taken
+
+- Bedingung wahr: `beq`, Register gleich
+- AND $= 1$, MUX auf Port 1
+- Nächste Flanke: Target in den PC — Sprung erfolgt
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Logik[AND = 1] -.-> MUX{PCSrc}
+  Target[Branch Target] -->|gewaehlt| MUX
+  MUX --> PC
+  style Target fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Zero leuchtet, Branch leuchtet, AND feuert, Weiche klappt — PC übernimmt das Label.
+:::
+
+## Trace: Branch Not Taken (Fall-Through)
+
+- Bedingung falsch: Register ungleich
+- Zero $= 0$ → AND $= 0$
+- MUX bleibt auf Port 0: $PC + 4$
+- Target-Adresse verpufft ungenutzt
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Logik[AND = 0] -.-> MUX{PCSrc}
+  PC4[PC + 4] -->|gewaehlt| MUX
+  MUX --> PC
+  style PC4 fill:#FFFFFF,stroke:#86868B,stroke-width:2px !important
+```
+
+::: notes
+Fall-Through: lineare Fortsetzung. Eleganz reiner Kombinatorik plus einer Flanke.
+:::
+
+## Unbedingte Sprünge (`jal`) — Ausblick
+
+- `jal` braucht etwas mehr Verdrahtung als `beq`
+- Bedingungslos: `PCSrc` gezielt auf Target
+- Rückflugticket: $PC+4$ muss nach `rd` (meist `ra`)
+- Extra-MUX/Kabel zum Write-Back — im Blockdiagramm vereinfacht
+- In Ripes im Labor sichtbar
+
+```text
+jal ra, Label:
+  PC = Target
+  ra = PC+4
+```
+
+::: notes
+Vereinfachung: Wir blenden die `jal`-Write-Back-Kabel hier aus; Einheit 4 und Ripes zeigen den Link-Pfad.
+:::
+
+## Die Anatomie ist fast komplett
+
+- Speicher/Register: PC, Instruction Memory, Data Memory, Register File
+- Rechenwerke: Haupt-ALU, Branch-Addierer, $+4$-Addierer
+- Weichen: drei Multiplexer (`ALUSrc`, `MemtoReg`, `PCSrc`)
+- Branch-Logik: Zero und AND
+
+::: notes
+Als Nächstes: Teilpfade zum Master-Diagramm und die Rolle der Control Unit.
+:::
+
+## Der komplette Datenpfad
+
+- Alle Teilpfade zu einem System
+- Klassisches Architektur-Diagramm (Harris/Patterson)
+- Control Unit als Dirigent der Steuersignale
+- Schwäche des Single-Cycle: Timing / Taktperiode
+- Ausblick: warum Pipelining nötig wird
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Control[Control Unit] -.->|steuert MUXe| Datapath[Gesamter Datenpfad]
+  style Control fill:#FFFFFF,stroke:#86868B,stroke-width:2px,stroke-dasharray: 5 5
+  style Datapath fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Finale Theorie: Steuerwerk und Datenpfad zusammen. Das vereinfachte Gesamtbild folgt nach der Ressourcen-/MUX-Zusammenfassung; danach Timing und Pipelining-Ausblick.
+:::
+
+
+## Der Ressourcenkonflikt (Zusammenfassung)
+
+- Drei Teilpfade: R-Type, Load/Store, Branch
+- Problem: keine eigene ALU/Register File pro Befehlstyp
+- Transistoren kosten Fläche, Energie und Geld
+- Lösung: Pfade überlagern — gemeinsame Nutzung (Reuse)
+- Dieselbe ALU: mal Addition, mal Adresse, mal Vergleich
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  R[R-Type] --> Chip[Ein Chip]
+  M[Memory] --> Chip
+  B[Branch] --> Chip
+  style Chip fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style R fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style M fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Drei ALUs wären absurd teuer. Eine ALU dient nacheinander ganz unterschiedlichen Befehlen — das ist die Genialität der Architektur.
+:::
+
+## Multiplexer: Die Weichensteller
+
+- Wie vermeiden wir Chaos beim Zusammenlegen der Kabel?
+- Antwort: unsere drei Multiplexer
+- Verkehrspolizisten des Datenpfads
+- Ohne sie: Kurzschlüsse an teuren Eingängen (ALU, PC, Register)
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  SignalA[Signal A] --> MUX{MUX}
+  SignalB[Signal B] --> MUX
+  MUX -->|einziger Ausgang| Hardware[teure Hardware]
+  style MUX fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Zwei Quellen, ein Ziel: Kabel aufschneiden, MUX dazwischen, ein sauberes Ausgangskabel.
+:::
+
+## Der komplette Datenpfad (Harris/Patterson)
+
+- Single-Cycle Datapath nach Patterson und Hennessy (vereinfachte Übersicht)
+- Vereint IF, ID, EX, MEM, WB; drei MUX-Weichen hervorgehoben
+- Rote gestrichelte Linien: Steuersignale der Control Unit
+- In Ripes sehen Sie denselben Aufbau live und vollständiger
+
+![Single-Cycle-Datenpfad (vereinfacht)](../assets/images/single-cycle-datapath.svg){.nostretch}
+
+::: notes
+Meisterdiagramm der Rechnerarchitektur — hier didaktisch verdichtet. Jedes Bauteil kennen Sie bereits. Zoomen Sie in Ripes in die Leitungen; dort fehlen keine Bitbreiten und Flags.
+:::
+
+## Weiche 1: `ALUSrc`
+
+- Vor der Haupt-ALU
+- Entscheidung: womit rechnen?
+- 0: zweites Register (RD2)
+- 1: Immediate aus ImmGen
+
+```text
+add  t0, t1, t2  -> ALUSrc = 0
+addi t0, t1, 5   -> ALUSrc = 1
+```
+
+::: notes
+R-Type: Registerkabel. I-Type/`lw`: ImmGen-Pfad.
+:::
+
+## Weiche 2: `MemtoReg`
+
+- Rechts vor dem Write-Back
+- Entscheidung: was nach `rd`?
+- 0: ALU-Ergebnis
+- 1: RAM-Daten
+- Bei `sw`/`beq`: Stellung oft Don't Care (weil `RegWrite = 0`)
+
+```text
+add t0, t1, t2  -> MemtoReg = 0
+lw  t0, 0(s1)   -> MemtoReg = 1
+```
+
+::: notes
+Ohne `RegWrite` prallt Müll am Register File ab — Don't Care ist ungefährlich.
+:::
+
+## Weiche 3: `PCSrc`
+
+- Oben links vor dem PC
+- 0: $PC + 4$ (Fall-Through)
+- 1: Branch Target
+- Einzige Weiche, die auch vom ALU-Zero abhängt (AND mit Branch)
+
+```text
+add ...              -> PCSrc = 0
+beq ... (genommen)   -> PCSrc = 1
+```
+
+::: notes
+Navigator des Prozessors: linear weiter oder Sprung — Control plus Live-Ergebnis der ALU.
+:::
+
+## Die Steuersignale (Control)
+
+- Typisch: RegWrite, MemRead, MemWrite, ALUSrc, ALUOp, …
+- Quelle: Control Unit (Steuerwerk)
+- Liest den Opcode und erzeugt die Weichen-/Speicher-Signale
+- Detailbau der Control Unit: Einheit 6
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Opcode[Opcode] --> Control((Control Unit))
+  Control -.->|ALUSrc| MUX1
+  Control -.->|RegWrite| Reg
+  Control -.->|MemWrite| RAM
+  style Control fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important,stroke-dasharray: 5 5
+```
+
+::: notes
+Dirigent von oben: Opcode analysieren, Multiplexer und Schreibfreigaben in Nanosekunden setzen.
+:::
+
+## Das Timing-Problem (Critical Path)
+
+- Single-Cycle: alles in einem Takt
+- Nächste Flanke erst, wenn das letzte Signal stabil ist
+- Taktperiode $\ge$ kritischer Pfad (längste Verzögerungskette)
+- Zu schneller Takt: nächster Fetch vor Write-Back — Absturz
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  Fast[Schneller Befehl z. B. add] --> Edge[Clock Edge]
+  Slow[Langsamer Befehl lw] --> Edge
+  style Slow fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Fast fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Edge fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Die Taktfrequenz muss zum langsamsten Befehl passen — Critical Path diktiert die MHz.
+:::
+
+## Welcher Befehl ist der langsamste?
+
+- `add`: Fetch → Decode → ALU → Write-Back (RAM idle)
+- `beq`: Fetch → Decode → ALU/Branch-Addierer → PC
+- Verlierer: `lw` — alle Stationen inkl. Data-Memory
+- Gesamte CPU muss so langsam takten, dass `lw` in einen Zyklus passt
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  IF[Fetch] --> ID[Decode]
+  ID --> EX[ALU Adresse]
+  EX --> MEM[RAM lesen]
+  MEM --> WB[Write-Back]
+  style MEM fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Zwei Speicherzugriffe plus langes Write-Back-Kabel: `lw` bestimmt den kritischen Pfad.
+:::
+
+## Das Ende des Single-Cycle
+
+- Langer Takt für `lw` verschwendet Zeit bei schnellen Befehlen
+- `add` ist früh fertig — ALU wartet bis zum Tick
+- Ineffiziente Hardware-Nutzung
+- Für hohe GHz: Architektur umbauen
+
+::: notes
+Todesstoß des Single-Cycle in der Praxis: teures Silizium steht oft still.
+:::
+
+## Ausblick: Pipelining (Fließband)
+
+- Langen Zyklus in fünf kurze Takte zerlegen
+- Fließband: während Befehl 1 in ID ist, startet Befehl 2 in IF
+- Alle Blöcke arbeiten gleichzeitig an verschiedenen Befehlen
+- Vertiefung: Einheit 7
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  B1IF[Befehl1 IF] --> B1ID[Befehl1 ID]
+  B2IF[Befehl2 IF]
+  B1ID -.-> B2IF
+  style B1IF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style B2IF fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B1ID fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Heute bleibt das übersichtliche Single-Cycle-Modell. Pipelining kommt in Einheit 7.
+:::
+
+## Praxis: Ripes Onboarding
+
+- Von abstrakten Diagrammen zur Simulation
+- Tool: Ripes — Code-Editor plus Live-Hardware
+- Stromsignale auf Leitungen ablesen
+- Step-/Clock-Debugging auf den Gattern
+
+::: notes
+Venus bleibt für Software. Ripes macht das Harris/Patterson-Diagramm interaktiv.
+:::
+
+## Venus vs. Ripes
+
+- Venus: Software-Fokus, Algorithmen, Register/RAM-Ergebnisse
+- Ripes: Hardware-Fokus, Bits auf Leitungen, MUX und ALU live
+- Code in Ripes etwas unbequemer — visuelles Feedback unschlagbar
+
+```text
+Venus = Blick des Programmierers
+Ripes = Blick des Chip-Designers
+```
+
+::: notes
+Tool nach Fragestellung wählen: Algorithmus → Venus; Datenpfad → Ripes.
+:::
+
+## Die UI: Prozessorwahl
+
+- Zuerst den richtigen Chip einbauen
+- Ripes bietet Single-Cycle und Pipeline-Varianten
+- Heute zwingend: Single-Cycle Processor
+- 5-Stage Pipeline wäre für heute irreführend
+
+::: notes
+Chip-Icon oben links: Single-Cycle wählen — exakt der Folien-Prozessor.
+:::
+
+## Die UI: Editor-Tab
+
+- Assembler wie in Venus (RISC-V)
+- Kleine Tests: `add`, `lw`, `beq`
+- Ripes assembliert oft live (kein separater Compile-Klick)
+
+```asm
+.text
+    li t0, 10
+    li t1, 15
+    add t2, t0, t1
+```
+
+::: notes
+`.text`-Direktiven und Mnemonics wie gewohnt. Danach Processor-Tab öffnen.
+:::
+
+## Die UI: Datenpfad-Reiter
+
+- Herzstück: Patterson/Hennessy-Diagramm live
+- Dicke Linien: 32-Bit-Daten
+- Tracing: Clock/Step — einen Takt nach dem anderen
+- Run vermeiden, wenn Sie Signale verstehen wollen
+
+::: notes
+PC links, ALU Mitte, Data Memory rechts — Clock-Tick treibt exakt einen Zyklus.
+:::
+
+## Signale live ablesen
+
+- Hex-Werte auf den Leitungen sichtbar
+- Datenleitungen vs. 1-Bit-Steuersignale
+- Beispiel: $t0=10$, $t1=15$ → ALU-Ausgang $0x19$ (25)
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  A[0x0000000A] --> ALU((ALU))
+  B[0x0000000F] --> ALU
+  ALU --> C[0x00000019]
+  style ALU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Maus über Werte: oft Dezimal-Tooltip. Theorie wird messbar.
+:::
+
+## Multiplexer in Ripes untersuchen
+
+- Bei `lw`: MUX vor der ALU (`ALUSrc`) suchen
+- Steuersignal prüfen: steht es auf 1?
+- Beobachtung: ImmGen-Pfad wird zur ALU durchgeschaltet
+
+::: notes
+Visuelles Feedback: Control Unit zieht am Faden, Weiche klappt — Theorie greifbar.
+:::
+
+## Register und RAM inspizieren
+
+- Seitenleisten: Registers und Memory (wie Venus)
+- Bei `sw`: MemWrite im Diagramm auf 1, Byte im Memory-Tab aktualisiert
+
+```text
+Kette fuer sw t0, 0(s1):
+1. Code tippen
+2. Clock
+3. MemWrite = 1 im Datenpfad
+4. Memory-Tab: Wert liegt im RAM
+```
+
+::: notes
+Diagramm und Tabellen zusammen lesen — Store wird physisch sichtbar.
+:::
+
+## Labor-Aufgabe 1: R-Type-Trace
+
+- Code: `li t0, 50` / `li t1, 100` / `add a0, t0, t1`
+- Bis zum `add` steppen
+- Fragen: Hex auf RD1? Wert von `ALUSrc`? Wert von `RegWrite`?
+
+::: notes
+Reine Analyse, kein schweres Programmieren. Stimmen die Leitungen mit der Theorie?
+:::
+
+## Labor-Aufgabe 2: Der Load-Trace
+
+- `.data` mit `.word 99, 88`
+- Base in `s1`, dann `lw a0, 4(s1)`
+- ImmGen: wird 4 zu 32-Bit?
+- Welche Adresse berechnet die ALU?
+- Stellung von `MemtoReg` ganz rechts?
+
+```asm
+.data
+werte: .word 99, 88
+.text
+    la s1, werte
+    lw a0, 4(s1)
+```
+
+::: notes
+Kritischer Pfad live: ImmGen, Adress-ALU, RAM, MemtoReg — langsamster Befehl.
+:::
+
+## Q&A und Hands-on
+
+- Ripes starten (Browser oder lokal)
+- Single-Cycle Processor einstellen
+- Leitungen explorieren — die CPU ist kein Mysterium mehr
+- Viel Erfolg beim Hardware-Hacking
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Code[Code] -->|Clock| Trace[Signale]
+  Trace --> Analyse{Verstanden?}
+  Analyse -->|Nein| Trace
+  Analyse -->|Ja| Win((Meisterhaft))
+  style Win fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Damit endet Einheit 5: Assembler trifft Silizium. Im Labor Single-Cycle checken und den Datenpfad auseinandernehmen.
+:::
