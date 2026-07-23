@@ -91,7 +91,7 @@ jobs:
           done
           ls -la _site/vorlesungen/*-handout.pdf
 
-      # --- Labor-Übungsblätter (nur Studierenden-Version, keine Musterlösungen) ---
+      # --- Labor-Übungsblätter (Studierende + Musterlösung) ---
       - name: Render lab exercise sheets (student version)
         id: labs
         timeout-minutes: 15
@@ -100,44 +100,59 @@ jobs:
           set -uo pipefail
           failed=0
           shopt -s nullglob
-          # Im labs/-Projekt rendern (labs/_quarto.yml), nur Studierenden-Version
-          # — keine Vorlage, kein --profile solution (Musterlösungen bleiben privat)
+          mkdir -p ../_site/labs
           cd labs
-          for qmd in lab_[0-9][0-9]_*.qmd; do
+          for qmd in lab_[0-9][0-9]_*.qmd probeklausur.qmd; do
+            [ -f "$qmd" ] || continue
             case "$qmd" in
               *template*) continue ;;
             esac
+            base="${qmd%.qmd}"
             echo "Rendering lab (student): $qmd"
             if ! quarto render "$qmd" --to pdf; then
-              echo "::warning::Laborblatt fehlgeschlagen: $qmd"
+              echo "::warning::Laborblatt (Studierende) fehlgeschlagen: $qmd"
               failed=1
+              continue
             fi
+            cp "${base}.pdf" "../_site/labs/${base}.pdf"
           done
           if [ "$failed" -ne 0 ]; then
             exit 1
           fi
 
-      - name: Attach lab PDFs to website
+      - name: Render lab exercise sheets (solution version)
+        id: labs_solution
+        timeout-minutes: 15
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          failed=0
+          shopt -s nullglob
+          mkdir -p ../_site/labs
+          cd labs
+          for qmd in lab_[0-9][0-9]_*.qmd probeklausur.qmd; do
+            [ -f "$qmd" ] || continue
+            case "$qmd" in
+              *template*) continue ;;
+            esac
+            base="${qmd%.qmd}"
+            echo "Rendering lab (solution): $qmd"
+            if ! quarto render "$qmd" --to pdf --profile solution; then
+              echo "::warning::Laborblatt (Musterlösung) fehlgeschlagen: $qmd"
+              failed=1
+              continue
+            fi
+            cp "${base}.pdf" "../_site/labs/${base}-musterloesung.pdf"
+          done
+          if [ "$failed" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: List published lab PDFs
         if: always() && !cancelled()
         run: |
           mkdir -p _site/labs
-          shopt -s nullglob
-          copied=0
-          for pdf in labs/lab_[0-9][0-9]_*.pdf; do
-            base=$(basename "$pdf")
-            case "$base" in
-              *template*) continue ;;
-              *muster*) continue ;;
-              *solution*) continue ;;
-            esac
-            cp "$pdf" "_site/labs/$base"
-            copied=1
-          done
-          if [ "$copied" -eq 0 ]; then
-            echo "Keine Labor-PDFs vorhanden."
-            exit 0
-          fi
-          ls -la _site/labs/
+          ls -la _site/labs/ || echo "Keine Labor-PDFs vorhanden."
 
       # Deaktiviert, solange das Repository privat ist (GitHub Pages nicht verfügbar).
       # - name: Publish to GitHub Pages

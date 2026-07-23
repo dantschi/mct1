@@ -50,19 +50,25 @@ Interaktive Folien (Reveal.js) und PDF-Handouts (Folie + Skriptnotizen). Die Lin
 
 ## Laborblätter
 
-Übungsblätter zur Vertiefung der Vorlesungseinheiten (PDF, Studierenden-Version ohne Musterlösungen).
+Übungsblätter zur Vertiefung der Vorlesungseinheiten. Pro Blatt gibt es die **Studierenden-Version** (ohne Lösungen) und die **Musterlösung**.
 
-| Labor | Thema | PDF |
-|------:|-------|:---:|
-| 1 | Datenrepräsentation und Logik-Refresher | [PDF](https://dantschi.github.io/mct1/labs/lab_01_datenrepraesentation-logik.pdf) |
-| 2 | RISC-V Basics & Venus Onboarding | [PDF](https://dantschi.github.io/mct1/labs/lab_02_riscv-basics-venus.pdf) |
-| 3 | Speicherzugriff & Kontrollfluss | [PDF](https://dantschi.github.io/mct1/labs/lab_03_speicherzugriff-kontrollfluss.pdf) |
-| 4 | Funktionen & der Stack | [PDF](https://dantschi.github.io/mct1/labs/lab_04_funktionen-stack.pdf) |
-| 5 | Der Single-Cycle-Datenpfad | [PDF](https://dantschi.github.io/mct1/labs/lab_05_single-cycle-datenpfad.pdf) |
-| 6 | Das Steuerwerk (Control Unit) | [PDF](https://dantschi.github.io/mct1/labs/lab_06_steuerwerk.pdf) |
-| 7 | Performance & Pipelining | [PDF](https://dantschi.github.io/mct1/labs/lab_07_performance-pipelining.pdf) |
-| 8 | I/O & Systemarchitektur | [PDF](https://dantschi.github.io/mct1/labs/lab_08_io-systemarchitektur.pdf) |
-| 9 | Wrap-Up & Finale (State Machine) | [PDF](https://dantschi.github.io/mct1/labs/lab_09_wrap-up-state-machine.pdf) |
+| Labor | Thema | Studierende | Musterlösung |
+|------:|-------|:-----------:|:------------:|
+| 1 | Datenrepräsentation und Logik-Refresher | [PDF](https://dantschi.github.io/mct1/labs/lab_01_datenrepraesentation-logik.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_01_datenrepraesentation-logik-musterloesung.pdf) |
+| 2 | RISC-V Basics & Venus Onboarding | [PDF](https://dantschi.github.io/mct1/labs/lab_02_riscv-basics-venus.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_02_riscv-basics-venus-musterloesung.pdf) |
+| 3 | Speicherzugriff & Kontrollfluss | [PDF](https://dantschi.github.io/mct1/labs/lab_03_speicherzugriff-kontrollfluss.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_03_speicherzugriff-kontrollfluss-musterloesung.pdf) |
+| 4 | Funktionen & der Stack | [PDF](https://dantschi.github.io/mct1/labs/lab_04_funktionen-stack.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_04_funktionen-stack-musterloesung.pdf) |
+| 5 | Der Single-Cycle-Datenpfad | [PDF](https://dantschi.github.io/mct1/labs/lab_05_single-cycle-datenpfad.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_05_single-cycle-datenpfad-musterloesung.pdf) |
+| 6 | Das Steuerwerk (Control Unit) | [PDF](https://dantschi.github.io/mct1/labs/lab_06_steuerwerk.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_06_steuerwerk-musterloesung.pdf) |
+| 7 | Performance & Pipelining | [PDF](https://dantschi.github.io/mct1/labs/lab_07_performance-pipelining.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_07_performance-pipelining-musterloesung.pdf) |
+| 8 | I/O & Systemarchitektur | [PDF](https://dantschi.github.io/mct1/labs/lab_08_io-systemarchitektur.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_08_io-systemarchitektur-musterloesung.pdf) |
+| 9 | Wrap-Up & Finale (State Machine) | [PDF](https://dantschi.github.io/mct1/labs/lab_09_wrap-up-state-machine.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_09_wrap-up-state-machine-musterloesung.pdf) |
+
+### Probeklausur
+
+| Dokument | Studierende | Musterlösung |
+|----------|:-----------:|:------------:|
+| Probeklausur (90 Min., 100 Punkte) | [PDF](https://dantschi.github.io/mct1/labs/probeklausur.pdf) | [PDF](https://dantschi.github.io/mct1/labs/probeklausur-musterloesung.pdf) |
 
 Quelltexte liegen unter [`labs/`](labs/).
 
