@@ -1,0 +1,1425 @@
+---
+title: "Mikrocomputertechnik 1"
+subtitle: "Einheit 3: Speicherzugriff & Kontrollfluss"
+author: "Prof. Dr.-Ing. Daniel Klünder"
+# Vortrag:  quarto preview vorlesungen/03_speicher-kontrollfluss.qmd
+#           (Notizen nur mit Taste S)
+# Handout:  quarto render vorlesungen/03_speicher-kontrollfluss.qmd --profile handout --to pdf
+#           → _handout/vorlesungen/03_speicher-kontrollfluss.pdf
+format: revealjs
+---
+
+# Speicherzugriff & Kontrollfluss
+
+## Von Arrays zu Schleifen
+
+- Herzlich willkommen zur dritten Vorlesung in Mikrocomputertechnik 1
+- Heute: von einfachen Variablen zu großen Datenmengen
+- Kommunikation der CPU mit dem Arbeitsspeicher (RAM)
+- Ausbruch aus dem linearen Programmablauf: Entscheidungen treffen
+- Ziel: C-Schleifen in Hardware-nahen Assembler-Code übersetzen
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  RAM[(RAM)] -->|Load| CPU[CPU / Register]
+  CPU -->|Branch/Jump| CPU
+  CPU -->|Store| RAM
+  style CPU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style RAM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Herzlich willkommen zu Einheit 3. Bisher haben wir uns in einer sicheren, aber kleinen Welt bewegt: der Werkbank mit 32 Registern. Addieren und Subtrahieren funktionieren, solange alle Daten griffbereit sind. Ein Bild mit zwei Millionen Pixeln passt dort nicht hinein. Heute: Daten aus dem Arbeitsspeicher holen, verarbeiten und zurücklegen — und dem Prozessor beibringen, If-/Else-Entscheidungen und Schleifen auszuführen.
+:::
+
+## Agenda für den heutigen Tag
+
+1. Der Arbeitsspeicher — RAM-Konzept und Pointer-Grundlagen
+2. Load & Store (Words) — 32-Bit-Daten und die 4-Byte-Schrittweite
+3. Teilzugriffe — einzelne Bytes und das S-Type-Format
+4. Kontrollfluss — bedingte Sprünge (Branches) für If-Abfragen
+5. Unbedingte Sprünge — Jumps und das Überspringen von Else-Blöcken
+6. Praxis in Venus — For- und While-Schleifen über Arrays
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  A[RAM / Pointer] --> B[Load / Store]
+  B --> C[Bytes / S-Type]
+  C --> D[Branches]
+  D --> E[Jumps]
+  E --> F[Venus]
+  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style F fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Die Route teilt sich in zwei Hälften. Erstens die Daten: Speichermodell aus Einheit 1, Load-/Store-Befehle und Pointer-Arithmetik in Assembler. Zweitens die Logik: den Program Counter manipulieren, damit Code dynamisch springt. Zum Schluss führen wir beides im Venus-Simulator zusammen.
+:::
+
+## Rückblick: Was wir bisher können
+
+- Basis-Arithmetik: `add`, `sub` und logische Operationen
+- Strikte Assembler-Syntax: Befehl `rd, rs1, rs2`
+- I-Type: Konstanten direkt im Code (`addi`)
+- Wichtige ABI-Register: `t0`–`t6`, `a0`–`a7`, `s0`–`s11`
+- Jeder Befehl ist intern exakt 32 Bit groß
+
+```asm
+# Bisheriges Maximum an Komplexität:
+li t0, 100         # Lade Konstante 100
+addi t1, t0, 50    # t1 = 100 + 50
+```
+
+::: notes
+Kurz rekapituliert: Im letzten Labor haben Sie Register addiert, Bits verschoben und mit Konstanten gerechnet. Pseudo-Instruktionen wie `li` nehmen Arbeit ab. Gemeinsamkeit aller bisherigen Operationen: Sie wirken nur auf Daten, die fest im Code stehen oder bereits in der CPU liegen. Wir waren isoliert vom Rest des Computers.
+:::
+
+## Das Register-Limit (Die Werkbank)
+
+- Die CPU besitzt exakt 32 Architektur-Register (unsere „Werkbank“)
+- Jedes Register fasst exakt 32 Bit (4 Bytes)
+- Gesamte Arbeitskapazität der CPU: nur 128 Bytes
+- Ein C-Array mit 1000 Integern benötigt bereits 4000 Bytes
+- Echte Programme und Datenmassen passen nie komplett in die CPU
+
+::: notes
+Zentrale Erkenntnis: Das Register-File ist extrem schnell, aber winzig — $32 \times 4 = 128$ Bytes. Das reicht kaum für einen kurzen Text. Sensordaten oder Bilder brauchen den Main Memory (RAM) mit vielen Gigabytes. Hardwarenahe Programmierung heißt: Daten geschickt vom großen, langsameren Lager auf die kleine, schnelle Werkbank jonglieren.
+:::
+
+## Die Memory Wall (Latenzen)
+
+- Daten in Registern: typisch in etwa einem Taktzyklus verfügbar
+- Der Main Memory (RAM) liegt physisch außerhalb der CPU
+- Ein RAM-Zugriff dauert oft 100 bis 300 Taktzyklen
+- Diese Geschwindigkeitskluft heißt Memory Wall
+- Jeder unnötige RAM-Zugriff bremst das Programm stark ab
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  R[Register: ca. 1 Takt] --> W[Memory Wall]
+  M[RAM: 100 bis 300 Takte] --> W
+  style R fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style M fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style W fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Warum nicht einfach mehr Register? Physik setzt Grenzen. Der Arbeitsspeicher liegt Zentimeter entfernt; Signale brauchen Zeit. Register: ein Takt. RAM: oft 100–300 Takte — der Prozessor wartet (Stalls). Deshalb halten gute Compiler Variablen möglichst lange in Registern und schreiben selten in den RAM.
+:::
+
+## Das RAM-Modell (Refresher)
+
+- RAM als langes Array aus winzigen Fächern
+- Jedes Fach hat eine eindeutige Hausnummer: die Speicheradresse
+- Adressen in RV32I: 32 Bit (`0x00000000` bis `0xFFFFFFFF`)
+- Ein 32-Bit-Pointer adressiert $2^{32}$ Bytes — also 4 Gigabyte
+- Das C-Programm sieht diesen linearen Adressraum für sich allein
+
+| Adresse (Hex) | Wert (Hex) | Bedeutung   |
+|---------------|------------|-------------|
+| `0x10000000`  | `0x12`     | Erstes Fach |
+| `0x10000001`  | `0xAB`     | Zweites Fach|
+| `0x10000002`  | `0x00`     | Drittes Fach|
+
+::: notes
+Erinnerung an Einheit 1: Der Arbeitsspeicher ist logisch simpel — ein endloses Regal mit Hausnummern (Adressen). Mit 32-Bit-Adressen sind maximal $2^{32}$ Fächer möglich, also 4 Gigabyte. „Lies Fach `0x10000000`“ — der Memory-Controller adressiert genau diesen Ort im RAM.
+:::
+
+## Byte-Adressierbarkeit
+
+- Jedes Fach im RAM fasst exakt 1 Byte (8 Bits)
+- Der Arbeitsspeicher ist byte-adressierbar
+- Ein RISC-V-Register fasst 32 Bits (4 Bytes = 1 Word)
+- Ein Word laden heißt: vier aufeinanderfolgende Fächer lesen
+- Ein 32-Bit-Array belegt daher die Adressen 0, 4, 8, 12, …
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Reg[32-Bit-Register] -->|braucht 4 Fächer| A0[0x00]
+  Reg --> A1[0x01]
+  Reg --> A2[0x02]
+  Reg --> A3[0x03]
+  style Reg fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A0 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style A1 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style A2 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style A3 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Wichtiger Punkt: Der Speicher ist in Bytes aufgeteilt, nicht in Wörter. Ein Fach fasst 8 Bits; die CPU rechnet mit 32 Bits. Ein Integer wird in vier 8-Bit-Stücke zerlegt und belegt die Adressen 0, 1, 2 und 3 — die nächste freie Startadresse ist 4. Das ist die Grundlage der Pointer-Arithmetik.
+:::
+
+## Endianness (Refresher)
+
+- In welcher Reihenfolge landen vier Bytes einer 32-Bit-Zahl im RAM?
+- RISC-V nutzt standardmäßig Little-Endian (wie x86)
+- Das niederwertigste Byte (LSB) liegt auf der kleinsten Adresse
+- Das höchstwertige Byte (MSB) liegt auf der größten Adresse
+- Relevant beim Debuggen im Venus-Memory-Tab
+
+```text
+Zahl 0xAABBCCDD an Adresse 0x100:
+RAM 0x100: DD   (LSB zuerst)
+RAM 0x101: CC
+RAM 0x102: BB
+RAM 0x103: AA
+```
+
+::: notes
+Beim Ablegen von `0xAABBCCDD` entscheidet die Byte-Reihenfolge. RISC-V (wie Intel) nutzt Little-Endian: das LSB (`DD`) kommt auf die kleinste Adresse, danach `CC`, `BB`, und das MSB (`AA`) in das vierte Fach. Im Venus-Speicher wirkt die Zahl optisch „rückwärts“ — das ist erwartetes Little-Endian-Verhalten.
+:::
+
+## Die Load/Store-Architektur
+
+- In Einheit 2: goldene RISC-Regel — die ALU greift nie direkt auf den RAM zu
+- Befehle wie `add` mit RAM-Operanden existieren in RISC-V nicht
+- Zwei Tore zwischen CPU und RAM:
+  - Load (Lesen): RAM $\rightarrow$ Register
+  - Store (Schreiben): Register $\rightarrow$ RAM
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  RAM[(Arbeitsspeicher)] -->|Load lw| Reg[Register x1-x31]
+  Reg -->|Store sw| RAM
+  Reg <-->|Operanden| ALU((ALU))
+  style ALU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Reg fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style RAM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Zwei Variablen aus dem RAM addieren: drei Schritte. (1) Load Variable 1 nach `t0`. (2) Load Variable 2 nach `t1`. (3) `add` in der ALU. Die ALU ist vom RAM isoliert — jeder Datenverkehr läuft über Load und Store.
+:::
+
+## Was ist ein Pointer?
+
+- Ein Pointer ist eine 32-Bit-Hausnummer (Speicheradresse) — keine Magie
+- In Assembler liegen Adressen in normalen Registern (`x0`–`x31`)
+- Die CPU unterscheidet die Zahl 10 nicht von der Adresse `0x1000`
+- Erst der Befehl (`add` vs. `lw`) bestimmt die Interpretation
+
+```c
+// C: Pointer anlegen
+int array[3] = {10, 20, 30};
+int *ptr = array; // z. B. 0x00400000
+
+// In Assembler ist ptr nur ein Wert in einem Register
+```
+
+::: notes
+In C wirken Pointer abstrakt; in Assembler sind sie schlicht 32-Bit-Zahlen. Liegt in `s1` der Wert `0x00400000`, ist das zunächst nur eine Zahl. Durch die ALU: Mathematik. Am Memory-Controller: Hausnummer. Ein Pointer ist eine Adresse, die auf ihren Einsatz wartet.
+:::
+
+## Adressen in Registern
+
+- Mit `li` (Load Immediate) Pointer initialisieren
+- Die Adresse im Register dient als Base-Pointer
+- Der Base-Pointer markiert den Start eines Arrays im RAM
+- `addi` auf den Pointer entspricht Bewegung im Speicher
+- Von diesem Anker aus adressieren wir alle Elemente
+
+```asm
+# Array startet bei 0x10000000 — Base-Pointer in s1:
+li s1, 0x10000000
+
+# s1 ist der Finger, der auf den RAM zeigt
+```
+
+::: notes
+Wie kommt der Pointer ins Register? Oft kennen Compiler oder Betriebssystem die Startadresse. Mit `li` schreiben wir sie z. B. nach `s1` — unserem Base-Pointer, dem Zeigefinger auf Element 0. Verschieben heißt: etwas zu `s1` addieren.
+:::
+
+## Load & Store (Ganze Wörter)
+
+- Datenfluss zwischen Register und RAM etablieren
+- RISC-V-Adressierung: Base + Offset
+- `lw` (Load Word): 32-Bit-Blöcke lesen
+- `sw` (Store Word): 32-Bit-Blöcke schreiben
+- Stolperfalle: 4-Byte-Schrittweite bei Integer-Arrays
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Base[Base-Register] -->|Pointer| Addr{plus Offset}
+  Addr --> RAM[(RAM-Adresse)]
+  style Base fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Addr fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style RAM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Als Nächstes: die konkreten Assembler-Befehle. Relative Adressierung (Base + Offset) formuliert Speicherzugriffe elegant. Und wir klären, warum Integer-Arrays in Vierer-Schritten durchlaufen werden.
+:::
+
+## Das Problem der Adressierung
+
+- Array mit 5 Werten; Base-Pointer `s1` zeigt auf den Start
+- Wie greifen wir elegant auf Element 3 zu?
+- Schlechte Idee: `addi s1, s1, 12` — Startpunkt geht verloren
+- Besser: temporärer Versatz, der den Pointer nicht zerstört
+- Lösung: Syntax der Load-/Store-Befehle
+
+::: notes
+Zeigt `s1` auf den Array-Start und Sie addieren 8 direkt auf `s1`, zeigt der Finger zwar auf Element 2 — aber Element 0 ist „vergessen“. Wir brauchen einen Mechanismus, der vom Basis-Finger nur temporär greift, ohne den Anker zu verschieben.
+:::
+
+## Base + Offset (Konzept)
+
+- Speicherzugriffe in RISC-V: immer Base + Offset
+- Base: Register mit der Startadresse (z. B. `s1`)
+- Offset: konstante Zahl (Immediate), temporär addiert
+- Zieladresse = Registerwert + Konstante
+- Der Wert im Base-Register bleibt unverändert
+
+```c
+// C-Metapher für Base + Offset:
+int element = array[3];
+// array = Base, 3 (bzw. 12 Bytes) = Offset
+```
+
+::: notes
+Base + Offset ist wie eine Wegbeschreibung: Straße X (Base), von dort 12 Meter weiter (Offset). Die Zieladresse wird live berechnet; das Base-Register bleibt Anker. Genau so arbeiten Arrays in C unter der Haube.
+:::
+
+## Load Word (`lw`)
+
+- 32-Bit-Wort aus dem RAM in ein Register laden
+- Syntax: `lw rd, offset(rs1)`
+- `rd`: Zielregister für den RAM-Wert
+- `offset`: Konstante (12-Bit-Immediate)
+- `rs1`: Base-Register (in Klammern)
+- Lädt exakt 4 Bytes ab der berechneten Adresse
+
+```asm
+# Element 8 Bytes nach dem Pointer in s1 → t0
+lw t0, 8(s1)
+
+# Adresse = s1 + 8; hole 4 Bytes
+```
+
+::: notes
+`lw` — Load Word. Syntax: Zielregister, dann Offset, dann Base in runden Klammern. Die Klammern signalisieren: Zugriff auf den Arbeitsspeicher. Hardware addiert Offset zu `s1`, liest vier Bytes in das Zielregister.
+:::
+
+## Datenfluss beim `lw`
+
+- Flussrichtung visualisieren: wie eine C-Zuweisung
+- Bei `lw` fließt das Datum von rechts nach links
+- Klammer (rechts): Quelle (RAM)
+- Register (links): Ziel
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph RL
+  RAM[(RAM: s1 + 8)] -->|4 Bytes| Reg[Ziel: t0]
+  style RAM fill:#FFFFFF,stroke:#86868B,stroke-width:1.5px
+  style Reg fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Wie bei R-Type-Befehlen: Ziel steht links. Daten fließen von der rechts berechneten Adresse nach links ins Register — analog zu `t0 = RAM[...]`.
+:::
+
+## Store Word (`sw`)
+
+- 32-Bit-Wort vom Register zurück in den RAM schreiben
+- Syntax: `sw rs2, offset(rs1)`
+- `rs2`: Quellregister (zu speichernde Daten)
+- `offset(rs1)`: Zieladresse im RAM
+- Ausnahme: Ziel (RAM) steht rechts — Quellregister links
+
+```asm
+# Wert aus t0 nach RAM-Adresse (s1 + 12)
+sw t0, 12(s1)
+
+# t0 wird nicht überschrieben — es ist die Quelle
+```
+
+::: notes
+Gegenstück: Store Word (`sw`). Hier steht links das Quellregister, rechts die Adressberechnung. `t0` wird nicht verändert — nur kopiert. Scheinbarer Bruch der Regel „Ziel links“: das Ziel ist der RAM.
+:::
+
+## Datenfluss beim `sw`
+
+- Bei `sw` fließt das Datum von links nach rechts
+- Register (links): Quelle
+- Berechnete RAM-Adresse (rechts): Ziel
+- Store schreibt keinen neuen Wert ins Register File — kein `rd`
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Reg[Quelle: t0] -->|4 Bytes| RAM[(RAM: s1 + 12)]
+  style Reg fill:#FFFFFF,stroke:#86868B,stroke-width:1.5px
+  style RAM fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Pfeil umgekehrt: Daten verlassen die CPU und strömen in den Speicher. Store ist der einzige Basisbefehl ohne Zielregister `rd` — wichtig später für die Control Unit.
+:::
+
+## C-Arrays vs. Assembler
+
+- Array aus 32-Bit-Integern (`int`) durchlaufen
+- In C abstrahiert: `array[0]`, `array[1]`, `array[2]`
+- In Assembler: Bytes zählen — keine Index-Magie
+- Jeder `int` ist 4 Bytes groß → Adressen um 4 erhöhen
+- Häufigste Fehlerquelle im Labor
+
+```c
+// C: Indizes steigen um 1
+array[0] = 10;
+array[1] = 20;
+array[2] = 30;
+```
+
+::: notes
+In C steigen Indizes um 1. In Assembler fasst jedes RAM-Fach 1 Byte, der Integer aber 4. Offset um 1 erhöhen landet mitten in der Zahl — wir müssen die Pointer-Mathematik selbst machen.
+:::
+
+## Die 4-Byte-Schrittweite
+
+- Startadressen aufeinanderfolgender 32-Bit-Wörter: Vielfache von 4
+- Index 0 → Offset 0
+- Index 1 → Offset 4
+- Index 2 → Offset 8
+- Index 3 → Offset 12
+
+| C-Index | Assembler-Offset | RAM (Base = `0x100`)   |
+|---------|------------------|------------------------|
+| `[0]`   | 0                | `0x100`–`0x103`        |
+| `[1]`   | 4                | `0x104`–`0x107`        |
+| `[2]`   | 8                | `0x108`–`0x10B`        |
+
+::: notes
+Offsets für Word-Arrays: fast immer 0, 4, 8, 12, 16. Element 0 an 100 belegt 100–103; Element 1 beginnt bei 104. `lw t0, 1(s1)` für „zweites Element“ ist in der Klausur falsch.
+:::
+
+## Element 0 laden
+
+- Pointer auf Array-Start liegt in `s1`
+- `array[0]` nach `t0` laden
+- Offset ist 0
+
+```asm
+# Lade array[0]
+lw t0, 0(s1)
+
+# RAM-Adresse = s1 + 0
+```
+
+::: notes
+Einfachstes Szenario: Base zeigt bereits auf Element 0. Offset 0 — `lw t0, 0(s1)`. Die CPU liest die ersten vier Bytes.
+:::
+
+## Element 1 und 2 laden
+
+- `array[1]` und `array[2]` laden
+- Offsets: 4 und 8
+- Base-Register `s1` bleibt unverändert (weiterhin Element 0)
+
+```asm
+lw t1, 4(s1)     # array[1], Adresse = s1 + 4
+lw t2, 8(s1)     # array[2], Adresse = s1 + 8
+
+# s1 ändert sich durch die Offsets nicht
+```
+
+::: notes
+Offset 4 und 8 laden die nächsten Elemente, ohne `s1` zu zerstören. Intern berechnet die ALU kurz `s1 + 8`; der Registerwert bleibt Anker.
+:::
+
+## Die Illusion des C-Compilers
+
+- Warum nie `array[i * 4]` in C schreiben?
+- Der Compiler nimmt Ihnen die Skalierung ab
+- Bei `int`-Arrays weiß er: Elementgröße 4 Bytes
+- Aus `array[i]` wird Assembler mit $i \cdot 4$ vor dem Load
+- Assembler enttarnt diese High-Level-Abstraktion
+
+```c
+// Sie schreiben:
+int x = array[i];
+
+// Der Compiler denkt:
+// Typ int (4 Byte) → Adresse = &array + (i * 4)
+```
+
+::: notes
+C abstrahiert die Physik. Der Datentyp `int` signalisiert 4 Bytes; `array[3]` erzeugt unsichtbar die Offset-Rechnung $3 \cdot 4 = 12$. In Assembler gibt es diese Typ-Magie nicht — Sie steuern jedes Byte.
+:::
+
+## Komplettes Beispiel (Lesen)
+
+- C-Zeile: `a = array[2];`
+- `a` in `s0`, Array-Base in `s1`
+- Index 2 → Offset $2 \cdot 4 = 8$
+
+```c
+int a = array[2];
+```
+
+```asm
+# s0 = a, s1 = Base-Pointer
+lw s0, 8(s1)
+```
+
+::: notes
+Simple Zuweisung → ein Assembler-Befehl: `lw s0, 8(s1)`. Variable `a` (`s0`) erhält den korrekten Wert.
+:::
+
+## Komplettes Beispiel (Schreiben)
+
+- Modifikation: `array[3] = a + b;`
+- Annahmen: `a` in `s0`, `b` in `t0`, Array in `s1`
+- Zwei Schritte: erst ALU, dann Store
+
+```c
+array[3] = a + b;
+```
+
+```asm
+add t1, s0, t0      # t1 = a + b
+sw t1, 12(s1)       # Index 3 → Offset 12
+```
+
+::: notes
+Die ALU schreibt nicht direkt in den RAM. Erst `add` nach `t1`, dann `sw` mit Offset 12 für Index 3.
+:::
+
+## Speicherausrichtung (Alignment)
+
+- 32-Bit-Wörter beginnen auf durch 4 teilbaren Adressen
+- Gültig: `0x00`, `0x04`, `0x08`, `0x0C`, …
+- Laden ab `0x01`? Alignment Fault Exception — Absturz
+- Der 32-Bit-Datenbus zieht physisch 4-Byte-Blöcke im Raster
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[RAM: 0x00, 0x04, 0x08 ...] -->|Raster| B[32-Bit-Datenbus]
+  C[Lade ab 0x01] -->|Raster-Bruch| D((Exception))
+  style D fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Wörter müssen auf 0, 4, 8, 12 … ausgerichtet sein. Der Bus ist fest verdrahtet; schiefe Zugriffe über zwei Raster lehnt die Hardware ab (Exception). Offsets sorgfältig wählen.
+:::
+
+## Teilzugriffe & S-Type-Format
+
+- Nicht alles ist ein 32-Bit-Integer (z. B. ASCII-Zeichen)
+- Zugriff auf einzelne Bytes: `lb` und `sb`
+- Vorzeichenerweiterung bei kleinen Daten
+- Signed vs. Unsigned Loads
+- S-Type-Instruction-Format für Store-Befehle
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  RAM[1 Byte im RAM] -->|lb| Reg[32-Bit-Register]
+  Reg -->|Sign Ext| ALU
+  style RAM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Reg fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style ALU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Buchstaben in Strings sind 1 Byte groß. Mit `lw` vier Zeichen auf einmal zu laden wäre falsch. Wir brauchen feinere Befehle für Teilbereiche — und später den Blick auf den Maschinencode von Store (kein Zielregister).
+:::
+
+## Problem: Kleine Daten laden
+
+- Ein C-String (`char[]`) hat Elemente von 1 Byte
+- `lw` würde vier Buchstaben gleichzeitig laden
+- Lösung: `lb` (Load Byte) und `lh` (Load Halfword)
+- Bei Byte-Arrays ist das Offset tatsächlich +1 (Element = 1 Byte)
+
+```c
+char text[] = "ABC";
+char a = text[0];
+char b = text[1]; // Offset in Assembler wirklich +1
+```
+
+::: notes
+Bei `char`-Arrays gilt: Index 0 → Offset 0, Index 1 → Offset 1. Niemals `lw` für einzelne Zeichen — sonst ein Brei aus vier Buchstaben. Befehl: `lb` (Load Byte).
+:::
+
+## Load Byte (`lb`)
+
+- Syntax: `lb rd, offset(rs1)`
+- Liest genau 1 Byte von der Adresse
+- Zielregister `rd` ist 32 Bit groß
+- 8 Bits geladen — was passiert mit den restlichen 24 Bits?
+- Die Architektur füllt die Lücke automatisch (Sign-Extension)
+
+```asm
+lb t0, 0(s1)
+
+# RAM liefert z. B. 0x8F (8 Bits)
+# Register t0: 0x??????8F — linke Bits werden aufgefüllt
+```
+
+::: notes
+Syntax wie bei `lw`, Hardware anders: Ein Byte (z. B. `0x8F`) liegt rechts im 32-Bit-Register; links klaffen 24 Bits. Die CPU muss sie definieren — und im Zweierkomplement das Vorzeichen korrekt fortsetzen (Sign-Extension). Unsigned-Varianten folgen im nächsten Schritt.
+:::
+
+
+## Sign-Extension (Vorzeichenerweiterung)
+
+- Nach `lb` bleiben links im 32-Bit-Register 24 Bits leer
+- Die CPU darf diese Lücke nicht mit Zufallswerten oder sturen Nullen füllen
+- Lösung: automatische Vorzeichenerweiterung (Sign-Extension)
+- Bit 7 des geladenen Bytes wird in alle 24 linken Bits kopiert
+- So bleibt der Zweierkomplement-Wert (z. B. $-5$) identisch
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Byte[RAM Byte: 10001111] -->|Sign Ext| Reg[Reg: 1111... 10001111]
+  Byte2[RAM Byte: 01110000] -->|Sign Ext| Reg2[Reg: 0000... 01110000]
+  style Byte fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Byte2 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Reg fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Reg2 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Gleiches Problem wie bei Immediates: 8 Bits vom RAM, 32-Bit-Register. Wäre das Byte negativ (MSB = 1) und würden wir links mit Nullen füllen, entstünde eine große positive Zahl. `lb` kopiert Bit 7 in alle linken Bits — Sign-Extension.
+:::
+
+## Unsigned Load (`lbu`)
+
+- Manche Bytes sind keine Zweierkomplement-Zahlen
+- ASCII oder RGB (0 bis 255) haben kein negatives Vorzeichen
+- MSB = 1 bedeutet dort nur einen hohen Wert (z. B. Rot = 255)
+- Befehl: `lbu` (Load Byte Unsigned)
+- Deaktiviert Sign-Extension und füllt links immer mit Nullen
+
+```asm
+# Farbwert 0-255 aus dem RAM
+lbu t0, 0(s1)
+
+# RAM: 0xFF (255) → t0 = 0x000000FF
+```
+
+::: notes
+Pixelwert 255 (acht Einsen) mit `lb` geladen: die CPU hält das MSB für ein Minuszeichen und zerstört den Wert. Für vorzeichenlose Daten nutzen Sie `lbu` — Zero-Fill statt Sign-Extension.
+:::
+
+## Halfwords laden (`lh`, `lhu`)
+
+- Zwischen Word (32 Bit) und Byte (8 Bit): Halfword = 16 Bit (2 Bytes)
+- Anwendung: `short` in C, Audio-Samples (z. B. 16-Bit-WAV)
+- `lh`: mit Sign-Extension; `lhu`: Unsigned mit Zero-Fill
+- Alignment: Offset durch 2 teilbar (0, 2, 4, 6, …)
+
+```asm
+lh t0, 2(s1)    # 16 Bit mit Vorzeichenerweiterung
+lhu t1, 4(s1)   # 16 Bit mit Zero-Fill
+```
+
+::: notes
+`lh` holt zwei benachbarte Bytes; Unterscheidung signed/unsigned wie bei Byte-Loads. Offset muss gerade sein — sonst Alignment Fault.
+:::
+
+## Store Byte & Halfword (`sb`, `sh`)
+
+- Gegenstücke zum Laden: `sb` und `sh`
+- Syntax wie bei `sw`: `sb rs2, offset(rs1)`
+- Nur die untersten 8 bzw. 16 Bits des Registers wandern in den RAM
+- Obere Bits werden abgeschnitten und ignoriert
+
+```asm
+# t0 = 0x11223344 — nur 0x44 speichern:
+sb t0, 0(s1)
+```
+
+::: notes
+`sb` schreibt ein ASCII-Zeichen zurück in den String: die CPU schneidet die oberen 24 Bits ab und legt nur die rechten 8 Bits in genau ein RAM-Fach. Der Rest des Speichers bleibt unberührt.
+:::
+
+## Warum gibt es kein `sbu`?
+
+- Im Handbuch fehlt `sbu` (Store Byte Unsigned) — absichtlich
+- Unsigned ist nur relevant, wenn Lücken im Register aufgefüllt werden
+- Beim Speichern wird nichts aufgefüllt, nur abgeschnitten
+- Dem RAM ist egal, ob die 8 Bits eine Zahl oder ein Pixel sind
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Reg[Register: 1111... 10001111] -->|sb schneidet ab| RAM[RAM: 10001111]
+  style Reg fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style RAM fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```
+
+::: notes
+Trivia mit Tiefgang: `lbu` gibt es, `sbu` nicht. Vorzeichen zählen nur beim Wachsen (Lücke füllen). Beim Quetschen in den RAM reicht Abschneiden — ein `sbu` wäre Hardwareverschwendung.
+:::
+
+## Decodierung: Der `lw`-Befehl
+
+- `lw` nutzt das bekannte I-Type-Format
+- Opcode: Load
+- `rs1`: Base-Register
+- `imm`: 12-Bit-Offset
+- `rd`: Zielregister für den RAM-Wert
+
+```text
+31                            20 19    15 14    12 11     7 6        0
++-------------------------------+---------+---------+---------+----------+
+|          imm[11:0]            |   rs1   |  funct3 |    rd   |  opcode  |
++-------------------------------+---------+---------+---------+----------+
+      12-Bit-Offset               Base      Größe     Ziel      Load
+```
+
+::: notes
+`lw` passt ins I-Type-Formular wie `addi`: Opcode, Base (`rs1`), 12-Bit-Offset, Ziel (`rd`). Alles in der 32-Bit-Schablone.
+:::
+
+## Das Problem beim `sw`-Befehl
+
+- `sw` braucht Base (`rs1`), Datenquelle (`rs2`) und 12-Bit-Offset
+- Das I-Type-Format hat keinen Platz für `rs2` (dort liegt das Immediate)
+- R-Type hat kein Immediate; I-Type hat kein `rs2`
+- Für Stores braucht es ein neues Formular
+
+| Format | `rs1` | `rs2` | `rd` | Immediate |
+|--------|-------|-------|------|-----------|
+| R-Type | ja    | ja    | ja   | nein      |
+| I-Type | ja    | nein  | ja   | ja (12 Bit) |
+| Bedarf `sw` | ja | ja | nein | ja (12 Bit) |
+
+::: notes
+Store braucht zwei Quellregister und ein Immediate gleichzeitig — kein bisheriges Format deckt das. Deshalb ein neues Instruction Format.
+:::
+
+## Das S-Type-Format (Die Lösung)
+
+- Store-Befehle nutzen das S-Type Instruction Format
+- Kein Zielregister `rd` (Schreiben geht in den RAM)
+- Das 5-Bit-`rd`-Feld wird für `imm[4:0]` wiederverwendet
+- `imm[11:5]` liegt links (analog zu `funct7` beim R-Type)
+- Das Offset ist im Maschinenwort zweigeteilt
+
+```text
+31                  25 24    20 19    15 14    12 11     7 6        0
++---------------------+---------+---------+---------+---------+----------+
+|      imm[11:5]      |   rs2   |   rs1   |  funct3 | imm[4:0]|  opcode  |
++---------------------+---------+---------+---------+---------+----------+
+  oberes Offset         Quelle    Base      Größe   unteres   Store
+```
+
+::: notes
+Weil Store nichts ins Register File schreibt, ist `rd` frei. RISC-V zerschneidet das 12-Bit-Offset: untere 5 Bits an der `rd`-Position, obere 7 Bits ganz links.
+:::
+
+## Warum zerrisst RISC-V das Immediate?
+
+- Zerrissenes Immediate wirkt auf den ersten Blick umständlich
+- Grund: Hardware-Effizienz — Silizium sparen
+- In (fast) jedem Format liegen `rs1` und `rs2` an denselben Bit-Positionen
+- Der Kabelbaum zum Register File muss nicht umgeschaltet werden
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  R[R-Type: rs1 Bits 15-19, rs2 Bits 20-24]
+  I[I-Type: rs1 Bits 15-19]
+  S[S-Type: rs1 Bits 15-19, rs2 Bits 20-24]
+  R --> Decoder[Feste Kabel zur Register-Werkbank]
+  I --> Decoder
+  S --> Decoder
+  style Decoder fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style R fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style I fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style S fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Vergleichen Sie S-Type mit R-Type: `rs1` und `rs2` sitzen fest. Der Decoder verdrahtet einmal; der Compiler zahlt den Preis, das Immediate zu splitten. Typischer RISC-Kompromiss: einfache Hardware, etwas mehr Arbeit in der Toolchain.
+:::
+
+## Zusammenfassung: Load & Store
+
+- Werkzeuge, um die Memory Wall zu überwinden
+- Alle nutzen Base + Offset mit runden Klammern
+- Das Offset wird vorzeichenerweitert — auch negative Offsets wie `-4(s1)` sind möglich
+
+| Mnemonic     | Name           | Breite            | Sign-Ext. (Laden)   |
+|--------------|----------------|-------------------|---------------------|
+| `lw` / `sw`  | Word           | 32 Bit (4 Bytes)  | ja / (egal)         |
+| `lh` / `sh`  | Halfword       | 16 Bit (2 Bytes)  | ja / (egal)         |
+| `lhu`        | Half Unsigned  | 16 Bit (2 Bytes)  | nein (Zero-Fill)    |
+| `lb` / `sb`  | Byte           | 8 Bit (1 Byte)    | ja / (egal)         |
+| `lbu`        | Byte Unsigned  | 8 Bit (1 Byte)    | nein (Zero-Fill)    |
+
+::: notes
+Spickzettel für alle Speicherbefehle. Syntax `lw rd, offset(rs1)` prägen. Negative Offsets (12-Bit-Zweierkomplement) erlauben Rückwärtsbewegungen im Array, z. B. Offset $-4$.
+:::
+
+## Der Kontrollfluss (Branches)
+
+- Ausbruch aus der starren, linearen Code-Ausführung
+- Program Counter (PC) und seine Manipulation
+- Labels als Ankerpunkte im Text
+- Bedingte Sprünge (`beq`, `bne`, `blt`) für If/Else
+- Operanden vertauschen, um fehlende Relationen zu simulieren
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[Code Zeile 1] --> B{Entscheidung}
+  B -->|Wahr Branch| C[Zeile 50]
+  B -->|Falsch| D[Zeile 2]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Datenverarbeitung ist geschafft. Nun die Intelligenz des Programms: Entscheidungen. Bisher fiel der Code von oben nach unten. If und Schleifen erfordern Sprünge — die Welt der Branches.
+:::
+
+## Der Program Counter (Der Dirigent)
+
+- Der PC speichert die RAM-Adresse des aktuellen Befehls
+- Normalfall: nach jedem Befehl addiert die Hardware $+4$ zum PC
+- Warum 4? Jeder RV32I-Befehl ist exakt 4 Bytes groß
+- Der Prozessor fällt von Zeile zu Zeile (Fall-Through)
+
+```text
+RAM-Adresse | Maschinencode | Assembler
+0x00000000  | 0x...         | add t0, t1, t2   <-- PC
+0x00000004  | 0x...         | sub t3, t0, t1   <-- PC + 4
+0x00000008  | 0x...         | lw  t4, 0(s1)    <-- PC + 4
+```
+
+::: notes
+Kontrollfluss heißt: den PC manipulieren. Standard ist fest verdrahtetes $+4$. Entscheidungen erfordern, diesen Rhythmus zu durchbrechen und den PC gezielt zu überschreiben.
+:::
+
+## Das IF-Problem
+
+- In C ist Kontrollfluss abstrahiert: `if (a == b) { ... } else { ... }`
+- Die CPU kennt keine geschweiften Klammern
+- Zum Überspringen muss der PC auf die Adresse nach dem Block zeigen
+- Adressabstände per Hand zu pflegen wäre fehleranfällig
+
+```c
+if (a == b) {
+    // Block ausführen
+}
+// Wie finden wir diese Zeile im RAM?
+```
+
+::: notes
+Geschweifte Klammern sind Kosmetik. Im Maschinencode liegen Befehle hintereinander. Bei falscher Bedingung muss die CPU wissen, wie viele Bytes sie überspringt. Labels nehmen uns die Byte-Rechnung ab.
+:::
+
+## Labels (Sprungmarken)
+
+- Labels: Textmarken mit Doppelpunkt (`:`) im Quelltext
+- Keine Prozessor-Befehle — kosten keine Ausführungszeit
+- Der Assembler berechnet die exakte RAM-Adresse des Labels
+- Sprungbefehle referenzieren den Label-Namen, nicht die Hex-Adresse
+
+```asm
+    add t0, t1, t2
+ZielMarke:              # Label → z. B. Adresse 0x08
+    sub t3, t0, t1
+```
+
+::: notes
+Beim Assemblieren scannt Venus die Labels und ersetzt Namen durch die korrekte Distanz bzw. Adresse. Labels sind Ihr Navi im Code.
+:::
+
+## Branch Equal (`beq`)
+
+- Syntax: `beq rs1, rs2, Label` (Branch if Equal)
+- Vergleich der Registerinhalte
+- Bei Gleichheit: PC → Label-Adresse (Sprung)
+- Bei Ungleichheit: Fall-Through mit PC $+4$
+
+```asm
+    beq t0, t1, Weiter
+    addi t2, t2, 1      # übersprungen, wenn t0 == t1
+Weiter:
+    sub t3, t0, t1
+```
+
+::: notes
+`beq`: ALU vergleicht (bzw. prüft Differenz auf Null). Gleich → Sprung zum Label. Ungleich → nächste Zeile. Hinweis: Im Beispiel `addi` statt `add` mit Immediate — konsistent zur RV32I-Syntax.
+:::
+
+## Branch Not Equal (`bne`)
+
+- Gegenstück zu `beq`: `bne rs1, rs2, Label`
+- Springt nur bei unterschiedlichen Registerwerten
+- Typisches Schleifen-Muster: solange Zähler ungleich Grenze, zurück nach oben
+
+```asm
+LoopStart:
+    # ... Schleifen-Rumpf ...
+    addi t0, t0, 1
+    li   t1, 10
+    bne  t0, t1, LoopStart   # zurück, solange t0 != 10
+```
+
+::: notes
+`bne` ist das Standardwerkzeug für Schleifen: Zähler erhöhen, mit Grenze vergleichen, bei Ungleichheit zurückspringen. Bei Gleichheit endet die Schleife (Fall-Through).
+:::
+
+## Relationen (`blt`, `bge`)
+
+- `blt`: Branch if Less Than — springt wenn $rs1 < rs2$
+- `bge`: Branch if Greater or Equal — springt wenn $rs1 ≥ rs2$
+- Interpretation als Zweierkomplement (mit Vorzeichen)
+- $-5$ ist für `blt` korrekt kleiner als $2$
+
+```asm
+# Sensorwert t0 kleiner als Grenzwert t1?
+blt t0, t1, AlarmAusloesen
+```
+
+::: notes
+Gleichheit reicht oft nicht. `blt` und `bge` nutzen vorzeichenbehaftete Arithmetik — negative Werte werden korrekt eingeordnet.
+:::
+
+## Unsigned Branches (`bltu`, `bgeu`)
+
+- Pointer und Rohdaten (Farben) sind oft vorzeichenlos
+- Adresse `0xF0000000` wäre als signed negativ — `blt` läge falsch
+- Suffix `u`: `bltu`, `bgeu` vergleichen rein positiv (ohne Vorzeichen)
+
+```asm
+bltu t0, t1, AdresseIstKleiner
+```
+
+::: notes
+Array-Ende per Pointer vergleichen: bei großen Adressen zwingend `bltu`/`bgeu`. Sonst hält die ALU das MSB für ein Minuszeichen und trifft die falsche Entscheidung.
+:::
+
+## Warum gibt es kein $\le$?
+
+- Keine Hardware-Befehle für $\le$ oder $>$
+- Absichtlicher Minimalismus: jeder Befehl kostet Decoder-Fläche
+- $A ≤ B$ ist logisch identisch mit $B ≥ A$
+- Fehlendes $\le$ simulieren: Operanden tauschen und `bge` nutzen
+
+```asm
+# Gewünscht: if (t0 <= t1)
+# Identisch: if (t1 >= t0)
+bge t1, t0, Label
+```
+
+::: notes
+RISC-V spart Transistoren: statt neuer Relationen tauschen Sie die Operanden. Dieselbe Logik, kleinere Hardware.
+:::
+
+## Pseudo-Branches (`ble`, `bgt`)
+
+- Ständiges Umdenken der Operanden ist fehleranfällig
+- Venus bietet Pseudo-Instruktionen: z. B. `ble` (Branch Less Equal)
+- Der Assembler vertauscht Operanden und erzeugt echtes `bge`
+
+```asm
+# Lesbar im Quelltext:
+ble t0, t1, Label
+
+# Tatsächliche Hardware:
+bge t1, t0, Label
+```
+
+::: notes
+Wie bei `li`: Pseudo-Instruktionen erhöhen Lesbarkeit. Der Chip kennt `ble` nicht; Venus übersetzt es in ein hardwarekonformes `bge`.
+:::
+
+## Architektur: Das B-Type-Format (Vorschau)
+
+- Branches nutzen das B-Type-Format (Vorschau; vereinfacht: verwandt mit S-Type)
+- Das Label wird zum Immediate (Distanz), nicht zur absoluten RAM-Adresse
+- Neuer PC = alter PC + Immediate (PC-relative Adressierung)
+- Vorteil: verschiebbarer Code bleibt korrekt
+
+```text
+Warum relativ?
+Absolute Adressen brechen, wenn das Programm im RAM verschoben wird.
+Die relative Distanz (z. B. +16 Bytes) bleibt gleich.
+```
+
+::: notes
+PC-relative Sprünge: "gehe 20 Bytes nach unten" funktioniert auch, wenn das OS das Programm woanders lädt. Absolute Adressen würden crashen. Hinweis zur Vereinfachung: B-Type teilt sich mit S-Type die Idee getrennter Immediate-Felder, das konkrete Bit-Layout weicht jedoch ab — Details bei Bedarf später.
+:::
+
+
+## Unbedingte Sprünge (Jumps)
+
+- Architektonisches Puzzleteil für vollständige Kontrollstrukturen
+- Warum Branches allein nicht ausreichen
+- Code-Blöcke ohne Wenn und Aber überspringen
+- Pseudo-Instruktion `j` (Jump)
+- Mentaler Algorithmus: If/Else aus C übersetzen
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  A[Bedingung] -->|Wahr| IF[If-Block]
+  A -->|Falsch| ELSE[Else-Block]
+  IF -->|ueberspringe Else| END[Ende]
+  ELSE --> END
+  style IF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style ELSE fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style END fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Branches treffen Entscheidungen. Für If/Else reicht das nicht: Nach dem If-Block darf der Else-Block nicht versehentlich mitlaufen. Dafür brauchen wir bedingungslose Umleitungen — Jumps.
+:::
+
+## Das If-Else-Problem
+
+- If/Else erzwingt eine Entweder-Oder-Entscheidung
+- Beide Blöcke liegen im RAM direkt untereinander
+- Bei wahrer Bedingung: Fall-Through durch den If-Block
+- Danach fällt der PC physikalisch in den Else-Block
+- Am Ende des If-Blocks muss der Else-Block strikt übersprungen werden
+
+```c
+if (a == b) {
+    // wahr: nur dieser Block ...
+    // ... dann SOFORT das gesamte Konstrukt verlassen
+} else {
+    // falsch: nur dieser Block
+}
+```
+
+::: notes
+In C: entweder If oder Else. In Assembler liegen beide Blöcke sequenziell. Ohne Gegenmaßnahme läuft der PC nach dem If in den Else. Am If-Ende brauchen wir: springe bedingungslos ans Ende.
+:::
+
+## Der bedingungslose Sprung
+
+- Branches (`beq`, `blt`) fragen die ALU nach einer Bedingung
+- Wir brauchen: Springe. Immer.
+- Solche Befehle heißen Jumps
+- Sie überschreiben den PC absolut bedingungslos
+- Unverzichtbar für If-Ausstiege, Endlosschleifen und später Funktionsaufrufe
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  IF[Ende des IF-Blocks] -->|bedingungsloser Sprung| END[Code nach dem Else]
+  ELSE[ELSE-Block] -.-> END
+  style IF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style ELSE fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style END fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Kein Branch: wir vergleichen keine Register, wir brechen aus. Ein Jump nimmt ein Label und setzt den PC sofort. Assembler-Handwerkszeug zum Verknüpfen von Code-Bausteinen — analog zu frühem `goto`.
+:::
+
+## Jump (`j`) — die Pseudo-Instruktion
+
+- Im Labor: Pseudo-Instruktion `j`
+- Syntax: `j Label`
+- Label → relatives Offset; die CPU addiert es zum PC
+- Code physisch unter dem `j` wird nicht erreicht (toter Code)
+
+```asm
+    add t0, t1, t2
+    j Ueberspringen     # sofort zum Label
+
+    sub t3, t0, t1      # wird nie ausgeführt
+
+Ueberspringen:
+    lw t4, 0(s1)
+```
+
+::: notes
+`j` kennt nur ein Label — keine Operanden-Register. Der Befehl darunter ist unerreichbar, es sei denn, ein anderer Sprung zielt explizit darauf.
+:::
+
+## Vorschau: Der echte Befehl (`jal`)
+
+- Der Chip kennt `j` nicht; Venus übersetzt zu `jal`
+- `jal` = Jump and Link
+- Syntax: `jal rd, Label` — springt und speichert die Rücksprungadresse in `rd`
+- Für normales `j` ohne Rückkehr: Ziel `x0` (Hardwired Zero)
+
+```asm
+# Was wir tippen:
+j EndIf
+
+# Was Venus daraus macht (x0-Trick):
+jal x0, EndIf
+# Rücksprungadresse landet wirkungslos in x0
+```
+
+::: notes
+`jal` ist eigentlich für Funktionsaufrufe (Link = Rückkehradresse). Beim If/Else-Überspringen wollen wir nicht zurück — Venus wirft die Adresse nach `x0`. Mehr zu `jal` in Einheit 4.
+:::
+
+## If-Else übersetzen (Konzept)
+
+- Beispiel: `if (s0 == s1) { t0 = 1; } else { t0 = 2; }`
+- Drei Bausteine: bedingter Sprung (`bne`), unbedingter Sprung (`j`), zwei Labels
+- Struktur als Blöcke denken
+- Streng in vier algorithmischen Schritten vorgehen
+
+```c
+if (s0 == s1) {
+    t0 = 1;
+} else {
+    t0 = 2;
+}
+```
+
+::: notes
+Standard-Klausur- und Labor-Muster. Ohne geschweifte Klammern muss der sequenzielle Speicher streng logisch organisiert werden. Der entscheidende Paradigmenwechsel folgt im nächsten Schritt.
+:::
+
+## Schritt 1: Die Invertierung
+
+- Wir fragen nicht, ob die C-Bedingung wahr ist
+- Wir fragen, ob sie falsch ist
+- C: `if (s0 == s1)` → Assembler: `bne s0, s1, ElseBlock`
+- Wahr → Fall-Through in den If-Block (spart Befehle)
+- Falsch → Sprung zum Else-Label
+
+```asm
+# Wenn s0 UNGLEICH s1: sofort zum Else
+bne s0, s1, ElseBlock
+
+# darunter geht es weiter, wenn sie GLEICH waren
+```
+
+::: notes
+Einsteigerfehler: C-Logik 1:1. In Assembler invertieren: bei Ungleichheit weg zum Else; bei Gleichheit fällt der PC in den If-Block darunter.
+:::
+
+## Schritt 2: Der IF-Block
+
+- `bne` hat nicht gegriffen → Bedingung war wahr
+- Hier der normale If-Code; kein If-Label nötig (Fall-Through)
+- Beispiel: Konstante 1 nach `t0`
+
+```asm
+    bne s0, s1, ElseBlock
+
+    # IF-Block (erreicht, wenn s0 == s1)
+    li t0, 1
+```
+
+::: notes
+Direkt unter dem Branch steht der If-Code. Kein separates If-Label — der PC liegt bereits auf dem richtigen Weg.
+:::
+
+## Schritt 3: Der rettende Jump
+
+- Unter dem If-Block liegt im Speicher der Else-Block
+- Ohne Gegenmaßnahme würde der PC auch `t0 = 2` ausführen
+- Am If-Ende: `j EndIf` — Else überspringen
+- `EndIf` steht ganz am Ende der Struktur
+
+```asm
+    bne s0, s1, ElseBlock
+
+    li t0, 1
+    j EndIf                 # Else überspringen
+```
+
+::: notes
+Häufigster Labor-Fehler: den Jump vergessen. Dann überschreibt der Else-Block das Ergebnis. `j EndIf` rettet den Kontrollfluss.
+:::
+
+## Schritt 4: Der Else-Block
+
+- Label `ElseBlock:` — Ziel des ersten Branches
+- Alternative: `t0 = 2`
+- Darunter `EndIf:` als Sammelbecken beider Pfade
+- Ab dort wieder linearer Ablauf
+
+```asm
+    bne s0, s1, ElseBlock
+
+    li t0, 1
+    j EndIf
+
+ElseBlock:
+    li t0, 2
+
+EndIf:
+    # ab hier wieder gemeinsam weiter
+```
+
+::: notes
+Beide Pfade vereinen sich bei `EndIf`: Jump aus dem If oder Fall-Through aus dem Else. Das ist die hardwarenahe Anatomie von If/Else.
+:::
+
+## Praxis: Algorithmen in Venus
+
+- Transfer in die Labor-Umgebung
+- C-Schleifen (`while`, `for`) in Assembler
+- Kontrollfluss + Speicherzugriff kombinieren
+- Iteration über Arrays im RAM
+- Memory-Interface in Venus
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Array[RAM Array] -->|Iteration| Loop((Schleife))
+  Loop -->|Pointer + 4| Array
+  style Loop fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Array fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Theorie-Werkzeuge beisammen. Schleifen = rückwärts gerichteter Kontrollfluss plus Bedingung. Als Nächstes: For/While und Pointer-Bewegung durch Arrays. Heute arbeiten wir in Venus; den visuellen Datenpfad und die Pipeline betrachten wir später in Ripes.
+:::
+
+## Die `while`-Schleife
+
+- Einfachstes Loop-Konstrukt; kopfgesteuert
+- Label am Start (`LoopStart`)
+- Branch bei falscher Bedingung zum Exit (`LoopExit`)
+- Am Rumpf-Ende: `j LoopStart`
+
+```c
+int a = 0;
+while (a < 10) {
+    a++;
+}
+```
+
+::: notes
+Oben prüfen, dann Rumpf, dann zurück. Invertierter Exit-Check + Jump nach oben — dasselbe Muster wie bei If.
+:::
+
+## `while` in Assembler
+
+- Zähler `a` in `t0`, Grenze 10 in `t1`
+- C: `a < 10` → Exit mit `bge` (sobald $a \ge 10$)
+
+```asm
+    li t0, 0
+    li t1, 10
+
+LoopStart:
+    bge t0, t1, LoopExit    # a >= 10 → raus
+
+    addi t0, t0, 1          # a++
+
+    j LoopStart
+
+LoopExit:
+```
+
+::: notes
+Muster: Init, Label, invertierter Exit-Branch, Body, Jump zurück. `bge` spiegelt die Umkehrung von `a < 10`.
+:::
+
+## Die `for`-Schleife
+
+- Syntaktisch kompakte `while`-Schleife
+- Vier Zonen: Init, Condition, Step, Body
+- Init vor der Schleife; Step zwingend am Ende des Bodies (vor dem Jump)
+
+```c
+for ( Init ; Condition ; Step ) {
+    Body
+}
+```
+
+::: notes
+Init nur einmal — oberhalb des Start-Labels. `i++` erst nach dem Body, sonst Off-by-One (erster Durchlauf schon mit Index 1).
+:::
+
+## `for` in Assembler
+
+- Zähler `i` in `t0`, Grenze in `t1`
+- Struktur fast wie `while` — Position des Steps beachten
+
+```asm
+    li t0, 0                # INIT
+    li t1, 10
+
+ForStart:
+    bge t0, t1, ForExit     # CONDITION
+
+    # BODY
+
+    addi t0, t0, 1          # STEP (am Ende!)
+    j ForStart
+
+ForExit:
+```
+
+::: notes
+Step vor dem Body → klassischer Off-by-One. Step immer direkt vor dem Jump zurück.
+:::
+
+## Arrays iterieren (Pointer Math)
+
+- Ziel: alle Array-Elemente aufsummieren
+- In der Schleife: `lw`
+- Problem: Offset bei `lw` ist eine feste Konstante — keine Variable `i`
+- Lösung: Base-Pointer in jedem Durchlauf verschieben
+
+```c
+summe = summe + array[i]; // i aendert sich dynamisch
+```
+
+::: notes
+In C ist `i` dynamisch. In Assembler geht `lw t0, i(s1)` nicht. Verschiedene Fächer lesen heißt: den Pointer bewegen.
+:::
+
+## Das Pointer-Update (Labor-Trick)
+
+- Offset starr auf 0: immer `lw t2, 0(s1)`
+- Nächstes Element: Base-Pointer aktualisieren
+- Bei 32-Bit-Integern: `addi s1, s1, 4` pro Durchlauf
+
+```asm
+    lw t2, 0(s1)            # Wert an aktueller Adresse
+    add t4, t4, t2          # aufsummieren
+
+    addi s1, s1, 4          # Pointer + 4 Bytes
+    addi t0, t0, 1          # i++
+```
+
+::: notes
+Offset 0, Finger weiterbewegen. Word-Arrays: immer +4, nicht +1 — sonst Byte-Salat.
+:::
+
+## Venus Onboarding: Memory-Tab
+
+- Register-Ansicht reicht nicht mehr: Blick in den RAM
+- Venus: Reiter Memory (neben Editor/Simulator)
+- Hex-Dump; Adressen im Raster `0x00`, `0x04`, `0x08`, …
+- Word-Inspektion: Little-Endian beachten
+
+::: notes
+Memory-Tab: Adresse links, Bytes in der Mitte — Ergebnis Ihrer `sw`-Befehle. Ideal zum Prüfen, ob das Array sauber liegt.
+:::
+
+## Daten im Editor deklarieren (`.data`)
+
+- Startwerte vor Programmstart in den RAM bringen
+- Direktive `.data` für statische Variablen
+- `.word` legt 32-Bit-Werte hintereinander (Abstand 4 Bytes)
+- Im `.text`-Block: Adresse per Label laden (`la`)
+
+```asm
+.data
+myArray:  .word  10, 20, 30, 40, 50
+
+.text
+.globl main
+main:
+    la s1, myArray    # Load Address — Pointer nach s1
+```
+
+::: notes
+Unter `.data` legt der Assembler das Array vor dem Start an. `la` (Load Address) holt die Hausnummer nach `s1`. Programmcode steht unter `.text`.
+:::
+
+## Debugging von Schleifen
+
+- Falscher Branch → Endlosschleife (Run stoppt nicht)
+- Workflow: Register auf Dezimal, nur Step nutzen
+- Prüfen: wächst der Zähler (`t0`)?
+- Prüfen: springt der Pointer (`s1`) in 4er-Schritten?
+- Prüfen: löst `bge` an der Grenze korrekt aus?
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  Klick[Klick Step] --> CheckZaehler[Wird i groesser?]
+  CheckZaehler --> CheckPointer[Wird Pointer +4?]
+  CheckPointer --> Branch[Ist bge invertiert?]
+  style Klick fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style CheckZaehler fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style CheckPointer fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Branch fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Kein Panikmodus: steppen. Pro Durchlauf müssen Zähler und Pointer wachsen. Bleibt eines stehen — fehlendes `addi` oder falsches Register.
+:::
+
+## Labor-Aufgabe: Array summieren
+
+- Mit einer Schleife über ein Array iterieren und die Summe bilden
+- Setup: Array mit 5 Werten unter `.data`
+- Ziel: Endergebnis in `a0`
+
+Checkliste:
+
+- Array-Adresse laden (`la`)
+- Startwerte: Summe $= 0$, Zähler $= 0$, Grenze $= 5$
+- Labels und Exit-Branch (`bge`)
+- Wert lesen (`lw`) und zur Summe addieren
+- Pointer um 4 erhöhen
+- Zähler um 1 erhöhen
+
+```asm
+# Viel Erfolg im Venus-Simulator!
+```
+
+::: notes
+For-Gerüst wie auf den Folien: `lw`, aufaddieren, am Ende Zähler +1 und Pointer +4. Liegt die Summe in `a0`, sind Speicher und Kontrollfluss verstanden. Viel Erfolg im Hands-on!
+:::
