@@ -1,0 +1,1176 @@
+---
+title: "Mikrocomputertechnik 1"
+subtitle: "Einheit 4: Funktionen & der Stack"
+author: "Prof. Dr.-Ing. Daniel Klünder"
+# Vortrag:  quarto preview vorlesungen/04_funktionen-stack.qmd
+#           (Notizen nur mit Taste S)
+# Handout:  quarto render vorlesungen/04_funktionen-stack.qmd --profile handout --to pdf
+#           → _handout/vorlesungen/04_funktionen-stack.pdf
+format: revealjs
+---
+
+# Funktionen & der Stack
+
+## Die Kunst der Unterprogramme
+
+- Herzlich willkommen zur vierten Vorlesung in Mikrocomputertechnik 1
+- Wir verlassen das Niveau einfacher Skripte und Spaghetti-Codes
+- Ziel: wiederverwendbare, professionelle Code-Blöcke (Funktionen)
+- Wie findet der Prozessor zu seinem Aufrufer zurück?
+- Der Stack als sicherer Tresor für lokale Variablen und gerettete Register
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Main[Main] -->|jal| Func[Funktion]
+  Func -->|ret| Main
+  style Func fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Main fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Herzlich willkommen zu Einheit 4. Arithmetik, Speicher und Kontrollfluss beherrschen Sie. Was fehlt, ist Struktur: In C/Java lagern Sie Logik in Funktionen aus. In RISC-V teilen sich alle Funktionen 32 Register — das braucht Spielregeln (ABI) und den Stack.
+:::
+
+## Agenda für den heutigen Tag
+
+1. Rücksprünge — warum einfache Jumps nicht reichen und das Register `ra`
+2. Die ABI und der Register-Krieg — wer darf welches Register wann überschreiben?
+3. Der Stack — LIFO und der Stack Pointer im Arbeitsspeicher
+4. Prolog und Epilog — der standardisierte Frame für jede Funktion
+5. Verschachtelung — wenn Funktionen wiederum Funktionen aufrufen
+6. Praxis (Venus) — Stack-Traces und Vorbereitung der Rekursion
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  A[Aufruf jal] --> B[Prolog Stack]
+  B --> C[Body Logik]
+  C --> D[Epilog Stack]
+  D --> E[Ruecksprung ret]
+  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Zuerst Navigation: Woher kam der Aufruf? Dann der Konflikt um Register. Danach der Stack als dynamischer Speicher für Save/Restore. Prolog/Epilog sind der Compiler-Bauplan; zum Schluss Verschachtelung und Venus. Den visuellen Datenpfad betrachten wir später in Ripes.
+:::
+
+## Rückblick: Was wir bisher können
+
+- Bedingt (`beq`, `blt`) oder unbedingt (`j`) springen
+- Pointer auf Arrays und Offsets (`lw`, `sw`)
+- `while`- und `for`-Schleifen in Assembler
+- Der Program Counter (PC) als Dirigent
+- Invertierung für If/Else-Logik
+
+```asm
+# Bisher: bedingungsloser Sprung
+    j Ueberspringen
+
+    # ... toter Code ...
+
+Ueberspringen:
+    # hier geht es weiter
+```
+
+::: notes
+Den PC manipulieren können Sie sicher. Labels und `j` reichen für If und Schleifen — aber nicht für wiederverwendbare Unterprogramme mit dynamischem Rückweg.
+:::
+
+## Das Copy-Paste-Problem
+
+- Szenario: Code-Block, der eine Zahl quadriert
+- Benötigt an drei Stellen im Programm
+- Bisher: Assembler-Zeilen dreimal kopieren
+- Nachteil: `.text` wird groß und frisst RAM
+- Bugfixen heißt: drei Stellen pflegen
+
+```c
+int a = quadriere(5);
+// ... anderer Code ...
+int b = quadriere(10);
+int c = quadriere(x);
+```
+
+::: notes
+Funktionen vermeiden Aufblähen und Mehrfachpflege. Einmal definieren, vielfach aufrufen — Software-Engineering auf Hardware-Ebene.
+:::
+
+## Funktionen in Hardware
+
+- Den Quadrieren-Code nur einmal in den RAM legen
+- Label z. B. `Quadriere:`
+- Bei Bedarf: PC dorthin springen
+- Danach zurück zum Aufrufer (`main`)
+- Isolierter Block: Parameter rein, Ergebnis raus
+
+```asm
+Main:
+    # Springe zur Funktion
+    # <--- danach hier weiterarbeiten
+
+Quadriere:
+    # z. B. mit M-Extension: mul t0, a0, a0
+    # Zurueckspringen!
+```
+
+::: notes
+Physikalisch: ein Instruktionsblock mit Label. Herausforderung: am Ende exakt in die Zeile unter dem Aufruf zurückkehren — nicht an eine fest verdrahtete Adresse.
+:::
+
+## Versuch 1: Der einfache Jump
+
+- Aufruf: `j Quadriere` — PC springt korrekt
+- Rücksprung: `j Main_Zeile_2` am Funktionsende
+- Fatal: Rücksprung ist hardcodiert
+- Zweiter Aufruf von `Main_Zeile_50` landet trotzdem bei Zeile 2
+
+```asm
+Main_Aufruf_1:
+    j Quadriere
+Main_Zeile_2:
+
+Main_Aufruf_2:
+    j Quadriere
+Main_Zeile_50:          # FATAL: Funktion springt immer zu Zeile 2
+```
+
+::: notes
+Ein fester Rücksprung-Jump macht die Funktion unbrauchbar für mehrere Aufrufstellen. Wir brauchen einen dynamischen Rückweg.
+:::
+
+## Das „Wo komme ich her?“-Problem
+
+- Eine echte Funktion muss blind aufrufbar sein
+- Sie darf nicht im Voraus wissen, wer sie aufruft
+- Im Moment des Aufrufs: aktuelle Folgeadresse merken
+- Diese Brotkrumenspur heißt Return Address
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  A[Aufruf 1 PC=0x100] -->|merke 0x104| F[Funktion]
+  B[Aufruf 2 PC=0x200] -->|merke 0x204| F
+  F -->|zur gemerkten Adresse| C((Rueckkehr))
+  style F fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Dynamisch: Beim Sprung die Hausnummer der Folgezeile ($PC+4$) aufschreiben. Nur so findet die Funktion den Weg zurück — unabhängig vom Aufrufer.
+:::
+
+## Die Return Address (`ra`)
+
+- Dediziertes Spezial-Register: Architektur-Register $x1$
+- ABI-Name: `ra` (Return Address)
+- Speichert die Adresse der Instruktion direkt nach dem Aufruf
+- Rettungsanker für den Rückweg aus dem Unterprogramm
+
+```text
+# PC = 0x00400000  (Aufruf-Befehl)
+# ra muss 0x00400004 werden  (Zeile darunter)
+```
+
+::: notes
+Ab heute Pflichtwissen: $x1$/`ra`. Konvention: vor/beim Betreten der Funktion liegt die Folgeadresse in `ra`. Die Funktion vertraut blind darauf.
+:::
+
+## Jump and Link (`jal`)
+
+- Ein Befehl, zwei Aktionen in einem Takt
+- Syntax: `jal rd, Label`
+- Link: Hardware kopiert $PC+4$ nach `rd` (meist `ra`)
+- Jump: Hardware setzt PC auf die Label-Adresse
+- Atomar — kein Zwischenzustand
+
+```asm
+jal ra, Quadriere
+
+# In einem Takt:
+# 1. ra = PC + 4
+# 2. PC = Adresse(Quadriere)
+```
+
+::: notes
+`jal` = Jump and Link. Ticket nach Hause in `ra`, gleichzeitig Sprung zur Funktion. Das ist der Standard-Funktionsaufruf.
+:::
+
+## Der Funktionsaufruf
+
+- Standard ab heute: `jal ra, Label`
+- Pseudo `j` aus Einheit 3 war getarntes `jal`
+- Venus übersetzt `j Label` zu `jal x0, Label`
+- $PC+4$ landet in $x0$ und verpufft (schreibgeschützt)
+
+```asm
+# Aufruf mit Rueckkehr:
+jal ra, MeineFunktion
+
+# Simpler Sprung ohne Rueckkehr (If/Else):
+j ElseBlock      # intern: jal x0, ElseBlock
+```
+
+::: notes
+Kreis zu Einheit 3: Beim Else-Überspringen wird das Rückflugticket berechnet und in $x0$ verworfen. Für echte Funktionen: `jal ra`, damit das Ticket in `ra` landet.
+:::
+
+## Jump and Link Register (`jalr`)
+
+- Am Funktionsende hilft `jal` nicht (braucht festes Label)
+- Ziel ist die dynamische Adresse in `ra`
+- Lösung: `jalr rd, offset(rs1)` — Sprung zu Registerinhalt
+
+```asm
+jalr x0, 0(ra)
+
+# PC = ra + 0
+# Link-Ziel x0: keine zweite Brotkrumenspur
+```
+
+::: notes
+`jalr` springt zur Zahl in einem Register. Für die Heimreise: Quelle `ra`, Link-Ziel `x0` (kein neues Ticket nötig).
+:::
+
+## Der Rücksprung (`ret`)
+
+- `jalr x0, 0(ra)` ist korrekt, aber unleserlich
+- Pseudo-Instruktion: `ret`
+- Venus generiert daraus den `jalr`-Befehl
+- Assembler-Äquivalent zu `return` in C/Java
+
+```asm
+Quadriere:
+    # ... Funktionsrumpf ...
+    ret                 # = jalr x0, 0(ra)
+```
+
+::: notes
+Am Funktionsende einfach `ret` tippen — dynamischer Sprung über `ra` im Hintergrund.
+:::
+
+## Visualisierung: Der Zyklus
+
+- Zusammenspiel von `jal` und `ret` als geschlossener Kreis
+- Brotkrumenspur beim Absprung gelegt, beim Rücksprung eingelöst
+- Skaliert: dieselbe Funktion von beliebig vielen Stellen aufrufbar
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+sequenceDiagram
+  participant Main
+  participant ra as Register ra
+  participant Func as Funktion
+  Main->>ra: jal speichert PC+4
+  Main->>Func: jal springt zum Label
+  Func-->>Func: fuehrt Code aus
+  Func->>ra: ret liest ra
+  ra-->>Main: ret setzt PC = ra
+```
+
+::: notes
+Tanz der Register: `jal` speichert Ticket und springt; `ret` löst das Ticket ein. Die Funktion bleibt isoliert vom Aufrufer.
+:::
+
+## Die ABI und der Register-Krieg
+
+- Funktionen wissen nichts voneinander (blinder Flug)
+- Sichere Datenübergabe: `a`-Register
+- Konflikt: 32 Register für das gesamte Programm
+- Lösung: Application Binary Interface (ABI) als sozialer Vertrag
+- Flüchtig (Caller-Saved) vs. sicher (Callee-Saved)
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  A[Caller / Main] -->|Parameter| B(ABI)
+  B -->|Ordnung| C[Callee / Funktion]
+  C -->|Ergebnis| A
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Navigation ist gelöst. Nun Daten und Register-Krieg: Wer überschreibt $s0$? Ohne ABI würde jedes große Programm kollabieren.
+:::
+
+## Datenübergabe (Argumente)
+
+- Parameter und Ergebnis in C: `calc(5, 10);`
+- In RISC-V: vor dem Sprung Werte in Register legen
+- ABI: `a0` bis `a7` für Argumente
+- Die Funktion erwartet ihre Zutaten exakt dort
+
+```asm
+li a0, 5
+li a1, 10
+jal ra, Calc
+```
+
+::: notes
+Briefkästen der ABI: Argumente vor `jal` in `a0`–`a7`. Die Funktion liest starr dort.
+:::
+
+## Der Rückgabewert
+
+- Ergebnis (Return-Value) zwingend in `a0`
+- Vor `ret`: Endresultat nach `a0` kopieren
+- Aufrufer holt die Antwort nach dem `jal` aus `a0`
+
+```asm
+Calc:
+    add t0, a0, a1
+    mv a0, t0           # ABI: Ergebnis in a0
+    ret
+```
+
+::: notes
+`a0` ist der Rückgabe-Briefkasten. Optional zweites Ergebnis in `a1` — selten. (`mv` ist Pseudo für `addi rd, rs, 0` bzw. `add` mit $x0$.)
+:::
+
+## Code-Beispiel: Parameter komplett
+
+- Vertrag Caller/Callee in der Praxis
+- Compiler-Muster hinter `int x = func(y);`
+
+```asm
+Main:
+    li a0, 5
+    li a1, 10
+    jal ra, Addiere
+    mv s0, a0           # Ergebnis sichern
+
+Addiere:
+    add a0, a0, a1      # Summe direkt in a0
+    ret
+```
+
+::: notes
+Main bereitet Argumente vor, Addiere schreibt die Summe nach `a0`, Main sichert nach `s0` — konventioneller ABI-Code.
+:::
+
+## Der Register-Konflikt
+
+- Nur 32 Hardware-Register für alle Funktionen
+- Szenario: `Main` speichert Zwischenwert in `s0`, ruft `Print()` auf
+- `Print()` nutzt `s0` ahnungslos als Zähler
+- Nach `ret`: Wert in `Main` ist zerstört
+
+::: notes
+Lebenspunkte in $s0$, Zeichenfunktion überschreibt $s0$ — nach Rückkehr ist der Spieler „tot“. Katastrophaler Logikfehler ohne sichtbare CPU-Warnung.
+:::
+
+## Zerstörte Variablen (Trace)
+
+- Funktionen werden isoliert programmiert (Bibliotheken)
+- Autor von `Print` kennt die Register von `Main` nicht
+- CPU blockiert Register nicht — Schreiben überschreibt Flip-Flops
+
+```asm
+Main:
+    li s0, 99
+    jal ra, BoeseFunc
+    # s0 ist jetzt 0
+
+BoeseFunc:
+    li s0, 0
+    ret
+```
+
+::: notes
+Clobbering: stille Zerstörung. Ohne strenge Konventionen ist fremder Code unsicher aufrufbar.
+:::
+
+## Die Lösung: ABI-Verträge
+
+- Hardware sperrt keine Register — Software muss retten
+- ABI erzwingt Save/Restore vor Überschreiben
+- Inhalt in den RAM evakuieren, später wiederherstellen
+- Offene Frage: Wer ist verantwortlich — Caller oder Callee?
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  Vertrag[ABI-Konvention] --> C[Caller-Saved]
+  Vertrag --> D[Callee-Saved]
+  C --> E[t0-t6, a0-a7]
+  D --> F[s0-s11]
+  style Vertrag fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style F fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Evakuieren vor Nutzen: So wirkt das Register unverändert. Die Fraktionen Caller-Saved vs. Callee-Saved klären die Haftung.
+:::
+
+## Rollenverteilung: Caller vs. Callee
+
+- Caller (Aufrufer): führt `jal` aus (z. B. `Main`)
+- Callee (Aufgerufener): wird angesprungen und arbeitet
+- Rollen sind relativ: wer selbst aufruft, wird Caller
+- ABI teilt Register in zwei Haftungspflichten
+
+```text
+Main:               <--- CALLER
+    jal ra, Print
+
+Print:              <--- CALLEE
+    ret
+```
+
+::: notes
+Wenn `Print` später `DrawPixel` aufruft, wird `Print` selbst zum Caller. Die Begriffe hängen am Aufruf, nicht am Funktionsnamen.
+:::
+
+## Caller-Saved Register (Flüchtig)
+
+- Register: `t0`–`t6`, `a0`–`a7`, und `ra`
+- ABI: Not Preserved — flüchtig
+- Callee darf sie ohne Rettung überschreiben
+- Caller muss wichtige Werte vor `jal` selbst sichern
+
+```asm
+# Caller schuetzt sich selbst:
+    # ... t0 in den RAM retten ...
+    jal ra, Funktion
+    # ... t0 wiederherstellen ...
+```
+
+::: notes
+Freiwild für den Callee. Nach jedem `jal`: alle `t`-Register mental als gelöscht betrachten. Vertrauen Sie keinem `t0` über einen Aufruf hinweg.
+:::
+
+## Die Konsequenz für t-Register
+
+- `t`-Register nur für Kurzzeit-Rechnungen
+- Bei `jal`: alle `t`-Register als gelöscht betrachten
+- Vorteil: kleine Hilfsfunktionen ohne teure RAM-Backups
+
+```c
+int t0 = 5;
+print(t0); // jal ra, print
+// Anfänger: t0 ist noch 5
+// Realität: t0 ist undefiniert
+```
+
+::: notes
+Klassischer Labor-Bug: Schleifenzähler in `t0`, dann `print` im Body — Schleife bricht. RAM-Save kostet viele Takte; deshalb dürfen winzige Callees `t` frei nutzen.
+:::
+
+## Callee-Saved Register (Sicher)
+
+- Register: `s0`–`s11`
+- ABI: Preserved — sicher über den Aufruf hinweg
+- Caller darf sich darauf verlassen
+- Callee, der `s` nutzt: alten Wert retten und vor `ret` wiederherstellen
+
+```asm
+Funktion:
+    # 1. fremdes s0 in den RAM
+    # 2. eigene Rechnung mit s0
+    # 3. altes s0 zurueck
+    ret
+```
+
+::: notes
+Tresor-Register. Haftung liegt beim Callee: Save — Modify — Restore. Der Caller merkt von der Zwischennutzung nichts.
+:::
+
+## Das Versprechen in der Praxis
+
+- Callee schützt `s0` vor der Zerstörung
+- Caller sieht nach `ret` denselben Wert wie zuvor
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+sequenceDiagram
+  participant Caller
+  participant s0 as Register s0
+  participant RAM
+  participant Callee
+  Caller->>s0: speichert 42
+  Caller->>Callee: jal
+  Callee->>RAM: rettet 42
+  Callee->>s0: rechnet mit 99
+  Callee->>RAM: holt 42
+  Callee->>s0: stellt 42 her
+  Callee-->>Caller: ret
+```
+
+::: notes
+Save-Modify-Restore: Evakuieren, nutzen, zurückschreiben — System bleibt stabil.
+:::
+
+## Das „Wo?“-Problem
+
+- Retten geht in den RAM (nicht in ein anderes Register — Teufelskreis)
+- Hartcodierte Adresse `0x1000` scheitert bei Verschachtelung/Rekursion
+- Jeder Aufruf bräuchte exklusiven, frischen Speicher
+- Wir brauchen einen dynamisch wachsenden Bereich
+
+```text
+Benötigt: Ein Ort im RAM, der für JEDEN Funktionsaufruf
+frisch und exklusiv bereitsteht.
+```
+
+::: notes
+Zehn rekursive Aufrufe dürfen sich nicht gegenseitig die Backups überschreiben. Lösung: der Stack — zuerst das RAM-Layout, dann LIFO und `sp`.
+:::
+
+
+## Die Struktur des Arbeitsspeichers (RAM)
+
+- Wie teilt ein modernes Betriebssystem den RAM auf?
+- Text / Code: ganz unten das kompilierte Maschinenprogramm
+- Static Data: globale Variablen (z. B. Arrays unter `.data`)
+- Heap: dynamischer Speicher (z. B. `malloc` in C), wächst nach oben
+- Stack: startet oben bei der größten Adresse und wächst nach unten
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  Stack[Stack: lokale Variablen / Backups]
+  Frei[freier Speicher]
+  Heap[Heap: dynamische Daten]
+  Data[Static Data .data]
+  Text[Code .text]
+  Stack -->|waechst nach unten| Frei
+  Heap -->|waechst nach oben| Frei
+  Frei --- Data
+  Data --- Text
+  style Stack fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Frei fill:#F5F5F7,stroke:#E5E5EA,stroke-width:1.5px
+  style Heap fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Data fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Text fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Unten: Programmcode, darüber Static Data und Heap (wächst nach oben). Oben bei hohen Adressen (z. B. $0x7FFFFFFF$) beginnt der Stack und wächst nach unten — so verzögert sich die Kollision mit dem Heap.
+:::
+
+
+## Der Stack (LIFO und Stack Pointer)
+
+- Dynamisch wachsender Keller für gerettete Register und lokale Variablen
+- LIFO: Last In, First Out
+- Stack Pointer (`sp`): Zeigefinger auf die Spitze
+- Push und Pop in RISC-V-Assembler
+
+::: notes
+Das RAM-Layout kennen Sie. Nun die Mechanik: LIFO, `sp` und warum der Keller nach unten wächst.
+:::
+
+## Das Stack-Konzept (LIFO)
+
+- Stack = abstrakte Datenstruktur (Stapel / Keller)
+- Metapher: Tellerstapel in der Cafeteria
+- Push: neuer Teller oben auflegen
+- Pop: nur den obersten Teller nehmen
+- LIFO: Last In, First Out — keine Operation in der Mitte
+
+::: notes
+Push sichert eine Variable oben auf dem Stapel; Pop holt sie wieder. Die goldene Regel: immer nur an der Spitze arbeiten.
+:::
+
+## Der Stack Pointer (`sp`)
+
+- Zeigefinger auf die Spitze des Stapels im RAM
+- Architektur-Register $x2$, ABI-Name `sp`
+- `sp` hält die Adresse des zuletzt belegten Faches
+- Beim Boot: Betriebssystem setzt `sp` auf eine hohe RAM-Adresse
+
+```asm
+# sp zeigt immer auf den aktuell obersten Eintrag
+# Ablegen = sp verschieben, dann speichern
+```
+
+::: notes
+Orientieren Sie sich am `sp`: Er ist die Hausnummer der Stack-Spitze. Ohne ihn wäre Push/Pop nicht adressierbar.
+:::
+
+## RISC-V-Regel: Stack wächst nach unten
+
+- Stack beginnt oben — Wachstum heißt Richtung Adresse 0
+- Push (Platz schaffen): Adressen werden kleiner — Subtraktion von `sp`
+- Pop (Platz freigeben): Adressen werden wieder größer — Addition zu `sp`
+- Historisch: Kollision mit dem von unten wachsenden Heap verzögern
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[sp = 0x7FFFF010] -->|Push| B[sp = 0x7FFFF00C]
+  B -->|Push| C[sp = 0x7FFFF008]
+  C --> D[Subtraktion vergroessert den belegten Platz]
+  style D fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Kontraintuitiv, aber Standard: nach unten wachsen heißt `sp` verkleinern zum Reservieren und vergrößern zum Freigeben.
+:::
+
+## Push: Etwas ablegen (Schritt 1)
+
+- Register `s0` (32 Bit / 4 Bytes) vor Zerstörung retten
+- Zuerst Platz im RAM „kaufen“
+- `sp` um 4 Bytes nach unten: `addi sp, sp, -4`
+- `sp` zeigt nun auf ein leeres 4-Byte-Fach
+
+```asm
+addi sp, sp, -4     # Stack waechst um 1 Wort nach unten
+```
+
+::: notes
+Schritt 1 eines Push: Speicher reservieren. Erst danach dürfen Daten geschrieben werden.
+:::
+
+## Push: Etwas ablegen (Schritt 2)
+
+- Daten mit `sw` in das reservierte Fach schreiben
+- Base: der frisch verschobene `sp`, Offset 0
+- Befehl: `sw s0, 0(sp)`
+
+```asm
+addi sp, sp, -4
+sw s0, 0(sp)        # s0 sicher im RAM
+```
+
+::: notes
+Kompletter Push: erst Platz, dann Store. `s0` liegt im Tresor; das Register darf im Body überschrieben werden.
+:::
+
+## Pop: Etwas herunternehmen (Schritt 1)
+
+- Vor `ret`: `s0` aus dem RAM zurückholen
+- `sp` zeigt noch auf den abgelegten Eintrag
+- `lw s0, 0(sp)` — Wert wieder in der CPU
+- RAM-Platz ist noch als belegt markiert
+
+```asm
+lw s0, 0(sp)        # Wert wiederherstellen
+```
+
+::: notes
+Erst laden, dann freigeben. Nach dem `lw` liegt der Wert wieder in `s0`, der Teller liegt aber noch auf dem Stapel.
+:::
+
+## Pop: Etwas herunternehmen (Schritt 2)
+
+- Platz logisch freigeben: `addi sp, sp, 4`
+- Bits im RAM bleiben als „Elektroschrott“, bis der nächste Push überschreibt
+- `sp` steht wieder dort, wo er vor dem Push war
+
+```asm
+lw s0, 0(sp)
+addi sp, sp, 4      # Platz freigeben
+```
+
+::: notes
+Freigabe = `sp` nach oben. Kein explizites Löschen nötig — der nächste Push überschreibt den alten Inhalt.
+:::
+
+## Das Gleichgewichts-Gesetz
+
+- Jede Funktion hinterlässt den Stack exakt wie vorgefunden
+- Summe der Pushes = Summe der Pops
+- Beispiel: Prolog $-12$ → Epilog $+12$ vor `ret`
+- Ungleichgewicht verschiebt Frames des Aufrufers — Crash
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  A[sp = 1000] -->|Push -12| B[sp = 988]
+  B -->|Pop +8| C[sp = 996]
+  C -->|ret| D((Crash))
+  style D fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Take nothing but pictures, leave nothing but footprints: Was Sie am Anfang vom `sp` abziehen, müssen Sie am Ende wieder addieren. Sonst liest der Caller falsche Offsets.
+:::
+
+## Effizienz: Multi-Push
+
+- Oft mehrere Register gleichzeitig retten (`s0`, `s1`, `ra`, …)
+- Viermal `addi sp, sp, -4` ist ineffizient
+- Besser: Platz für alle auf einmal — z. B. $-12$ für drei Wörter
+- Danach Offsets wie in einem Array
+
+```asm
+# Ineffizient:
+addi sp, sp, -4
+sw s0, 0(sp)
+addi sp, sp, -4
+sw s1, 0(sp)
+
+# Effizient:
+addi sp, sp, -8     # Platz fuer 2 Register
+```
+
+::: notes
+Compiler reservieren den gesamten Frame in einem Rutsch und belegen ihn mit Offsets — weniger ALU-Takte.
+:::
+
+## Array auf dem Stack (Offsets)
+
+- Nach `addi sp, sp, -12` zeigt `sp` auf das untere Ende des Blocks
+- Zugriff: `0(sp)`, `4(sp)`, `8(sp)` — Pointer-Arithmetik aus Einheit 3
+- Der Block gehört exklusiv dieser Funktion
+
+```asm
+addi sp, sp, -12
+sw ra, 8(sp)
+sw s1, 4(sp)
+sw s0, 0(sp)
+```
+
+::: notes
+`0(sp)` unten, positive Offsets nach oben im Frame. Kein weiteres Verschieben von `sp` nötig, bis der Epilog den Block freigibt.
+:::
+
+## Visualisierung im RAM
+
+- So sieht ein Multi-Push im Venus-Memory-Tab aus:
+
+| Adresse (relativ) | Inhalt                              |
+|-------------------|-------------------------------------|
+| `sp + 12`         | Daten des Aufrufers (Caller-Frame)  |
+| `sp + 8`          | `ra` (Rücksprungadresse)         |
+| `sp + 4`          | `s1` (Backup)                       |
+| `sp + 0`          | `s0` (Backup) — `sp` zeigt hierhin |
+| `sp - 4`          | noch freier RAM für den nächsten Push |
+
+::: notes
+Pop in umgekehrter Reihenfolge: von `0`, `4`, `8` laden, dann `addi sp, sp, 12`. Bereich ab `sp+12` ist Tabu — Frame des Callers.
+:::
+
+## Stack Frames (Prolog und Epilog)
+
+- Multi-Push in standardisierte Schablonen gießen
+- Burger-Metapher: Aufbau einer professionellen Funktion
+- Prolog: Frame erschaffen
+- Epilog: aufräumen und schließen
+- Leaf vs. Non-Leaf Funktionen
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[Prolog: Frame] --> B[Body: Logik]
+  B --> C[Epilog: Frame zerstoeren]
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Jeder C-Compiler baut Funktionen dreiteilig: Prolog, Body, Epilog. Wer die Schablone beherrscht, schreibt verschachtelbaren Assembler.
+:::
+
+## Die Anatomie einer Funktion
+
+- Oberes Brötchen (Prolog): zuerst — Stack reservieren, ABI-Register sichern
+- Fleisch (Body): eigentliche C-Logik — Register dürfen (dank Prolog) überschrieben werden
+- Unteres Brötchen (Epilog): vor `ret` — Register wiederherstellen, Stack freigeben
+
+::: notes
+Ohne Brötchen fällt der Burger auseinander. Nie den Body ohne Prolog/Epilog liefern.
+:::
+
+## Was ist ein Stack Frame?
+
+- Der per `addi sp, sp, -X` reservierte Bereich heißt Stack Frame (Activation Record)
+- Jeder aktive Aufruf besitzt seinen privaten Frame
+- Inhalt typisch: gerettete `s`-Register, `ra`, optional lokale Variablen/Arrays
+
+```text
+"Stack Overflow": zu viele Frames gestapelt
+(z. B. endlose Rekursion) — Stack trifft auf den Heap.
+```
+
+::: notes
+Lokale Arrays erweitern den Frame (z. B. $-1000$). Stack Overflow = Stack und Heap kollidieren.
+:::
+
+## Der Prolog (Die Tür öffnen)
+
+- Steht direkt unter dem Funktions-Label
+- Zählen: benötigte `s`-Register (+ `ra` falls Non-Leaf) $\times 4$
+- `sp` um diesen negativen Wert verschieben
+- Register mit `sw` und steigenden Offsets sichern
+
+```asm
+MeineFunktion:
+    # --- PROLOG ---
+    addi sp, sp, -8
+    sw s1, 4(sp)
+    sw s0, 0(sp)
+    # --- PROLOG ENDE ---
+```
+
+::: notes
+Danach dürfen `s0`/`s1` im Body überschrieben werden — Originale ruhen im Frame.
+:::
+
+## Der Body (Die Arbeit)
+
+- Callee-Saved sind gesichert — Body ist frei
+- `s0`/`s1` bedenkenlos nutzen; `t0`–`t6` für Flüchtiges (ohne Prolog-Rettung)
+- Ergebnis vor dem Epilog nach `a0`
+
+```asm
+    # --- BODY ---
+    li s0, 42
+    li s1, 99
+    add a0, s0, s1
+    # --- BODY ENDE ---
+```
+
+::: notes
+Hier rechnen, iterieren, Sensoren auswerten — ABI-Rückgabe in `a0` nicht vergessen.
+:::
+
+## Der Epilog (Aufräumen)
+
+- Spiegelbild des Prologs, umgekehrte Reihenfolge
+- `lw` aus denselben Offsets
+- denselben Betrag positiv zu `sp` addieren
+- erst dann `ret`
+
+```asm
+    # --- EPILOG ---
+    lw s0, 0(sp)
+    lw s1, 4(sp)
+    addi sp, sp, 8
+    ret
+```
+
+::: notes
+Wiederherstellen, Frame vernichten, Heimreise. `ret` erst nach dem Gleichgewicht von `sp`.
+:::
+
+## Die Gefahr des Off-by-One
+
+- Prolog $-8$, Epilog versehentlich $+4$?
+- Ein Wort „Müll“ bleibt auf dem Stack
+- Caller-Offsets greifen daneben — Kettenreaktion
+- Schwer zu debuggen: `ret` wirkt noch korrekt
+
+```asm
+addi sp, sp, 4      # FATAL, wenn Prolog -8 hatte
+ret
+```
+
+::: notes
+Das Gleichgewichtsgesetz verzeiht keine Tippfehler im Epilog. Der Caller liest Müll und stürzt oft erst später ab.
+:::
+
+## Das komplette Template
+
+- Master-Schablone für das Labor
+- Prolog und Epilog am besten sofort paarweise tippen
+
+```asm
+MeineTolleFunktion:
+    # --- PROLOG ---
+    addi sp, sp, -4
+    sw s0, 0(sp)
+
+    # --- BODY ---
+    # ... rechnen ...
+
+    # --- EPILOG ---
+    lw s0, 0(sp)
+    addi sp, sp, 4
+    ret
+```
+
+::: notes
+Dreiklang einüben: erst Prolog+Epilog skizzieren, dann Body füllen — verhindert Ungleichgewichte.
+:::
+
+## Die Leaf-Funktion
+
+- Leaf: ruft keine andere Funktion auf (Blatt am Baum)
+- Vorteil: `ra` muss nicht auf dem Stack gesichert werden
+- Kein `jal` im Body — niemand überschreibt `ra`
+
+```c
+int addiere(int a, int b) {
+    return a + b;
+}
+```
+
+::: notes
+Leaf-Funktionen sind günstig: oft nur `s`-Register im Prolog, kein `ra`-Backup.
+:::
+
+## Non-Leaf-Funktion
+
+- Non-Leaf: ruft selbst weitere Funktionen auf
+- Jedes `jal` im Body überschreibt `ra` mit neuer Brotkrumenspur
+- Eigenes Rückflugticket zum Caller würde sonst verloren gehen
+- Pflicht: `ra` im Prolog auf den Stack pushen
+
+```c
+int berechneDistanz(int x, int y) {
+    int z = x*x + y*y;
+    return sqrt(z);   // jal ueberschreibt ra!
+}
+```
+
+::: notes
+Ohne `ra` auf dem Stack endet `ret` nach dem inneren Aufruf an der falschen Adresse. Non-Leaf: `ra` immer retten.
+:::
+
+## Verschachtelte Funktionen (Nested Calls)
+
+- Alltag: `Main` ruft `A` auf, `A` ruft `B` auf
+- Sichern und Wiederherstellen von `ra`
+- Mehrere Stack Frames übereinander im RAM
+- Stack-Trace Schritt für Schritt visualisieren
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Main -->|jal ra=Main| A[Funktion A]
+  A -->|jal ra=A| B[Funktion B]
+  B -->|ret| A
+  A -->|ret| Main
+  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Main fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Nested Calls: Brotkrumenspuren beliebig tief stapeln, ohne dass sie sich stören — genau dafür existiert der Stack.
+:::
+
+
+## Der Nested Call (Das Szenario)
+
+- In Hochsprachen rufen Funktionen oft Hilfsfunktionen auf
+- Das heißt verschachtelter Aufruf (Nested Call)
+- Szenario: `main()` ruft `calc()` auf
+- `calc()` ruft intern `sum()` auf
+- Zwei `jal`-Befehle, zeitlich versetzt — bevor ein `ret` folgt
+
+```c
+void main() {
+    calc(); // Aufruf 1
+}
+void calc() {
+    sum();  // Aufruf 2
+}
+```
+
+::: notes
+Alltag: Main ruft Calc, Calc ruft Sum. Hardware: zwei `jal`, bevor das erste `ret` kommt.
+:::
+
+## Der Todesstoß für `ra` (Der Trace)
+
+- Schritt 1: `Main` macht `jal ra, Calc` — `ra` = z. B. $0x104$ (zurück zu Main)
+- Schritt 2: Code in `Calc` bis zum Aufruf von `Sum`
+- Schritt 3: `Calc` macht `jal ra, Sum`
+- Katastrophe: Hardware überschreibt `ra` mit z. B. $0x208$ — Main-Adresse ist weg
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[ra = 0x104] -->|jal ueberschreibt| B[ra = 0x208]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Ein Register speichert nur einen Wert. Der zweite `jal` schreddert das Rückflugticket nach Main. Ohne Backup ist der Weg verloren.
+:::
+
+## Die Endlosschleife (Der Crash)
+
+- `Sum` ruft `ret` auf — `ra` zeigt auf `Calc` ($0x208$): erster Rücksprung klappt
+- `Calc` ist fertig und ruft `ret` auf
+- In `ra` steht noch $0x208$ (mitten in `Calc`)
+- `Calc` springt zu sich selbst — Endlosschleife
+
+```asm
+Calc_Zeile_X:
+    jal ra, Sum     # ra wird Calc_Zeile_X+4
+Calc_Zeile_Y:
+    ret             # springt wieder zu Zeile_Y!
+```
+
+::: notes
+`Sum` kehrt korrekt nach `Calc` zurück. Das zweite `ret` liest dasselbe `ra` und landet erneut in `Calc` — nie bei Main.
+:::
+
+## Die Lösung: `ra` retten
+
+- Laut ABI ist `ra` Caller-Saved (flüchtig)
+- Eine Non-Leaf-Funktion ist Callee und Caller zugleich
+- Regel: vor jedem weiteren `jal` muss `ra` auf den Stack
+- `ra` wandert typisch als oberstes Element in den Stack Frame
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  RAM[(Stack Frame von Calc)] -->|beinhaltet| RA[gerettetes ra 0x104]
+  RAM -->|beinhaltet| S0[gerettetes s0]
+  style RAM fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style RA fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style S0 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Vor dem inneren `jal`: Kopie von `ra` in den Frame. Überschreiben durch Hardware ist dann egal — das Backup liegt im RAM.
+:::
+
+## Prolog für Non-Leafs
+
+- Prolog wächst um ein Wort (4 Bytes) für `ra`
+- Statt nur $-4$ für `s0` nun z. B. $-8$
+- Konvention: `ra` auf das höhere Offset (`4(sp)`), darunter die `s`-Register
+- Danach ist der Body vor `jal`-Zerstörung geschützt
+
+```asm
+Calc:
+    # PROLOG Non-Leaf
+    addi sp, sp, -8
+    sw ra, 4(sp)        # Main-Ruecksprungadresse
+    sw s0, 0(sp)
+```
+
+::: notes
+Minimal größerer Frame: `ra` oben, `s0` darunter. Beliebig viele Hilfsaufrufe im Body — Weg nach Main bleibt im RAM.
+:::
+
+## Epilog für Non-Leafs
+
+- Spiegelverkehrt zum Prolog: zuerst `s0`, dann `ra` aus dem Frame
+- `addi sp, sp, 8` — Frame abbauen
+- Erst danach `ret` — liest das wiederhergestellte `ra` (zurück zu Main)
+
+```asm
+    # EPILOG Non-Leaf
+    lw s0, 0(sp)
+    lw ra, 4(sp)
+    addi sp, sp, 8
+    ret                 # korrekt zu Main
+```
+
+::: notes
+Reihenfolge beachten: `ra` vor dem Freigeben des Frames laden. Dann zeigt `ret` wieder auf Main — Nested Call sicher.
+:::
+
+
+## Praxis: Stack-Traces in Venus
+
+- Transfer: Nested Calls im Simulator beobachten
+- Reiter Memory: Stack-Frames als Hex-Dump sehen
+- Register-Ansicht: `sp`, `ra`, `s0` parallel verfolgen
+- Nur Step nutzen — Run verwischt den Trace
+- Ziel: jeden Push/Pop und jedes `jal`/`ret` vorhersagen
+
+```{mermaid}
+%%| fig-width: 3.5
+%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Step[Step] --> Reg[sp / ra / s0]
+  Reg --> Mem[Memory-Tab]
+  Mem --> Pred[Vorhersage pruefen]
+  style Step fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Reg fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Mem fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Pred fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```
+
+::: notes
+Im Labor: Nested-Beispiel aus den Folien tippen. Vor jedem Step laut vorhersagen, was `ra` und `sp` tun. Memory-Tab: Frame von `Calc` mit gerettetem `ra` sichtbar machen.
+:::
+
+## Debugging-Checkliste (Funktionen)
+
+- Wächst `sp` im Prolog um die erwartete Byte-Zahl nach unten?
+- Liegt `ra` bei Non-Leafs wirklich im Frame, bevor das innere `jal` kommt?
+- Stellt der Epilog dieselben Offsets wieder her und addiert denselben Betrag?
+- Nach `ret`: landet der PC bei Main — nicht erneut in `Calc`?
+- Caller-Saved (`t*`) nach `jal` nicht weiterverwenden ohne Restore
+
+::: notes
+Klassiker: Epilog $+4$ statt $+8$, oder `ra` nicht gerettet. Beides führt zu Endlosschleife oder Caller-Crash — Step und Memory-Tab entlarven das schnell.
+:::
+
+## Ausblick: Rekursion
+
+- Rekursion = Funktion ruft sich selbst auf (Non-Leaf auf sich selbst)
+- Jeder Aufruf braucht einen eigenen Stack Frame (frisches `ra`, frische Locals)
+- Genau deshalb wächst der Stack dynamisch — feste Adresse `0x1000` würde kollabieren
+- Gefahr: zu tiefe Rekursion → Stack Overflow (Stack trifft Heap)
+
+```c
+int fakt(int n) {
+    if (n <= 1) return 1;
+    return n * fakt(n - 1);  // Nested Call auf sich selbst
+}
+```
+
+::: notes
+Die Nested-Call-Mechanik ist die Grundlage der Rekursion: jedes `fakt(n)` rettet sein `ra` und seinen Parameter-Frame, bevor es `fakt(n-1)` aufruft. Vertiefung und Laborübung folgen im Praktikum — heute reicht das Konzept.
+:::
+
+## Zusammenfassung und Ausblick
+
+- Funktionen: `jal` / `ret`, Argumente und Rückgabe über `a0`–`a7`
+- ABI: Caller-Saved vs. Callee-Saved; Non-Leafs retten `ra`
+- Stack: LIFO, `sp` nach unten, Prolog/Epilog im Gleichgewicht
+- Venus: Stack-Traces steppen; Rekursion = Nested Calls auf sich selbst
+- Als Nächstes: Datenpfad und Pipeline visuell in Ripes
+
+::: notes
+Damit schließt Einheit 4. Im Labor Nested Calls und Frames üben. Den visuellen Datenpfad und die Pipeline betrachten wir später in Ripes.
+:::
