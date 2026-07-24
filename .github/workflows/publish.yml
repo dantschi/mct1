@@ -100,7 +100,7 @@ jobs:
           set -uo pipefail
           failed=0
           shopt -s nullglob
-          mkdir -p ../_site/labs
+          mkdir -p _site/labs
           cd labs
           for qmd in lab_[0-9][0-9]_*.qmd probeklausur.qmd; do
             [ -f "$qmd" ] || continue
@@ -110,7 +110,7 @@ jobs:
             base="${qmd%.qmd}"
             echo "Rendering lab (student): $qmd"
             if ! quarto render "$qmd" --to pdf; then
-              echo "::warning::Laborblatt (Studierende) fehlgeschlagen: $qmd"
+              echo "::warning::Uebungsblatt (Studierende) fehlgeschlagen: $qmd"
               failed=1
               continue
             fi
@@ -128,7 +128,7 @@ jobs:
           set -uo pipefail
           failed=0
           shopt -s nullglob
-          mkdir -p ../_site/labs
+          mkdir -p _site/labs
           cd labs
           for qmd in lab_[0-9][0-9]_*.qmd probeklausur.qmd; do
             [ -f "$qmd" ] || continue
@@ -138,7 +138,7 @@ jobs:
             base="${qmd%.qmd}"
             echo "Rendering lab (solution): $qmd"
             if ! quarto render "$qmd" --to pdf --profile solution; then
-              echo "::warning::Laborblatt (Musterlösung) fehlgeschlagen: $qmd"
+              echo "::warning::Uebungsblatt (Musterloesung) fehlgeschlagen: $qmd"
               failed=1
               continue
             fi

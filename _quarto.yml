@@ -1,5 +1,10 @@
 project:
   type: website
+  # Übungsblätter nur als PDF (separater CI-Schritt) — nicht Teil der Website-Render-Pipeline
+  render:
+    - "*.qmd"
+    - "vorlesungen/"
+    - "!labs/"
 
 website:
   title: "Mikrocomputertechnik 1"
