@@ -25,5 +25,8 @@ for pdf in labs/*.pdf; do
   cp "$pdf" "$OUT_DIR/${base}-musterloesung.pdf"
 done
 
+# Zwischen-PDFs im labs/-Ordner entfernen; Artefakte bleiben in labs/_output/
+rm -f labs/*.pdf
+
 echo "Fertig. PDFs unter $OUT_DIR:"
 ls -la "$OUT_DIR"

@@ -4,6 +4,7 @@ Herzlich willkommen zur Vorlesung **Mikrocomputertechnik 1 (MCT1)** an der Duale
 
 **Dozent:** Prof. Dr.-Ing. Daniel Klünder  
 **Kurswebsite:** [dantschi.github.io/mct1](https://dantschi.github.io/mct1/)  
+*Hinweis: Website-Publish ggf. noch deaktiviert (Repo privat) — Links können vorübergehend 404 liefern; Quellen im Repo unter [`vorlesungen/`](vorlesungen/) und [`labs/`](labs/).*  
 **Repository:** [github.com/dantschi/mct1](https://github.com/dantschi/mct1)
 
 Das Modul vermittelt die Grundlagen der Rechnerarchitektur am Beispiel der **RISC-V Instruction Set Architecture (ISA)**. Sie lernen, wie ein Prozessor Befehle ausführt, wie Programme auf Maschinenebene aufgebaut sind und wie Hard- und Software zusammenwirken — von Gattern und Registern bis zu Pipelining, I/O und dem Übergang von C zu Assembler.

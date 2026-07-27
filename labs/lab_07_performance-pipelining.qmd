@@ -9,7 +9,7 @@ subtitle: "Mikrocomputertechnik 1"
 
 ## Zielsetzung
 
-In diesem Labor verlassen wir den ineffizienten Single-Cycle-Prozessor und aktivieren die Fließbandarbeit (Pipelining). Sie stellen den Ripes-Simulator auf das 5-Stage-Modell um und untersuchen, wie die Hardware mit Kollisionen (Hazards) umgeht. Sie lösen Data Hazards durch Forwarding, beobachten Pipeline-Bubbles (NOPs) bei Load-Use-Konflikten und analysieren fehlerhafte Instruktionen bei Sprüngen (Flushing).
+In diesem Übungsblatt verlassen wir den ineffizienten Single-Cycle-Prozessor und aktivieren die Fließbandarbeit (Pipelining). Sie stellen den Ripes-Simulator auf das 5-Stage-Modell um und untersuchen, wie die Hardware mit Kollisionen (Hazards) umgeht. Sie lösen Data Hazards durch Forwarding, beobachten Pipeline-Bubbles (NOPs) bei Load-Use-Konflikten und analysieren fehlerhafte Instruktionen bei Sprüngen (Flushing).
 
 ## Aufgabe 1: Latenz vs. Durchsatz
 
@@ -26,6 +26,10 @@ Wie hoch ist der theoretisch ideale Speedup (Leistungsgewinn) einer 5-stufigen P
 ### Ihre Lösung {.unnumbered}
 
 *(Notieren Sie Ihre Antworten hier.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 1**
@@ -68,6 +72,10 @@ Ticken Sie in Ripes mit Clock vorwärts, bis sich der `sub`-Befehl in der EX-Stu
 ### Ihre Lösung {.unnumbered}
 
 *(Notieren Sie Ihre Beobachtungen hier.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 2**
@@ -115,6 +123,10 @@ Werden Sie zum Compiler: Fügen Sie einen völlig unabhängigen Befehl (z. B. `a
 
 *(Notieren Sie Ihre Beobachtungen hier.)*
 
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
+
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 3**
 
@@ -155,6 +167,10 @@ Betrachten Sie das Pipeline-Tab:
 
 *(Notieren Sie Ihre Beobachtungen hier.)*
 
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
+
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 4**
 
@@ -163,4 +179,41 @@ Betrachten Sie das Pipeline-Tab:
 - Dieser Vorgang heißt Flushing.
 - In Ripes werden die Blöcke oft rot durchgestrichen (ungültig) und zu harmlosen NOP-Bubbles umgewandelt.
 - Das ist die Branch Penalty: Bei jedem genommenen Sprung kostet das Flushen Performance.
+:::
+
+## Aufgabe 5: Pipeline-Raster selbst ausfüllen
+
+Gegeben sei die folgende Befehlsfolge auf einer 5-stufigen Pipeline **mit Forwarding und Hazard Detection** (IF, ID, EX, MEM, WB). Tragen Sie die Stufen ein und markieren Sie Stalls klar (z. B. `STALL` oder `NOP`).
+
+```asm
+lw   t0, 0(a0)
+addi t1, t0, 1
+add  t2, t1, t0
+```
+
+| Befehl $\backslash$ Takt | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `lw t0, 0(a0)` | | | | | | | | |
+| `addi t1, t0, 1` | | | | | | | | |
+| `add t2, t1, t0` | | | | | | | | |
+
+### Ihre Lösung {.unnumbered}
+
+*(Füllen Sie das Raster aus.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 5**
+
+| Befehl $\backslash$ Takt | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `lw t0, 0(a0)` | IF | ID | EX | MEM | WB | | | |
+| `addi t1, t0, 1` | | IF | ID | STALL | EX | MEM | WB | |
+| `add t2, t1, t0` | | | IF | STALL | ID | EX | MEM | WB |
+
+- Load-Use zwischen `lw` und `addi`: ein Stall in Takt 4, danach Forwarding MEM→EX.
+- Zwischen `addi` und `add` reicht Forwarding (kein weiterer Stall).
 :::

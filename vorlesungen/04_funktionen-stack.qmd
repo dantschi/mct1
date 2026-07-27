@@ -356,6 +356,8 @@ Main:
     li a1, 10
     jal ra, Addiere
     mv s0, a0           # Ergebnis sichern
+    li a0, 10           # Venus: exit
+    ecall
 
 Addiere:
     add a0, a0, a1      # Summe direkt in a0
@@ -363,7 +365,7 @@ Addiere:
 ```
 
 ::: notes
-Main bereitet Argumente vor, Addiere schreibt die Summe nach `a0`, Main sichert nach `s0` — konventioneller ABI-Code.
+Main bereitet Argumente vor, Addiere schreibt die Summe nach `a0`, Main sichert nach `s0` — konventioneller ABI-Code. Ohne Exit nach dem `mv` würde der Fall-through in `Addiere` eine Endlosschleife erzeugen.
 :::
 
 ## Der Register-Konflikt
@@ -646,13 +648,14 @@ Kontraintuitiv, aber Standard: nach unten wachsen heißt `sp` verkleinern zum Re
 - Zuerst Platz im RAM „kaufen“
 - `sp` um 4 Bytes nach unten: `addi sp, sp, -4`
 - `sp` zeigt nun auf ein leeres 4-Byte-Fach
+- Hinweis: Reale RISC-V-ABI oft 16-Byte-Stack-Alignment; Kurs/Venus vereinfacht auf Wortgranularität
 
 ```asm
 addi sp, sp, -4     # Stack waechst um 1 Wort nach unten
 ```
 
 ::: notes
-Schritt 1 eines Push: Speicher reservieren. Erst danach dürfen Daten geschrieben werden.
+Schritt 1 eines Push: Speicher reservieren. Erst danach dürfen Daten geschrieben werden. Reale ABI: oft 16-Byte-Alignment; hier Wortgranularität wie in Venus.
 :::
 
 ## Push: Etwas ablegen (Schritt 2)

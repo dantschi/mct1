@@ -172,7 +172,7 @@ Assembler packt Opcode/rs1/rs2/rd laut Handbuch. Object-Dateien fehlen oft noch 
 
 - Compiler kennt die finale Adresse von `printf` oft nicht
 - `jal`/`lw`-Ziele können Lücken haben
-- Linker: alle `.o` + Libraries (z. B. `libc`) zusammenkleben
+- Linker: alle `.o` + Libraries (z. B. `libc`) zusammenkleben
 - Finale Adressen eintragen
 - Output: Executable (`.elf` / `.exe`)
 
@@ -466,7 +466,7 @@ FSM merkt sich den Status; Sensorereignisse triggern Zustandswechsel.
 ## Beispiel: Ampelschaltung
 
 - Zustände: 0 Rot, 1 Rot/Gelb, 2 Grün, 3 Gelb
-- Übergang z. B. per Timer
+- Übergang z. B. per Timer
 - In C: `switch`/`case` oder `while` + `if`
 
 ```{mermaid}
@@ -490,7 +490,7 @@ Immer genau ein Zustand; Transitionen deterministisch.
 
 ## Umsetzung in Assembler
 
-- Zustandsvariable in sicherem Register (z. B. `s0`)
+- Zustandsvariable in sicherem Register (z. B. `s0`)
 - Endlosschleife: Turm aus `beq` zu State-Labels
 - Im State: Arbeit (LED, Taster), dann `s0` ändern, `j Loop`
 
@@ -547,7 +547,7 @@ Tabellen lesen können ja; stumpfe Opcodes nein.
 
 - Assembler-Snippet + Startwerte
 - Rolle: menschlicher Simulator
-- Frage z. B.: Wert in `t2` nach Ablauf?
+- Frage z. B.: Wert in `t2` nach Ablauf?
 
 ```asm
     li t0, 5
@@ -582,7 +582,7 @@ For-Schablone + bei Funktionen Stack-Prolog/Epilog.
 
 - Einheiten 5–6: Single-Cycle-Blockdiagramm
 - Datenweg eines `lw` markieren
-- Control-Zeile für z. B. `or` ausfüllen
+- Control-Zeile für z. B. `or` ausfüllen
 
 | Befehl | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch | ALUOp |
 |---|---|---|---|---|---|---|---|

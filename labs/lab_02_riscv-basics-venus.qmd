@@ -9,7 +9,7 @@ subtitle: "Mikrocomputertechnik 1"
 
 ## Zielsetzung
 
-In diesem Labor lernen Sie die Philosophie der RISC-V-Architektur kennen und schreiben Ihre ersten eigenen Programme. Sie machen sich mit den ABI-Registernamen vertraut, verstehen den Unterschied zwischen R-Type- und I-Type-Befehlen und nutzen den Venus-Simulator für schrittweises Debugging (Tracing).
+In diesem Übungsblatt lernen Sie die Philosophie der RISC-V-Architektur kennen und schreiben Ihre ersten eigenen Programme. Sie machen sich mit den ABI-Registernamen vertraut, verstehen den Unterschied zwischen R-Type- und I-Type-Befehlen und nutzen den Venus-Simulator für schrittweises Debugging (Tracing).
 
 ## Aufgabe 1: Architektur und ABI
 
@@ -30,6 +30,10 @@ Was passiert physikalisch, wenn Sie versuchen, das Ergebnis einer Addition in da
 ### Ihre Lösung {.unnumbered}
 
 *(Notieren Sie Ihre Antworten hier.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 1**
@@ -67,6 +71,10 @@ In der RISC-V-Basisarchitektur (RV32I) gibt es `sub` (Subtraktion zweier Registe
 ### Ihre Lösung {.unnumbered}
 
 *(Notieren Sie Ihre Antworten hier.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 2**
@@ -110,6 +118,10 @@ mit den Startwerten $A=5$, $B=10$, $C=3$, $D=2$.
 
 *(Fügen Sie Ihren Assembler-Code hier ein.)*
 
+::: {.content-hidden when-profile="solution"}
+\vspace{5cm}
+:::
+
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 3**
 
@@ -151,6 +163,10 @@ Die ALU der Basisarchitektur (RV32I) besitzt keine Hardware-Einheit für Multipl
 
 *(Fügen Sie Ihren Assembler-Code hier ein.)*
 
+::: {.content-hidden when-profile="solution"}
+\vspace{5cm}
+:::
+
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 4**
 
@@ -167,4 +183,40 @@ main:
     # 3. Negieren über den x0-Trick (0 - X = -X)
     sub t3, x0, t2      # t3 = 0 - 40 = -40
 ```
+:::
+
+## Aufgabe 5: Maschinencode von Hand
+
+In der Vorlesung haben Sie das R-Type-Format (opcode, rd, funct3, rs1, rs2, funct7) kennengelernt. Für die Kodierung nutzen wir bewusst die Hardware-Namen `x…`, weil sie den 5-Bit-Feldern entsprechen.
+
+### Assemblieren {.unnumbered}
+
+Assemblieren Sie den Befehl `add x9, x20, x21` von Hand zu einem 32-Bit-Wort (Hexadezimal). Nutzen Sie: opcode `0110011`, funct3 `000`, funct7 `0000000`.
+
+### Decodieren {.unnumbered}
+
+Decodieren Sie das Maschinenwort `0x007302B3`. Welcher Assembler-Befehl (mit ABI-Namen) steckt dahinter?
+
+### Ihre Lösung {.unnumbered}
+
+*(Notieren Sie Ihre Rechenwege hier.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 5**
+
+Assemblieren `add x9, x20, x21`:
+
+- funct7 = `0000000`, rs2 = `10101` ($21$), rs1 = `10100` ($20$), funct3 = `000`, rd = `01001` ($9$), opcode = `0110011`
+- Binär: `0000000 10101 10100 000 01001 0110011`
+- Hex: **`0x015A04B3`**
+
+Decodieren `0x007302B3`:
+
+- Binär: `0000000 00111 00110 000 00101 0110011`
+- funct7=`0000000`, rs2=`x7`=`t2`, rs1=`x6`=`t1`, funct3=`000`, rd=`x5`=`t0`, opcode R-Type add
+- Befehl: **`add t0, t1, t2`**
 :::

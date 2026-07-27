@@ -172,4 +172,4 @@ jobs:
       - name: Warn if lab PDF did not build
         if: steps.labs.outcome != 'success'
         run: |
-          echo "::warning::Mindestens ein Laborblatt-PDF ist fehlgeschlagen oder timed out (siehe Schritt „Render lab exercise sheets“)."
+          echo "::warning::Mindestens ein Uebungsblatt-PDF ist fehlgeschlagen oder timed out (siehe Schritt „Render lab exercise sheets“)."

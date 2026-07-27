@@ -9,7 +9,7 @@ subtitle: "Mikrocomputertechnik 1"
 
 ## Zielsetzung
 
-In diesem Labor verlassen Sie das Spaghetti-Code-Niveau und strukturieren Ihre Programme in saubere, wiederverwendbare Unterprogramme (Funktionen). Sie lernen, wie Sie Argumente übergeben (`a0`–`a7`), den dynamischen Stack für lokale Backups (Prolog/Epilog) nutzen und wie Sie den gefährlichen Register-Krieg zwischen Caller und Callee mithilfe der ABI-Regeln verhindern.
+In diesem Übungsblatt verlassen Sie das Spaghetti-Code-Niveau und strukturieren Ihre Programme in saubere, wiederverwendbare Unterprogramme (Funktionen). Sie lernen, wie Sie Argumente übergeben (`a0`–`a7`), den dynamischen Stack für lokale Backups (Prolog/Epilog) nutzen und wie Sie den gefährlichen Register-Krieg zwischen Caller und Callee mithilfe der ABI-Regeln verhindern.
 
 ## Aufgabe 1: Die ABI und der Register-Krieg
 
@@ -26,6 +26,10 @@ Die Funktion `Print()` aus der vorherigen Teilaufgabe möchte intern das Registe
 ### Ihre Lösung {.unnumbered}
 
 *(Notieren Sie Ihre Antworten hier.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 1**
@@ -59,6 +63,10 @@ Beschreiben Sie die Gefahr eines Off-by-One-Fehlers im Epilog. Was passiert, wen
 ### Ihre Lösung {.unnumbered}
 
 *(Notieren Sie Ihre Antworten hier.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 2**
@@ -96,6 +104,10 @@ Hinweis: Als Leaf-Funktion ohne `s`-Register brauchen Sie hier noch keinen Prolo
 ### Ihre Lösung {.unnumbered}
 
 *(Fügen Sie Ihren Assembler-Code hier ein.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{5cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 3**
@@ -143,6 +155,10 @@ Schreiben Sie eine Funktion `QuadratPlusEins`, die den Wert in `a0` mit sich sel
 ### Ihre Lösung {.unnumbered}
 
 *(Fügen Sie Ihren Assembler-Code hier ein.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{5cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 4**

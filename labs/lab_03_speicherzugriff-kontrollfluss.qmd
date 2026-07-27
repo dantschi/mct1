@@ -9,7 +9,7 @@ subtitle: "Mikrocomputertechnik 1"
 
 ## Zielsetzung
 
-In diesem Labor brechen wir aus der isolierten 32-Register-Werkbank aus. Sie lernen, wie Sie Daten über Load- und Store-Befehle zwischen der CPU und dem Arbeitsspeicher (RAM) hin- und herschieben. Zudem programmieren Sie Ausbrüche aus dem linearen Programmablauf, um If/Else-Bedingungen und for-Schleifen in hardware-nahem Assembler umzusetzen.
+In diesem Übungsblatt brechen wir aus der isolierten 32-Register-Werkbank aus. Sie lernen, wie Sie Daten über Load- und Store-Befehle zwischen der CPU und dem Arbeitsspeicher (RAM) hin- und herschieben. Zudem programmieren Sie Ausbrüche aus dem linearen Programmablauf, um If/Else-Bedingungen und for-Schleifen in hardware-nahem Assembler umzusetzen.
 
 ## Aufgabe 1: Pointer-Mathematik und Alignment
 
@@ -27,6 +27,10 @@ Was passiert physikalisch in der CPU, wenn Sie versuchen, ein 32-Bit-Wort von de
 
 *(Notieren Sie Ihre Antworten hier.)*
 
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
+
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 1**
 
@@ -38,9 +42,9 @@ Array-Index und Offset:
 
 Alignment Fault:
 
-- Das führt zu einer Alignment Fault Exception (Programmabsturz).
+- Viele Implementierungen erzeugen eine Alignment Fault / Trap; echte Hardware ist oft strikt — Venus ist dagegen häufig toleranter.
 - Der 32-Bit-Datenpfad greift Daten in einem festen 4-Byte-Raster (Adressen $0$, $4$, $8$, $12$, …).
-- Ein schiefer Zugriff auf Adresse `0x01` bricht dieses Raster und wird von der Hardware blockiert.
+- Ein schiefer Zugriff auf Adresse `0x01` bricht dieses Raster; verlassen Sie sich nicht auf Simulator-Toleranz.
 :::
 
 ## Aufgabe 2: Teilzugriffe und Sign-Extension
@@ -58,6 +62,10 @@ Welchen Befehl müssten Sie nutzen, wenn das Byte einen reinen RGB-Farbwert (ohn
 ### Ihre Lösung {.unnumbered}
 
 *(Notieren Sie Ihre Antworten hier.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 2**
@@ -92,6 +100,10 @@ if (a == b) {
 
 *(Fügen Sie Ihren Assembler-Code hier ein.)*
 
+::: {.content-hidden when-profile="solution"}
+\vspace{5cm}
+:::
+
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 3**
 
@@ -99,7 +111,6 @@ if (a == b) {
     # 1. Bedingung invertieren: Bei Ungleichheit zum Else-Block springen
     bne s0, s1, ElseBlock
 
-IfBlock:
     # 2. Wahr-Pfad (Fall-Through)
     li t0, 1
 
@@ -135,6 +146,10 @@ Wir setzen die Labor-Aufgabe aus der Vorlesung im Venus-Simulator um. Schreiben 
 ### Ihre Lösung {.unnumbered}
 
 *(Fügen Sie Ihren Assembler-Code hier ein.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{5cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 4**

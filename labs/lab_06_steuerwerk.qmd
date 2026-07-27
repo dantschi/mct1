@@ -9,7 +9,7 @@ subtitle: "Mikrocomputertechnik 1"
 
 ## Zielsetzung
 
-In diesem Labor überprüfen wir die Meistertabelle der Control Unit aus der Vorlesung. Sie leiten die theoretischen Steuersignale für einen unbekannten Befehl (Transferleistung) deduktiv her. Anschließend nutzen Sie den Ripes-Simulator, um Ihre Vorhersagen (Paper-&-Pencil-Methode) an den Steuerleitungen des Datenpfads zu verifizieren.
+In diesem Übungsblatt überprüfen wir die Meistertabelle der Control Unit aus der Vorlesung. Sie leiten die theoretischen Steuersignale für einen unbekannten Befehl (Transferleistung) deduktiv her. Anschließend nutzen Sie den Ripes-Simulator, um Ihre Vorhersagen (Paper-&-Pencil-Methode) an den Steuerleitungen des Datenpfads zu verifizieren.
 
 ## Aufgabe 1: Die Meistertabelle (Wiederholung)
 
@@ -26,6 +26,10 @@ Das Steuersignal `MemtoReg` steht bei den Befehlen `sw` (Store) und `beq` (Branc
 ### Ihre Lösung {.unnumbered}
 
 *(Notieren Sie Ihre Antworten hier.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 1**
@@ -59,6 +63,10 @@ Füllen Sie die folgende Zeile der Wahrheitstabelle aus ($0$, $1$ oder $X$):
 
 *(Tragen Sie Ihre Werte hier ein.)*
 
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
+
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 2**
 
@@ -73,7 +81,7 @@ Begründung:
 - `RegWrite` $= 1$: Das Zielregister muss überschrieben werden.
 - `MemRead`/`MemWrite` $= 0$: Der RAM ist unbeteiligt.
 - `Branch` $= 0$: kein Sprungbefehl.
-- `ALUOp` $= 00$: Laut Vorlesung erzwingt `ALUOp = 00` die Addition (wie bei der Adressrechnung von `lw`/`sw`). `addi` addiert immer `rs1 + Imm` — ohne funct7-Unterscheidung wie beim R-Type (`ALUOp = 10`).
+- `ALUOp` $= 00$: erzwingt unbedingte Addition (Adressen bei `lw`/`sw`, aber auch `addi`). Bei `ALUOp = 10` würde die ALU Control Bit 30 aus `funct7` lesen — bei I-Type ist Bit 30 aber ein **Immediate-Bit** (bei negativen Konstanten gesetzt → fälschlich SUB). Deshalb `00` für `addi`.
 :::
 
 ## Aufgabe 3: Verifikation in Ripes (Paper & Pencil)
@@ -87,27 +95,31 @@ Schreiben Sie den folgenden Code:
 addi t0, x0, 10
 ```
 
-Wechseln Sie in den Processor-Tab und klicken Sie einmal auf Clock, sodass der `addi`-Befehl verarbeitet wird.
+Wechseln Sie in den Processor-Tab. Die Steuersignale des ersten Befehls liegen **kombinatorisch an, bevor** Sie Clock klicken (solange der PC auf `addi` zeigt). Nach einem Clock ist `addi` bereits abgeschlossen.
 
-Suchen Sie die Control Unit (Block namens Control oben im Diagramm). Beobachten Sie die abgehenden Steuerleitungen: hellgrün/dick $= 1$, dunkelrot/dünn $= 0$.
+Suchen Sie die Control Unit. Beobachten Sie abgehende Steuerleitungen: in aktuellen Ripes-Versionen typisch **grün $= 1$**, **grau $= 0$** (Tooltips lesen; Signalnamen können von `ALUSrc`/`RegWrite` abweichen).
 
 ### Aufgabenstellung {.unnumbered}
 
-Gleichen Sie die abgelesenen Kabelfarben in Ripes mit Ihrer Tabelle aus Aufgabe 2 ab.
+Gleichen Sie die abgelesenen Werte in Ripes mit Ihrer Tabelle aus Aufgabe 2 ab.
 
-1. Welche Farbe hat das Kabel zum `ALUSrc`-Multiplexer?
-2. Welche Farbe hat das `RegWrite`-Kabel am Register File?
+1. Welchen Wert hat die Steuerleitung zum MUX vor dem zweiten ALU-Eingang (entspricht `ALUSrc`)?
+2. Welchen Wert hat die Write-Enable-Leitung am Register File (entspricht `RegWrite`)?
 
 ### Ihre Lösung {.unnumbered}
 
 *(Notieren Sie Ihre Beobachtungen hier.)*
 
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
+
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 3**
 
-- Das Kabel zu `ALUSrc` ist hellgrün ($1$): Der Multiplexer schaltet auf den Immediate-Eingang.
-- Das Kabel `RegWrite` am Register File ist ebenfalls hellgrün ($1$): Der Wert $10$ wird in `t0` geschrieben.
-- Das stimmt mit der hergeleiteten Matrix aus Aufgabe 2 überein.
+- `ALUSrc`-Äquivalent $= 1$ (grün): Immediate zur ALU.
+- `RegWrite`-Äquivalent $= 1$ (grün): $10$ wird nach `t0` geschrieben.
+- Stimmt mit Aufgabe 2 überein. (Farben/Namen ggf. in Ihrer Ripes-Version prüfen.)
 :::
 
 ## Aufgabe 4: Der MUX-Beobachter
@@ -115,31 +127,38 @@ Gleichen Sie die abgelesenen Kabelfarben in Ripes mit Ihrer Tabelle aus Aufgabe 
 Geben Sie den folgenden Code in Ripes ein:
 
 ```asm
+.data
+ziel: .word 0
+
 .text
+la s1, ziel
 li t0, 5
 add t1, t0, t0
 sw t1, 0(s1)
 beq t0, t1, Lbl
 Lbl:
+nop
 ```
 
-Fokussieren Sie während des Durchklickens (Clock) ausschließlich den `MemtoReg`-Multiplexer ganz rechts vor dem Register File.
+Fokussieren Sie während des Durchklickens den Write-Back-MUX vor dem Register File (P&H: `MemtoReg`; in Ripes oft ein **3-Wege**-MUX „Reg wr src“).
 
 ### Aufgabenstellung {.unnumbered}
 
-Notieren Sie für jeden der vier Befehle, ob die Ripes-Steuerleitung für `MemtoReg` auf $1$ (grün), auf $0$ (rot) oder in einem anderen Zustand (z. B. ausgegraut für Don't Care) steht.
-
-Hinweis: `li` wird typischerweise zu `addi` assembliert.
+Notieren Sie für `li`/`addi`, `add`, `sw` und `beq`, welchen **konkreten** Steuerwert Ripes anzeigt. Hinweis: Don't Care ($X$) ist nur ein Tabellenkonzept — der Simulator zeigt immer $0$ oder $1$ (oder einen Mehrbit-Code). Bei `RegWrite = 0` ist der angezeigte Wert **egal** für die CPU — genau das bedeutet $X$.
 
 ### Ihre Lösung {.unnumbered}
 
 *(Notieren Sie Ihre Beobachtungen hier.)*
 
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
+
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 4**
 
-- `li` (bzw. `addi`): $0$ (rot) — ALU-Ergebnis wird ins Register geschrieben.
-- `add`: $0$ (rot) — ALU-Ergebnis wird ins Register geschrieben.
-- `sw`: ausgegraut / irrelevant (Don't Care $X$) — Register File via `RegWrite` $= 0$ abgeriegelt.
-- `beq`: ausgegraut / irrelevant (Don't Care $X$) — ebenfalls kein Register-Schreiben; MUX-Stellung physikalisch unwichtig.
+- `li`/`addi`: Write-Back wählt ALU-Pfad (P&H: `MemtoReg` $= 0$) — Ergebnis wird geschrieben.
+- `add`: ebenfalls ALU-Pfad (`MemtoReg` $= 0$).
+- `sw`: `RegWrite` $= 0` → angezeigter MUX-Wert ist Don't Care ($X$); Ripes zeigt trotzdem einen konkreten Wert (oft $0$ oder einen 3-Wege-Code) — das ist korrekt und widerspricht der Tabelle nicht.
+- `beq`: ebenfalls `RegWrite` $= 0$ → angezeigter Wert egal ($X$).
 :::

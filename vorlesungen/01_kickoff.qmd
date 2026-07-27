@@ -584,7 +584,7 @@ Symmetrie: keine neuen Regeln für die Rückrichtung. Eine simple Schaltung reic
 - Dieser Sprung heißt **Overflow**
 
 ::: notes
-Bei RV32I: 32-Bit-Register, harte Grenzen. Overflow: vom Maximalpositiven ins Extremnegative. Prozessoren setzen Flags, damit Software reagieren kann.
+Bei RV32I: 32-Bit-Register, harte Grenzen. Overflow: vom Maximalpositiven ins Extremnegative. Viele Architekturen setzen dafür Status-Flags; RV32I verzichtet auf ein Flag-Register — Overflow-Behandlung liegt in der Software.
 :::
 
 ## Vorzeichenerweiterung (Sign Extension)

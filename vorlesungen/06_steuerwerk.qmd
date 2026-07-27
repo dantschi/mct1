@@ -480,7 +480,7 @@ Struktur: ALUSrc in Phase EX, MemRead/MemWrite in MEM, MemtoReg/RegWrite in WB. 
 
 - Ein Fehler in der Matrix kann das System crashen lassen
 - Beispiel: `RegWrite = 0` bei `sw` vergessen
-- Zufälliges Zielregister (z. B. `s0`) wird mit Müll überschrieben
+- Zufälliges Zielregister (z. B. `s0`) wird mit Müll überschrieben
 - Unvorhersehbare Variablenzerstörung — klassischer Heisenbug
 - Chip-Verifikation ist deshalb ein Milliardenmarkt
 
@@ -521,9 +521,9 @@ Phase 3 beginnt: jeden Pin des Patterson/Hennessy-Datenpfads noch einmal schärf
 ## Zwei Arten von Signalen
 
 - Im Datenpfad gibt es zwei Kategorien von Steuerleitungen
-- Kategorie 1: Weichen (Multiplexer) — lenken Datenströme (z. B. `ALUSrc`)
+- Kategorie 1: Weichen (Multiplexer) — lenken Datenströme (z. B. `ALUSrc`)
 - Eine Weiche leitet immer weiter — auch bei Müll; sie steht auf 0 oder 1
-- Kategorie 2: Erlaubnis-Pins (Write-Enable) — verändern Speicherzustand (z. B. `RegWrite`)
+- Kategorie 2: Erlaubnis-Pins (Write-Enable) — verändern Speicherzustand (z. B. `RegWrite`)
 - Enable-Pins restriktiv auf 0 halten; nur bei Bedarf 1 — sonst Datenkorruption
 
 ```{mermaid}
@@ -709,7 +709,7 @@ Branch ist ein Stempel der Control Unit: „Ja, das ist ein Sprungbefehl.“ Er 
 - Registervergleich fehlt ihr — ALU-Zero als Assistent
 - Für `beq`: $\mathrm{PCSrc} = \mathrm{Branch} \land \mathrm{Zero}$
 - Beide Signale müssen 1 sein, damit der PC umgeschaltet wird
-- Andere Branches (z. B. `bne`): andere Flag-Logik (oft $\mathrm{Branch} \land \neg\mathrm{Zero}$)
+- Andere Branches (z. B. `bne`): andere Flag-Logik (oft $\mathrm{Branch} \land \overline{\mathrm{Zero}}$)
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -833,13 +833,13 @@ Main Control bleibt bei 128 Zeilen. Bei Bedarf funkt sie 2 Bit `ALUOp`. Die ALU 
 
 | ALUOp | Bedeutung | Befehlstypen |
 |-------|-----------|--------------|
-| `00` | ALU muss addieren (Adressen) | `lw`, `sw` |
+| `00` | ALU muss addieren (unbedingt) | `lw`, `sw`, `addi` |
 | `01` | ALU muss subtrahieren (Vergleich) | `beq` |
 | `10` | ALU muss rechnen (funct lesen) | R-Type |
 | `11` | Reserve / ungenutzt | - |
 
 ::: notes
-Load/Store → `00` (Addiere für Adressen). Branch → `01` (Subtrahiere zum Vergleich). R-Type → `10` (Schau in die funct-Felder). `11` in RV32I ungenutzt.
+Load/Store/addi → `00` (Addition ohne funct7). Branch → `01` (Subtraktion zum Vergleich). R-Type → `10` (funct-Felder). Bei `addi` darf nicht `10` stehen: Bit 30 wäre sonst Immediate statt funct7.
 :::
 
 ## Die kleine ALU Control Unit
@@ -900,7 +900,7 @@ WENN ALUOp == 01:
 ```
 
 ::: notes
-Branch-Vergleich äber Subtraktion; Zero-Flag meldet Gleichheit.
+Branch-Vergleich über Subtraktion; Zero-Ausgang meldet Gleichheit.
 :::
 
 ## Fall 3: ALUOp = 10 (R-Type)
@@ -992,7 +992,7 @@ Don’t Cares verkleinern die obere Hälfte. Nur bei `ALUOp = 10` werden funct-B
 - Monolith: 17 Bit Input permanent
 - Box 1 (Main): 7 Bit $\rightarrow$ 128 Zeilen
 - Box 2 (ALU): ca. 6 Bit $\rightarrow$ 64 Zeilen
-- Zusammen unter 200 Zeilen statt … 130\,000
+- Zusammen unter 200 Zeilen statt … 130.000
 - Kunst der RISC-Hardware-Architektur
 
 ```{mermaid}
@@ -1278,8 +1278,8 @@ Kompass für das Praktikum: jede Zelle ist herleitbar, wenn Sie den Datenpfad ve
 - Theoretisches Konstrukt im echten Simulator testen
 - „Paper & Pencil“: Signale vorhersagen, nicht blind klicken
 - Control Unit visuell in Ripes finden
-- Grüne und rote Steuerleitungen lesen
-- Transfer: Steuersignale für unbekannte Befehle (z. B. `addi`) herleiten
+- Grüne und graue Steuerleitungen lesen
+- Transfer: Steuersignale für unbekannte Befehle (z. B. `addi`) herleiten
 
 ::: notes
 Die Blackbox ist entschlüsselt. Im Labor prüfen wir Bit für Bit, dass Ripes sich exakt wie unsere Matrix verhält.
@@ -1313,12 +1313,13 @@ Wissenschaftlicher Ansatz: Hypothese formulieren („MemWrite muss aufleuchten�
 32-Bit-Instruktionskabel hinein; 1-Bit-Steuerkabel wie Spinnenweben nach rechts — live beobachten.
 :::
 
-## Grüne vs. rote Leitungen
+## Grüne vs. graue Leitungen
 
-- Ripes-Farbkonzept für 1-Bit-Steuerleitungen
-- Hellgrün / dick: logische 1 (High)
-- Dunkelrot / dünn: logische 0 (Low)
+- Ripes-Farbkonzept für 1-Bit-Steuerleitungen (aktuelle Versionen)
+- Grün: logische 1 (High)
+- Grau: logische 0 (Low)
 - Mauszeiger: Bitwert als Text-Popup
+- Don't Care ($X$) erscheint **nicht** als eigener Anzeigezustand — der Simulator zeigt immer $0$ oder $1$
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -1333,7 +1334,7 @@ graph LR
 ```
 
 ::: notes
-Grün = Puppenspieler zieht am Faden. Rot = kein Strom. So sehen Sie Enable-Pins und Weichen auf einen Blick.
+Grün = aktiv. Grau = inaktiv. $X$ ist nur Tabellenkonzept: bei RegWrite $= 0$ ist der angezeigte MUX-Wert egal.
 :::
 
 ## Labor-Methode: Paper & Pencil
@@ -1341,7 +1342,7 @@ Grün = Puppenspieler zieht am Faden. Rot = kein Strom. So sehen Sie Enable-Pins
 - Drei mentale Vorhersagen vor dem Klick
 - Übung 1 (`sub`): Wie leuchten `RegWrite` und `MemWrite`?
 - `RegWrite` grün (1) — ALU-Ergebnis speichern
-- `MemWrite` rot (0) — RAM unberührt
+- `MemWrite` grau (0) — RAM unberührt
 
 ```text
 sub t0, t1, t2
@@ -1417,16 +1418,16 @@ Transferleistung: ADDI kombiniert ImmGen-Pfad und Register-Write-Back. Tabelle s
 - Assembler im Editor-Tab eingeben
 - Zum Processor-Tab wechseln
 - Clock, bis der Befehl die Control-Phase erreicht
-- Maus über grüne/rote Linien aus der Control-Box
+- Maus über grüne/graue Linien aus der Control-Box
 - Werte mit Ihrer Tabelle vergleichen
 
 ```text
 Gruenes Kabel am ALUSrc-MUX  -> 1 in der Tabelle
-Rotes Kabel                  -> 0 in der Tabelle
+Graues Kabel                 -> 0 in der Tabelle
 ```
 
 ::: notes
-Workflow: tippen, Tab, Clock, Kabel ablesen. Grün = 1 in der Tabelle, rot = 0.
+Workflow: tippen, Tab, Clock, Kabel ablesen. Grün = 1 in der Tabelle, grau = 0.
 :::
 
 ## Labor-Aufgabe 2: Der MUX-Beobachter

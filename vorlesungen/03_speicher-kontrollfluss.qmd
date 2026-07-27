@@ -381,7 +381,7 @@ graph LR
 ```
 
 ::: notes
-Pfeil umgekehrt: Daten verlassen die CPU und strömen in den Speicher. Store ist der einzige Basisbefehl ohne Zielregister `rd` — wichtig später für die Control Unit.
+Pfeil umgekehrt: Daten verlassen die CPU und strömen in den Speicher. Store ist der erste Befehl ohne Zielregister `rd`, den wir kennenlernen (Branches haben ebenfalls keines) — wichtig später für die Control Unit.
 :::
 
 ## C-Arrays vs. Assembler
@@ -517,7 +517,7 @@ Die ALU schreibt nicht direkt in den RAM. Erst `add` nach `t1`, dann `sw` mit Of
 
 - 32-Bit-Wörter beginnen auf durch 4 teilbaren Adressen
 - Gültig: `0x00`, `0x04`, `0x08`, `0x0C`, …
-- Laden ab `0x01`? Alignment Fault Exception — Absturz
+- Laden ab `0x01`? Oft Alignment Fault / Trap — Verhalten implementierungsabhängig
 - Der 32-Bit-Datenbus zieht physisch 4-Byte-Blöcke im Raster
 
 ```{mermaid}
@@ -534,7 +534,7 @@ graph TD
 ```
 
 ::: notes
-Wörter müssen auf 0, 4, 8, 12 … ausgerichtet sein. Der Bus ist fest verdrahtet; schiefe Zugriffe über zwei Raster lehnt die Hardware ab (Exception). Offsets sorgfältig wählen.
+Wörter müssen auf 0, 4, 8, 12 … ausgerichtet sein. Der Bus ist fest verdrahtet; viele Implementierungen trapen bei schiefen Zugriffen, echte Hardware oft strikt — Venus ist dagegen häufig toleranter. Offsets trotzdem sorgfältig wählen.
 :::
 
 ## Teilzugriffe & S-Type-Format
@@ -703,13 +703,13 @@ Trivia mit Tiefgang: `lbu` gibt es, `sbu` nicht. Vorzeichen zählen nur beim Wac
 - `imm`: 12-Bit-Offset
 - `rd`: Zielregister für den RAM-Wert
 
-```text
-31                            20 19    15 14    12 11     7 6        0
-+-------------------------------+---------+---------+---------+----------+
-|          imm[11:0]            |   rs1   |  funct3 |    rd   |  opcode  |
-+-------------------------------+---------+---------+---------+----------+
-      12-Bit-Offset               Base      Größe     Ziel      Load
-```
+| Bits | Feld |
+|:---|:---|
+| 31:20 | `imm[11:0]` (Offset) |
+| 19:15 | `rs1` (Base) |
+| 14:12 | `funct3` (Größe) |
+| 11:7 | `rd` (Ziel) |
+| 6:0 | `opcode` (Load) |
 
 ::: notes
 `lw` passt ins I-Type-Formular wie `addi`: Opcode, Base (`rs1`), 12-Bit-Offset, Ziel (`rd`). Alles in der 32-Bit-Schablone.
@@ -740,13 +740,14 @@ Store braucht zwei Quellregister und ein Immediate gleichzeitig — kein bisheri
 - `imm[11:5]` liegt links (analog zu `funct7` beim R-Type)
 - Das Offset ist im Maschinenwort zweigeteilt
 
-```text
-31                  25 24    20 19    15 14    12 11     7 6        0
-+---------------------+---------+---------+---------+---------+----------+
-|      imm[11:5]      |   rs2   |   rs1   |  funct3 | imm[4:0]|  opcode  |
-+---------------------+---------+---------+---------+---------+----------+
-  oberes Offset         Quelle    Base      Größe   unteres   Store
-```
+| Bits | Feld |
+|:---|:---|
+| 31:25 | `imm[11:5]` (oberes Offset) |
+| 24:20 | `rs2` (Quelle) |
+| 19:15 | `rs1` (Base) |
+| 14:12 | `funct3` (Größe) |
+| 11:7 | `imm[4:0]` (unteres Offset) |
+| 6:0 | `opcode` (Store) |
 
 ::: notes
 Weil Store nichts ins Register File schreibt, ist `rd` frei. RISC-V zerschneidet das 12-Bit-Offset: untere 5 Bits an der `rd`-Position, obere 7 Bits ganz links.
@@ -788,7 +789,7 @@ Vergleichen Sie S-Type mit R-Type: `rs1` und `rs2` sitzen fest. Der Decoder verd
 
 | Mnemonic     | Name           | Breite            | Sign-Ext. (Laden)   |
 |--------------|----------------|-------------------|---------------------|
-| `lw` / `sw`  | Word           | 32 Bit (4 Bytes)  | ja / (egal)         |
+| `lw` / `sw`  | Word           | 32 Bit (4 Bytes)  | entfällt / (egal)   |
 | `lh` / `sh`  | Halfword       | 16 Bit (2 Bytes)  | ja / (egal)         |
 | `lhu`        | Half Unsigned  | 16 Bit (2 Bytes)  | nein (Zero-Fill)    |
 | `lb` / `sb`  | Byte           | 8 Bit (1 Byte)    | ja / (egal)         |
@@ -826,8 +827,8 @@ Datenverarbeitung ist geschafft. Nun die Intelligenz des Programms: Entscheidung
 
 ## Der Program Counter (Der Dirigent)
 
-- Der PC speichert die RAM-Adresse des aktuellen Befehls
-- Normalfall: nach jedem Befehl addiert die Hardware $+4$ zum PC
+- Der PC speichert die RAM-Adresse des aktuellen Befehls (Venus zeigt genau diese Adresse)
+- Folgeinstruktion: $PC+4$; Normalfall: Hardware erhöht nach dem Befehl um $+4$
 - Warum 4? Jeder RV32I-Befehl ist exakt 4 Bytes groß
 - Der Prozessor fällt von Zeile zu Zeile (Fall-Through)
 
@@ -902,10 +903,10 @@ Weiter:
 - Typisches Schleifen-Muster: solange Zähler ungleich Grenze, zurück nach oben
 
 ```asm
+    li   t1, 10              # Grenze vor der Schleife
 LoopStart:
     # ... Schleifen-Rumpf ...
     addi t0, t0, 1
-    li   t1, 10
     bne  t0, t1, LoopStart   # zurück, solange t0 != 10
 ```
 

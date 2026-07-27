@@ -74,7 +74,7 @@ Bottom-up: erst die fünf Phasen, dann Bauteil für Bauteil von ADD über Speich
 # Wir wissen, WAS dieser Befehl tut:
 add t0, t1, t2
 
-# Aber WIE wird aus 0x007102B3 die ALU aktiviert?
+# Aber WIE wird aus 0x007302B3 die ALU aktiviert?
 ```
 
 ::: notes
@@ -363,13 +363,14 @@ Kabel splitten: ein Strang zum Instruction Memory, einer zum $+4$-Addierer. Flip
 - Ziel: `add rd, rs1, rs2` physikalisch
 - Bits 19:15 = `rs1`, 24:20 = `rs2`, 11:7 = `rd`
 
-```text
-31          25 24  20 19  15 14  12 11   7 6      0
-+-------------+------+------+------+------+--------+
-|   funct7    | rs2  | rs1  |funct3|  rd  | opcode |
-+-------------+------+------+------+------+--------+
-                lesen  lesen         schreiben
-```
+| Bits | Feld |
+|:---|:---|
+| 31:25 | `funct7` |
+| 24:20 | `rs2` (lesen) |
+| 19:15 | `rs1` (lesen) |
+| 14:12 | `funct3` |
+| 11:7 | `rd` (schreiben) |
+| 6:0 | `opcode` |
 
 ::: notes
 32-Bit-Kabel aufspleißen: drei 5-Bit-Bündel für `rs1`, `rs2`, `rd` zum Register File.
@@ -591,13 +592,13 @@ Neue Leitungen erzeugen Kollisionen an ALU-Eingängen und Write-Back. Multiplexe
 - Die ALU hat 32-Bit-Eingänge
 - Die Konstante muss aus dem Befehlswort in die ALU gelangen
 
-```text
-31                            20 19    15 14    12 11     7 6        0
-+-------------------------------+---------+---------+---------+----------+
-|          imm[11:0]            |   rs1   |  funct3 |    rd   |  opcode  |
-+-------------------------------+---------+---------+---------+----------+
-                 diese 12 Bits muessen in die ALU
-```
+| Bits | Feld |
+|:---|:---|
+| 31:20 | `imm[11:0]` → diese 12 Bits müssen in die ALU |
+| 19:15 | `rs1` |
+| 14:12 | `funct3` |
+| 11:7 | `rd` |
+| 6:0 | `opcode` |
 
 ::: notes
 Für `lw` braucht die ALU Base + Offset. 12 Drähte an einen 32-Bit-Eingang zu löten reicht nicht — 20 Leitungen fehlen. Sign-Extension in Hardware ist nötig.
@@ -899,12 +900,14 @@ Hinweis Terminologie: In RISC-V-Datenpfaden ist Zero ein ALU-Ausgangspin, kein s
 - ImmGen setzt zusammen und sign-extended auf 32 Bit
 - Negative Offsets: Sprünge „nach oben“ (Schleifen)
 
-```text
-31             25 24    20 19    15 14    12 11      7 6        0
-+----------------+---------+---------+---------+----------+----------+
-| imm[12|10:5]   |   rs2   |   rs1   |  funct3 |imm[4:1|11]|  opcode |
-+----------------+---------+---------+---------+----------+----------+
-```
+| Bits | Feld |
+|:---|:---|
+| 31:25 | `imm[12\|10:5]` |
+| 24:20 | `rs2` |
+| 19:15 | `rs1` |
+| 14:12 | `funct3` |
+| 11:7 | `imm[4:1\|11]` |
+| 6:0 | `opcode` |
 
 ::: notes
 ImmGen kennt auch das B-Format. Zweierkomplement erlaubt rückwärts gerichtete Sprünge.
@@ -928,7 +931,7 @@ graph LR
 ```
 
 ::: notes
-Vereinfachte Darstellung für RV32I: Wortausrichtung und B-Immediate-Skalierung. Details in Harris/Patterson und in Ripes nachvollziehbar.
+Vereinfachte Darstellung für RV32I: Wortausrichtung und B-Immediate-Skalierung. Details im Lehrbuchdiagramm (Patterson & Hennessy) und in Ripes nachvollziehbar.
 :::
 
 ## Der Branch-Addierer
@@ -1084,7 +1087,7 @@ Als Nächstes: Teilpfade zum Master-Diagramm und die Rolle der Control Unit.
 ## Der komplette Datenpfad
 
 - Alle Teilpfade zu einem System
-- Klassisches Architektur-Diagramm (Harris/Patterson)
+- Klassisches Architektur-Diagramm (Patterson & Hennessy)
 - Control Unit als Dirigent der Steuersignale
 - Schwäche des Single-Cycle: Timing / Taktperiode
 - Ausblick: warum Pipelining nötig wird
@@ -1152,17 +1155,35 @@ graph LR
 Zwei Quellen, ein Ziel: Kabel aufschneiden, MUX dazwischen, ein sauberes Ausgangskabel.
 :::
 
-## Der komplette Datenpfad (Harris/Patterson)
+## Der komplette Datenpfad (Patterson & Hennessy)
 
-- Single-Cycle Datapath nach Patterson und Hennessy (vereinfachte Übersicht)
+- Single-Cycle Datapath nach **Patterson und Hennessy** (RISC-V Edition; Signalnamen dieses Kurses)
+- Harris & Harris (Kursliteratur) nutzen teils andere Namen (`ResultSrc` statt `MemtoReg`, `ImmSrc`, …) — Konzept identisch
 - Vereint IF, ID, EX, MEM, WB; drei MUX-Weichen hervorgehoben
 - Rote gestrichelte Linien: Steuersignale der Control Unit
-- In Ripes sehen Sie denselben Aufbau live und vollständiger
 
 ![Single-Cycle-Datenpfad (vereinfacht)](../assets/images/single-cycle-datapath.svg){.nostretch}
 
 ::: notes
-Meisterdiagramm der Rechnerarchitektur — hier didaktisch verdichtet. Jedes Bauteil kennen Sie bereits. Zoomen Sie in Ripes in die Leitungen; dort fehlen keine Bitbreiten und Flags.
+Meisterdiagramm der Rechnerarchitektur — hier didaktisch verdichtet. Signalnamen folgen Patterson/Hennessy; in Ripes heißen einige Signale anders (Mapping-Folie).
+:::
+
+## P&H-Diagramm und Ripes: Mapping
+
+Das Lehrbuch-Diagramm und der Ripes-Single-Cycle-Prozessor sind **nicht baugleich**. Merken Sie sich die Entsprechungen:
+
+| Patterson/Hennessy (Folien) | Ripes (Single-Cycle) |
+|:---|:---|
+| ALU-Zero + AND mit `Branch` → `PCSrc` | Dedizierte **Branch-Vergleichseinheit** (alle Branch-Typen) |
+| Separater Branch-Addierer | Branch-Ziel oft über **Haupt-ALU** (PC als Op1) |
+| 2-Wege-MUX `MemtoReg` | Oft **3-Wege**-Write-Back-MUX (`Reg wr src`: ALU / Mem / PC+4) |
+| Signalnamen `MemtoReg`, `MemRead`, … | teils andere Bezeichner (Tooltips lesen!) |
+| Farben: beliebig | 1-Bit-Signale: **grün = 1**, **grau = 0** (kein „rot = 0“, kein „ausgegraut = $X$“) |
+
+Don't Care ($X$) ist ein **Entwurfskonzept** der Wahrheitstabelle — der Simulator zeigt immer einen konkreten Bitwert.
+
+::: notes
+Labor: Paper-&-Pencil nach P&H, Verifikation in Ripes mit Mapping. Nicht erwarten, dass Zero+AND und Branch-Addierer 1:1 sichtbar sind.
 :::
 
 ## Weiche 1: `ALUSrc`
@@ -1326,7 +1347,7 @@ Heute bleibt das übersichtliche Single-Cycle-Modell. Pipelining kommt in Einhei
 - Step-/Clock-Debugging auf den Gattern
 
 ::: notes
-Venus bleibt für Software. Ripes macht das Harris/Patterson-Diagramm interaktiv.
+Venus bleibt für Software. Ripes macht das Lehrbuchdiagramm interaktiv.
 :::
 
 ## Venus vs. Ripes
@@ -1374,7 +1395,7 @@ Chip-Icon oben links: Single-Cycle wählen — exakt der Folien-Prozessor.
 
 ## Die UI: Datenpfad-Reiter
 
-- Herzstück: Patterson/Hennessy-Diagramm live
+- Herzstück: Lehrbuchdiagramm (Patterson & Hennessy) live
 - Dicke Linien: 32-Bit-Daten
 - Tracing: Clock/Step — einen Takt nach dem anderen
 - Run vermeiden, wenn Sie Signale verstehen wollen

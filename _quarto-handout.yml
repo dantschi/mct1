@@ -17,6 +17,7 @@ format:
   # PDF-Skript: Folienkarte oben, Skriptblock darunter, dunkler Text
   # ---------------------------------------------------------------------------
   pdf:
+    lang: de
     documentclass: article
     papersize: a4
     geometry:
@@ -45,6 +46,8 @@ format:
       - filters/notes-handout.lua
     include-in-header:
       - text: |
+          \usepackage{fancyvrb}
+          \fvset{fontsize=\footnotesize}
           \usepackage{xcolor}
           \definecolor{dhbwred}{HTML}{E2001A}
           \definecolor{softblack}{HTML}{1D1D1F}

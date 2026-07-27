@@ -354,7 +354,7 @@ D-Flip-Flop-Bänke wie Luftschleusen: IF/ID hält das 32-Bit-Wort, bis ID bereit
 
 ```text
 Takt 1:
-[ Instr 1 (IF) ] -> [ ID leer ] -> [ EX leer ] -> [ MEM leer ] -> [ WB leer ]
+[ I1 IF ] -> [ ID - ] -> [ EX - ] -> [ MEM - ] -> [ WB - ]
 ```
 
 ::: notes
@@ -370,7 +370,7 @@ Takt 1: Instruktion 1 prallt gegen die Flip-Flop-Mauer IF/ID. Stufen 2–5 schla
 
 ```text
 Takt 2:
-[ Instr 2 (IF) ] -> [ Instr 1 (ID) ] -> [ EX leer ] -> [ MEM leer ] -> [ WB leer ]
+[ I2 IF ] -> [ I1 ID ] -> [ EX - ] -> [ MEM - ] -> [ WB - ]
 ```
 
 ::: notes
@@ -624,7 +624,7 @@ In Takt 3 ist `sub` in ID und liest `t0`, während `add` erst in EX ist. Das Fli
 
 - Hardware erkennt die Abhängigkeit und hält an (Stall)
 - `sub` bleibt in ID, bis `add` WB abgeschlossen hat
-- Preis: typisch drei verlorene Taktzyklen
+- Preis: typisch drei verlorene Taktzyklen (Konvention ohne Write/Read-Split im selben Takt; mit H&H-Registerfile-Hälften oft nur 2 Bubbles)
 - Der Speedup durch kürzeren Takt wird teilweise zunichtegemacht
 
 ```text
@@ -715,9 +715,9 @@ Verkehrsbeobachter: Ziel des einen und Quelle des anderen vergleichen — bei Tr
 ## Die Hazard-Erkennung (Logik)
 
 - Formale Bedingung (vereinfacht):
-- Wenn `EX/MEM.RegWrite = 1` und `EX/MEM.rd \neq 0` und `EX/MEM.rd = ID/EX.rs1`
+- Wenn `EX/MEM.RegWrite = 1` $\land$ $EX/MEM.rd \neq 0$ $\land$ `EX/MEM.rd` $=$ `ID/EX.rs1`
 - Übersetzt: Vorgänger speichert, Ziel ist nicht `x0`, Ziel = meine Quelle
-- Dann: ForwardA-MUX auf Bypass (z. B. `10`)
+- Dann: ForwardA-MUX auf Bypass (z. B. `10`)
 
 ```c
 if (vorheriger_schreibt && sein_ziel == meine_quelle) {
@@ -1080,7 +1080,7 @@ Flushing spült die Pipeline. System überlebt, Preis ist hoch.
 ## Der Performance-Verlust (Penalty)
 
 - Erfolgreicher Sprung: typisch 2 Takte Branch Penalty (ohne Optimierung)
-- 15–20 % der Befehle sind Branches (If/Else, Schleifen, Calls)
+- 15–20 % der Befehle sind Branches (If/Else, Schleifen, Calls)
 - Ständiges Flushen zerstört den Throughput
 - Nächster Schritt: Penalty in Hardware reduzieren
 
@@ -1090,13 +1090,13 @@ Jeder Flush ist ein Riss im Getriebe.
 ```
 
 ::: notes
-Zwei Takte pro Sprung summieren sich: fast 30–40 % Verlust bei naivem Flushen.
+Zwei Takte pro Sprung summieren sich: fast 30–40 % Verlust bei naivem Flushen.
 :::
 
 ## Hardware-Optimierung: Der Komparator
 
 - Branch-Logik nach links schieben (früher entscheiden)
-- Extra-Komparator (XOR) in ID: Register vergleichen, sobald gelesen
+- Extra-Komparator (XOR + NOR) in ID: Register vergleichen, sobald gelesen
 - Entscheidung schon in Takt 2
 - Penalty sinkt von 2 Takten auf 1 Takt
 
@@ -1105,7 +1105,7 @@ Zwei Takte pro Sprung summieren sich: fast 30–40 % Verlust bei naivem Flushe
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 
 graph LR
-  ID[Stufe ID] -->|Daten| XOR{XOR-Komparator}
+  ID[Stufe ID] -->|Daten| XOR{XOR + NOR}
   XOR -->|Entscheidung jetzt| PC
   style XOR fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style ID fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
@@ -1113,7 +1113,7 @@ graph LR
 ```
 
 ::: notes
-Nicht auf die schwere ALU in EX warten: XOR in ID. Ein Flush statt zwei — Lehrbuch-Standard zur Penalty-Reduktion. In realen CPUs ist Early Branch Resolve oft komplexer (eigene Vergleichslogik, Adressberechnung parallel, teils mit Prediction gekoppelt) — das XOR-Modell hier ist die didaktische Vereinfachung. Für tiefe Pipelines reicht selbst 1 Takt Penalty oft nicht; dort kommt Branch Prediction.
+Nicht auf die schwere ALU in EX warten: XOR + NOR in ID (Gleichheit, wenn alle Bit-XORs null sind). Ein Flush statt zwei — Lehrbuch-Standard zur Penalty-Reduktion. In realen CPUs ist Early Branch Resolve oft komplexer (eigene Vergleichslogik, Adressberechnung parallel, teils mit Prediction gekoppelt) — das XOR+NOR-Modell hier ist die didaktische Vereinfachung. Für tiefe Pipelines reicht selbst 1 Takt Penalty oft nicht; dort kommt Branch Prediction.
 :::
 
 ## Die ultimative Rettung: Branch Prediction
@@ -1129,15 +1129,15 @@ Königsklasse: spekulativ weiterarbeiten, bevor die Bedingung bekannt ist.
 
 ## Statische Vorhersage
 
-- Simpelste Form (z. B. einfache Mikrocontroller)
+- Simpelste Form (z. B. einfache Mikrocontroller)
 - Assume Not Taken: immer $PC+4$ nachladen
 - Richtig geraten: null Taktverlust
 - Falsch: Flush — im Schnitt oft noch Gewinn
 
 ```text
 Assume Not Taken:
-Tu so, als gäbe es den Sprung nicht,
-bis das Zero-Flag dich bestraft.
+Nehmen Sie an, der Sprung werde nicht genommen,
+bis der Zero-Ausgang des Vergleichers Sie eines Besseren belehrt.
 ```
 
 ::: notes
@@ -1218,7 +1218,7 @@ Single-Cycle beiseitelegen, 5-Stage laden: Forwarding, Stalls und Flushes in Far
 
 - Chip-Icon oben links
 - `5-Stage Processor` wählen (Standard mit Hazard/Forwarding)
-- Variante ohne Forwarding: Programm stürzt bei Abhängigkeiten ab (zum Ausprobieren)
+- Variante ohne Forwarding: Programm liefert bei Abhängigkeiten falsche Ergebnisse (zum Ausprobieren)
 - Processor-Tab: Datenpfad hat sich radikal verändert
 
 ::: notes
@@ -1350,7 +1350,7 @@ Hazard Unit radiert IF/ID; Label-Ziel erscheint wieder in IF. Jeder Schleifendur
 ## Labor-Aufgabe 4: Compiler-Magie selbst gemacht
 
 - Code aus Aufgabe 2 (Load-Use Stall)
-- Unabhängigen Befehl einfügen, z. B. `addi a5, a5, 1`
+- Unabhängigen Befehl einfügen, z. B. `addi a5, a5, 1`
 - Vor `lw` oder nach `add`: Stall bleibt
 - Genau zwischen `lw` und `add`: Stall verschwindet
 

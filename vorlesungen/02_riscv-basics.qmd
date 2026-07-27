@@ -98,7 +98,7 @@ graph LR
 ```
 
 ::: notes
-Es gibt nicht „den einen“ Weg, einen Computer zu bauen. Zwei Denkschulen prägen die Schnittstelle Software?Hardware. Bevor wir RISC-V-Code schreiben, müssen wir verstehen, in welcher Welt wir uns bewegen und warum unser Befehlssatz anders aussieht als bei einem typischen x86-Laptop.
+Es gibt nicht „den einen“ Weg, einen Computer zu bauen. Zwei Denkschulen prägen die Schnittstelle Software↔Hardware. Bevor wir RISC-V-Code schreiben, müssen wir verstehen, in welcher Welt wir uns bewegen und warum unser Befehlssatz anders aussieht als bei einem typischen x86-Laptop.
 :::
 
 ## Was ist eine ISA?
@@ -232,7 +232,7 @@ Load/Store-Architektur: In CISC dürfen Register und RAM in einem Befehl gemisch
 - Heute: Mobile/Cloud (Apple, AWS) — RISC gewinnt oft durch Energieeffizienz
 
 ::: notes
-Die Waage: 100?% Problemkomplexität. CISC drückt auf die Hardware-Seite, RISC auf die Software-Seite. Moderne RISC-Compiler sind Meisterwerke. Weniger Silizium-Komplexität bedeutet bessere Akkulaufzeit und Kühlung — deshalb RISC in praktisch jedem Smartphone.
+Die Waage: 100 % Problemkomplexität. CISC drückt auf die Hardware-Seite, RISC auf die Software-Seite. Moderne RISC-Compiler sind Meisterwerke. Weniger Silizium-Komplexität bedeutet bessere Akkulaufzeit und Kühlung — deshalb RISC in praktisch jedem Smartphone.
 :::
 
 ## Warum RISC-V?
@@ -299,10 +299,10 @@ Wir kennen die RISC-Welt — jetzt den konkreten Vertrag: die ISA von RV32I. Spe
 | String | Bedeutung |
 |--------|-----------|
 | RV32I | 32-Bit Basis — Fokus dieses Kurses |
-| RV64IMAFDC | 64-Bit + M + F + D + C (? „G“ General Purpose) |
+| RV64GC (= RV64IMAFDC) | 64-Bit + G (= IMAFD, inkl. Zicsr/Zifencei) + C |
 
 ::: notes
-Mikrowellen-Controller braucht keine Float-Hardware — Modul weglassen. Jeder Chip braucht nur `I` (ca. 40 Grundbefehle). `IMAFDC` → Desktop. Labor und Klausur: nur der übersichtliche RV32I-Kern.
+Mikrowellen-Controller braucht keine Float-Hardware — Modul weglassen. Jeder Chip braucht nur `I` (ca. 40 Grundbefehle). G = IMAFD (plus Zicsr/Zifencei); C ist separat — daher RV64GC = RV64IMAFDC. Labor und Klausur: nur der übersichtliche RV32I-Kern.
 :::
 
 ## Die Definition von RV32I
@@ -365,9 +365,9 @@ $x0$ ist die Konstante Null. Schreiben in $x0$ stürzt nicht ab — der Wert ble
 ## Der Program Counter (PC)
 
 - Zusätzlich zu $x0$–$x31$: isoliertes PC-Register
-- Speichert die Adresse der nächsten Instruktion
+- Speichert die Adresse der aktuell auszuführenden / als Nächstes geholten Instruktion
 - 32 Bit breit
-- Nach normalem Befehl: Hardware erhöht um $+4$ (ein Word)
+- Folgeinstruktion: $PC+4$ (bei RV32I ein Word); Venus zeigt den PC der aktuellen Instruktion
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -381,7 +381,7 @@ graph LR
 ```
 
 ::: notes
-Der PC zeigt auf den nächsten Befehl. Bei RV32I ist jeder Befehl 4 Bytes — daher automatisch $+4$ nach der Ausführung. Der PC ist der Dirigent des Programmablaufs.
+Der PC zeigt auf die aktuell auszuführende Instruktion (Venus markiert genau diese). Bei RV32I ist jeder Befehl 4 Bytes — die Folgeinstruktion liegt bei $PC+4$. Der PC ist der Dirigent des Programmablaufs.
 :::
 
 ## Was ist eine ABI?
@@ -1201,7 +1201,7 @@ Links sehen Sie Disassembly inkl. Hex der 32-Bit-Instruktion; die farbige Markie
 | `x0` | fest verdrahtete Null | immer $0$ |
 | `t0` | temporäres Register | Zwischenergebnis |
 | `a0` | Argument- und Rückgaberegister | Dienstcode |
-| `pc` | nächste Instruktionsadresse | meist plus $4$ |
+| `pc` | Adresse der aktuellen Instruktion (Venus) | Folge: $PC+4$ |
 
 - Registerwerte können dezimal, hexadezimal oder binär dargestellt werden.
 

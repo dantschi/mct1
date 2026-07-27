@@ -9,7 +9,7 @@ subtitle: "Mikrocomputertechnik 1"
 
 ## Zielsetzung
 
-In diesem Labor öffnen wir die Blackbox des Prozessors. Sie lernen den Ripes-Simulator kennen und analysieren, wie eine Zeile Assembler physikalisch den Stromfluss auf dem Silizium-Chip steuert. Sie identifizieren Multiplexer, lesen Steuersignale ab und verfolgen den Weg von Daten durch die ALU und den Arbeitsspeicher.
+In diesem Übungsblatt öffnen wir die Blackbox des Prozessors. Sie lernen den Ripes-Simulator kennen und analysieren, wie eine Zeile Assembler physikalisch den Stromfluss auf dem Silizium-Chip steuert. Sie identifizieren Multiplexer, lesen Steuersignale ab und verfolgen den Weg von Daten durch die ALU und den Arbeitsspeicher.
 
 ## Aufgabe 1: Ripes Onboarding und R-Type-Trace
 
@@ -41,6 +41,10 @@ Welchen Wert hat das Steuersignal `RegWrite` am Register File? Was würde physik
 ### Ihre Lösung {.unnumbered}
 
 *(Notieren Sie Ihre abgelesenen Signale hier.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 1**
@@ -86,11 +90,15 @@ Welche Aufgabe hat die Haupt-ALU bei diesem `lw`-Befehl? Welche Hex-Adresse bere
 
 ### Multiplexer `MemtoReg` {.unnumbered}
 
-Betrachten Sie den Multiplexer ganz rechts (`MemtoReg`) kurz vor dem Register File. Auf welchen Daten-Pfad ($0$ oder $1$) hat das Steuerwerk diesen MUX geschaltet und warum?
+Betrachten Sie den Write-Back-Multiplexer ganz rechts vor dem Register File (P&H: `MemtoReg`; in Ripes oft ein 3-Wege-MUX). Auf welchen Daten-Pfad hat das Steuerwerk geschaltet und warum (ALU vs. Speicher)?
 
 ### Ihre Lösung {.unnumbered}
 
 *(Notieren Sie Ihre abgelesenen Signale hier.)*
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 2**
@@ -130,33 +138,34 @@ sub a0, t1, t0
 
 Steppen Sie bis zum `beq`-Befehl. Die Register `t0` und `t1` sind ungleich.
 
-1. Welchen Wert hat das Zero-Signal am Ausgang der ALU?
-2. Welchen Wert hat daraufhin das Steuersignal `PCSrc` am MUX direkt vor dem PC?
-3. Welche Adresse (in Hex) wird bei der nächsten Taktflanke in den PC geladen?
+1. Wird der Branch genommen oder nicht? (Beobachten Sie den PC und die Branch-Vergleichseinheit — Ripes hat oft **keinen** klassischen ALU-Zero+AND wie im P&H-Diagramm.)
+2. Welche Adresse (in Hex) wird bei der nächsten Taktflanke in den PC geladen?
 
 ### Branch Taken {.unnumbered}
 
-Ändern Sie im Editor die zweite Zeile zu `li t1, 5`, sodass die Bedingung wahr wird. Steppen Sie wieder zum `beq`.
+Ändern Sie `li t1, 10` zu `li t1, 5`, sodass die Bedingung wahr wird. Steppen Sie wieder zum `beq`.
 
-1. Was ändert sich nun am Zero-Signal und an `PCSrc`?
-2. Woher stammt die neue Zieladresse für den PC physikalisch (welches Bauteil hat sie berechnet)?
+1. Was ändert sich am PC-Verhalten?
+2. Welches Bauteil liefert die Sprungzieladresse in **Ripes** (Hinweis: oft die Haupt-ALU mit PC als Operand — nicht zwingend ein separater Branch-Addierer wie im Lehrbuchdiagramm)?
 
 ### Ihre Lösung {.unnumbered}
 
 *(Notieren Sie Ihre Beobachtungen hier.)*
 
+::: {.content-hidden when-profile="solution"}
+\vspace{3.5cm}
+:::
+
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 3**
 
-Fall-Through:
+Fall-Through ($5 \neq 10$):
 
-- Die ALU vergleicht ($5 - 10 = -5$). Das Ergebnis ist nicht Null → Zero $= 0$.
-- Das AND-Gatter liefert $0$ → `PCSrc` bleibt $0$.
-- Der PC übernimmt bei der Taktflanke den Wert des PC$+4$-Addierers (lineares Weitermachen; konkrete Hex-Adresse im Ripes-PC ablesen).
+- Branch wird **nicht** genommen; der PC macht linear weiter.
+- `li` assembliert typisch zu je einem `addi`; `beq` liegt bei Adresse `0x08` → nächster PC $= \mathrm{PC}+4 =$ **`0x0000000C`** (Ripes-Textsegment startet bei `0x0`).
 
-Branch Taken:
+Branch Taken ($5 = 5$):
 
-- Nun gilt $5 - 5 = 0$ → Zero $= 1$.
-- Das AND-Gatter feuert → `PCSrc` $= 1$.
-- Der PC übernimmt die Zieladresse (Label). Diese Adresse wurde parallel vom separaten Branch-Addierer (oben im Diagramm) aus aktuellem PC und aufbereitetem Offset berechnet.
+- Branch wird genommen; PC springt auf das Label `Label`.
+- In Ripes berechnet typischerweise die **Haupt-ALU** (mit PC als Operand) das Branch-Target — nicht der separate Branch-Addierer aus dem Patterson/Hennessy-Diagramm. Mapping siehe Vorlesung 5.
 :::

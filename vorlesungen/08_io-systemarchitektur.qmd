@@ -158,7 +158,7 @@ Load/Store reichen: Thermometer und LED erscheinen als 32-Bit-Zellen im Adressra
 
 - CPU legt 32-Bit-Adresse auf den Bus — glaubt, sie spricht mit RAM
 - Adress-Decoder als Weiche
-- Spezielle Adressen (z. B. `0xF0000000`) schalten RAM ab und Peripherie an
+- Spezielle Adressen (z. B. `0xF0000000`) schalten RAM ab und Peripherie an
 - Gerät legt Daten auf den Bus; CPU lädt ahnungslos nach `t0`
 
 ```{mermaid}
@@ -202,7 +202,7 @@ Reviere abstecken: niedrige Adressen RAM, hoher Bereich Peripherie.
 - Oft Teil des SoC / der Bridge-Logik
 - Jedes Bauteil: Chip-Select (`CS`)
 - `CS = 0`: Bauteil schläft; `CS = 1`: aktiv
-- Decoder: AND-Netzwerk auf oberen Adressbits (z. B. `0xF...`)
+- Decoder: AND-Netzwerk auf oberen Adressbits (z. B. `0xF...`)
 
 ::: notes
 Nur das adressierte Gerät wacht auf und bedient den Datenbus.
@@ -257,37 +257,63 @@ graph TD
 Bit-Maskierung aus früheren Einheiten wird wieder gebraucht.
 :::
 
-## Input: Schalter und Taster
+## Input: Switches (Bitmaske)
 
-- Beispiel: D-Pad an `0xF0000000`
-- `lw` liefert 32-Bit-Wort als Bit-Map
-- Jedes Bit = ein physikalischer Schalter (1 = gedrückt)
+- Beispiel: Switches an `0xF0000000` (Ripes)
+- `lw` liefert ein 32-Bit-Wort als **Bit-Map**
+- Jedes Bit = ein physikalischer Schalter (1 = an)
 
 | Bits 31:4 | Bit 3 | Bit 2 | Bit 1 | Bit 0 |
 |-----------|-------|-------|-------|-------|
-| 0… | Unten | Oben | Rechts | Links |
+| 0… | SW3 | SW2 | SW1 | SW0 |
 
 ::: notes
-Nicht als Dezimalzahl lesen: Bit 0 = Links, Bit 2 = Oben, …
+Nur die Switches-Komponente ist eine Bitmaske. Das D-Pad ist anders aufgebaut (nächste Folie).
 :::
 
-## Taster auslesen und maskieren
+## Input: D-Pad (eigene Register)
 
-- Problem: mehrere Tasten gleichzeitig (z. B. `0b0101`)
+- In Ripes: **vier separate 32-Bit-Register**, je Richtung eines
+- Offsets vom D-Pad-Basis: UP `+0`, DOWN `+4`, LEFT `+8`, RIGHT `+12`
+- LSB = Tastenzustand (1 = gedrückt); restliche Bits typisch 0
+- Ripes-Symbole: `D_PAD_0_UP`, `D_PAD_0_DOWN`, …
+
+::: notes
+Nicht mit Switches verwechseln: Beim D-Pad gibt es keine Bitmaske an einer Adresse. Jede Richtung wird separat per `lw` gelesen.
+:::
+
+## Switches auslesen und maskieren
+
+- Problem: mehrere Schalter gleichzeitig (z. B. `0b0101`)
 - `beq` auf den Rohwert scheitert an Stör-Bits
 - Lösung: Bit isolieren mit `andi` und Maske
 
 ```asm
-li s1, 0xF0000000
+li s1, 0xF0000000      # Switches-Basis
 lw t0, 0(s1)
 
-# Bit 2 (Oben): Maske 4 = 0b0100
+# Bit 2 (SW2): Maske 4 = 0b0100
 andi t1, t0, 4
 bne t1, zero, Jump
 ```
 
 ::: notes
-Diagonal-Druck ergibt Wert 5, nicht 4. AND filtert auf eine saubere 4 oder 0.
+Wert 5 bedeutet SW0 und SW2 an. AND filtert auf eine saubere 4 oder 0.
+:::
+
+## D-Pad auslesen (eine Richtung)
+
+```asm
+li s1, 0xF0000000      # D-Pad-Basis
+lw t0, 0(s1)           # UP   (+0)
+lw t1, 4(s1)           # DOWN (+4)
+lw t2, 8(s1)           # LEFT (+8)
+lw t3, 12(s1)          # RIGHT (+12)
+bne t0, zero, UpPressed
+```
+
+::: notes
+Prüfen Sie den LSB bzw. den ganzen Wortwert auf $\neq 0$. Nach dem Erkennen: warten, bis die Taste wieder losgelassen ist (Release), sonst rauscht ein Klick durch mehrere Zustände.
 :::
 
 ## Output: Die LED-Matrix
@@ -362,7 +388,7 @@ Graue Registerzahlen verlassen: Hardware-Komponenten visuell verdrahten.
 
 ## Das Memory-Map-Setup
 
-- Vor dem Code: Base Address der Peripherie ablesen (z. B. `0xF0000000`)
+- Vor dem Code: Base Address der Peripherie ablesen (z. B. `0xF0000000`)
 - Falsche Adresse: Schreiben landet im normalen RAM
 - Profi-Praxis: Konstanten / BSP-Header
 
@@ -450,7 +476,7 @@ Phase 3 beginnt: Polling verschwendet Energie. Als Nächstes das Interrupt-Syste
 
 ## Das Problem des Wartens
 
-- Pipeline-CPU z. B. bei 4 GHz: 4 Milliarden Takte pro Sekunde
+- Pipeline-CPU z. B. bei 4 GHz: 4 Milliarden Takte pro Sekunde
 - Mensch: vielleicht alle 2 Sekunden ein Tastendruck
 - Zwischen zwei Klicks: etwa 8 Milliarden Taktzyklen
 - Frage: Was tut das Programm in der Zwischenzeit?
@@ -498,7 +524,7 @@ Load und Branch milliardenfach: sinnlose Abfragen, während der Mensch überlegt
 
 - Energieverschwendung: CPU unter Volllast, Hitze, leerer Akku
 - Keine Nebenläufigkeit: Browser, Audio, UI blockiert
-- In der Praxis nur noch Nischen (z. B. Ultra-Low-Latency)
+- In der Praxis nur noch Nischen (z. B. Ultra-Low-Latency)
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -551,7 +577,7 @@ Rückgrat moderner Betriebssysteme: asynchrones Aufwecken statt Busy Waiting.
 
 ## Der Ablauf eines Interrupts
 
-- Main-Programm läuft (z. B. Berechnung / Player)
+- Main-Programm läuft (z. B. Berechnung / Player)
 - Interrupt-Signal trifft den CPU-Pin
 - Hardware unterbricht; PC springt zur ISR
 - ISR verarbeitet die Eingabe
@@ -701,7 +727,7 @@ Handler darf User-Registern nicht vertrauen. Deshalb separate, sichere Hardware-
 
 - Extension Zicsr: separater Adressraum, bis zu 4096 CSRs
 - Kein RAM/MMIO — Flip-Flop-Bänke im Kern
-- Namen z. B. `mstatus`, `mtvec`, `mcause`
+- Namen z. B. `mstatus`, `mtvec`, `mcause`
 - Normale Befehle (`add`, `lw`) greifen nicht zu
 
 ::: notes
@@ -711,7 +737,7 @@ CSRs sind für User-Code unsichtbar und abgekapselt.
 ## Privilegienstufen (Privilege Levels)
 
 - Machine Mode (M): höchste Rechte, Boot; voller CSR-Zugriff (Firmware)
-- Supervisor Mode (S): großes OS (Linux); viele CSRs (z. B. Paging)
+- Supervisor Mode (S): großes OS (Linux); viele CSRs (z. B. Paging)
 - User Mode (U): Apps im Käfig; CSR-Zugriff $\rightarrow$ Trap
 
 ```{mermaid}
@@ -806,7 +832,7 @@ Erste Handlung der ISR: Interrupt-Bit und Exception-Code lesen, dann abzweigen.
 
 ## CSR: mstatus (Status)
 
-- Herz der Kontrolle; u. a. Bit MIE (Machine Interrupt Enable)
+- Herz der Kontrolle; u. a. Bit MIE (Machine Interrupt Enable)
 - MIE = 1: Interrupts wahrnehmen; MIE = 0: taub
 - Beim Trap: Hardware setzt MIE automatisch auf 0 (kein Nesting)
 
@@ -1223,7 +1249,6 @@ Paradigmenwechsel: vom Bare-Metal-Bus zur Syscall-API (Venus-ABI!).
 
 ```text
 Hinweis: Venus hat keinen interaktiven Read-Int (anders als RARS).
-Service 5 ist ggf. atoi (String	o Int), kein Tastatur-Input.
 ```
 
 ::: notes
@@ -1250,7 +1275,7 @@ String-Adresse in a1, Service-ID 4 in a0 — Venus-ABI.
 
 ## Labor-Aufgabe 4 (Venus)
 
-- EVA ohne Tastatur: Wert in `.data` (z. B. `n: .word 21`)
+- EVA ohne Tastatur: Wert in `.data` (z. B. `n: .word 21`)
 - Laden, verdoppeln (Shift oder `add`), per Service 1 drucken
 - Optional: Prompt-String per Service 4 vorher ausgeben
 - Mit Service 10 beenden
@@ -1287,12 +1312,13 @@ Memory-Tab verrät, ob `sw` traf; Venus: ID in `a0`, Payload in `a1`.
 ## Clobbering bei ecall (Warnung)
 
 - `ecall` = ABI-Funktionsaufruf in den Kernel
-- Kernel darf Caller-Saved (`t0`–`t6`, `a0`–`a7`) zerstören
-- Schleifenzähler in `t0` + Print in der Schleife = Zähler weg
+- Laut ABI darf der Kernel Caller-Saved (`t0`–`t6`, `a0`–`a7`) zerstören
+- Venus erhält `t`-Register faktisch oft — das ist nicht garantiert und nicht portabel
+- Schleifenzähler in `t0` + Print in der Schleife: auf anderen Systemen riskant
 - Lösung: vor `ecall` auf Stack sichern oder `s0`–`s11` nutzen
 
 ::: notes
-Klassische Studenten-Falle: nach Syscall `t`-Register nie wieder vertrauenswürdig; Zähler in `s`-Registern halten.
+Klassische Falle: Venus wirkt „nett“ zu `t`-Registern, die ABI erlaubt aber Clobbering. Portabler Code hält Zähler in `s`-Registern bzw. sichert vor dem Syscall.
 :::
 
 ## Zusammenfassung Einheit 8
