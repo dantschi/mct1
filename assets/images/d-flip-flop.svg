@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="260" viewBox="0 0 480 260" role="img">
+  <style>
+    .gate { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+    .wire { fill: none; stroke: #86868B; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+    .sym { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; }
+    .accent { stroke: #E2001A; }
+    .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; font-weight: 500; }
+    .sub { fill: #86868B; font-family: Inter, sans-serif; font-size: 12px; font-weight: 500; }
+  </style>
+
+  <!-- D-Eingang -->
+  <text class="pin" x="70" y="95" text-anchor="end">D</text>
+  <path class="wire" d="M 80 92 L 180 92"/>
+  <path class="wire" d="M 172 87 L 180 92 L 172 97" fill="none"/>
+
+  <!-- CLK-Eingang mit dynamischem Dreieck (steigende Flanke) -->
+  <text class="pin" x="70" y="175" text-anchor="end">CLK</text>
+  <path class="wire" d="M 80 172 L 180 172"/>
+
+  <!-- Flip-Flop-Körper -->
+  <rect class="gate accent" x="180" y="50" width="140" height="160" rx="4" ry="4"/>
+  <!-- Dynamischer Eingang (Dreieck) am linken Rand -->
+  <path class="wire accent" d="M 180 156 L 208 172 L 180 188" fill="#FFFFFF"/>
+  <text class="sym" x="250" y="118" text-anchor="middle">D-FF</text>
+  <text class="sub" x="250" y="140" text-anchor="middle">edge-triggered</text>
+
+  <!-- Q-Ausgang -->
+  <path class="wire" d="M 320 92 L 400 92"/>
+  <path class="wire" d="M 392 87 L 400 92 L 392 97" fill="none"/>
+  <text class="pin" x="415" y="96" text-anchor="start">Q</text>
+
+  <!-- Q optional -->
+  <path class="wire" d="M 320 172 L 400 172"/>
+  <path class="wire" d="M 392 167 L 400 172 L 392 177" fill="none"/>
+  <text class="pin" x="415" y="176" text-anchor="start">Q&#x0305;</text>
+</svg>

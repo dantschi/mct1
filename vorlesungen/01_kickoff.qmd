@@ -14,7 +14,6 @@ format: revealjs
 ## Modul: Mikrocomputertechnik 1
 
 - Studiengang: Elektro- und Informationstechnik
-- Modulverantwortung: DHBW Stuttgart
 - Schwerpunkt: RISC-V Architektur und Hardware-nahe Programmierung
 - Zielsetzung: Verständnis des Datenpfads von der Logik bis zur Software
 
@@ -48,31 +47,30 @@ Heute legen wir das Fundament: von Datenrepräsentation über kombinatorische Lo
 
 ## Organisatorisches & Spielregeln
 
-- Klausur am Semesterende · Übungsblätter essenziell 
+- Klausur am Semesterende · Übungsblätter essenziell
 
-| Block | Phase | UE | Themen und Inhalte | Simulator |
-|------:|:------|:--:|:-------------------|:----------|
-| 1 | Theorie | 2 | **Kickoff & Datenrepräsentation:** Schichtenmodell, Binär/Hex, Zweierkomplement, Endianness | — |
-| 1 | Praxis | 2 | **Logik-Refresher:** Kombinatorik (MUX, ALU), sequenzielle Logik, Harvard vs. Von-Neumann | — |
-| 2 | Theorie | 2 | **RISC-V Basis:** CISC vs. RISC, RV32I, 32 Register, R-/I-Type | — |
-| 2 | Praxis | 2 | **Erster Code:** Venus Onboarding, ADD/AND/ADDI, Immediates | Venus |
-| 3 | Theorie | 2 | **Speicher & Kontrollfluss:** Load/Store, Branches, `jal` | — |
-| 3 | Praxis | 2 | **Algorithmen:** for/while, Array-Iteration, Debugging im Speicher | Venus |
-| 4 | Theorie | 2 | **Funktionen & Stack:** Calling Convention, Caller/Callee, `sp`, `ra` | — |
-| 4 | Praxis | 2 | **Unterprogramme:** verschachtelte Funktionen, Stack-Frames | Venus |
-| 5 | Theorie | 2 | **Single-Cycle-Datenpfad:** Fetch–Write-Back, R-Type/Branch/Load | — |
-| 5 | Praxis | 2 | **Unter der Haube:** Ripes Onboarding, Tracing von MUX und ALU | Ripes |
-| 6 | Theorie | 2 | **Steuerwerk:** Decodierung, Steuersignale (`ALUSrc`, `MemWrite`, …) | — |
-| 6 | Praxis | 2 | **Signal-Analyse:** Signale vorhersagen und in Ripes verifizieren | Ripes |
-| 7 | Theorie | 2 | **Performance & Pipelining:** 5-stufige Pipeline, Data-/Control-Hazards | — |
-| 7 | Praxis | 2 | **Hazards live:** 5-Stage in Ripes, Stalls und NOPs | Ripes |
-| 8 | Theorie | 2 | **I/O & System:** MMIO, Polling vs. Interrupts, Exceptions, CSR | — |
-| 8 | Praxis | 2 | **Interaktion:** Schalter/LED-Matrix, Syscalls (`ecall`) | Ripes / Venus |
-| 9 | Theorie | 1 | **Wrap-Up (C-to-Assembly):** Compiler-Muster für if und Schleifen | — |
-| 9 | Praxis | 3 | **Finale:** State-Machine-Projekt, Klausuraufgaben, offene Fragen | Ripes / Venus |
+:::: {.columns}
+::: {.column width="48%"}
+| Block | UE | Themen |
+|------:|:--:|:-------|
+| 1 | 4 | **Kickoff & Datenrepräsentation** · **Logik-Refresher** |
+| 2 | 4 | **RISC-V Basis** · **Erster Code** |
+| 3 | 4 | **Speicher & Kontrollfluss** · **Algorithmen** |
+| 4 | 4 | **Funktionen & Stack** · **Unterprogramme** |
+| 5 | 4 | **Single-Cycle-Datenpfad** · **Unter der Haube** |
+:::
+::: {.column width="48%"}
+| Block | UE | Themen |
+|------:|:--:|:-------|
+| 6 | 4 | **Steuerwerk** · **Signal-Analyse** |
+| 7 | 4 | **Performance & Pipelining** · **Hazards live** |
+| 8 | 4 | **I/O & System** · **Interaktion** |
+| 9 | 4 | **Wrap-Up (C-to-Assembly)** · **Finale** |
+:::
+::::
 
 ::: notes
-Das Modul schließt mit einer schriftlichen Klausur ab — Theorie und Praxis. Neun Blöcke à Theorie und Praxis (insgesamt 36 UE). Wichtigster Rat: Mikrocomputertechnik lernt man nicht durch bloßes Zuhören. Nutzen Sie die Übungszeiten intensiv: Fehler einbauen, debuggen, Venus und Ripes ausreizen. Wer die Übungsblätter aktiv bearbeitet, hat in der Klausur einen klaren Vorteil.
+Das Modul schließt mit einer schriftlichen Klausur ab — Theorie und Praxis. Neun Blöcke à Theorie und Praxis (insgesamt 36 UE; Block 9: 1+3). Wichtigster Rat: Mikrocomputertechnik lernt man nicht durch bloßes Zuhören. Nutzen Sie die Übungszeiten intensiv: Fehler einbauen, debuggen, Venus und Ripes ausreizen. Wer die Übungsblätter aktiv bearbeitet, hat in der Klausur einen klaren Vorteil.
 :::
 
 
@@ -646,7 +644,15 @@ Wohin mit EF — Adresse 0x00 oder 0x03?
 - Netzwerke oft Big-Endian; viele PCs Little-Endian
 
 ::: notes
-Historischer „Glaubenskrieg“. Big-Endian: Speicher-Dump sieht aus wie die Zahl. Little-Endian: LSB zuerst. Die Namen sind ein Insider-Witz aus Gulliver.
+Historischer „Glaubenskrieg“. Big-Endian: Speicher-Dump sieht aus wie die Zahl. Little-Endian: LSB zuerst. Die Namen sind ein Insider-Witz aus Gulliver: 
+
+Die Begriffe Big-Endian und Little-Endian stammen aus Jonathan Swifts Satire Gulliver’s Travels (1726).  In der Geschichte führen die Königreiche Lilliput und Blefuscu einen Krieg über die Frage, ob man ein gekochtes Ei vom kleinen Ende (Little-Endian) oder vom großen Ende (Big-Endian) aufbrechen soll. 
+
+In der Informatik wurden diese Begriffe 1980 von Danny Cohen übernommen, um die Reihenfolge der Bytes in der digitalen Datenverarbeitung zu beschreiben:
+
+Big-Endian: Das bedeutendste Byte wird zuerst gespeichert. 
+Little-Endian: Das unbedeutendste Byte wird zuerst gespeichert. 
+Die Analogie dient als humorvolle Beschreibung für technische Unterschiede in der Byte-Reihenfolge, die keine fundamentale Überlegenheit einer Methode über die andere implizieren, sondern lediglich unterschiedliche Konventionen darstellen.
 :::
 
 ## Endianness in der RISC-V Architektur
@@ -908,10 +914,24 @@ $C_{in}$ kommt von der vorherigen Stelle. Als Systemarchitekten: Volladdierer fo
 - FA 31 wartet auf Carry von FA 30 → … → FA 0
 - Carry „plätschert“ (*ripple*) durch alle Stufen
 - Längster kritischer Pfad begrenzt die Taktfrequenz
-- Industrie: schnellere Designs (z. B. Carry-Lookahead); fürs Verständnis: RCA reicht
+- Lösung in der Praxis: den Übertrag **vorausberechnen**
 
 ::: notes
-Logisch korrekt, physikalisch langsam bei 32/64 Bit. Der kritische Pfad diktiert den Takt. Für RISC-V-Verständnis bleiben wir mental beim RCA.
+Logisch korrekt, physikalisch langsam bei 32/64 Bit. Der kritische Pfad diktiert den Takt. Wie man den Übertrag parallel statt sequenziell gewinnt, zeigt die nächste Folie.
+:::
+
+## Der „echte“ Addierer: Carry-Lookahead (CLA)
+
+- Idee: Carry nicht durchreichen, sondern **vorhersagen**
+- Pro Bit zwei Hilfssignale (nur aus $A_i$, $B_i$ — ohne Warten):
+  - Generate: $G_i = A_i \land B_i$ (erzeugt Carry unabhängig von $C_i$)
+  - Propagate: $P_i = A_i \oplus B_i$ (reicht $C_i$ weiter)
+- Carry-Formel: $C_{i+1} = G_i \lor (P_i \land C_i)$
+- Alle $G_i$, $P_i$ parallel → Carry-Netzwerk berechnet $C_1 \ldots C_{32}$ in wenigen Gatterstufen
+- Preis: mehr Hardware; Speedup oft von $O(n)$ auf $O(\log n)$
+
+::: notes
+Generate und Propagate kennt man schon aus dem Volladdierer — CLA baut daraus ein flaches Logiknetz für alle Überträge. So bleibt die Summe korrekt, aber der kritische Pfad wächst nicht linear mit der Wortbreite. Moderne CPUs nutzen Varianten (CLA, Carry-Select, Prefix-Addierer); didaktisch bleibt der RCA das mentale Modell, CLA die Brücke zur Realität.
 :::
 
 # 8. Die Arithmetic Logic Unit (ALU)
@@ -1153,25 +1173,32 @@ OR mit Feedback: kurze 1 am Eingang → Ausgang 1 → rückgekoppelt → bleibt 
 - CLK (Dreieck): flankengesteuerter Takteingang
 - Ignoriert $D$, bis die steigende Flanke an CLK eintrifft
 
+![Schaltsymbol D-Flip-Flop mit D, CLK, Q und Q̄](../assets/images/d-flip-flop.svg)
+
 ::: notes
-Symbol: Rechteck, D links, Q rechts, Dreieck = Edge-Triggered. Taub gegenüber $D$, außer im Moment der steigenden Flanke.
+Symbol: Rechteck, D links, Q rechts, Dreieck am linken Rand = Edge-Triggered (steigende Flanke). Taub gegenüber $D$, außer im Moment der Flanke.
 :::
 
 ## Das Verhalten der Kamera (Metapher)
 
-- Motiv vor der Linse = Eingang $D$ (darf sich ändern)
-- Foto in der Hand = Ausgang $Q$ (bleibt)
+:::: {.columns}
+::: {.column width="46%"}
+- Motiv vor der Linse = Eingang $D$
+- Foto in der Hand = Ausgang $Q$
 - Auslöser = Taktflanke
-- Nur im Klick-Moment wird $D$ auf $Q$ eingefroren
-
-```text
-Zeit 1: D=1, Q=0, CLK=0        → Q bleibt 0
-Zeit 2: D=1, Q=0, CLK=RISING   → Q wird 1
-Zeit 3: D=0, Q=1, CLK=1        → Q bleibt 1
-```
+- Nur im Klick-Moment: $D \rightarrow Q$
+:::
+::: {.column width="54%"}
+| Zeit | $D$ | $Q$ | CLK | Ergebnis |
+|:----:|:---:|:---:|:---:|:---------|
+| 1 | 1 | 0 | 0 | $Q$ bleibt 0 |
+| 2 | 1 | 0 | $\uparrow$ | $Q$ wird 1 |
+| 3 | 0 | 1 | 1 | $Q$ bleibt 1 |
+:::
+::::
 
 ::: notes
-Kamera-Metapher prägt sich ein: Motiv ändert sich, Foto nicht — bis zum nächsten Auslöser.
+Kamera-Metapher prägt sich ein: Motiv ändert sich, Foto nicht — bis zum nächsten Auslöser. In Zeile 2 übernimmt $Q$ den Wert von $D$ nur an der steigenden Flanke.
 :::
 
 ## Physikalische Limits: Setup- und Hold-Time
@@ -1241,6 +1268,8 @@ Sicherungshebel am Auslöser: Nur wenn die Control Unit WE = 1 setzt, überschre
 - Symbol: stehendes Rechteck
 - Ports: Data In ($D$), Data Out ($Q$), CLK (Dreieck), WE
 - Baustein für Registersatz und Program Counter
+
+![Abstrahiertes Register-Symbol mit D, WE, CLK und Q](../assets/images/register-symbol.svg)
 
 ::: notes
 Ab jetzt: Viereck mit $D$, $Q$, WE und Dreieck. Innere Rückkopplungen und Setup-Zeiten bleiben im Hintergrund — wir nutzen das Register als Baustein.
