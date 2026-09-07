@@ -154,16 +154,16 @@ jobs:
           mkdir -p _site/labs
           ls -la _site/labs/ || echo "Keine Labor-PDFs vorhanden."
 
-      # Deaktiviert, solange das Repository privat ist (GitHub Pages nicht verfügbar).
-      # - name: Publish to GitHub Pages
-      #   uses: quarto-dev/quarto-actions/publish@v2
-      #   with:
-      #     target: gh-pages
-      #     render: false
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Publish to GitHub Pages (Repo ist öffentlich)
+      - name: Publish to GitHub Pages
+        uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: gh-pages
+          render: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Fehlendes PDF ist nur eine Warnung — Website-Build (und künftig Publish) bleiben grün.
+      # Fehlendes PDF ist nur eine Warnung — Website-Build und Publish bleiben grün.
       - name: Warn if handout PDF did not build
         if: steps.handout.outcome != 'success'
         run: |
