@@ -19,7 +19,7 @@ format: revealjs
 - Zielsetzung: Verständnis des Datenpfads von der Logik bis zur Software
 
 ::: notes
-Herzlich willkommen zur ersten Vorlesung im Modul Mikrocomputertechnik 1, kurz MCT 1. Ich freue mich, Sie in diesem Semester in die Computerarchitektur einzuführen. Wir vollziehen den Brückenschlag zwischen abstrakter Software und greifbarer Hardware: Sie lernen nicht nur, wie man programmiert, sondern was im Silizium passiert, wenn eine Instruktion ausgeführt wird. Ziel ist ein mechanisches Verständnis eines modernen Mikroprozessors — am Beispiel der RISC-V-Architektur.
+Herzlich willkommen zur Vorlesung Mikrocomputertechnik 1 (MCT 1). Wir vollziehen den Brückenschlag zwischen abstrakter Software und greifbarer Hardware: Sie lernen nicht nur, wie man programmiert, sondern was im Silizium passiert, wenn eine Instruktion ausgeführt wird. Ziel ist ein Verständnis eines modernen Mikroprozessors — am Beispiel der RISC-V-Architektur.
 :::
 
 ## Agenda für den Kickoff
@@ -46,62 +46,37 @@ graph LR
 Heute legen wir das Fundament: von Datenrepräsentation über kombinatorische Logik und ALU bis zu Takt, sequenziellen Speichern, Register File und der Anbindung an den RAM — die Bausteine des späteren RISC-V-Datenpfads.
 :::
 
-## Über den Dozenten
-
-- Name: Prof. Dr.-Ing. Daniel Klünder
-- Fachgebiet: Mikrocomputertechnik / Rechnerarchitektur
-- Kontakt: über Moodle und E-Mail
-- Sprechstunde: Donnerstags, 14:00–15:00 Uhr (oder nach Vereinbarung)
-
-::: notes
-Kurzer Überblick zu mir. Mein Hintergrund liegt in der technischen Informatik und der hardwarenahen Entwicklung. Mir ist eine interaktive Vorlesung wichtig: Fragen bitte sofort stellen. Nutzen Sie die Sprechstunde, wenn Konzepte unklar bleiben. Ziel ist nicht das „Sieben“ durch die Klausur, sondern greifbares Verständnis.
-:::
-
 ## Organisatorisches & Spielregeln
 
-:::: {.columns}
-::: {.column width="48%"}
-- Klausur am Semesterende
-- Labore essenziell
-- Ankündigungen: Moodle
-:::
-::: {.column width="52%"}
-| Einheit | Fokus |
-|---------|-------|
-| 1–4 VL | Theorie |
-| 5–8 Lab | Assembler |
-| 9–12 Lab | Datenpfad |
-:::
-::::
+- Klausur am Semesterende · Übungsblätter essenziell 
+
+| Block | Phase | UE | Themen und Inhalte | Simulator |
+|------:|:------|:--:|:-------------------|:----------|
+| 1 | Theorie | 2 | **Kickoff & Datenrepräsentation:** Schichtenmodell, Binär/Hex, Zweierkomplement, Endianness | — |
+| 1 | Praxis | 2 | **Logik-Refresher:** Kombinatorik (MUX, ALU), sequenzielle Logik, Harvard vs. Von-Neumann | — |
+| 2 | Theorie | 2 | **RISC-V Basis:** CISC vs. RISC, RV32I, 32 Register, R-/I-Type | — |
+| 2 | Praxis | 2 | **Erster Code:** Venus Onboarding, ADD/AND/ADDI, Immediates | Venus |
+| 3 | Theorie | 2 | **Speicher & Kontrollfluss:** Load/Store, Branches, `jal` | — |
+| 3 | Praxis | 2 | **Algorithmen:** for/while, Array-Iteration, Debugging im Speicher | Venus |
+| 4 | Theorie | 2 | **Funktionen & Stack:** Calling Convention, Caller/Callee, `sp`, `ra` | — |
+| 4 | Praxis | 2 | **Unterprogramme:** verschachtelte Funktionen, Stack-Frames | Venus |
+| 5 | Theorie | 2 | **Single-Cycle-Datenpfad:** Fetch–Write-Back, R-Type/Branch/Load | — |
+| 5 | Praxis | 2 | **Unter der Haube:** Ripes Onboarding, Tracing von MUX und ALU | Ripes |
+| 6 | Theorie | 2 | **Steuerwerk:** Decodierung, Steuersignale (`ALUSrc`, `MemWrite`, …) | — |
+| 6 | Praxis | 2 | **Signal-Analyse:** Signale vorhersagen und in Ripes verifizieren | Ripes |
+| 7 | Theorie | 2 | **Performance & Pipelining:** 5-stufige Pipeline, Data-/Control-Hazards | — |
+| 7 | Praxis | 2 | **Hazards live:** 5-Stage in Ripes, Stalls und NOPs | Ripes |
+| 8 | Theorie | 2 | **I/O & System:** MMIO, Polling vs. Interrupts, Exceptions, CSR | — |
+| 8 | Praxis | 2 | **Interaktion:** Schalter/LED-Matrix, Syscalls (`ecall`) | Ripes / Venus |
+| 9 | Theorie | 1 | **Wrap-Up (C-to-Assembly):** Compiler-Muster für if und Schleifen | — |
+| 9 | Praxis | 3 | **Finale:** State-Machine-Projekt, Klausuraufgaben, offene Fragen | Ripes / Venus |
 
 ::: notes
-Das Modul schließt mit einer schriftlichen Klausur ab — Theorie und Praxis (z. B. kurze Assembler-Routinen lesen oder schreiben). Wichtigster Rat: Mikrocomputertechnik lernt man nicht durch bloßes Zuhören. Datenpfad und Assembler brauchen Übung. Nutzen Sie die Laborzeiten intensiv: Fehler einbauen, debuggen, Simulatoren ausreizen. Wer die Labore aktiv bearbeitet, hat in der Klausur einen klaren Vorteil.
+Das Modul schließt mit einer schriftlichen Klausur ab — Theorie und Praxis. Neun Blöcke à Theorie und Praxis (insgesamt 36 UE). Wichtigster Rat: Mikrocomputertechnik lernt man nicht durch bloßes Zuhören. Nutzen Sie die Übungszeiten intensiv: Fehler einbauen, debuggen, Venus und Ripes ausreizen. Wer die Übungsblätter aktiv bearbeitet, hat in der Klausur einen klaren Vorteil.
 :::
 
-## Skript & OER-Konzept
 
-- OER unter CC BY 4.0 · Quelle auf GitHub
-- Handout-PDF mit Begleittext unter jeder Folie
-- Pull Requests willkommen
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-graph LR
-  A[Markdown] --> B[Folien]
-  A --> C[PDF]
-  A --> D[Website]
-  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Diese Vorlesung ist als OER konzipiert: Quellcode, Skripte und Diagramme liegen offen auf GitHub. Im Hörsaal nicht abschreiben — auf die Konzepte konzentrieren. Im Handout-PDF finden Sie unter jeder Folie den Begleittext. Tippfehler oder Verbesserungsvorschläge? Gerne per Pull Request.
-:::
-
-## Die Literatur
+## Literatur
 
 **Sarah L. Harris, David Money Harris**  
 *Digital Design and Computer Architecture — RISC-V Edition*
@@ -111,7 +86,7 @@ Diese Vorlesung ist als OER konzipiert: Quellcode, Skripte und Diagramme liegen 
 - Vertiefung: Patterson / Hennessy — *Computer Organization and Design* (RISC-V)
 
 ::: notes
-Harris & Harris in der RISC-V-Edition ist unsere zentrale Referenz — didaktisch stark, vom Transistor bzw. von der Digitaltechnik bis zur Software. Wir orientieren uns an der Buchstruktur; zu den Themen folgen Leseempfehlungen. Patterson/Hennessy eignet sich zur Vertiefung von Architektur und Performance.
+Harris & Harris in der RISC-V-Edition ist unsere zentrale Referenz — didaktisch stark, vom Transistor bzw. von der Digitaltechnik bis zur Software. Wir orientieren uns an der Buchstruktur. Patterson/Hennessy eignet sich zur Vertiefung von Architektur und Performance.
 :::
 
 ## Die Werkzeuge im Praktikum
@@ -243,7 +218,7 @@ graph TD
 ```
 
 ::: notes
-Willkommen zurück aus der Pause. In diesem Block: Datenrepräsentation. Komplexität kapseln wir durch Abstraktion — die Hardware kennt aber nur physikalische Zustände, meist Spannungspegel. Bevor wir einen Prozessor bauen oder RISC-V-Assembler schreiben, definieren wir, wie die Architektur diese Zustände als Daten interpretiert: Bündelung von Nullen und Einsen, lesbare Darstellung für Menschen, und wie die Hardware negative Zahlen auf Bitebene löst.
+In diesem Block: Datenrepräsentation. Komplexität kapseln wir durch Abstraktion — die Hardware kennt aber nur physikalische Zustände, meist Spannungspegel. Bevor wir einen Prozessor bauen oder RISC-V-Assembler schreiben, definieren wir, wie die Architektur diese Zustände als Daten interpretiert: Bündelung von Nullen und Einsen, lesbare Darstellung für Menschen, und wie die Hardware negative Zahlen auf Bitebene löst.
 :::
 
 ## Alles ist eine Zahl
