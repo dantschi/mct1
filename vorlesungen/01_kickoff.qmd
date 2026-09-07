@@ -1500,5 +1500,5 @@ Harvard (Mark I): getrennte Welten — kein Buskonflikt, aber kein „Ausborgen�
 ::::
 
 ::: notes
-Nächste Schritte: In Ripes zwei Speicherblöcke — Fetch und Memory-Access parallel. Damit schließen wir den Kickoff: Sie haben die Bausteine für den vollständigen RISC-V-Datenpfad. Vielen Dank für Ihre Mitarbeit!
+Damit schließen wir den Kickoff: Sie haben die Bausteine für den vollständigen RISC-V-Datenpfad.
 :::

@@ -11,27 +11,29 @@ website:
   description: "Vorlesung Mikrocomputertechnik 1 (MCT1) an der DHBW Stuttgart"
   site-url: https://dantschi.github.io/mct1/
   favicon: assets/dhbw_logo.svg
-  sidebar:
-    style: floating
-    contents:
-      - href: index.qmd
-        text: "Startseite"
-      - section: "Vorlesungen"
-        contents: vorlesungen/*
+  # Keine Sidebar: Startseite = README-ähnlich, Folien direkt verlinkt
+  navbar:
+    background: light
+    title: "MCT1"
+    left:
+      - text: "Startseite"
+        href: index.qmd
+      - text: "Repository"
+        href: https://github.com/dantschi/mct1
+  page-navigation: false
   page-footer:
     left: "MCT1 · DHBW Stuttgart"
     right: "CC BY 4.0"
 
 format:
   # ---------------------------------------------------------------------------
-  # Website (HTML) — Startseite & Inhaltsseiten
-  # Pfade relativ (ohne führendes /), sonst bricht CSS auf GitHub Pages.
+  # Website (HTML) — lean, README-ähnlich
   # ---------------------------------------------------------------------------
   html:
     theme:
       - cosmo
       - assets/styles/custom.scss
-    toc: true
+    toc: false
     mainfont: Inter
     include-in-header:
       - text: |
@@ -41,7 +43,6 @@ format:
 
   # ---------------------------------------------------------------------------
   # Reveal.js — Vorlesungsfolien (Vortrag)
-  # Speaker Notes nur in der Speaker View (Taste S) — nicht auf der Leinwand.
   # ---------------------------------------------------------------------------
   revealjs:
     theme:
@@ -52,7 +53,6 @@ format:
     chalkboard: false
     preview-links: auto
     center: false
-    # r-stretch kollidiert mit SVG-Schaltungen (Höhe oft 0 → unsichtbar)
     auto-stretch: false
     width: 1280
     height: 720
@@ -67,15 +67,13 @@ format:
       - assets/scripts/mermaid-fit.html
 
   # ---------------------------------------------------------------------------
-  # PDF-Artikel (optional, für reine Textskripte — nicht Folien-Handout)
-  # Folien-Handout: siehe Profil / Format handout (Druckansicht E bzw. --profile handout)
+  # PDF-Artikel
   # ---------------------------------------------------------------------------
   pdf:
     documentclass: article
     papersize: a4
     geometry:
       - margin=3cm
-    # TeX Gyre — portabel mit TinyTeX (CI/Linux); Arial/Consolas sind dort oft nicht installiert
     mainfont: TeX Gyre Heros
     sansfont: TeX Gyre Heros
     monofont: TeX Gyre Cursor
