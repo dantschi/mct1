@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="300" viewBox="0 0 520 300" role="img">
+  <style>
+    .gate { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+    .wire { fill: none; stroke: #86868B; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+    .sym { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 18px; font-weight: 600; }
+    .accent { stroke: #E2001A; }
+    .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; font-weight: 500; }
+    .bus { fill: #86868B; font-family: Inter, sans-serif; font-size: 12px; font-weight: 500; }
+  </style>
+
+  <!-- Data In (D) -->
+  <text class="pin" x="78" y="78" text-anchor="end">D</text>
+  <text class="bus" x="78" y="94" text-anchor="end">/32</text>
+  <path class="wire" d="M 90 80 L 200 80"/>
+  <path class="wire" d="M 192 75 L 200 80 L 192 85" fill="none"/>
+
+  <!-- Write Enable (WE) -->
+  <text class="pin" x="78" y="148" text-anchor="end">WE</text>
+  <path class="wire" d="M 90 145 L 200 145"/>
+  <path class="wire" d="M 192 140 L 200 145 L 192 150" fill="none"/>
+
+  <!-- Clock -->
+  <text class="pin" x="78" y="228" text-anchor="end">CLK</text>
+  <path class="wire" d="M 90 225 L 200 225"/>
+
+  <!-- Register body (stehendes Rechteck) -->
+  <rect class="gate accent" x="200" y="40" width="120" height="220" rx="4" ry="4"/>
+  <!-- Dynamischer Takteingang (Dreieck) -->
+  <path class="wire accent" d="M 200 209 L 226 225 L 200 241" fill="#FFFFFF"/>
+  <text class="sym" x="260" y="145" text-anchor="middle">Register</text>
+  <text class="bus" x="260" y="168" text-anchor="middle">32 Bit</text>
+
+  <!-- Data Out (Q) -->
+  <path class="wire" d="M 320 80 L 420 80"/>
+  <path class="wire" d="M 412 75 L 420 80 L 412 85" fill="none"/>
+  <text class="pin" x="435" y="84" text-anchor="start">Q</text>
+  <text class="bus" x="435" y="100" text-anchor="start">/32</text>
+</svg>

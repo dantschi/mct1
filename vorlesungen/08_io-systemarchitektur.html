@@ -1,0 +1,3098 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<link href="../assets/dhbw_logo.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-html/tabby.min.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.10.18">
+
+  <meta name="author" content="Prof.&nbsp;Dr.-Ing. Daniel Klünder">
+  <title>Mikrocomputertechnik 1</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="../site_libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="../site_libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; font-weight: bold; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../site_libs/revealjs/dist/theme/quarto-f355cf95444bdbe7a358cd689c441e6f.css">
+  <link href="../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="../site_libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="../site_libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="../site_libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+  <script src="../site_libs/quarto-diagram/mermaid.min.js"></script>
+  <script src="../site_libs/quarto-diagram/mermaid-init.js"></script>
+  <link href="../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">Mikrocomputertechnik 1</h1>
+  <p class="subtitle">Einheit 8: I/O &amp; Systemarchitektur</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+Prof.&nbsp;Dr.-Ing. Daniel Klünder
+</div>
+</div>
+</div>
+
+</section>
+<section>
+<section id="io-systemarchitektur" class="title-slide slide level1 center">
+<h1>I/O &amp; Systemarchitektur</h1>
+
+</section>
+<section id="die-brücke-zur-außenwelt" class="slide level2">
+<h2>Die Brücke zur Außenwelt</h2>
+<ul>
+<li>Herzlich willkommen zur achten Vorlesung in Mikrocomputertechnik 1</li>
+<li>Letzte Einheiten: Datenpfad, Steuerwerk, Pipelining</li>
+<li>Unser 5-stufiger RISC-V-Prozessor ist schnell und logisch korrekt</li>
+<li>Letztes Problem: der Chip ist taub und stumm</li>
+<li>Heute: die Brücke zur Außenwelt (Input/Output)</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  CPU[CPU isoliert] &lt;--&gt;|I/O-Bus| Per[Peripherie]
+  style CPU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Per fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Willkommen zu Einheit 8. Datenpfad, Control Unit und Pipelining stehen. Der Chip rechnet isoliert: Ergebnisse bleiben im Silizium. Heute: Kommunikation mit Sensoren, Aktoren und dem Betriebssystem.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="agenda-für-den-heutigen-tag" class="slide level2">
+<h2>Agenda für den heutigen Tag</h2>
+<ol type="1">
+<li>Memory-Mapped I/O — wie spricht die CPU mit Peripherie?</li>
+<li>Schalter &amp; LEDs — Ansteuerung und Entprellung</li>
+<li>Polling vs.&nbsp;Interrupts — nicht sinnlos warten</li>
+<li>Das CSR-System — versteckte Register für Systemzustände</li>
+<li>Syscalls &amp; OS — Hilfe vom Betriebssystem (<code>ecall</code>)</li>
+<li>Labor (Ripes/Venus) — virtuelle LEDs und Konsolenausgaben</li>
+</ol>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  A[MMIO] --&gt; B[LEDs]
+  B --&gt; C[Interrupts]
+  C --&gt; D[CSR]
+  D --&gt; E[Syscalls]
+  style E fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Von der untersten Hardware bis zur OS-Abstraktion: LEDs, Polling vs.&nbsp;Interrupt, CSRs und <code>ecall</code>.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="rückblick-der-isolierte-high-speed-chip" class="slide level2">
+<h2>Rückblick: Der isolierte High-Speed-Chip</h2>
+<ul>
+<li>Status aus Einheit 7: Pipeline mit hohem Durchsatz</li>
+<li>ALU, PC und RAM arbeiten fehlerfrei</li>
+<li>Alle Daten bleiben auf dem Die gefangen</li>
+<li>Kein Knopfdruck kann das laufende Programm beeinflussen</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb1-1"><a aria-label="1"></a>Ein Prozessor ohne I/O ist wie ein Taschenrechner</span>
+<span id="cb1-2"><a aria-label="2"></a>ohne Display und ohne Tasten: physikalisch nutzlos.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Die schnellste Pi-Berechnung hilft nicht, wenn das Ergebnis für immer in <code>s0</code> liegt.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-brain-in-a-jar-problem" class="slide level2">
+<h2>Das Brain-in-a-Jar-Problem</h2>
+<ul>
+<li>Gedankenexperiment: Gehirn im Einmachglas</li>
+<li>Rechnet und denkt — ohne Sinnesorgane</li>
+<li>Unsere CPU ist genau dieses Gehirn</li>
+<li>I/O ist das Nervensystem, das wir anschließen</li>
+<li>Reize empfangen, Aktionen in der Welt auslösen</li>
+</ul>
+<aside class="notes">
+<p>I/O = Kamera, Mikrofon und Greifarme für das isolierte Gehirn.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="peripherie-die-außenwelt" class="slide level2">
+<h2>Peripherie (Die Außenwelt)</h2>
+<ul>
+<li>Alles außer der reinen Recheneinheit: Peripherie</li>
+<li>Input (Sensoren): Tastatur, Maus, Temperatur, Schalter, Netz (Empfang)</li>
+<li>Output (Aktoren): Monitor, LED, Lautsprecher, Motor, Netz (Senden)</li>
+<li>Frage: Wie anbinden, ohne für jedes Gerät ein neues Steuerwerk?</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Input[Tastatur / Sensor] --&gt;|Daten| CPU((RISC-V CPU))
+  CPU --&gt;|Daten| Output[Monitor / LED]
+  style CPU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Input fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Output fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Peripherie verbindet Bits mit Physik. Ziel: ein einheitliches Ansteuerungsmodell für RISC-V.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="memory-mapped-io" class="title-slide slide level1 center">
+<h1>Memory-Mapped I/O</h1>
+
+</section>
+<section id="wie-spricht-die-cpu-mit-peripherie" class="slide level2">
+<h2>Wie spricht die CPU mit Peripherie?</h2>
+<ul>
+<li>Zwei historische Philosophien:</li>
+<li>Port-Mapped I/O (Komplexität)</li>
+<li>Memory-Mapped I/O (Einfachheit)</li>
+<li>Intel x86: historisch oft Port-Mapped</li>
+<li>ARM und RISC-V: konsequent Memory-Mapped I/O</li>
+</ul>
+<aside class="notes">
+<p>Spezielle I/O-Befehle vs.&nbsp;Illusion „Hardware ist Speicher“ — diese Wege spalten die Architekturen bis heute.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="port-mapped-io-x86" class="slide level2">
+<h2>Port-Mapped I/O (x86)</h2>
+<ul>
+<li>Separater I/O-Bus und eigene ISA-Befehle: <code>IN</code>, <code>OUT</code></li>
+<li>Beispiel: <code>IN AL, 0x60</code> (klassischer Tastatur-Port)</li>
+<li>Nachteile: komplexeres Steuerwerk, begrenzter Port-Raum, mehr Silizium</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb2-1"><a aria-label="1"></a># Alter x86<span class="op">-</span>Stil <span class="op">(</span>Port<span class="op">-</span>Mapped I<span class="op">/</span>O<span class="op">):</span></span>
+<span id="cb2-2"><a aria-label="2"></a><span class="bu">MOV</span> <span class="kw">DX</span><span class="op">,</span> <span class="bn">0x03F8</span>    <span class="op">#</span> COM1</span>
+<span id="cb2-3"><a aria-label="3"></a><span class="bu">OUT</span> <span class="kw">DX</span><span class="op">,</span> <span class="kw">AL</span>        <span class="op">#</span> <span class="dt">Byte</span> aus <span class="kw">AL</span> an den Port</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Extra-Leitungen und Sonderbefehle: normale ALU-Befehle greifen auf Ports nicht zu.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="memory-mapped-io-mmio" class="slide level2">
+<h2>Memory-Mapped I/O (MMIO)</h2>
+<ul>
+<li>RISC-V-Weg: kein neuer I/O-Bus, keine neuen Befehle</li>
+<li>Philosophie: Hardware tarnen als Arbeitsspeicher</li>
+<li>Kommunikation wie mit einer Array-Zelle im RAM</li>
+<li>Bekannte Befehle: <code>lw</code> und <code>sw</code></li>
+</ul>
+<aside class="notes">
+<p>Load/Store reichen: Thermometer und LED erscheinen als 32-Bit-Zellen im Adressraum.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-illusion-des-speichers" class="slide level2">
+<h2>Die Illusion des Speichers</h2>
+<ul>
+<li>CPU legt 32-Bit-Adresse auf den Bus — glaubt, sie spricht mit RAM</li>
+<li>Adress-Decoder als Weiche</li>
+<li>Spezielle Adressen (z. B. <code>0xF0000000</code>) schalten RAM ab und Peripherie an</li>
+<li>Gerät legt Daten auf den Bus; CPU lädt ahnungslos nach <code>t0</code></li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  CPU[CPU lw/sw] --&gt;|Adresse| Decoder{Adress-Weiche}
+  Decoder --&gt;|0x1000| RAM[(Arbeitsspeicher)]
+  Decoder --&gt;|0xF000| Hardware[LED Matrix]
+  style Decoder fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style CPU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style RAM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Hardware fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Betrug auf dem Mainboard: gleiche Pins, andere Chip-Select-Ziele.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-adressraum-address-map" class="slide level2">
+<h2>Der Adressraum (Address Map)</h2>
+<ul>
+<li>32-Bit-Adressraum: <span class="math inline">\(2^{32} = 4\,294\,967\,296\)</span> Bytes (4 GB)</li>
+<li>Feste Address Map im Chip-Handbuch</li>
+<li>Beispielhafte Aufteilung:</li>
+<li><code>0x00000000</code>–<code>0x0FFFFFFF</code>: Boot-ROM / Code</li>
+<li><code>0x10000000</code>–<code>0x7FFFFFFF</code>: RAM (Heap, Stack, <code>.data</code>)</li>
+<li><code>0xF0000000</code>–<code>0xFFFFFFFF</code>: MMIO (Sensoren, LEDs)</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb3-1"><a aria-label="1"></a>lw aus 0x10000000 -&gt; Array-Element im RAM</span>
+<span id="cb3-2"><a aria-label="2"></a>lw aus 0xF0000000 -&gt; z.B. Pixel/Sensor-Wert</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Reviere abstecken: niedrige Adressen RAM, hoher Bereich Peripherie.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-adress-decoder-hardware" class="slide level2">
+<h2>Der Adress-Decoder (Hardware)</h2>
+<ul>
+<li>Oft Teil des SoC / der Bridge-Logik</li>
+<li>Jedes Bauteil: Chip-Select (<code>CS</code>)</li>
+<li><code>CS = 0</code>: Bauteil schläft; <code>CS = 1</code>: aktiv</li>
+<li>Decoder: AND-Netzwerk auf oberen Adressbits (z. B. <code>0xF...</code>)</li>
+</ul>
+<aside class="notes">
+<p>Nur das adressierte Gerät wacht auf und bedient den Datenbus.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="loadstore-für-io" class="slide level2">
+<h2>Load/Store für I/O</h2>
+<ul>
+<li>MMIO macht Bare-Metal-Assembler einfach</li>
+<li>Schalter lesen = <code>lw</code>; Motor starten = <code>sw</code> mit 1</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb4-1"><a aria-label="1"></a>li s1<span class="op">,</span> <span class="bn">0xF0000000</span>   <span class="op">#</span> Thermometer<span class="op">-</span>Basis</span>
+<span id="cb4-2"><a aria-label="2"></a>li s2<span class="op">,</span> <span class="bn">0xF0000010</span>   <span class="op">#</span> Warn<span class="op">-</span>LED</span>
+<span id="cb4-3"><a aria-label="3"></a></span>
+<span id="cb4-4"><a aria-label="4"></a>lw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span>        <span class="op">#</span> MMIO<span class="op">-</span>Read</span>
+<span id="cb4-5"><a aria-label="5"></a>li t1<span class="op">,</span> <span class="dv">100</span></span>
+<span id="cb4-6"><a aria-label="6"></a>blt t0<span class="op">,</span> t1<span class="op">,</span> Safe</span>
+<span id="cb4-7"><a aria-label="7"></a></span>
+<span id="cb4-8"><a aria-label="8"></a>li t2<span class="op">,</span> <span class="dv">1</span></span>
+<span id="cb4-9"><a aria-label="9"></a>sw t2<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s2<span class="op">)</span>        <span class="op">#</span> MMIO<span class="op">-</span>Write<span class="op">:</span> Alarm<span class="op">-</span>LED</span>
+<span id="cb4-10"><a aria-label="10"></a><span class="fu">Safe:</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Keine neuen Opcodes: Temperatur schwellenbasiert auf LED abbilden.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="praxis-der-mmio-schalter-und-leds" class="title-slide slide level1 center">
+<h1>Praxis der MMIO (Schalter und LEDs)</h1>
+
+</section>
+<section id="von-der-theorie-zur-laborpraxis" class="slide level2">
+<h2>Von der Theorie zur Laborpraxis</h2>
+<ul>
+<li>Input: D-Pad / Schalter</li>
+<li>Einzelne Bits maskieren</li>
+<li>Output: LED-Matrix</li>
+<li>Gefahr: volatile Speicher (Compiler-Caches)</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[Schalter] --&gt;|MMIO lw| B[Bit-Maskierung]
+  B --&gt; C[Logik]
+  C --&gt;|MMIO sw| D[LED Matrix]
+  style D fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Bit-Maskierung aus früheren Einheiten wird wieder gebraucht.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="input-switches-bitmaske" class="slide level2">
+<h2>Input: Switches (Bitmaske)</h2>
+<ul>
+<li>Beispiel: Switches an <code>0xF0000000</code> (Ripes)</li>
+<li><code>lw</code> liefert ein 32-Bit-Wort als <strong>Bit-Map</strong></li>
+<li>Jedes Bit = ein physikalischer Schalter (1 = an)</li>
+</ul>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Bits 31:4</th>
+<th>Bit 3</th>
+<th>Bit 2</th>
+<th>Bit 1</th>
+<th>Bit 0</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0…</td>
+<td>SW3</td>
+<td>SW2</td>
+<td>SW1</td>
+<td>SW0</td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>Nur die Switches-Komponente ist eine Bitmaske. Das D-Pad ist anders aufgebaut (nächste Folie).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="input-d-pad-eigene-register" class="slide level2">
+<h2>Input: D-Pad (eigene Register)</h2>
+<ul>
+<li>In Ripes: <strong>vier separate 32-Bit-Register</strong>, je Richtung eines</li>
+<li>Offsets vom D-Pad-Basis: UP <code>+0</code>, DOWN <code>+4</code>, LEFT <code>+8</code>, RIGHT <code>+12</code></li>
+<li>LSB = Tastenzustand (1 = gedrückt); restliche Bits typisch 0</li>
+<li>Ripes-Symbole: <code>D_PAD_0_UP</code>, <code>D_PAD_0_DOWN</code>, …</li>
+</ul>
+<aside class="notes">
+<p>Nicht mit Switches verwechseln: Beim D-Pad gibt es keine Bitmaske an einer Adresse. Jede Richtung wird separat per <code>lw</code> gelesen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="switches-auslesen-und-maskieren" class="slide level2">
+<h2>Switches auslesen und maskieren</h2>
+<ul>
+<li>Problem: mehrere Schalter gleichzeitig (z. B. <code>0b0101</code>)</li>
+<li><code>beq</code> auf den Rohwert scheitert an Stör-Bits</li>
+<li>Lösung: Bit isolieren mit <code>andi</code> und Maske</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb5-1"><a aria-label="1"></a>li s1<span class="op">,</span> <span class="bn">0xF0000000</span>      <span class="op">#</span> Switches<span class="op">-</span>Basis</span>
+<span id="cb5-2"><a aria-label="2"></a>lw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
+<span id="cb5-3"><a aria-label="3"></a></span>
+<span id="cb5-4"><a aria-label="4"></a># Bit <span class="dv">2</span> <span class="op">(</span>SW2<span class="op">):</span> Maske <span class="dv">4</span> <span class="op">=</span> <span class="bn">0b</span><span class="er">0100</span></span>
+<span id="cb5-5"><a aria-label="5"></a>andi t1<span class="op">,</span> t0<span class="op">,</span> <span class="dv">4</span></span>
+<span id="cb5-6"><a aria-label="6"></a>bne t1<span class="op">,</span> zero<span class="op">,</span> Jump</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Wert 5 bedeutet SW0 und SW2 an. AND filtert auf eine saubere 4 oder 0.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="d-pad-auslesen-eine-richtung" class="slide level2">
+<h2>D-Pad auslesen (eine Richtung)</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb6-1"><a aria-label="1"></a>li s1<span class="op">,</span> <span class="bn">0xF0000000</span>      <span class="op">#</span> D<span class="op">-</span>Pad<span class="op">-</span>Basis</span>
+<span id="cb6-2"><a aria-label="2"></a>lw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span>           <span class="op">#</span> UP   <span class="op">(+</span><span class="dv">0</span><span class="op">)</span></span>
+<span id="cb6-3"><a aria-label="3"></a>lw t1<span class="op">,</span> <span class="dv">4</span><span class="op">(</span>s1<span class="op">)</span>           <span class="op">#</span> DOWN <span class="op">(+</span><span class="dv">4</span><span class="op">)</span></span>
+<span id="cb6-4"><a aria-label="4"></a>lw t2<span class="op">,</span> <span class="dv">8</span><span class="op">(</span>s1<span class="op">)</span>           <span class="op">#</span> LEFT <span class="op">(+</span><span class="dv">8</span><span class="op">)</span></span>
+<span id="cb6-5"><a aria-label="5"></a>lw t3<span class="op">,</span> <span class="dv">12</span><span class="op">(</span>s1<span class="op">)</span>          <span class="op">#</span> RIGHT <span class="op">(+</span><span class="dv">12</span><span class="op">)</span></span>
+<span id="cb6-6"><a aria-label="6"></a>bne t0<span class="op">,</span> zero<span class="op">,</span> UpPressed</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Prüfen Sie den LSB bzw. den ganzen Wortwert auf <span class="math inline">\(\neq 0\)</span>. Nach dem Erkennen: warten, bis die Taste wieder losgelassen ist (Release), sonst rauscht ein Klick durch mehrere Zustände.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="output-die-led-matrix" class="slide level2">
+<h2>Output: Die LED-Matrix</h2>
+<ul>
+<li>Beispiel-Adresse <code>0xF0000020</code></li>
+<li><code>sw</code> brennt Bit-Muster auf die Dioden</li>
+<li>RGB oft als <code>0x00RRGGBB</code></li>
+<li><code>0x00FF0000</code> → knallrot</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Reg[0x0000FF00] --&gt;|sw| MMIO[0xF0000020]
+  MMIO --&gt; LED[LED gruen]
+  style LED fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Reg fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style MMIO fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Hex-Farbe per Store Word: Computergrafik auf unterster Ebene.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="flüchtigkeit-von-io-registern-volatile" class="slide level2">
+<h2>Flüchtigkeit von I/O-Registern (Volatile)</h2>
+<ul>
+<li>RAM: geschrieben = gelesen (passiv)</li>
+<li>MMIO: lebendig und flüchtig (volatile)</li>
+<li>Schalter-Register ändert sich durch externe Physik — ohne <code>sw</code> der CPU</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb7-1"><a aria-label="1"></a>RAM: Tresor — ändert sich nur, wenn ICH schreibe.</span>
+<span id="cb7-2"><a aria-label="2"></a>I/O: Fenster — die Welt draußen ändert sich ständig.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Zwei aufeinanderfolgende <code>lw</code> können verschiedene Werte liefern.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="caching-gefahren-bei-io" class="slide level2">
+<h2>Caching-Gefahren bei I/O</h2>
+<ul>
+<li>Zwei getrennte Gefahren:
+<ul>
+<li>Compiler: ohne <code>volatile</code> eliminiert <code>-O3</code> wiederholte Loads</li>
+<li>Hardware-Cache: MMIO muss in der Memory Map non-cacheable sein</li>
+</ul></li>
+<li>Bug: Knopfdruck wird nie bemerkt</li>
+<li>In Assembler: jedes <code>lw</code> in der Schleife ist ein Bus-Zugriff</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb8-1"><a aria-label="1"></a><span class="co">/* gefährlich ohne volatile: */</span></span>
+<span id="cb8-2"><a aria-label="2"></a><span class="dt">int</span> <span class="op">*</span>button <span class="op">=</span> <span class="op">(</span><span class="dt">int</span> <span class="op">*)</span><span class="bn">0xF0000000</span><span class="op">;</span></span>
+<span id="cb8-3"><a aria-label="3"></a><span class="cf">while</span> <span class="op">(*</span>button <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span> <span class="op">}</span></span>
+<span id="cb8-4"><a aria-label="4"></a></span>
+<span id="cb8-5"><a aria-label="5"></a><span class="co">/* Rettung (Compiler): */</span></span>
+<span id="cb8-6"><a aria-label="6"></a><span class="dt">volatile</span> <span class="dt">int</span> <span class="op">*</span>button <span class="op">=</span> <span class="op">(</span><span class="dt">volatile</span> <span class="dt">int</span> <span class="op">*)</span><span class="bn">0xF0000000</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p><code>volatile</code> zwingt den Compiler zu echten Loads. Separat: SoC/Page-Attribute müssen MMIO als non-cacheable markieren, sonst liefert der Cache veraltete Werte.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="io-module-in-ripes-vorschau" class="slide level2">
+<h2>I/O-Module in Ripes (Vorschau)</h2>
+<ul>
+<li>Eigener I/O-Tab: virtuelle Boards einstecken</li>
+<li>D-Pad, Switches, LED-Matrizen</li>
+<li>Ripes emuliert den MMIO-Decoder</li>
+<li>Mausklick auf Schalter → Bit im gespiegelten Adressraum</li>
+</ul>
+<aside class="notes">
+<p>Graue Registerzahlen verlassen: Hardware-Komponenten visuell verdrahten.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-memory-map-setup" class="slide level2">
+<h2>Das Memory-Map-Setup</h2>
+<ul>
+<li>Vor dem Code: Base Address der Peripherie ablesen (z. B. <code>0xF0000000</code>)</li>
+<li>Falsche Adresse: Schreiben landet im normalen RAM</li>
+<li>Profi-Praxis: Konstanten / BSP-Header</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb9-1"><a aria-label="1"></a><span class="pp">#define LED_BASE    </span><span class="bn">0xF0000020</span></span>
+<span id="cb9-2"><a aria-label="2"></a><span class="pp">#define SWITCH_BASE </span><span class="bn">0xF0000000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>In Ripes die Basisadresse der Komponente prüfen — sonst Heap statt LED.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="feedback-loop-das-echo" class="slide level2">
+<h2>Feedback-Loop (Das Echo)</h2>
+<ul>
+<li>Hello World der Hardware: Schalter spiegelt LED</li>
+<li>Endlosschleife: <code>lw</code> Schalter, <code>sw</code> LED, Jump</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb10-1"><a aria-label="1"></a>li s1<span class="op">,</span> <span class="bn">0xF0000000</span>   <span class="op">#</span> Schalter</span>
+<span id="cb10-2"><a aria-label="2"></a>li s2<span class="op">,</span> <span class="bn">0xF0000020</span>   <span class="op">#</span> LED</span>
+<span id="cb10-3"><a aria-label="3"></a></span>
+<span id="cb10-4"><a aria-label="4"></a><span class="fu">Loop:</span></span>
+<span id="cb10-5"><a aria-label="5"></a>    lw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
+<span id="cb10-6"><a aria-label="6"></a>    sw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s2<span class="op">)</span></span>
+<span id="cb10-7"><a aria-label="7"></a>    j Loop</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>CPU als intelligentes Übertragungskabel: Load, Store, Jump.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="entprellung-debouncing" class="slide level2">
+<h2>Entprellung (Debouncing)</h2>
+<ul>
+<li>Mechanische Taster prellen (Bouncing)</li>
+<li>Millisekunden Chaos 1/0, bevor stabil 1</li>
+<li>Pipeline fragt milliardenfach ab</li>
+<li>Ein menschlicher Klick wird als Dutzende Klicks gezählt</li>
+</ul>
+<aside class="notes">
+<p>Counter-Variablen explodieren ohne Entprellung.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="software-debouncing" class="slide level2">
+<h2>Software-Debouncing</h2>
+<ul>
+<li>Erste 1 erkannt: Druck erkannt</li>
+<li>~20 ms Signal ignorieren (Kontakte beruhigen)</li>
+<li>Delay-Loop: Takte absichtlich verbrennen</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb11-1"><a aria-label="1"></a>li t1<span class="op">,</span> <span class="dv">10000</span></span>
+<span id="cb11-2"><a aria-label="2"></a><span class="fu">Delay:</span></span>
+<span id="cb11-3"><a aria-label="3"></a>    addi t1<span class="op">,</span> t1<span class="op">,</span> <span class="op">-</span><span class="dv">1</span></span>
+<span id="cb11-4"><a aria-label="4"></a>    bne t1<span class="op">,</span> zero<span class="op">,</span> Delay</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Software-Debouncing: nach der ersten Flanke warten, dann sauber weiterlesen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="polling-vs.-interrupts" class="title-slide slide level1 center">
+<h1>Polling vs.&nbsp;Interrupts</h1>
+
+</section>
+<section id="aktives-warten-vs.-aufwecken" class="slide level2">
+<h2>Aktives Warten vs.&nbsp;Aufwecken</h2>
+<ul>
+<li>Ineffizienz im Echo-Design: Busy Waiting</li>
+<li>Polling: Endlosschleife fragt ab</li>
+<li>Interrupt: Hardware weckt die CPU (Türklingel)</li>
+<li>Ausnahmen (Exceptions) vs.&nbsp;Interrupts</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  A[Warten] --&gt;|Strom| B[Polling]
+  C[CPU bereit] --&gt;|Hardware weckt| D[Interrupt]
+  style D fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Phase 3 beginnt: Polling verschwendet Energie. Als Nächstes das Interrupt-System moderner Computer.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-problem-des-wartens" class="slide level2">
+<h2>Das Problem des Wartens</h2>
+<ul>
+<li>Pipeline-CPU z. B. bei 4 GHz: 4 Milliarden Takte pro Sekunde</li>
+<li>Mensch: vielleicht alle 2 Sekunden ein Tastendruck</li>
+<li>Zwischen zwei Klicks: etwa 8 Milliarden Taktzyklen</li>
+<li>Frage: Was tut das Programm in der Zwischenzeit?</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb12-1"><a aria-label="1"></a>Ein Mensch ist für einen Prozessor unvorstellbar langsam.</span>
+<span id="cb12-2"><a aria-label="2"></a>Wartet die CPU auf uns, vergehen für sie "Jahrzehnte".</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Hardwarewelt blitzschnell, physische Welt im Vergleich im Koma. Ein Tastendruck ist für die CPU ein Ereignis alle paar “Jahrhunderte”. Was macht der Prozessor in den Milliarden Zyklen dazwischen?</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="polling-busy-waiting" class="slide level2">
+<h2>Polling (Busy Waiting)</h2>
+<ul>
+<li>Naive Lösung: Polling (Abfragen) / Busy Waiting</li>
+<li>Metapher: Kind auf dem Rücksitz — “Sind wir schon da?”</li>
+<li>“Sind wir schon da?” <span class="math inline">\(\rightarrow\)</span> Nein … Nein … Ja!</li>
+<li>CPU fragt in einer Endlosschleife das MMIO-Register ab, bis Bit = 1</li>
+</ul>
+<aside class="notes">
+<p>Geschäftiges Warten: ununterbrochen Load, Prüfen, Branch. Das klassische “Sind wir schon da?”-Syndrom.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="polling-in-assembler" class="slide level2">
+<h2>Polling in Assembler</h2>
+<ul>
+<li>Wie das Echo-Programm: Wait-Schleife, solange Register = 0</li>
+<li>Erst wenn die Hardware Bit 1 setzt, läuft nützlicher Code weiter</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb13-1"><a aria-label="1"></a>li s1<span class="op">,</span> <span class="bn">0xF0000000</span>       <span class="op">#</span> Schalter<span class="op">-</span>Adresse</span>
+<span id="cb13-2"><a aria-label="2"></a></span>
+<span id="cb13-3"><a aria-label="3"></a><span class="fu">Wait:</span></span>
+<span id="cb13-4"><a aria-label="4"></a>    lw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span>        <span class="op">#</span> MMIO<span class="op">-</span>Read</span>
+<span id="cb13-5"><a aria-label="5"></a>    beq t0<span class="op">,</span> zero<span class="op">,</span> Wait  <span class="op">#</span> noch <span class="dv">0</span><span class="op">?</span> sofort wieder</span>
+<span id="cb13-6"><a aria-label="6"></a></span>
+<span id="cb13-7"><a aria-label="7"></a>    # Knopf wurde gedrückt — weiter mit Nutzcode</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Load und Branch milliardenfach: sinnlose Abfragen, während der Mensch überlegt.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-nachteile-von-polling" class="slide level2">
+<h2>Die Nachteile von Polling</h2>
+<ul>
+<li>Energieverschwendung: CPU unter Volllast, Hitze, leerer Akku</li>
+<li>Keine Nebenläufigkeit: Browser, Audio, UI blockiert</li>
+<li>In der Praxis nur noch Nischen (z. B. Ultra-Low-Latency)</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[Polling aktiv] --&gt;|CPU 100%| B[Stromverbrauch]
+  A --&gt;|blockiert| C[kein Multitasking]
+  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Polling saugt den Akku leer und tötet Multitasking. Für moderne Systeme architektonisch tödlich.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-hardware-lösung-die-türklingel" class="slide level2">
+<h2>Die Hardware-Lösung: Die Türklingel</h2>
+<ul>
+<li>Paket erwarten: nicht stündlich an der Klinke rütteln (Polling)</li>
+<li>Stattdessen: Türklingel einbauen</li>
+<li>Normales Leben weiterführen; erst beim Klingeln reagieren</li>
+<li>Rolle umkehren: Peripherie meldet sich, wenn Daten da sind</li>
+</ul>
+<aside class="notes">
+<p>Aktiv warten vs.&nbsp;Ereignis-getrieben: CPU widmet sich nützlicher Arbeit, bis das Gerät signalisiert.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="einführung-von-interrupts" class="slide level2">
+<h2>Einführung von Interrupts</h2>
+<ul>
+<li>Türklingel-Prinzip = Interrupt (Unterbrechung)</li>
+<li>Spezielle Pins verbinden Peripherie mit der CPU</li>
+<li>Tastendruck: Stromimpuls auf den Interrupt-Pin</li>
+<li>CPU speichert Kontext, springt zur ISR, kehrt danach zurück</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  CPU[CPU rechnet nützlich]
+  HW[Tastatur] --&gt;|Interrupt-Puls| CPU
+  style HW fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style CPU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Rückgrat moderner Betriebssysteme: asynchrones Aufwecken statt Busy Waiting.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-ablauf-eines-interrupts" class="slide level2">
+<h2>Der Ablauf eines Interrupts</h2>
+<ul>
+<li>Main-Programm läuft (z. B. Berechnung / Player)</li>
+<li>Interrupt-Signal trifft den CPU-Pin</li>
+<li>Hardware unterbricht; PC springt zur ISR</li>
+<li>ISR verarbeitet die Eingabe</li>
+<li><code>mret</code>: Rückkehr ins Main-Programm</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  M1[Main] --&gt; ISR[ISR]
+  ISR --&gt; M2[Main weiter]
+  style ISR fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style M1 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style M2 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Zeitstrahl: Spiel läuft, Leertaste feuert Interrupt, ISR puffert den Event, <code>mret</code> setzt unsichtbar fort.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="exceptions-vs.-interrupts" class="slide level2">
+<h2>Exceptions vs.&nbsp;Interrupts</h2>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th></th>
+<th>Exceptions</th>
+<th>Interrupts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Quelle</td>
+<td>CPU-intern</td>
+<td>Hardware-extern</td>
+</tr>
+<tr class="even">
+<td>Auslöser</td>
+<td>aktueller Befehl</td>
+<td>unabhängig vom Code</td>
+</tr>
+<tr class="odd">
+<td>Timing</td>
+<td>synchron</td>
+<td>asynchron</td>
+</tr>
+<tr class="even">
+<td>Beispiel</td>
+<td>Illegal Instr., Access Fault</td>
+<td>Timer, Tastendruck</td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>Interrupts von außen und asynchron; Exceptions von innen und synchron am fehlerhaften Befehl. Beide unterbrechen — Ursachen verschieden.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="exceptions-im-detail" class="slide level2">
+<h2>Exceptions im Detail</h2>
+<ul>
+<li>Illegal Instruction: Decoder kennt den Opcode nicht</li>
+<li>Access Fault: <code>lw</code>/<code>sw</code> auf gesperrte/ungültige Adresse (ohne MMU)</li>
+<li>Page Fault: nur mit virtuellem Speicher (Paging)</li>
+<li>Hinweis: Integer-Div/0 trappt in RISC-V nicht (anders als x86)</li>
+<li>OS beendet oft mit Segmentation Fault</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb14-1"><a aria-label="1"></a><span class="dt">int</span> <span class="op">*</span>ptr <span class="op">=</span> NULL<span class="op">;</span></span>
+<span id="cb14-2"><a aria-label="2"></a><span class="dt">int</span> crash <span class="op">=</span> <span class="op">*</span>ptr<span class="op">;</span>   <span class="co">/* typisch: Access Fault */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Nullpointer: Memory-Unit alarmiert. Bei RISC-V Integer-Division durch 0 entsteht kein Trap (Quotient = all-1s).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-regenschirm-begriff-traps" class="slide level2">
+<h2>Der Regenschirm-Begriff: Traps</h2>
+<ul>
+<li>Exceptions und Interrupts teilen denselben Rettungsablauf</li>
+<li>RISC-V-Dachbegriff: Trap (Falle)</li>
+<li>Trap = Unterbrechung des Kontrollflusses ohne Branch/Jump</li>
+<li>“Trap ausgelöst” = Notfall-Ablauf gestartet</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[Trap] --&gt; B[Interrupts extern]
+  A --&gt; C[Exceptions intern]
+  B --&gt; D[Timer / Keyboard]
+  C --&gt; E[Access Fault / ecall]
+  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>In der RISC-V-Spezifikation: Trap = jedes erzwungene Verlassen des normalen Programmflusses Richtung OS/Handler.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="was-passiert-bei-einem-trap" class="slide level2">
+<h2>Was passiert bei einem Trap?</h2>
+<ol type="1">
+<li>Rettungsanker: aktuellen PC merken (Rückkehr)</li>
+<li>Pipeline flushen: IF/ID hinter dem Ereignis löschen</li>
+<li>Sprung: PC auf feste Handler-Adresse setzen (ISR)</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb15-1"><a aria-label="1"></a>Ein Trap ist ein erzwungener Hardware-Sprung</span>
+<span id="cb15-2"><a aria-label="2"></a>an eine vom Betriebssystem vorbereitete Adresse.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Drei Hardware-Schritte: PC sichern, Pipeline säubern, PC auf Rettungscode setzen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-gefahr-des-clobberings" class="slide level2">
+<h2>Die Gefahr des Clobberings</h2>
+<ul>
+<li>ISR ist normaler Assembler und nutzt <code>t0</code>, <code>s1</code>, <code>a0</code>, …</li>
+<li>Trap kommt ohne Vorwarnung mittendrin</li>
+<li>Die ABI gilt weiter — aber es gibt keinen Caller, der Temporaries rettet</li>
+<li>Deshalb: Handler muss jedes genutzte Register selbst sichern</li>
+</ul>
+<aside class="notes">
+<p>Kein Caller bei asynchronen Interrupts: ungesicherte Temporaries zerstören den Kontext. Lösung: Kontextsicherung und CSRs.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="das-csr-system" class="title-slide slide level1 center">
+<h1>Das CSR-System</h1>
+
+</section>
+<section id="schattenregister-für-die-notaufnahme" class="slide level2">
+<h2>Schattenregister für die Notaufnahme</h2>
+<ul>
+<li>Zustand retten, ohne User-Register zu zerstören</li>
+<li><code>x0</code>–<code>x31</code> sind durch Anwendercode belegt</li>
+<li>Privilegienstufen (Ring-Sicherheit)</li>
+<li>CSRs: unsichtbarer Speicherplatz im Chip</li>
+<li>Befehle <code>csrr</code>, <code>csrw</code> und der ISR-Ablauf</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  User[Anwender-Code] --&gt;|x0-x31| XReg[Integer-Register]
+  OS[Betriebssystem] --&gt;|voller Zugriff| CSR[CSR-Hardware]
+  style CSR fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style User fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style XReg fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style OS fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Phase 4: Geheim-Tresor in der CPU, den der User nicht sieht — Fundament sicherer OS-Handler.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-beschränkung-von-rv32i" class="slide level2">
+<h2>Die Beschränkung von RV32I</h2>
+<ul>
+<li>RV32I: genau 32 Integer-Register — vom Compiler ausgereizt</li>
+<li>OS braucht Platz für Timer, Trap-Ursache, Puffer — oft vor sicherem Stack-Zugriff</li>
+<li>Teufelskreis: Stack-Sicherung braucht <code>sp</code> — dem User-<code>sp</code> darf man nicht trauen</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb16-1"><a aria-label="1"></a>Schatten-Register: vertrauenswürdig und nicht manipulierbar.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Handler darf User-Registern nicht vertrauen. Deshalb separate, sichere Hardware-Register.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-csrs-control-status-registers" class="slide level2">
+<h2>Die CSRs (Control &amp; Status Registers)</h2>
+<ul>
+<li>Extension Zicsr: separater Adressraum, bis zu 4096 CSRs</li>
+<li>Kein RAM/MMIO — Flip-Flop-Bänke im Kern</li>
+<li>Namen z. B. <code>mstatus</code>, <code>mtvec</code>, <code>mcause</code></li>
+<li>Normale Befehle (<code>add</code>, <code>lw</code>) greifen nicht zu</li>
+</ul>
+<aside class="notes">
+<p>CSRs sind für User-Code unsichtbar und abgekapselt.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="privilegienstufen-privilege-levels" class="slide level2">
+<h2>Privilegienstufen (Privilege Levels)</h2>
+<ul>
+<li>Machine Mode (M): höchste Rechte, Boot; voller CSR-Zugriff (Firmware)</li>
+<li>Supervisor Mode (S): großes OS (Linux); viele CSRs (z. B. Paging)</li>
+<li>User Mode (U): Apps im Käfig; CSR-Zugriff <span class="math inline">\(\rightarrow\)</span> Trap</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  M[M-Mode höchste Rechte] --&gt; S[S-Mode Kernel]
+  S --&gt; U[U-Mode Apps]
+  style M fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style S fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style U fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Boot mit höchsten Privilegien, dann Herabstufung. Hardware verriegelt CSR-Türen im User Mode.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="csr-befehle-zicsr" class="slide level2">
+<h2>CSR-Befehle (Zicsr)</h2>
+<ul>
+<li><code>csrr rd, csr</code>: CSR <span class="math inline">\(\rightarrow\)</span> normales x-Register</li>
+<li><code>csrw csr, rs1</code>: x-Register <span class="math inline">\(\rightarrow\)</span> CSR</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb17-1"><a aria-label="1"></a>csrr t0<span class="op">,</span> mstatus     <span class="op">#</span> Status nach t0</span>
+<span id="cb17-2"><a aria-label="2"></a>li t1<span class="op">,</span> <span class="dv">8</span>             <span class="op">#</span> Maske<span class="op">:</span> Bit MIE</span>
+<span id="cb17-3"><a aria-label="3"></a>csrrs x0<span class="op">,</span> mstatus<span class="op">,</span> t1  <span class="op">#</span> nur Bits setzen <span class="op">(OR)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Brücke zwischen Schattenwelt und Integer-Registerbank. <code>csrw</code> überschreibt das ganze Register — Bits setzen mit <code>csrrs</code>.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="atomare-csr-befehle" class="slide level2">
+<h2>Atomare CSR-Befehle</h2>
+<ul>
+<li>Gefahr: Interrupt zwischen <code>csrr</code> und <code>csrw</code> (Race Condition)</li>
+<li>Lösung: <code>csrrw</code> — Read und Write in einer Instruktion (atomar)</li>
+<li>Software-seitig ununterbrechbar (eine Instruktion)</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb18-1"><a aria-label="1"></a>li t1<span class="op">,</span> <span class="bn">0x1</span></span>
+<span id="cb18-2"><a aria-label="2"></a>csrrw t0<span class="op">,</span> mstatus<span class="op">,</span> t1  <span class="op">#</span> t0 <span class="op">=</span> alt<span class="co">; mstatus = t1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Atomarer Austausch verhindert verlorene Bits zwischen Read und Write.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="csr-mtvec-trap-vector" class="slide level2">
+<h2>CSR: mtvec (Trap-Vector)</h2>
+<ul>
+<li>Vier Kern-CSRs für Trap-Handling</li>
+<li><code>mtvec</code>: Basisadresse der ISR</li>
+<li>Bei Trap: Hardware kopiert <code>mtvec</code> in den PC</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb19-1"><a aria-label="1"></a>Boot des OS:</span>
+<span id="cb19-2"><a aria-label="2"></a>  la t0, MeineRettungsRoutine</span>
+<span id="cb19-3"><a aria-label="3"></a>  csrw mtvec, t0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Zentrale Notaufnahme-Adresse: Hardware springt blind dorthin.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="csr-mepc-exception-pc" class="slide level2">
+<h2>CSR: mepc (Exception PC)</h2>
+<ul>
+<li>Wo wurde der User-Code unterbrochen?</li>
+<li>Hardware kopiert den unterbrochenen PC automatisch nach <code>mepc</code></li>
+<li>Bei synchronen Exceptions/<code>ecall</code>: <code>mepc</code> zeigt auf den auslösenden Befehl</li>
+<li>Handler muss typischerweise <code>mepc = mepc + 4</code> setzen, sonst Endlosschleife</li>
+</ul>
+<aside class="notes">
+<p><code>mepc</code> = Rückflugticket. Ohne +4 kehrt <code>mret</code> zum selben <code>ecall</code> zurück. Simulatoren wie Venus erledigen das intern.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="csr-mcause-cause" class="slide level2">
+<h2>CSR: mcause (Cause)</h2>
+<ul>
+<li>Warum aufgeweckt? Tastendruck, Access Fault, Syscall?</li>
+<li>Hardware schreibt Fehler-/Ursachencode nach <code>mcause</code></li>
+<li>MSB = 1: Interrupt; MSB = 0: Exception (zuerst prüfen)</li>
+<li>Beispiele: 2 = Illegal Instruction; 8 = Environment Call (U-Mode)</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb20-1"><a aria-label="1"></a>csrr t0<span class="op">,</span> mcause</span>
+<span id="cb20-2"><a aria-label="2"></a>li t1<span class="op">,</span> <span class="dv">8</span></span>
+<span id="cb20-3"><a aria-label="3"></a>beq t0<span class="op">,</span> t1<span class="op">,</span> Syscall   <span class="op">#</span> nach Interrupt<span class="op">-</span>Bit<span class="op">-</span>Check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Erste Handlung der ISR: Interrupt-Bit und Exception-Code lesen, dann abzweigen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="csr-mstatus-status" class="slide level2">
+<h2>CSR: mstatus (Status)</h2>
+<ul>
+<li>Herz der Kontrolle; u. a. Bit MIE (Machine Interrupt Enable)</li>
+<li>MIE = 1: Interrupts wahrnehmen; MIE = 0: taub</li>
+<li>Beim Trap: Hardware setzt MIE automatisch auf 0 (kein Nesting)</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  ON[MIE = 1 an] --&gt;|Trap| OFF[MIE = 0 taub]
+  OFF --&gt;|mret| ON2[MIE &lt;- MPIE]
+  style OFF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style ON fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style ON2 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Hauptschalter der Ohren: Notaufnahme darf nicht durch einen zweiten Interrupt zerrissen werden.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-trap-handler-isr" class="slide level2">
+<h2>Der Trap-Handler (ISR)</h2>
+<ul>
+<li>Schritt 1: Kontextsicherung aller genutzten x-Register</li>
+<li>Echter Kernel: zuerst <code>sp</code> mit <code>mscratch</code> tauschen (User-<code>sp</code> ist unsicher)</li>
+<li>Unten: vereinfachte Lehr-Sequenz (Stack bereits gültig angenommen)</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb21-1"><a aria-label="1"></a><span class="fu">Trap_Handler:</span></span>
+<span id="cb21-2"><a aria-label="2"></a>    # real<span class="op">:</span> csrrw <span class="kw">sp</span><span class="op">,</span> mscratch<span class="op">,</span> <span class="kw">sp</span></span>
+<span id="cb21-3"><a aria-label="3"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
+<span id="cb21-4"><a aria-label="4"></a>    sw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb21-5"><a aria-label="5"></a>    sw t1<span class="op">,</span> <span class="dv">4</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb21-6"><a aria-label="6"></a>    sw a0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Produktionssysteme tauschen auf den Kernel-Stack. Die Kurzform dient nur der Lesbarkeit.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="kontext-sicherung-und-arbeit" class="slide level2">
+<h2>Kontext-Sicherung und Arbeit</h2>
+<ul>
+<li>Schritt 2: <code>mcause</code> lesen, Treiber, eigentliche Aufgabe</li>
+<li>Schritt 3: Register spiegelverkehrt wiederherstellen</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb22-1"><a aria-label="1"></a>    csrr a0<span class="op">,</span> mcause</span>
+<span id="cb22-2"><a aria-label="2"></a>    <span class="cf">call</span> Lese_Tastatur</span>
+<span id="cb22-3"><a aria-label="3"></a></span>
+<span id="cb22-4"><a aria-label="4"></a>    lw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb22-5"><a aria-label="5"></a>    lw t1<span class="op">,</span> <span class="dv">4</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb22-6"><a aria-label="6"></a>    lw a0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb22-7"><a aria-label="7"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Nach Sicherung freie Bahn; danach Zustand exakt wie vor dem Interrupt.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-rückkehr-mret" class="slide level2">
+<h2>Die Rückkehr (mret)</h2>
+<ul>
+<li>Nicht <code>ret</code> — in <code>ra</code> steht nichts Brauchbares</li>
+<li>Zieladresse liegt in <code>mepc</code></li>
+<li><code>mret</code> (Machine Return) atomar:
+<ul>
+<li><code>mepc</code> <span class="math inline">\(\rightarrow\)</span> PC</li>
+<li>MIE wird aus MPIE wiederhergestellt (oft wieder 1)</li>
+<li>Privilegien zurück (oft U-Mode)</li>
+</ul></li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb23-1"><a aria-label="1"></a>    mret    <span class="op">#</span> zurück ins User<span class="op">-</span>Programm</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Bei Trap: MPIE &lt;- MIE, MIE &lt;- 0. Bei <code>mret</code>: MIE &lt;- MPIE, plus Rücksprung und Ring-Herabstufung.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="zusammenfassung-trap-ablauf" class="slide level2">
+<h2>Zusammenfassung Trap-Ablauf</h2>
+<ul>
+<li>Lebenszyklus jedes Multitasking-OS</li>
+<li>Ein Kern: scheinbar viele Programme + I/O ohne Absturz</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  A[User App] --&gt;|Interrupt| B[PC nach mepc]
+  B --&gt; C[Sprung mtvec]
+  C --&gt; D[Kontext sichern]
+  D --&gt; E[Treiber / Arbeit]
+  E --&gt; F[Kontext laden]
+  F --&gt;|mret| G[User App weiter]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style G fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style F fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Hardware fängt Signale und steuert CSRs; Kernel sichert Kontext und arbeitet. Timer-Interrupts verteilen Rechenzeit.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="syscalls-das-betriebssystem" class="title-slide slide level1 center">
+<h1>Syscalls &amp; Das Betriebssystem</h1>
+
+</section>
+<section id="absichtliche-traps-und-der-pförtner" class="slide level2">
+<h2>Absichtliche Traps und der Pförtner</h2>
+<ul>
+<li>Software kann absichtlich einen Trap auslösen</li>
+<li>Mauer zwischen User und Hardware</li>
+<li>OS als Pförtner</li>
+<li>Befehl <code>ecall</code> und ABI-Verträge</li>
+<li>Labor: Text auf die Venus-Konsole</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  User[C-Programm U-Mode] --&gt;|ecall| OS[Kernel]
+  OS --&gt;|MMIO| HW[Monitor / SSD]
+  style OS fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style User fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style HW fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Phase 5 beginnt: System Calls als Brücke vom User Mode in den privilegierten Kernel.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="software-traps" class="slide level2">
+<h2>Software-Traps</h2>
+<ul>
+<li>Hardware kann die CPU per Interrupt unterbrechen</li>
+<li>Kann ein User-Programm absichtlich einen Trap auslösen?</li>
+<li>Ja: wenn C-/Assembler-Code die Hilfe des OS braucht</li>
+<li>Absichtliche Software-Traps = System Calls (Syscalls)</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb24-1"><a aria-label="1"></a>Ein Syscall ist wie ein roter Notfallknopf.</span>
+<span id="cb24-2"><a aria-label="2"></a>Das Programm drückt ihn, friert sich ein und ruft das OS zu Hilfe.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Hardware-Interrupts sind nur die halbe Miete. User-Mode-Programme dürfen Monitor oder SSD nicht direkt anfassen — sie bitten das OS über Software-Traps um Hilfe.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="warum-wir-das-os-brauchen" class="slide level2">
+<h2>Warum wir das OS brauchen</h2>
+<ul>
+<li>Warum nicht einfach <code>sw</code> direkt auf den Monitor?</li>
+<li>Sicherheit: freier MMIO-Zugriff könnte die Platte zerstören; User-Mode sperrt MMIO hardwareseitig</li>
+<li>Abstraktion: tausende Monitore/Treiber — das OS kapselt Hardware in einer universellen Schnittstelle</li>
+</ul>
+<aside class="notes">
+<p>Betriebssysteme existieren wegen Sicherheit und Bequemlichkeit: <code>print</code> statt Grafikkarten-Handbuch.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-pförtner-das-betriebssystem" class="slide level2">
+<h2>Der Pförtner (Das Betriebssystem)</h2>
+<ul>
+<li>OS im privilegierten Ring (S- oder M-Mode)</li>
+<li>Verwaltet Hardware exklusiv</li>
+<li>Agiert als Pförtner / Torwächter</li>
+<li>Drucken = Formular ausfüllen, an die Kernel-Tür klopfen</li>
+<li>Diese Formulare sind System Calls</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  User[User App] --&gt;|Bitte drucken| OS[OS Kernel]
+  OS --&gt;|geprüft erledigt| HW[Hardware / Monitor]
+  style OS fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style User fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style HW fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Türsteher vor der Hardware: Zettel (Syscall) prüfen, Treiber anstoßen, Kontrolle zurückgeben.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-befehl-ecall" class="slide level2">
+<h2>Der Befehl ecall</h2>
+<ul>
+<li>RISC-V-Klopfen an die Kernel-Tür: <code>ecall</code> (Environment Call)</li>
+<li>Keine Operanden — steht nackt im Code</li>
+<li>Decoder liest <code>ecall</code> <span class="math inline">\(\rightarrow\)</span> sofort Trap-Handler</li>
+<li>Hardware-erzwungener Kontextwechsel</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb25-1"><a aria-label="1"></a>ecall    <span class="op">#</span> aus U<span class="op">-</span>Mode in den Kernel</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Instruction Decoder erkennt <code>ecall</code>, löst absichtlich einen Trap aus: PC nach <code>mtvec</code>, Kernel erwacht.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="system-calls-die-api-des-os" class="slide level2">
+<h2>System Calls (Die API des OS)</h2>
+<ul>
+<li>Hunderte Dienste: Datei, Netz, Zeit, Text drucken, …</li>
+<li>Diese Liste = System Call API</li>
+<li>Frage nach <code>ecall</code>: Welcher Service?</li>
+<li>Antwort: Vertrag erfüllen — die Syscall-ABI</li>
+</ul>
+<aside class="notes">
+<p>Restaurant mit Speisekarte: Klingel (<code>ecall</code>) reicht nicht — Gericht muss vorher kommuniziert sein.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-syscall-abi-venus-vs.-linux" class="slide level2">
+<h2>Die Syscall-ABI (Venus vs.&nbsp;Linux)</h2>
+<ul>
+<li>Vor <code>ecall</code> muss eine Service-ID gesetzt werden — Registerkonvention ist ABI-abhängig</li>
+<li>Venus (Labor): ID in <code>a0</code>, Argumente in <code>a1</code>, <code>a2</code>, …</li>
+<li>Linux / RARS: ID in <code>a7</code>, Argumente in <code>a0</code>, <code>a1</code>, …</li>
+<li>Im Praktikum: Venus-Konvention verwenden</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb26-1"><a aria-label="1"></a>Venus:  a0 = Service-ID,  a1 = Argument</span>
+<span id="cb26-2"><a aria-label="2"></a>Linux:  a7 = Service-ID,  a0 = Argument</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Venus folgt der SPIM/MARS-Tradition (ID in a0). Echte RISC-V-Linux-Systeme und RARS nutzen a7. Verwechslung ist die häufigste Laborfalle.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="code-beispiel-print-integer-venus" class="slide level2">
+<h2>Code-Beispiel: Print Integer (Venus)</h2>
+<ul>
+<li>Service 1 in <code>a0</code>, Zahl 42 in <code>a1</code>, dann <code>ecall</code></li>
+<li>Venus kehrt danach zur nächsten Instruktion zurück (Handler intern)</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb27-1"><a aria-label="1"></a>li a0<span class="op">,</span> <span class="dv">1</span>        <span class="op">#</span> Venus<span class="op">:</span> Service Print Integer</span>
+<span id="cb27-2"><a aria-label="2"></a>li a1<span class="op">,</span> <span class="dv">42</span>       <span class="op">#</span> Argument</span>
+<span id="cb27-3"><a aria-label="3"></a>ecall</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Drei Zeilen unter Venus-ABI. Bare-Metal-Handler müssten zuvor <code>mepc += 4</code> setzen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="code-beispiel-exit-program-venus" class="slide level2">
+<h2>Code-Beispiel: Exit Program (Venus)</h2>
+<ul>
+<li>Endlosschleife am Code-Ende ist unsauber</li>
+<li>Service 10 = Exit; keine Argumente; keine Rückkehr</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb28-1"><a aria-label="1"></a>li a0<span class="op">,</span> <span class="dv">10</span>       <span class="op">#</span> Venus<span class="op">:</span> Exit</span>
+<span id="cb28-2"><a aria-label="2"></a>ecall</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Professioneller Stil: nach dem Algorithmus Exit statt Endlosschleife.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="was-macht-ecall-unter-der-haube" class="slide level2">
+<h2>Was macht ecall unter der Haube?</h2>
+<ul>
+<li>Decoder liest <code>ecall</code> <span class="math inline">\(\rightarrow\)</span> Hardware schaltet:
+<ul>
+<li>PC des <code>ecall</code> <span class="math inline">\(\rightarrow\)</span> <code>mepc</code></li>
+<li><code>mcause</code> = 8 (Environment Call from U-Mode)</li>
+<li>PC <span class="math inline">\(\rightarrow\)</span> Adresse in <code>mtvec</code></li>
+</ul></li>
+<li>Handler: Ursache 8 <span class="math inline">\(\rightarrow\)</span> Syscall; Service-ID laut ABI lesen; oft <code>mepc += 4</code></li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  ecall --&gt;|Trap| mcause[mcause = 8]
+  mcause --&gt; Handler[Trap Handler]
+  Handler --&gt;|Service-ID| Service[Syscall]
+  style mcause fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style ecall fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style Handler fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style Service fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Dieselbe Notaufnahme wie beim Hardware-Interrupt; Code 8 = absichtlicher User-Anruf. Venus verbirgt <code>mepc+4</code> und die Service-Auswertung.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-betriebssystem-modell" class="slide level2">
+<h2>Das Betriebssystem-Modell</h2>
+<ul>
+<li>Schichten-Modell: Abstraktion schützt vor harter Physik</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph TD
+  App[User-App] --&gt;|ecall| API[Syscall API]
+  API --&gt; OS[OS Kernel / Trap Handler]
+  OS --&gt;|MMIO lw/sw| HW[Hardware Register/LEDs]
+  style App fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style HW fill:#FFFFFF,stroke:#86868B,stroke-width:2px !important
+  style API fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style OS fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>App → Syscall-Vertrag → Kernel → nackte Hardware. Im Berufsleben trifft man oft alle Schichten.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="praxis-ripes-venus" class="title-slide slide level1 center">
+<h1>Praxis: Ripes &amp; Venus</h1>
+
+</section>
+<section id="dualer-laboreinsatz" class="slide level2">
+<h2>Dualer Laboreinsatz</h2>
+<ul>
+<li>Wechsel von Theorie zum Labor</li>
+<li>Ripes vs.&nbsp;Venus: unterschiedliche Zwecke</li>
+<li>Ripes: virtuelle MMIO-Hardware (LEDs)</li>
+<li>Venus: Konsole über <code>ecall</code></li>
+<li>Typische I/O-Bugs und Clobbering-Warnung</li>
+</ul>
+<aside class="notes">
+<p>Theorie von Einheit 8 abgeschlossen: Bare-Metal und OS-Aufrufe mit beiden Werkzeugen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="tool-zweck-im-labor" class="slide level2">
+<h2>Tool-Zweck im Labor</h2>
+<ul>
+<li>Zwei Welten: nackte Hardware (MMIO) vs.&nbsp;Abstraktion (Syscalls)</li>
+<li>Ripes: Hardware-Simulator, Bare-Metal mit <code>lw</code>/<code>sw</code> auf MMIO</li>
+<li>Venus: OS-Simulator, fängt <code>ecall</code> ab und simuliert Konsole</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb29-1"><a aria-label="1"></a>Ripes  → Schalter-LED-Labor (Bare-Metal)</span>
+<span id="cb29-2"><a aria-label="2"></a>Venus  → Print-/EVA-Labor mit `.data` (Syscalls)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Ripes = Physik ohne Linux; Venus = Kernel-Simulation mit Konsole.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="ripes-io-tab-setup" class="slide level2">
+<h2>Ripes I/O-Tab Setup</h2>
+<ul>
+<li>Reiter I/O in Ripes öffnen</li>
+<li>Plus: Switches und LED Matrix hinzufügen</li>
+<li>Ripes verdrahtet virtuell und vergibt MMIO-Adressen</li>
+</ul>
+<aside class="notes">
+<p>Steckbrett-Simulation inkl. Adress-Decoder.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="ripes-mmio-adressen-prüfen" class="slide level2">
+<h2>Ripes: MMIO-Adressen prüfen</h2>
+<ul>
+<li>Bauteil anklicken <span class="math inline">\(\rightarrow\)</span> Konfiguration unten links</li>
+<li>Base Address zwingend ablesen</li>
+<li>Typisch: Switches <code>0xF0000000</code>, LEDs <code>0xF0000020</code></li>
+<li>Diese Adressen in Register laden für <code>lw</code>/<code>sw</code></li>
+</ul>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Gerät</th>
+<th>Typ</th>
+<th>Typische Adresse</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Switches</td>
+<td>Input (Bit-Map)</td>
+<td><code>0xF0000000</code></td>
+</tr>
+<tr class="even">
+<td>LED Matrix</td>
+<td>Output (Wort-Array)</td>
+<td><code>0xF0000020</code></td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>Ohne Hausnummer ist der Code blind; Basisadresse oft in <code>s</code>-Register.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="labor-aufgabe-1-ripes" class="slide level2">
+<h2>Labor-Aufgabe 1 (Ripes)</h2>
+<ul>
+<li>Hello Hardware: Endlosschleife liest Switches</li>
+<li>Mit <code>and</code>-Maske prüfen: Schalter 3 an?</li>
+<li>Ja: erste LED rot (<code>0x00FF0000</code>); nein: schwarz (<code>0x00000000</code>)</li>
+<li>Offset der ersten LED: <code>0(Base)</code></li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb30-1"><a aria-label="1"></a>li s1<span class="op">,</span> <span class="bn">0xF0000000</span>      <span class="op">#</span> Switches</span>
+<span id="cb30-2"><a aria-label="2"></a>li s2<span class="op">,</span> <span class="bn">0xF0000020</span>      <span class="op">#</span> LED<span class="op">-</span>Matrix</span>
+<span id="cb30-3"><a aria-label="3"></a><span class="fu">Loop:</span></span>
+<span id="cb30-4"><a aria-label="4"></a>  lw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
+<span id="cb30-5"><a aria-label="5"></a>  andi t1<span class="op">,</span> t0<span class="op">,</span> <span class="dv">8</span>       <span class="op">#</span> Maske Bit <span class="dv">3</span></span>
+<span id="cb30-6"><a aria-label="6"></a>  beq t1<span class="op">,</span> zero<span class="op">,</span> Off</span>
+<span id="cb30-7"><a aria-label="7"></a>  li t2<span class="op">,</span> <span class="bn">0x00FF0000</span>    <span class="op">#</span> Rot</span>
+<span id="cb30-8"><a aria-label="8"></a>  j Store</span>
+<span id="cb30-9"><a aria-label="9"></a><span class="fu">Off:</span></span>
+<span id="cb30-10"><a aria-label="10"></a>  li t2<span class="op">,</span> <span class="dv">0</span></span>
+<span id="cb30-11"><a aria-label="11"></a><span class="fu">Store:</span></span>
+<span id="cb30-12"><a aria-label="12"></a>  sw t2<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s2<span class="op">)</span></span>
+<span id="cb30-13"><a aria-label="13"></a>  j Loop</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Einheit 3 (Bits) + Einheit 8 (I/O): nicht nur „ungleich 0“, sondern exakt Schalter 3 maskieren.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="labor-aufgabe-2-ripes" class="slide level2">
+<h2>Labor-Aufgabe 2 (Ripes)</h2>
+<ul>
+<li>Lauflicht (Knight-Rider): grüne LED wandert links <span class="math inline">\(\rightarrow\)</span> rechts</li>
+<li>Offset-Pointer startet bei 0; Delay-Loop für Sichtbarkeit</li>
+<li>Pointer += 4 für nächstes LED-Wort; am Ende zurücksetzen</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb31-1"><a aria-label="1"></a># Lauflicht im I<span class="op">/</span>O<span class="op">-</span>Tab beobachten</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Jede LED = 32 Bit; Pointer um 4 Bytes erhöhen, sonst unsichtbar schnell.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="wechsel-zu-venus-os-simulation" class="slide level2">
+<h2>Wechsel zu Venus (OS-Simulation)</h2>
+<ul>
+<li>Ripes schließen, Venus öffnen; Konsole unten</li>
+<li>Venus fängt <code>ecall</code> ab, wertet Service-ID in <code>a0</code> aus, schreibt in die Konsole</li>
+<li>Keine harten MMIO-Adressen — Arbeit an das OS delegieren</li>
+</ul>
+<aside class="notes">
+<p>Paradigmenwechsel: vom Bare-Metal-Bus zur Syscall-API (Venus-ABI!).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-venus-syscall-tabelle" class="slide level2">
+<h2>Die Venus Syscall-Tabelle</h2>
+<ul>
+<li>Essenzielle Services für das Labor (ID immer in <code>a0</code>):</li>
+</ul>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th><code>a0</code> (ID)</th>
+<th>Name</th>
+<th>Argumente</th>
+<th>Resultat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Print Integer</td>
+<td><code>a1</code> = Zahl</td>
+<td>Zahl auf Konsole</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Print String</td>
+<td><code>a1</code> = Adresse</td>
+<td>Text auf Konsole</td>
+</tr>
+<tr class="odd">
+<td>10</td>
+<td>Exit</td>
+<td>keine</td>
+<td>Programm endet</td>
+</tr>
+</tbody>
+</table>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb32-1"><a aria-label="1"></a>Hinweis: Venus hat keinen interaktiven Read-Int (anders als RARS).</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Labor nutzt Print und Exit. Interaktive Eingabe gehört nicht zum Standard-Venus.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="labor-aufgabe-3-venus" class="slide level2">
+<h2>Labor-Aufgabe 3 (Venus)</h2>
+<ul>
+<li>Hello World: <code>.data</code> mit <code>.string "Hello World!\n"</code></li>
+<li><code>la a1, …</code> — Startadresse; <code>li a0, 4</code>; <code>ecall</code></li>
+<li>Sauber beenden: <code>li a0, 10</code> / <code>ecall</code></li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb33-1"><a aria-label="1"></a>la a1<span class="op">,</span> msg</span>
+<span id="cb33-2"><a aria-label="2"></a>li a0<span class="op">,</span> <span class="dv">4</span></span>
+<span id="cb33-3"><a aria-label="3"></a>ecall</span>
+<span id="cb33-4"><a aria-label="4"></a>li a0<span class="op">,</span> <span class="dv">10</span></span>
+<span id="cb33-5"><a aria-label="5"></a>ecall</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>String-Adresse in a1, Service-ID 4 in a0 — Venus-ABI.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="labor-aufgabe-4-venus" class="slide level2">
+<h2>Labor-Aufgabe 4 (Venus)</h2>
+<ul>
+<li>EVA ohne Tastatur: Wert in <code>.data</code> (z. B. <code>n: .word 21</code>)</li>
+<li>Laden, verdoppeln (Shift oder <code>add</code>), per Service 1 drucken</li>
+<li>Optional: Prompt-String per Service 4 vorher ausgeben</li>
+<li>Mit Service 10 beenden</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb34-1"><a aria-label="1"></a>lw t0<span class="op">,</span> n</span>
+<span id="cb34-2"><a aria-label="2"></a>slli a1<span class="op">,</span> t0<span class="op">,</span> <span class="dv">1</span>   <span class="op">#</span> <span class="op">*</span><span class="dv">2</span></span>
+<span id="cb34-3"><a aria-label="3"></a>li a0<span class="op">,</span> <span class="dv">1</span></span>
+<span id="cb34-4"><a aria-label="4"></a>ecall</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>EVA-Prinzip über Syscalls; Input kommt aus <code>.data</code>, nicht von der Konsole.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="debugging-io-best-practices" class="slide level2">
+<h2>Debugging I/O (Best Practices)</h2>
+<ul>
+<li>Ripes LED schwarz?
+<ul>
+<li>Basisadresse korrekt?</li>
+<li>Memory-Tab bei <code>0xF0…</code>: Farbmuster sichtbar?</li>
+<li>Im RAM, aber dunkel: Refresh; nicht im RAM: <code>sw</code>/Adresse prüfen</li>
+</ul></li>
+<li>Venus stürzt bei <code>ecall</code>?
+<ul>
+<li>ID in <code>a0</code>, Argument in <code>a1</code> (nicht a7/a0 wie bei Linux/RARS)</li>
+<li>String: Adresse mit <code>la</code> in <code>a1</code>; Integer: Wert in <code>a1</code></li>
+</ul></li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb35-1"><a aria-label="1"></a>Simulator als Spion: Register vor ecall prüfen.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Memory-Tab verrät, ob <code>sw</code> traf; Venus: ID in <code>a0</code>, Payload in <code>a1</code>.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="clobbering-bei-ecall-warnung" class="slide level2">
+<h2>Clobbering bei ecall (Warnung)</h2>
+<ul>
+<li><code>ecall</code> = ABI-Funktionsaufruf in den Kernel</li>
+<li>Laut ABI darf der Kernel Caller-Saved (<code>t0</code>–<code>t6</code>, <code>a0</code>–<code>a7</code>) zerstören</li>
+<li>Venus erhält <code>t</code>-Register faktisch oft — das ist nicht garantiert und nicht portabel</li>
+<li>Schleifenzähler in <code>t0</code> + Print in der Schleife: auf anderen Systemen riskant</li>
+<li>Lösung: vor <code>ecall</code> auf Stack sichern oder <code>s0</code>–<code>s11</code> nutzen</li>
+</ul>
+<aside class="notes">
+<p>Klassische Falle: Venus wirkt „nett“ zu <code>t</code>-Registern, die ABI erlaubt aber Clobbering. Portabler Code hält Zähler in <code>s</code>-Registern bzw. sichert vor dem Syscall.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="zusammenfassung-einheit-8" class="slide level2">
+<h2>Zusammenfassung Einheit 8</h2>
+<ul>
+<li>MMIO: Hardware als RAM-Adresse — ohne Sonderbefehle</li>
+<li>Flüchtigkeit: MMIO ändert sich von selbst (Caching-Gefahr)</li>
+<li>Polling vs.&nbsp;Interrupts: Busy Waiting vs.&nbsp;Türklingel</li>
+<li>CSR-System: sichere Trap-Register (<code>mcause</code>, <code>mepc</code>, …)</li>
+<li>Syscalls (<code>ecall</code>): Brücke vom User-Mode zum Kernel</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb36-1"><a aria-label="1"></a>Von Transistoren bis zum Betriebssystem:</span>
+<span id="cb36-2"><a aria-label="2"></a>das Ökosystem der Computerarchitektur ist durchdrungen.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Isolation durchbrochen: Bare-Metal-I/O und der Tanz CPU ↔︎ OS.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="qa-und-hands-on" class="slide level2">
+<h2>Q&amp;A und Hands-On</h2>
+<ul>
+<li>Ripes oder Venus je nach Aufgabe öffnen</li>
+<li>Syscall-Tabelle als Referenz</li>
+<li>Arrays: Pointer +4 pro Wort; Strings: Null-Byte beachten</li>
+<li>Viel Erfolg beim Bau der Brücke zur Außenwelt</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+
+graph LR
+  Theorie[I/O verstanden] --&gt; Labor[Ripes und Venus]
+  Labor --&gt; Analyse[LEDs und Konsole]
+  Analyse --&gt; Win[Hardware Hacker]
+  style Win fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Theorie fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style Labor fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+  style Analyse fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Letzte Hands-On-Phase: Lauflicht in Ripes, EVA-Syscalls in Venus. Viel Erfolg!</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+
+
+</section></section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<p><img src="../assets/dhbw_logo.svg" class="slide-logo"></p>
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="../site_libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="../site_libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="../site_libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="../site_libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="../site_libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="../site_libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="../site_libs/revealjs/plugin/search/search.js"></script>
+  <script src="../site_libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="../site_libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': true,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'none',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1280,
+
+        height: 720,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 8.0e-2,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script>
+    /**
+     * Fit Quarto/Reveal Mermaid SVGs to remaining slide space.
+     * Dimensions from getBoundingClientRect are viewport pixels; CSS sizes inside
+     * Reveal slides are unscaled — divide by Reveal.getScale().
+     */
+    (function () {
+      const BOTTOM_PAD = 36;
+      const SIDE_PAD_RATIO = 0.92;
+      const MAX_SCALE = 3.4;
+
+      function presentSlide() {
+        var present = document.querySelector("section.present");
+        if (!present) return null;
+        var nested = present.querySelector(":scope > section.present");
+        return nested || present;
+      }
+
+      function revealScale() {
+        if (window.Reveal && typeof Reveal.getScale === "function") {
+          var s = Reveal.getScale();
+          return s > 0.05 ? s : 1;
+        }
+        return 1;
+      }
+
+      function ensureWrap(svg) {
+        var parent = svg.parentElement;
+        if (!parent) return null;
+        if (parent.classList.contains("mermaid-fit")) return parent;
+        var wrap = document.createElement("div");
+        wrap.className = "mermaid-fit";
+        parent.insertBefore(wrap, svg);
+        wrap.appendChild(svg);
+        return wrap;
+      }
+
+      function contentBottomAbove(slide, wrap) {
+        var top = slide.getBoundingClientRect().top;
+        var bottom = top + 8;
+        var children = slide.children;
+        for (var i = 0; i < children.length; i++) {
+          var el = children[i];
+          if (el === wrap || el.classList.contains("mermaid-fit")) break;
+          if (el.querySelector && el.querySelector("svg.mermaid-js")) break;
+          if (el.tagName === "ASIDE") continue;
+          var r = el.getBoundingClientRect();
+          if (r.height > 1) bottom = Math.max(bottom, r.bottom);
+        }
+        return bottom;
+      }
+
+      function naturalSize(svg) {
+        if (svg.dataset.natW && svg.dataset.natH) {
+          return { w: +svg.dataset.natW, h: +svg.dataset.natH };
+        }
+        var vb = svg.viewBox && svg.viewBox.baseVal;
+        if (vb && vb.width > 0 && vb.height > 0) {
+          svg.dataset.natW = String(vb.width);
+          svg.dataset.natH = String(vb.height);
+          return { w: vb.width, h: vb.height };
+        }
+        var wAttr = parseFloat(svg.getAttribute("width"));
+        var hAttr = parseFloat(svg.getAttribute("height"));
+        if (wAttr > 0 && hAttr > 0) {
+          svg.dataset.natW = String(wAttr);
+          svg.dataset.natH = String(hAttr);
+          return { w: wAttr, h: hAttr };
+        }
+        var r = svg.getBoundingClientRect();
+        var rs = revealScale();
+        var w = r.width / rs || 320;
+        var h = r.height / rs || 120;
+        svg.dataset.natW = String(w);
+        svg.dataset.natH = String(h);
+        return { w: w, h: h };
+      }
+
+      function fitMermaids() {
+        var slide = presentSlide();
+        if (!slide) return;
+
+        var rs = revealScale();
+        var slideRect = slide.getBoundingClientRect();
+        var svgs = slide.querySelectorAll("svg.mermaid-js");
+
+        for (var i = 0; i < svgs.length; i++) {
+          var svg = svgs[i];
+          var wrap = ensureWrap(svg);
+          if (!wrap) continue;
+
+          svg.style.removeProperty("transform");
+          svg.style.removeProperty("max-width");
+          svg.style.removeProperty("zoom");
+          wrap.style.zoom = "";
+
+          var nat = naturalSize(svg);
+          var above = contentBottomAbove(slide, wrap);
+          var availW = (slideRect.width * SIDE_PAD_RATIO) / rs;
+          var availH = Math.max(72, (slideRect.bottom - above - BOTTOM_PAD) / rs);
+
+          var scale = Math.min(availW / nat.w, availH / nat.h, MAX_SCALE);
+          if (!(scale > 0)) scale = 1;
+
+          var targetW = Math.max(1, Math.round(nat.w * scale));
+          var targetH = Math.max(1, Math.round(nat.h * scale));
+
+          svg.setAttribute("width", targetW);
+          svg.setAttribute("height", targetH);
+          svg.style.width = targetW + "px";
+          svg.style.height = targetH + "px";
+          svg.style.display = "block";
+          svg.style.margin = "0.35rem auto 0";
+        }
+      }
+
+      function scheduleFit() {
+        requestAnimationFrame(function () {
+          fitMermaids();
+          setTimeout(fitMermaids, 150);
+          setTimeout(fitMermaids, 500);
+          setTimeout(fitMermaids, 1100);
+        });
+      }
+
+      window.addEventListener("load", scheduleFit);
+
+      function bindReveal() {
+        if (!window.Reveal || !Reveal.on) return false;
+        Reveal.on("ready", scheduleFit);
+        Reveal.on("slidechanged", scheduleFit);
+        if (Reveal.isReady && Reveal.isReady()) scheduleFit();
+        return true;
+      }
+
+      if (!bindReveal()) {
+        window.addEventListener("load", function () {
+          var tries = 0;
+          var id = setInterval(function () {
+            if (bindReveal() || ++tries > 50) clearInterval(id);
+          }, 100);
+        });
+      }
+
+      window.mctMermaidFit = fitMermaids;
+    })();
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp("https:\/\/dantschi\.github\.io\/mct1\/");
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="260" viewBox="0 0 480 260" role="img">
+  <style>
+.gate { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .wire { fill: none; stroke: #86868B; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+  .bubble { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .lbl { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 500; }
+  .sym { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; }
+  .accent { stroke: #E2001A; }
+  .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; }
+  </style>
+  <text class="pin" x="40" y="54" text-anchor="end">A</text>
+  <text class="pin" x="40" y="104" text-anchor="end">B</text>
+  <path class="wire" d="M 50 50 L 140 50 L 140 54 L 220 54"/>
+  <path class="wire" d="M 140 50 L 140 174 L 220 174"/>
+  <path class="wire" d="M 50 100 L 170 100 L 170 82 L 220 82"/>
+  <path class="wire" d="M 170 100 L 170 202 L 220 202"/>
+  <rect class="gate accent" x="220" y="40" width="80" height="56" rx="4" ry="4"/>
+  <text class="sym" x="260.0" y="75.0" text-anchor="middle">=1</text>
+  <rect class="gate" x="220" y="160" width="80" height="56" rx="4" ry="4"/>
+  <text class="sym" x="260.0" y="195.0" text-anchor="middle">&amp;</text>
+  <path class="wire" d="M 300 68 L 380 68"/>
+  <path class="wire" d="M 372 63 L 380 68 L 372 73" fill="none"/>
+  <text class="pin" x="395" y="72" text-anchor="start">S</text>
+  <path class="wire" d="M 300 188 L 380 188"/>
+  <path class="wire" d="M 372 183 L 380 188 L 372 193" fill="none"/>
+  <text class="pin" x="395" y="192" text-anchor="start">Cout</text>
+
+</svg>

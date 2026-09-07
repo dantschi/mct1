@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520" role="img" aria-label="Single-Cycle-Datenpfad (vereinfacht)">
+  <title>Single-Cycle-Datenpfad (vereinfacht nach Harris/Patterson)</title>
+  <style>
+    .box { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+    .box-accent { fill: #FFFFFF; stroke: #E2001A; stroke-width: 2; }
+    .box-ctrl { fill: #FFFFFF; stroke: #86868B; stroke-width: 2; stroke-dasharray: 6 4; }
+    .wire { fill: none; stroke: #86868B; stroke-width: 1.5; stroke-linecap: square; stroke-linejoin: miter; }
+    .wire-ctrl { fill: none; stroke: #E2001A; stroke-width: 1.25; stroke-dasharray: 4 3; }
+    .lbl { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 13px; font-weight: 600; }
+    .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 11px; font-weight: 500; }
+    .cap { fill: #86868B; font-family: Inter, sans-serif; font-size: 11px; }
+  </style>
+
+  <!-- Control Unit -->
+  <rect class="box-ctrl" x="380" y="24" width="340" height="56" rx="4"/>
+  <text class="lbl" x="550" y="50" text-anchor="middle">Control Unit (Steuerwerk)</text>
+  <text class="cap" x="550" y="68" text-anchor="middle">Opcode -> ALUSrc, MemtoReg, PCSrc, RegWrite, &</text>
+
+  <!-- PCSrc MUX -->
+  <rect class="box-accent" x="36" y="200" width="70" height="70" rx="4"/>
+  <text class="lbl" x="71" y="232" text-anchor="middle">MUX</text>
+  <text class="pin" x="71" y="250" text-anchor="middle">PCSrc</text>
+
+  <!-- PC -->
+  <rect class="box" x="130" y="210" width="70" height="50" rx="4"/>
+  <text class="lbl" x="165" y="240" text-anchor="middle">PC</text>
+
+  <!-- +4 -->
+  <rect class="box" x="130" y="120" width="70" height="44" rx="4"/>
+  <text class="lbl" x="165" y="147" text-anchor="middle">+4</text>
+
+  <!-- Instruction Memory -->
+  <rect class="box" x="230" y="190" width="110" height="90" rx="4"/>
+  <text class="lbl" x="285" y="230" text-anchor="middle">Instr.</text>
+  <text class="lbl" x="285" y="248" text-anchor="middle">Memory</text>
+
+  <!-- Register File -->
+  <rect class="box" x="380" y="170" width="120" height="130" rx="4"/>
+  <text class="lbl" x="440" y="230" text-anchor="middle">Register</text>
+  <text class="lbl" x="440" y="248" text-anchor="middle">File</text>
+
+  <!-- ImmGen -->
+  <rect class="box" x="380" y="340" width="120" height="56" rx="4"/>
+  <text class="lbl" x="440" y="374" text-anchor="middle">ImmGen</text>
+
+  <!-- ALUSrc MUX -->
+  <rect class="box-accent" x="540" y="280" width="70" height="70" rx="4"/>
+  <text class="lbl" x="575" y="312" text-anchor="middle">MUX</text>
+  <text class="pin" x="575" y="330" text-anchor="middle">ALUSrc</text>
+
+  <!-- ALU -->
+  <rect class="box-accent" x="650" y="200" width="90" height="90" rx="4"/>
+  <text class="lbl" x="695" y="250" text-anchor="middle">ALU</text>
+
+  <!-- Data Memory -->
+  <rect class="box" x="780" y="190" width="110" height="100" rx="4"/>
+  <text class="lbl" x="835" y="235" text-anchor="middle">Data</text>
+  <text class="lbl" x="835" y="253" text-anchor="middle">Memory</text>
+
+  <!-- MemtoReg MUX -->
+  <rect class="box-accent" x="930" y="210" width="70" height="70" rx="4"/>
+  <text class="lbl" x="965" y="242" text-anchor="middle">MUX</text>
+  <text class="pin" x="965" y="260" text-anchor="middle">MemtoReg</text>
+
+  <!-- Branch adder -->
+  <rect class="box" x="650" y="100" width="90" height="50" rx="4"/>
+  <text class="lbl" x="695" y="130" text-anchor="middle">PC+Imm</text>
+
+  <!-- Wires: PCSrc out -> PC -->
+  <path class="wire" d="M 106 235 L 130 235"/>
+  <!-- PC -> Instr Mem -->
+  <path class="wire" d="M 200 235 L 230 235"/>
+  <!-- PC -> +4 -->
+  <path class="wire" d="M 165 210 L 165 164"/>
+  <!-- +4 -> PCSrc port0 -->
+  <path class="wire" d="M 130 142 L 56 142 L 56 215"/>
+  <!-- Branch target -> PCSrc port1 -->
+  <path class="wire" d="M 650 125 L 56 125 L 56 255"/>
+  <!-- Instr -> RegFile / ImmGen / Control -->
+  <path class="wire" d="M 340 235 L 380 235"/>
+  <path class="wire" d="M 360 235 L 360 368 L 380 368"/>
+  <path class="wire" d="M 285 190 L 285 52 L 380 52"/>
+  <!-- RD1 -> ALU -->
+  <path class="wire" d="M 500 200 L 620 200 L 620 230 L 650 230"/>
+  <!-- RD2 -> ALUSrc -->
+  <path class="wire" d="M 500 250 L 540 250 L 540 300 L 540 300"/>
+  <path class="wire" d="M 500 250 L 520 250 L 520 300 L 540 300"/>
+  <!-- ImmGen -> ALUSrc -->
+  <path class="wire" d="M 500 368 L 575 368 L 575 350"/>
+  <!-- ALUSrc -> ALU B -->
+  <path class="wire" d="M 610 315 L 630 315 L 630 260 L 650 260"/>
+  <!-- ALU -> Data Mem address -->
+  <path class="wire" d="M 740 245 L 780 245"/>
+  <!-- ALU -> MemtoReg -->
+  <path class="wire" d="M 740 220 L 910 220 L 910 230 L 930 230"/>
+  <!-- Data Mem read -> MemtoReg -->
+  <path class="wire" d="M 890 245 L 910 245 L 910 255 L 930 255"/>
+  <!-- RD2 bypass write data -->
+  <path class="wire" d="M 520 250 L 520 420 L 820 420 L 820 290"/>
+  <!-- MemtoReg writeback (schematic) -->
+  <path class="wire" d="M 1000 245 L 1040 245 L 1040 460 L 440 460 L 440 300"/>
+  <!-- PC -> Branch adder -->
+  <path class="wire" d="M 200 235 L 210 235 L 210 125 L 650 125"/>
+  <!-- Imm (shifted) to branch adder - from ImmGen -->
+  <path class="wire" d="M 440 340 L 440 320 L 620 320 L 620 150 L 650 150"/>
+
+  <!-- Control dashed lines (schematic) -->
+  <path class="wire-ctrl" d="M 450 80 L 71 80 L 71 200"/>
+  <path class="wire-ctrl" d="M 550 80 L 575 80 L 575 280"/>
+  <path class="wire-ctrl" d="M 650 80 L 965 80 L 965 210"/>
+
+  <text class="cap" x="550" y="500" text-anchor="middle">Vereinfachte Übersicht (ohne alle Bitbreiten/Flags)  in Ripes live nachvollziehbar</text>
+</svg>

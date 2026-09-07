@@ -1,0 +1,3625 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<link href="../assets/dhbw_logo.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-html/tabby.min.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.10.18">
+
+  <meta name="author" content="Prof.&nbsp;Dr.-Ing. Daniel Klünder">
+  <title>Mikrocomputertechnik 1</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="../site_libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="../site_libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; font-weight: bold; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../site_libs/revealjs/dist/theme/quarto-f355cf95444bdbe7a358cd689c441e6f.css">
+  <link href="../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="../site_libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="../site_libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="../site_libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+  <script src="../site_libs/quarto-diagram/mermaid.min.js"></script>
+  <script src="../site_libs/quarto-diagram/mermaid-init.js"></script>
+  <link href="../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">Mikrocomputertechnik 1</h1>
+  <p class="subtitle">Duale Hochschule Baden-Württemberg Stuttgart - Studiengang Elektro- und Informationstechnik</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+Prof.&nbsp;Dr.-Ing. Daniel Klünder
+</div>
+</div>
+</div>
+
+</section>
+<section>
+<section id="einleitung-und-grundlagen" class="title-slide slide level1 center">
+<h1>Einleitung und Grundlagen</h1>
+
+</section>
+<section id="modul-mikrocomputertechnik-1" class="slide level2">
+<h2>Modul: Mikrocomputertechnik 1</h2>
+<ul>
+<li>Studiengang: Elektro- und Informationstechnik</li>
+<li>Schwerpunkt: RISC-V Architektur und Hardware-nahe Programmierung</li>
+<li>Zielsetzung: Verständnis des Datenpfads von der Logik bis zur Software</li>
+</ul>
+<aside class="notes">
+<p>Herzlich willkommen zur Vorlesung Mikrocomputertechnik 1 (MCT 1). Wir vollziehen den Brückenschlag zwischen abstrakter Software und greifbarer Hardware: Sie lernen nicht nur, wie man programmiert, sondern was im Silizium passiert, wenn eine Instruktion ausgeführt wird. Ziel ist ein Verständnis eines modernen Mikroprozessors — am Beispiel der RISC-V-Architektur.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="agenda-für-den-kickoff" class="slide level2">
+<h2>Agenda für den Kickoff</h2>
+<ol type="1">
+<li>Orga &amp; Abstraktion</li>
+<li>Datenrepräsentation</li>
+<li>Kombinatorik &amp; ALU</li>
+<li>Zeit &amp; Sequenz</li>
+<li>Register File &amp; Speicher</li>
+</ol>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A[Daten] --&gt; B[ALU] --&gt; C[Takt] --&gt; D[RF] --&gt; E[Memory]
+  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Heute legen wir das Fundament: von Datenrepräsentation über kombinatorische Logik und ALU bis zu Takt, sequenziellen Speichern, Register File und der Anbindung an den RAM — die Bausteine des späteren RISC-V-Datenpfads.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="organisatorisches-spielregeln" class="slide level2">
+<h2>Organisatorisches &amp; Spielregeln</h2>
+<ul>
+<li>Klausur am Semesterende · Übungsblätter essenziell</li>
+</ul>
+<div class="columns">
+<div class="column" style="width:48%;">
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Block</th>
+<th style="text-align: center;">UE</th>
+<th style="text-align: left;">Themen</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;"><strong>Kickoff &amp; Datenrepräsentation</strong> · <strong>Logik-Refresher</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;"><strong>RISC-V Basis</strong> · <strong>Erster Code</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;"><strong>Speicher &amp; Kontrollfluss</strong> · <strong>Algorithmen</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;"><strong>Funktionen &amp; Stack</strong> · <strong>Unterprogramme</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;"><strong>Single-Cycle-Datenpfad</strong> · <strong>Unter der Haube</strong></td>
+</tr>
+</tbody>
+</table>
+</div><div class="column" style="width:48%;">
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Block</th>
+<th style="text-align: center;">UE</th>
+<th style="text-align: left;">Themen</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;"><strong>Steuerwerk</strong> · <strong>Signal-Analyse</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">7</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;"><strong>Performance &amp; Pipelining</strong> · <strong>Hazards live</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;"><strong>I/O &amp; System</strong> · <strong>Interaktion</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;"><strong>Wrap-Up (C-to-Assembly)</strong> · <strong>Finale</strong></td>
+</tr>
+</tbody>
+</table>
+</div></div>
+<aside class="notes">
+<p>Das Modul schließt mit einer schriftlichen Klausur ab — Theorie und Praxis. Neun Blöcke à Theorie und Praxis (insgesamt 36 UE; Block 9: 1+3). Wichtigster Rat: Mikrocomputertechnik lernt man nicht durch bloßes Zuhören. Nutzen Sie die Übungszeiten intensiv: Fehler einbauen, debuggen, Venus und Ripes ausreizen. Wer die Übungsblätter aktiv bearbeitet, hat in der Klausur einen klaren Vorteil.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="literatur" class="slide level2">
+<h2>Literatur</h2>
+<p><strong>Sarah L. Harris, David Money Harris</strong><br>
+<em>Digital Design and Computer Architecture — RISC-V Edition</em></p>
+<ul>
+<li>Konsequenter Bottom-Up-Aufbau (von der Logik zur Software)</li>
+<li>Begleitende Lektüre für tieferes Verständnis</li>
+<li>Vertiefung: Patterson / Hennessy — <em>Computer Organization and Design</em> (RISC-V)</li>
+</ul>
+<aside class="notes">
+<p>Harris &amp; Harris in der RISC-V-Edition ist unsere zentrale Referenz — didaktisch stark, vom Transistor bzw. von der Digitaltechnik bis zur Software. Wir orientieren uns an der Buchstruktur. Patterson/Hennessy eignet sich zur Vertiefung von Architektur und Performance.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-werkzeuge-im-praktikum" class="slide level2">
+<h2>Die Werkzeuge im Praktikum</h2>
+<div class="columns">
+<div class="column" style="width:46%;">
+<ul>
+<li>Venus: RISC-V-Assembler testen</li>
+<li>Ripes: Datenpfad / Pipeline</li>
+<li>GNU Toolchain: Assembler &amp; C</li>
+</ul>
+</div><div class="column" style="width:54%;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb1-1"><a aria-label="1"></a>1. Code in Venus</span>
+<span id="cb1-2"><a aria-label="2"></a>2. Debug im Terminal</span>
+<span id="cb1-3"><a aria-label="3"></a>3. Hex → Ripes</span>
+<span id="cb1-4"><a aria-label="4"></a>4. Datenpfad verfolgen</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></div>
+<aside class="notes">
+<p>Zwei Simulatoren im Labor: Venus für Assembler, Register und Software-Fokus. Ripes zeigt den hardwareseitigen Datenpfad — im Einzelschritt sehen Sie Multiplexer, ALU und Registerschreibungen. Die GNU Toolchain kommt bei Assembler- und C-Übungen dazu. In der Vorlesung nutzen wir die Tools, um Theorie sofort sichtbar zu machen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="warum-abstraktion" class="title-slide slide level1 center">
+<h1>2. Warum Abstraktion?</h1>
+
+</section>
+<section id="strukturierung-von-komplexität" class="slide level2">
+<h2>Strukturierung von Komplexität</h2>
+<ul>
+<li>Verstecken von irrelevanten Details</li>
+<li>Schaffung standardisierter Schnittstellen</li>
+<li>Ermöglichung von Arbeitsteilung</li>
+<li>Das Fundament der Informatik und der Rechnerarchitektur</li>
+</ul>
+<aside class="notes">
+<p>Erstes Kernkonzept: Abstraktion. Bevor wir uns in Bits und Gattern verlieren: Warum denken wir in Schichten, Modellen und Hierarchien? Ohne Abstraktion wären moderne IT-Systeme — Smartphone wie Rechenzentrum — unmöglich.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-komplexitätsproblem" class="slide level2">
+<h2>Das Komplexitätsproblem</h2>
+<ul>
+<li>Schiere Menge: moderne Prozessoren mit Milliarden Transistoren</li>
+<li>Dimension: Strukturen im Bereich weniger Nanometer</li>
+<li>Kognitive Limits: kein Mensch behält Milliarden Bauteile im Kopf</li>
+<li>Fehleranfälligkeit: ein falsch verbundener Transistor kann das System zerstören</li>
+</ul>
+<p>Herausforderung: Wie organisiert man die Entwicklung eines solchen Systems?</p>
+<aside class="notes">
+<p>Stellen Sie sich den Entwurf eines modernen SoCs vor: zig Milliarden Transistoren. Transistor für Transistor zu planen übersteigt jede kognitive Kapazität. Ein Designfehler kann Millionen Chips wertlos machen. Die Ingenieursfrage seit den 1970ern: Wie baut man Maschinen, deren Komplexität unsere eigene Kapazität weit übersteigt?</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-lösung-teile-und-herrsche" class="slide level2">
+<h2>Die Lösung: Teile und Herrsche</h2>
+<ul>
+<li>Divide and Conquer · Kapselung · klare Schnittstellen</li>
+<li>Hierarchien aus Sub-Modulen · Wiederverwendbarkeit</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A[System] --&gt; B[Modul]
+  B --&gt; C[Sub-Modul]
+  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Antwort auf extreme Komplexität: Divide and Conquer. Aus Transistoren ein Gatter — danach interessiert nur noch das Verhalten von außen. Aus Gattern ein Addierer — wieder kapseln. Strikte Schnittstellen ermöglichen parallele Arbeit: Das Addierer-Team muss das OS-Team nicht kennen. Das führt zur formellen Definition von Abstraktion.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="was-ist-abstraktion" class="slide level2">
+<h2>Was ist Abstraktion?</h2>
+<ul>
+<li>Irrelevante Details ausblenden · Fokus auf das Wesentliche</li>
+<li>Black Box: <em>was</em>, nicht zwingend <em>wie</em> · Verträge (API/ISA)</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  Input[Eingabe] --&gt; B[Black Box] --&gt; Output[Ausgabe]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style Input fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Output fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Abstraktion heißt bewusstes Weglassen. Beim Autofahren: Pedal drücken beschleunigt — Einspritzung und Zündung bleiben Black Box. In der Informatik ebenso: In Python eine Variable deklarieren, ohne Elektronen im Silizium zu verfolgen. Ohne Abstraktion gäbe es keine moderne Software. Achtung: Abstraktion entbindet nicht von Verantwortung — in MCT1 schauen wir gezielt <em>unter</em> die Haube.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-schichtenmodell-der-it" class="slide level2">
+<h2>Das Schichtenmodell der IT</h2>
+<ul>
+<li>Fokus MCT1: Digitaltechnik · Mikroarchitektur · ISA</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A[Physik] --&gt; B[Digital] --&gt; C[µArch] --&gt; D[ISA] --&gt; E[Software]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style D fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Das Schichtenmodell ordnet die Welt von der Physik bis zur App. Die meisten Ingenieurinnen und Ingenieure arbeiten nur auf ein bis zwei Ebenen. In MCT1 liegen wir bewusst „in der Mitte“: Digitaltechnik als Fundament, Mikroarchitektur als konkrete Hardware-Realisierung, Architektur/ISA als Vertrag zwischen Soft- und Hardware. Genau diese drei Schichten (hier hervorgehoben) bilden unseren roten Faden.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="datenrepräsentation" class="title-slide slide level1 center">
+<h1>3. Datenrepräsentation</h1>
+
+</section>
+<section id="datenrepräsentation-überblick" class="slide level2">
+<h2>Datenrepräsentation — Überblick</h2>
+<ul>
+<li>Von Pegeln zu logischen Werten</li>
+<li>Wortbreiten und Hexadezimal</li>
+<li>Zweierkomplement für die ALU</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph TD
+  A["Spannung 3.3V"] --&gt; B["Binär 1"]
+  B --&gt; C[Hexadezimal]
+  C --&gt; D[Assembler]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>In diesem Block: Datenrepräsentation. Komplexität kapseln wir durch Abstraktion — die Hardware kennt aber nur physikalische Zustände, meist Spannungspegel. Bevor wir einen Prozessor bauen oder RISC-V-Assembler schreiben, definieren wir, wie die Architektur diese Zustände als Daten interpretiert: Bündelung von Nullen und Einsen, lesbare Darstellung für Menschen, und wie die Hardware negative Zahlen auf Bitebene löst.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="alles-ist-eine-zahl" class="slide level2">
+<h2>Alles ist eine Zahl</h2>
+<div class="columns">
+<div class="column" style="width:46%;">
+<ul>
+<li>Nur Spannungszustände → Bits</li>
+<li>Text, Bild, Befehl: alles Zahlen</li>
+<li>Kontext entscheidet die Deutung</li>
+</ul>
+</div><div class="column" style="width:54%;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb2-1"><a aria-label="1"></a>01001000 … 01101111</span>
+<span id="cb2-2"><a aria-label="2"></a>Text? Zahlen? Instruktion?</span>
+<span id="cb2-3"><a aria-label="3"></a>→ Kontext!</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></div>
+<aside class="notes">
+<p>Für den Prozessor ist absolut alles eine Zahl. String, JPEG, ausführbarer Befehl — auf dem Datenbus nur Nullen und Einsen. Physikalisch gibt es keinen Unterschied zwischen Pixel und Instruktion; die Interpretation liegt bei Architektur und Software. Unsere Aufgabe: Schaltungen entwerfen, die diese Bitströme korrekt und schnell verarbeiten.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-bit-und-das-byte" class="slide level2">
+<h2>Das Bit und das Byte</h2>
+<ul>
+<li>Bit: kleinste Informationseinheit (Binary Digit, 0 oder 1)</li>
+<li>Nibble: genau 4 Bits (Halb-Byte)</li>
+<li>Byte: genau 8 Bits — kleinste adressierbare Speichereinheit</li>
+<li>Skalierung: Kilobyte (KB), Megabyte (MB), Gigabyte (GB)</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph TD
+  A[1 Byte] --&gt; B[Nibble High]
+  A --&gt; C[Nibble Low]
+  B --&gt; D[4 Bits]
+  C --&gt; E[4 Bits]
+  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Vokabeln fürs Semester: Bit, Byte (8 Bits) als Standard-Container des Speichers — kleinste abrufbare Menge aus dem RAM. Das Nibble (4 Bits) wirkt zunächst unwichtig, wird aber bei der Hex-Umrechnung zum zentralen Werkzeug.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-word-wortbreite" class="slide level2">
+<h2>Das Word (Wortbreite)</h2>
+<ul>
+<li>Word: natürliche Datenbreite einer Architektur</li>
+<li>Bits, die der Prozessor typischerweise in einem Schritt verarbeitet</li>
+<li>RISC-V RV32I: Wortbreite exakt 32 Bits</li>
+<li>Half-Word: 16 Bits (2 Bytes)</li>
+<li>Double-Word: 64 Bits (relevant für RV64)</li>
+</ul>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Byte 3</th>
+<th style="text-align: center;">Byte 2</th>
+<th style="text-align: center;">Byte 1</th>
+<th style="text-align: center;">Byte 0</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">8 Bit</td>
+<td style="text-align: center;">8 Bit</td>
+<td style="text-align: center;">8 Bit</td>
+<td style="text-align: center;">8 Bit</td>
+</tr>
+</tbody>
+</table>
+<p><span class="math inline">\(\rightarrow\)</span> zusammen <strong>1 Word = 32 Bit</strong></p>
+<aside class="notes">
+<p>Das Word klassifiziert den Prozessor: Breite der internen Busse und der ALU. Desktop-Chips oft 64 Bit; wir arbeiten mit RV32I — 32-Bit-Worte, 32-Bit-Register. Das Word ist das Standard-Datenpaket unserer Architektur.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-problem-mit-binärzahlen" class="slide level2">
+<h2>Das Problem mit Binärzahlen</h2>
+<div class="columns">
+<div class="column" style="width:42%;">
+<ul>
+<li>32 Bit schwer lesbar</li>
+<li>Ein Bit kippen → Absturz</li>
+</ul>
+</div><div class="column" style="width:58%;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb3-1"><a aria-label="1"></a>…0001010001…0110011</span>
+<span id="cb3-2"><a aria-label="2"></a>…0001010000…0110011</span>
+<span id="cb3-3"><a aria-label="3"></a>      ^</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></div>
+<aside class="notes">
+<p>Hardware liebt Binär (Strom an/aus). Menschen nicht: 32 Bits flimmern. Ein gekipptes Bit in der Mitte kann das Programm abstürzen lassen. Wir brauchen eine kompaktere Repräsentation mit gleichem Wert.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-lösung-das-hexadezimalsystem" class="slide level2">
+<h2>Die Lösung: Das Hexadezimalsystem</h2>
+<ul>
+<li>Basis 16 (statt 2 oder 10)</li>
+<li>16 Symbole: <code>0</code>–<code>9</code> und <code>A</code>–<code>F</code> (Werte 10–15)</li>
+<li>Extrem kompakte Schreibweise für lange Binärketten</li>
+<li>Basis 16 ist Zweierpotenz (<span class="math inline">\(2^4\)</span>) → einfache Umrechnung aus Binär</li>
+</ul>
+<aside class="notes">
+<p>Hexadezimal löst das Lesbarkeitsproblem. Nach 9 kommen A–F (10–15). Warum 16 und nicht Dezimal? Weil <span class="math inline">\(2^4\)</span> — die Umrechnung Binär ↔︎ Hex ist fast magisch einfach.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-magische-vierer-block-nibble" class="slide level2">
+<h2>Der magische Vierer-Block (Nibble)</h2>
+<ul>
+<li>4 Bits: genau <span class="math inline">\(2^4 = 16\)</span> Zustände</li>
+<li>1 Hex-Ziffer: ebenfalls 16 Zustände</li>
+<li><strong>1 Hex-Ziffer = exakt 4 Bits</strong> — ohne Modulo/Division</li>
+<li>32-Bit-Word: exakt 8 Hex-Ziffern (<span class="math inline">\(32 / 4 = 8\)</span>)</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb4-1"><a aria-label="1"></a>Binär     Hex      Dezimal</span>
+<span id="cb4-2"><a aria-label="2"></a>0000  =   0    =   0</span>
+<span id="cb4-3"><a aria-label="3"></a>0101  =   5    =   5</span>
+<span id="cb4-4"><a aria-label="4"></a>1010  =   A    =   10</span>
+<span id="cb4-5"><a aria-label="5"></a>1111  =   F    =   15</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Der Trick: Nibble und Hex-Ziffer haben dieselbe Kardinalität — 1-zu-1-Zuordnung. Statt Potenzen über das ganze Wort: jeden 4-Bit-Block durch eine Ziffer ersetzen. 32 Bit → 8 Zeichen, kompakt und präzise.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="mustererkennung-visuelle-umrechnung" class="slide level2">
+<h2>Mustererkennung: Visuelle Umrechnung</h2>
+<ol type="1">
+<li>Lange Binärkette nehmen</li>
+<li>Von rechts nach links in 4-Bit-Blöcke zerschneiden</li>
+<li>Jeden Block unabhängig übersetzen</li>
+<li>Hex-Ziffern wieder aneinanderfügen</li>
+</ol>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph TD
+  A["1101 1010 0011 1111"] --&gt; B["1101"]
+  A --&gt; C["1010"]
+  A --&gt; D["0011"]
+  A --&gt; E["1111"]
+  B --&gt; F[D]
+  C --&gt; G[A]
+  D --&gt; H[3]
+  E --&gt; I[F]
+  F --&gt; J["DA3F"]
+  G --&gt; J
+  H --&gt; J
+  I --&gt; J
+  style J fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Algorithmus: von rechts (LSB) in Vierergruppen; bei Bedarf links mit Nullen auffüllen. <code>1111</code> → F, <code>1010</code> → A. Nach wenigen Übungen lesen Sie Binär fließend als Hex.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="notation-und-präfixe-im-code" class="slide level2">
+<h2>Notation und Präfixe im Code</h2>
+<ul>
+<li>Ohne Präfix: fast immer Dezimal</li>
+<li>Präfix <code>0b</code>: Binär</li>
+<li>Präfix <code>0x</code>: Hexadezimal</li>
+<li>Gilt in C, C++, Java, Python und RISC-V-Assembler</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb5-1"><a aria-label="1"></a><span class="co">// Ein und derselbe Wert in drei Schreibweisen:</span></span>
+<span id="cb5-2"><a aria-label="2"></a><span class="dt">int</span> dezimal <span class="op">=</span> <span class="dv">42</span><span class="op">;</span></span>
+<span id="cb5-3"><a aria-label="3"></a><span class="dt">int</span> binaer  <span class="op">=</span> <span class="bn">0b101010</span><span class="op">;</span></span>
+<span id="cb5-4"><a aria-label="4"></a><span class="dt">int</span> hex     <span class="op">=</span> <span class="bn">0x2A</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Compiler und Assembler brauchen die Basis: <code>10</code> ist dezimal zehn, <code>0b10</code> ist zwei, <code>0x10</code> ist sechzehn. <code>0x</code> wird zur Standardnotation für Adressen und Bitmasken.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="interaktive-übung-konvertierung" class="slide level2">
+<h2>Interaktive Übung: Konvertierung</h2>
+<p>Ziel: Hex-Wert <code>0xCAFEBABE</code> in Binär</p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Hex</th>
+<th>Dezimal</th>
+<th>Binär</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>C</td>
+<td>12</td>
+<td><code>1100</code></td>
+</tr>
+<tr class="even">
+<td>A</td>
+<td>10</td>
+<td><code>1010</code></td>
+</tr>
+<tr class="odd">
+<td>F</td>
+<td>15</td>
+<td><code>1111</code></td>
+</tr>
+<tr class="even">
+<td>E</td>
+<td>14</td>
+<td><code>1110</code></td>
+</tr>
+<tr class="odd">
+<td>B</td>
+<td>11</td>
+<td><code>1011</code></td>
+</tr>
+</tbody>
+</table>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb6-1"><a aria-label="1"></a>Resultat: 0b 1100 1010 1111 1110 1011 1010 1011 1110</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>„Cafe Babe“ ist eine bekannte Magic Number (u. a. Java-Klassendateien). Hex → Binär geht blockweise im Kopf; Dezimal über <span class="math inline">\(2^{31}\)</span> wäre mühsam. Hex ist der natürliche Begleiter der Hardware-Entwicklung.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="negative-zahlen-in-der-hardware" class="title-slide slide level1 center">
+<h1>4. Negative Zahlen in der Hardware</h1>
+
+</section>
+<section id="negative-zahlen-überblick" class="slide level2">
+<h2>Negative Zahlen — Überblick</h2>
+<ul>
+<li>Kein Minus-Transistor · Sign-Magnitude vs.&nbsp;Zweierkomplement</li>
+<li>Fallstrick: Sign Extension</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A[+Zahl] --&gt; B[Algorithmus] --&gt; C[-Zahl]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Wie rechnet ein Computer? Er addiert. Subtraktion ist Addition einer negativen Zahl: <span class="math inline">\(5 - 3 = 5 + (-3)\)</span>. Es gibt keinen Minus-Transistor — nur 0 und 1. Wir brauchen eine Kodierung, mit der die Hardware negative Werte korrekt verarbeitet.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-vorzeichen-problem-der-hardware" class="slide level2">
+<h2>Das Vorzeichen-Problem der Hardware</h2>
+<ul>
+<li>Mathematik: Negativität durch Symbol (−)</li>
+<li>Hardware: nur Low/High</li>
+<li>Kein „Negativ-Transistor“</li>
+<li>Subtraktion soll über denselben Addierer (ALU) laufen</li>
+<li>Gesucht: binäre Kodierung, die Additionen mit negativen Operanden erlaubt</li>
+</ul>
+<aside class="notes">
+<p>Auf Papier reicht ein Querstrich. Auf dem Chip: 32 Bits im Register. Zwei getrennte Rechenwerke (Addierer + Subtrahierer) wären teuer und stromhungrig. Ziel: eine Additionsschaltung, die durch die richtige Bitkodierung auch Subtraktion leistet.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="ansatz-1-vorzeichen-betrag-sign-magnitude" class="slide level2">
+<h2>Ansatz 1: Vorzeichen &amp; Betrag (Sign-Magnitude)</h2>
+<ul>
+<li>Intuitivste, „menschliche“ Idee</li>
+<li>MSB (ganz links) als Vorzeichen-Flag</li>
+<li><code>0</code> → positiv, <code>1</code> → negativ</li>
+<li>Restliche Bits: absoluter Betrag</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A["1"] --&gt;|Vorzeichen: Minus| B["000 0101"]
+  B --&gt;|Betrag: 5| C["-5"]
+  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Frühzeit der Computer: MSB zweckentfremden als Plus/Minus-Schalter, Rest = Betrag. Sign-Magnitude ist leicht lesbar — führt in der Schaltungstechnik aber in die Sackgasse.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-0-und-die-0" class="slide level2">
+<h2>Die +0 und die −0</h2>
+<div class="columns">
+<div class="column" style="width:46%;">
+<ul>
+<li>Sign-Magnitude: <code>0000</code> = <span class="math inline">\(+0\)</span>, <code>1000</code> = <span class="math inline">\(-0\)</span></li>
+<li>Mathematik kennt nur eine Null</li>
+<li>Hardware-Vergleicher: <code>0000 ≠ 1000</code></li>
+<li>ALU-Schaltungsaufwand würde enorm steigen</li>
+</ul>
+</div><div class="column" style="width:54%;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb7-1"><a aria-label="1"></a><span class="dt">int</span> a <span class="op">=</span> <span class="op">+</span><span class="dv">0</span><span class="op">;</span> <span class="co">// 0000</span></span>
+<span id="cb7-2"><a aria-label="2"></a><span class="dt">int</span> b <span class="op">=</span> <span class="op">-</span><span class="dv">0</span><span class="op">;</span> <span class="co">// 1000</span></span>
+<span id="cb7-3"><a aria-label="3"></a></span>
+<span id="cb7-4"><a aria-label="4"></a><span class="cf">if</span> <span class="op">(</span>a <span class="op">==</span> b<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-5"><a aria-label="5"></a>    <span class="co">// würde bei Sign-Magnitude NIE laufen —</span></span>
+<span id="cb7-6"><a aria-label="6"></a>    <span class="co">// Bitmuster sind unterschiedlich!</span></span>
+<span id="cb7-7"><a aria-label="7"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></div>
+<aside class="notes">
+<p>Zwei Bitmuster für denselben Wert Null: <code>if (a == b)</code> vergleicht bitweise und scheitert. Zusatzschaltungen wären langsam und teuer — Sign-Magnitude ist damit ungeeignet.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="ansatz-2-das-zweierkomplement" class="slide level2">
+<h2>Ansatz 2: Das Zweierkomplement</h2>
+<ul>
+<li>Industriestandard für Signed Integers</li>
+<li>MSB erhält <strong>negatives</strong> mathematisches Gewicht</li>
+<li>Übrige Bits: klassische positive Gewichte</li>
+<li>Genau eine Darstellung der Null (<code>0000…</code>)</li>
+<li>Standard-Addierer bleiben unverändert nutzbar</li>
+</ul>
+<p><span class="math display">\[
+N = -x_{n-1} \cdot 2^{n-1} + \sum_{i=0}^{n-2} x_i \cdot 2^i
+\]</span></p>
+<aside class="notes">
+<p>Zweierkomplement: MSB zählt z. B. bei 8 Bit als <span class="math inline">\(-128\)</span>, nicht als Fahne. Nur eine Null. Vorteil: der Addierer addiert stur Bits — das Ergebnis stimmt durch den Kodierungstrick.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="bildung-des-zweierkomplements" class="slide level2">
+<h2>Bildung des Zweierkomplements</h2>
+<ol type="1">
+<li>Positive Zahl in Binär schreiben</li>
+<li>Jedes Bit invertieren (Einerkomplement / NOT)</li>
+<li>Exakt <span class="math inline">\(+1\)</span> addieren</li>
+<li>Übertrag über das MSB hinaus: ignorieren</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb8-1"><a aria-label="1"></a>1. Positiver Binärwert</span>
+<span id="cb8-2"><a aria-label="2"></a>2. Bits kippen (NOT)</span>
+<span id="cb8-3"><a aria-label="3"></a>3. +1 addieren</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Mechanischer Algorithmus, in Hardware leicht: invertieren, dann +1. Damit ist die Zahl negiert.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="rechenbeispiel-aus-5-wird-5" class="slide level2">
+<h2>Rechenbeispiel: Aus +5 wird −5</h2>
+<ul>
+<li>8 Bit: invertieren, dann <span class="math inline">\(+1\)</span> · MSB = 1 ⇒ negativ</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A["+5"] --&gt;|NOT| B[Einerkompl.] --&gt;|+1| C["-5"]
+  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Durchrechnen: +5 → invertieren → +1 → <code>1111 1011</code>. Das MSB wird automatisch 1 — die „Negativ-Erkennung“ bleibt praktisch erhalten.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-symmetrie-von-5-zu-5" class="slide level2">
+<h2>Die Symmetrie: Von −5 zu +5</h2>
+<ul>
+<li>Derselbe Algorithmus in beide Richtungen</li>
+<li><span class="math inline">\(-5\)</span>: <code>1111 1011</code> → invertieren → <code>0000 0100</code> → <span class="math inline">\(+1\)</span> → <code>0000 0101</code> (= <span class="math inline">\(+5\)</span>)</li>
+<li>Zweimal negieren führt zum Ursprung zurück</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb9-1"><a aria-label="1"></a>-(-5) = +5</span>
+<span id="cb9-2"><a aria-label="2"></a>Der Algorithmus kümmert sich nicht darum,</span>
+<span id="cb9-3"><a aria-label="3"></a>ob der Startwert positiv oder negativ war!</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Symmetrie: keine neuen Regeln für die Rückrichtung. Eine simple Schaltung reicht, um Vorzeichen zu drehen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-zahlenrad-und-der-überlauf-overflow" class="slide level2">
+<h2>Das Zahlenrad und der Überlauf (Overflow)</h2>
+<ul>
+<li>Register begrenzt (z. B. 8 Bit) — wie ein Kilometerzähler</li>
+<li>Unsigned: <span class="math inline">\(0\)</span> bis <span class="math inline">\(255\)</span></li>
+<li>Signed (Zweierkomplement): <span class="math inline">\(-128\)</span> bis <span class="math inline">\(+127\)</span></li>
+<li><span class="math inline">\(+127 + 1\)</span> → <code>1000 0000</code> (= <span class="math inline">\(-128\)</span>)</li>
+<li>Dieser Sprung heißt <strong>Overflow</strong></li>
+</ul>
+<aside class="notes">
+<p>Bei RV32I: 32-Bit-Register, harte Grenzen. Overflow: vom Maximalpositiven ins Extremnegative. Viele Architekturen setzen dafür Status-Flags; RV32I verzichtet auf ein Flag-Register — Overflow-Behandlung liegt in der Software.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="vorzeichenerweiterung-sign-extension" class="slide level2">
+<h2>Vorzeichenerweiterung (Sign Extension)</h2>
+<ul>
+<li>8-Bit → 32-Bit-Register: Vorzeichenbit nach links kopieren</li>
+<li>RISC-V: <code>lb</code> (Load Byte mit Sign Extension)</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A["8-Bit: -5"] --&gt; B["32-Bit: Sign Ext."]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Häufiger Laborfehler: <span class="math inline">\(-5\)</span> als 8 Bit laden und links mit Nullen auffüllen → MSB wird 0 → positive <span class="math inline">\(+251\)</span>. Richtig: Vorzeichenbit nach links kopieren (Sign Extension).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="speicherausrichtung-endianness" class="title-slide slide level1 center">
+<h1>5. Speicherausrichtung (Endianness)</h1>
+
+</section>
+<section id="speicherausrichtung-überblick" class="slide level2">
+<h2>Speicherausrichtung — Überblick</h2>
+<ul>
+<li>RAM als lineares Array von Bytes</li>
+<li>Adressen als „Hausnummern“</li>
+<li>Byte-Adressierbarkeit als Standard</li>
+<li>Big-Endian vs.&nbsp;Little-Endian</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph TD
+  A[CPU] --&gt;|0x00| B[RAM Byte]
+  A --&gt;|0x01| C[RAM Byte]
+  A --&gt;|0x02| D[RAM Byte]
+  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Daten liegen in Registern — müssen aber aus dem RAM geladen und zurückgeschrieben werden. Organisation und Byte-Reihenfolge: Endianness. In Venus schauen Sie oft direkt in den Speicher — dieses Modell brauchen Sie zum Debuggen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-speicher-als-lineares-array" class="slide level2">
+<h2>Der Speicher als lineares Array</h2>
+<ul>
+<li>Jede Zelle: exakt 1 Byte (8 Bits)</li>
+<li>Jede Zelle: eindeutige Adresse <span class="math inline">\(0, 1, 2, \ldots\)</span></li>
+<li>Byte-Adressierbarkeit</li>
+<li>RV32I: Adressen selbst 32 Bit → bis ca. 4 GB adressierbar</li>
+</ul>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Adresse</th>
+<th>Inhalt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0x00</code></td>
+<td>Byte (8 Bit)</td>
+</tr>
+<tr class="even">
+<td><code>0x01</code></td>
+<td>Byte (8 Bit)</td>
+</tr>
+<tr class="odd">
+<td><code>0x02</code></td>
+<td>Byte (8 Bit)</td>
+</tr>
+<tr class="even">
+<td><code>0x03</code></td>
+<td>Byte (8 Bit)</td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>Mentales Modell: endloses Regal, jedes Fach ein Byte. 32-Bit-Adressen → rund 4 Milliarden Hausnummern ≈ 4 GB — das klassische 32-Bit-Limit.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-platzproblem-im-speicher" class="slide level2">
+<h2>Das Platzproblem im Speicher</h2>
+<ul>
+<li>Register: 32-Bit-Word (4 Bytes), z. B. <code>0xDEADBEEF</code></li>
+<li>Speicherfach: nur 1 Byte</li>
+<li>Lösung: Word auf 4 aufeinanderfolgende Adressen aufteilen</li>
+<li>Streitfrage: Welches Byte kommt an die kleinste Adresse?</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb10-1"><a aria-label="1"></a>DE  (MSB)   AD   BE   EF  (LSB)</span>
+<span id="cb10-2"><a aria-label="2"></a></span>
+<span id="cb10-3"><a aria-label="3"></a>Wohin mit EF — Adresse 0x00 oder 0x03?</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>32-Bit-Word passt nicht in ein 8-Bit-Fach → vier aufeinanderfolgende Bytes. Reihenfolge: Kopf (DE) zuerst oder Schwanz (EF) zuerst?</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="big-endian-vs.-little-endian" class="slide level2">
+<h2>Big-Endian vs.&nbsp;Little-Endian</h2>
+<ul>
+<li>Big-Endian: MSB an die kleinste Adresse (wie von links nach rechts lesen)</li>
+<li>Little-Endian: LSB an die kleinste Adresse</li>
+<li>Name aus <em>Gullivers Reisen</em> (an welcher Seite das Ei aufschlagen?)</li>
+<li>Netzwerke oft Big-Endian; viele PCs Little-Endian</li>
+</ul>
+<aside class="notes">
+<p>Historischer „Glaubenskrieg“. Big-Endian: Speicher-Dump sieht aus wie die Zahl. Little-Endian: LSB zuerst. Die Namen sind ein Insider-Witz aus Gulliver:</p>
+<p>Die Begriffe Big-Endian und Little-Endian stammen aus Jonathan Swifts Satire Gulliver’s Travels (1726). In der Geschichte führen die Königreiche Lilliput und Blefuscu einen Krieg über die Frage, ob man ein gekochtes Ei vom kleinen Ende (Little-Endian) oder vom großen Ende (Big-Endian) aufbrechen soll.</p>
+<p>In der Informatik wurden diese Begriffe 1980 von Danny Cohen übernommen, um die Reihenfolge der Bytes in der digitalen Datenverarbeitung zu beschreiben:</p>
+<p>Big-Endian: Das bedeutendste Byte wird zuerst gespeichert. Little-Endian: Das unbedeutendste Byte wird zuerst gespeichert. Die Analogie dient als humorvolle Beschreibung für technische Unterschiede in der Byte-Reihenfolge, die keine fundamentale Überlegenheit einer Methode über die andere implizieren, sondern lediglich unterschiedliche Konventionen darstellen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="endianness-in-der-risc-v-architektur" class="slide level2">
+<h2>Endianness in der RISC-V Architektur</h2>
+<ul>
+<li>RISC-V (wie x86): <strong>Little-Endian</strong></li>
+<li><code>0xDEADBEEF</code> ab Adresse <code>0x00</code>:</li>
+</ul>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Adresse</th>
+<th>Byte</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0x00</code></td>
+<td><code>EF</code> (LSB)</td>
+</tr>
+<tr class="even">
+<td><code>0x01</code></td>
+<td><code>BE</code></td>
+</tr>
+<tr class="odd">
+<td><code>0x02</code></td>
+<td><code>AD</code></td>
+</tr>
+<tr class="even">
+<td><code>0x03</code></td>
+<td><code>DE</code> (MSB)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Ein Pointer auf ein Word zeigt auf das LSB!</li>
+</ul>
+<aside class="notes">
+<p>Im Labor: <code>DEADBEEF</code> erscheint im Speicher als <code>EF BE AD DE</code> — kein Simulatorfehler, sondern korrektes Little-Endian. MSB auf der höchsten Adresse. Damit sind Sie für den Speicherdump in Venus gerüstet.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="kombinatorische-logik" class="title-slide slide level1 center">
+<h1>6. Kombinatorische Logik</h1>
+
+</section>
+<section id="kombinatorische-logik-überblick" class="slide level2">
+<h2>Kombinatorische Logik — Überblick</h2>
+<ul>
+<li>Kein Gedächtnis: Ausgang nur von aktuellen Eingängen</li>
+<li>Fundament für ALU und Routing (MUX)</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A[A] --&gt; C[Logik] --&gt; Y[Y]
+  B[B] --&gt; C
+  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style Y fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Zweiter großer Block: Wir wissen, wie Daten als Bits kodiert werden — jetzt: durch welche Strukturen fließen sie? Kombinatorische Logik kennt kein Gedächtnis und keine Zeitachse: Der Ausgang hängt nur von den aktuellen Eingängen ab. Darauf bauen wir ALU und Routing-Infrastruktur auf.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="kombinatorik-vs.-sequenzielle-logik" class="slide level2">
+<h2>Kombinatorik vs.&nbsp;Sequenzielle Logik</h2>
+<div class="columns">
+<div class="column" style="width:46%;">
+<ul>
+<li>Kombinatorisch: Ausgang nur von aktuellen Eingängen; gedächtnislos</li>
+<li>Beispiele: Gatter, Multiplexer, Addierer, ALU</li>
+<li>Sequenziell: Ausgang hängt auch vom vorherigen Zustand ab</li>
+<li>Taktung: Flip-Flops/Register speichern Zustände</li>
+</ul>
+</div><div class="column" style="width:54%;">
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Eigenschaft</th>
+<th>Kombinatorisch</th>
+<th>Sequenziell</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Gedächtnis</td>
+<td>Nein</td>
+<td>Ja</td>
+</tr>
+<tr class="even">
+<td>Takt-Abhängigkeit</td>
+<td>Nein</td>
+<td>Ja (meist)</td>
+</tr>
+<tr class="odd">
+<td>Primärer Zweck</td>
+<td>Rechnen / Routen</td>
+<td>Speichern (Zustand)</td>
+</tr>
+</tbody>
+</table>
+</div></div>
+<aside class="notes">
+<p>Zwei Fundamentalkategorien: Kombinatorik wie eine Waage — reagiert nur auf den Ist-Zustand (Addierer, MUX). Sequenziell hat Gedächtnis (Flip-Flop behält eine 1). Der Prozessor vereint beides: Register speichern, kombinatorische ALUs rechnen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="refresher-die-grundlegenden-logikgatter" class="slide level2">
+<h2>Refresher: Die grundlegenden Logikgatter</h2>
+<ul>
+<li>Logikgatter = elementare Bausteine der Hardware-Abstraktion</li>
+<li>AND · OR · XOR · NOT — IEC-60617-Symbole</li>
+<li>Ab jetzt: Gatter als Black Boxes mit bekanntem Verhalten</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/logic-gates-refresher.svg"></p>
+<figcaption>IEC-60617 Logikgatter AND, OR, XOR und NOT</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>Kurzer Digitaltechnik-Rückblick. Wir sprechen nicht mehr über einzelne MOSFETs in einem NAND — wir arbeiten auf Gatterebene. XOR wird zentral für die Addition. Die Schaltsymbole folgen IEC 60617 (rechteckig: <code>&amp;</code>, <code>≥1</code>, <code>=1</code>, NOT mit Negationskreis).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-weichen-problem-im-datenpfad" class="slide level2">
+<h2>Das „Weichen“-Problem im Datenpfad</h2>
+<ul>
+<li>Datenströme fließen über Busse</li>
+<li>Oft muss gewählt werden: z. B. Konstante oder Registerwert an die ALU?</li>
+<li>Gesucht: elektronisch schaltbare „Eisenbahnweiche“</li>
+<li>Steuerung über ein separates Steuersignal</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/mux-weichen.svg"></p>
+<figcaption>Digitale Weiche als 2:1-Multiplexer im Datenpfad</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>Routing-Problem: Manchmal <code>R1 + R2</code>, manchmal <code>R1 + 5</code> (Immediate). Der zweite ALU-Eingang muss umschaltbar sein — Register-File oder Instruktionswort. Wir brauchen eine digitale Weiche.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-multiplexer-mux" class="slide level2">
+<h2>Der Multiplexer (MUX)</h2>
+<ul>
+<li>Lösung für das Weichen-Problem</li>
+<li>Mehrere Dateneingänge (z. B. <span class="math inline">\(A\)</span>, <span class="math inline">\(B\)</span>), ein Ausgang <span class="math inline">\(Y\)</span></li>
+<li>Select-Signal <span class="math inline">\(S\)</span> bestimmt den durchgeschalteten Eingang</li>
+<li>Symbol: Rechteck (IEC 60617) mit Select-Eingang</li>
+<li>Häufigster Routing-Baustein in der Architektur</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/mux-2to1-block.svg"></p>
+<figcaption>2:1-Multiplexer mit Eingängen A/B, Select S und Ausgang Y</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>2-zu-1-MUX: Eingänge A und B, Ausgang Y, Select S. Bei <span class="math inline">\(S=0\)</span> fließt A nach Y, bei <span class="math inline">\(S=1\)</span> fließt B. Die Control-Unit steuert die Weiche.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-logik-des-21-multiplexers" class="slide level2">
+<h2>Die Logik des 2:1-Multiplexers</h2>
+<ul>
+<li>Wahrheitstabelle beschreibt das Verhalten</li>
+<li>Boole’sche Gleichung: <span class="math inline">\(Y = (\overline{S} \land A) \lor (S \land B)\)</span></li>
+<li><span class="math inline">\(S = 0\)</span>: Term mit <span class="math inline">\(B\)</span> wird 0 → <span class="math inline">\(Y = A\)</span></li>
+<li><span class="math inline">\(S = 1\)</span>: Term mit <span class="math inline">\(A\)</span> wird 0 → <span class="math inline">\(Y = B\)</span></li>
+</ul>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Select (<span class="math inline">\(S\)</span>)</th>
+<th style="text-align: center;">Eingang <span class="math inline">\(A\)</span></th>
+<th style="text-align: center;">Eingang <span class="math inline">\(B\)</span></th>
+<th style="text-align: center;">Ausgang <span class="math inline">\(Y\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">X</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">X</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">X</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">X</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p><span class="math inline">\(\land\)</span> = AND, <span class="math inline">\(\lor\)</span> = OR. Bei <span class="math inline">\(S=0\)</span> wird <span class="math inline">\(\overline{S}=1\)</span>, also <span class="math inline">\(Y=A\)</span>; der <span class="math inline">\(B\)</span>-Term fällt weg. „X“ = Don’t Care: Der nicht gewählte Eingang ist egal.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-multiplexer-in-reiner-hardware" class="slide level2">
+<h2>Der Multiplexer in reiner Hardware</h2>
+<ul>
+<li>Keine Magie: reine Gatter-Logik</li>
+<li>NOT für <span class="math inline">\(\overline{S}\)</span></li>
+<li>Zwei AND-Gatter sperren bzw. freigeben <span class="math inline">\(A\)</span> und <span class="math inline">\(B\)</span></li>
+<li>OR führt die freigegebenen Pfade zusammen</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/mux-2to1-gates.svg"></p>
+<figcaption>2:1-Multiplexer aus NOT-, AND- und OR-Gattern nach IEC 60617</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p><span class="math inline">\(S\)</span> geht einmal direkt (Pfad B) und einmal invertiert (Pfad A) in die AND-Gatter — Verriegelung: immer nur ein Pfad offen. Das OR sammelt das aktive Signal.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-brücke-zur-software-mux-ifelse" class="slide level2">
+<h2>Die Brücke zur Software: MUX = IF/ELSE</h2>
+<div class="columns">
+<div class="column" style="width:46%;">
+<ul>
+<li>Software: <code>if</code>/<code>else</code> als Kontrollfluss</li>
+<li>Hardware: kein sequenzieller Sprung — alles existiert gleichzeitig</li>
+<li>MUX filtert das unerwünschte Ergebnis weg</li>
+<li>Ternärer Operator <code>? :</code> ≈ Software-MUX</li>
+</ul>
+</div><div class="column" style="width:54%;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb11-1"><a aria-label="1"></a><span class="co">// MUX als ternärer Operator:</span></span>
+<span id="cb11-2"><a aria-label="2"></a><span class="dt">int</span> Y <span class="op">=</span> <span class="op">(</span>S <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">?</span> B <span class="op">:</span> A<span class="op">;</span></span>
+<span id="cb11-3"><a aria-label="3"></a></span>
+<span id="cb11-4"><a aria-label="4"></a><span class="co">// Alternativ:</span></span>
+<span id="cb11-5"><a aria-label="5"></a><span class="cf">if</span> <span class="op">(</span>S <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb11-6"><a aria-label="6"></a>    Y <span class="op">=</span> B<span class="op">;</span></span>
+<span id="cb11-7"><a aria-label="7"></a><span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb11-8"><a aria-label="8"></a>    Y <span class="op">=</span> A<span class="op">;</span></span>
+<span id="cb11-9"><a aria-label="9"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></div>
+<aside class="notes">
+<p>Software springt in einen Zweig. Hardware: A und B liegen permanent an; der MUX wählt, was weiterfließt. Der ternäre Operator bildet genau dieses Verhalten ab.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="vom-1-bit--zum-32-bit-bus-multiplexer" class="slide level2">
+<h2>Vom 1-Bit- zum 32-Bit-Bus-Multiplexer</h2>
+<ul>
+<li>RISC-V: komplette 32-Bit-Wörter schalten</li>
+<li>32-Bit-MUX = 32 parallele 1-Bit-MUX</li>
+<li>Ein gemeinsames Select-Signal <span class="math inline">\(S\)</span> für alle Slices</li>
+<li>In Diagrammen: Bus mit Querstrich und Breite (<code>/32</code>)</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/mux-32bit-bus.svg"></p>
+<figcaption>32-Bit-Bus-Multiplexer mit gemeinsamem Select-Signal</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>Ein Blockschaltbild-MUX meint eine Batterie aus 32 Weichen. Ein Bit <span class="math inline">\(S\)</span> klappt alle synchron um — das ganze Word von B fließt durch.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="addition-in-hardware" class="title-slide slide level1 center">
+<h1>7. Addition in Hardware</h1>
+
+</section>
+<section id="addition-in-hardware-überblick" class="slide level2">
+<h2>Addition in Hardware — Überblick</h2>
+<ul>
+<li>Vom Routing zur mathematischen Verarbeitung</li>
+<li>Mechanische Regeln der binären Addition</li>
+<li>Halbaddierer als Grundbaustein</li>
+<li>Kaskadierung für große Wortbreiten</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/adder-overview.svg"></p>
+<figcaption>Addierer-Blockschaltbild mit Summe und Carry</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>Signale leiten wir mit dem MUX — jetzt rechnen. Keine Magie: Grundschul-Additionsregeln mit Gattern nachbauen. Zuerst 1 Bit, dann 32 Bit.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="binäre-addition-mentales-modell" class="slide level2">
+<h2>Binäre Addition (mentales Modell)</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(A\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(B\)</span></th>
+<th style="text-align: center;">Summe</th>
+<th style="text-align: center;">Carry</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Summe <span class="math inline">\(\leftrightarrow\)</span> XOR · Carry <span class="math inline">\(\leftrightarrow\)</span> AND</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb12-1"><a aria-label="1"></a>  1011  (11)</span>
+<span id="cb12-2"><a aria-label="2"></a>+ 0011  ( 3)</span>
+<span id="cb12-3"><a aria-label="3"></a>-------</span>
+<span id="cb12-4"><a aria-label="4"></a>  1110  (14)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></div>
+<aside class="notes">
+<p>Bei <span class="math inline">\(1+1\)</span> gibt es keine „2“ — wir schreiben 0 und Carry 1. Summenspalte = XOR-Wahrheitstabelle, Carry = AND. Mathematik wird zu Logik.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-halbaddierer-half-adder" class="slide level2">
+<h2>Der Halbaddierer (Half-Adder)</h2>
+<ul>
+<li>Nur zwei Gatter: XOR und AND</li>
+<li>Eingänge: <span class="math inline">\(A\)</span>, <span class="math inline">\(B\)</span></li>
+<li>Ausgänge: Summe <span class="math inline">\(S\)</span>, Carry Out <span class="math inline">\(C_{out}\)</span></li>
+<li><span class="math inline">\(S = A \oplus B\)</span>,<span class="math inline">\(C_{out} = A \land B\)</span></li>
+<li>Problem: kein Carry-In von einer vorherigen Stelle</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/half-adder.svg"></p>
+<figcaption>Halbaddierer aus XOR- und AND-Gatter</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>„Halb“, weil nur zwei Operanden — reicht für die LSB-Stelle. Weiter links brauchen wir drei Eingänge: <span class="math inline">\(A\)</span>, <span class="math inline">\(B\)</span> und den Übertrag der rechten Spalte.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-volladdierer-full-adder" class="slide level2">
+<h2>Der Volladdierer (Full-Adder)</h2>
+<ul>
+<li>Drei Eingänge: <span class="math inline">\(A\)</span>, <span class="math inline">\(B\)</span>, <span class="math inline">\(C_{in}\)</span></li>
+<li>Ausgänge: Summe <span class="math inline">\(S\)</span>, <span class="math inline">\(C_{out}\)</span></li>
+<li>Intern: typisch zwei Halbaddierer + OR</li>
+<li>Standard-Rechenzelle in jedem Prozessor</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/full-adder.svg"></p>
+<figcaption>Volladdierer aus zwei Halbaddierern und OR-Gatter</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p><span class="math inline">\(C_{in}\)</span> kommt von der vorherigen Stelle. Als Systemarchitekten: Volladdierer fortan als Black Box — elementarer ALU-Baustein.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="kaskadierung-ripple-carry-adder-rca" class="slide level2">
+<h2>Kaskadierung: Ripple-Carry-Adder (RCA)</h2>
+<ul>
+<li>32 Volladdierer · Carry von Bit <span class="math inline">\(i\)</span> nach <span class="math inline">\(i+1\)</span></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/ripple-carry-adder.svg"></p>
+<figcaption>Ripple-Carry-Adder: Kaskade von vier Volladdierern</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>32 Volladdierer nebeneinander, Carry-Kette von Bit 0 bis 31 — exakt wie mit dem Stift. Name: Ripple-Carry-Adder.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-problem-der-laufzeit-ripple-delay" class="slide level2">
+<h2>Das Problem der Laufzeit (Ripple Delay)</h2>
+<ul>
+<li>Signale brauchen Gatterlaufzeiten</li>
+<li>FA 31 wartet auf Carry von FA 30 → … → FA 0</li>
+<li>Carry „plätschert“ (<em>ripple</em>) durch alle Stufen</li>
+<li>Längster kritischer Pfad begrenzt die Taktfrequenz</li>
+<li>Lösung in der Praxis: den Übertrag <strong>vorausberechnen</strong></li>
+</ul>
+<aside class="notes">
+<p>Logisch korrekt, physikalisch langsam bei 32/64 Bit. Der kritische Pfad diktiert den Takt. Wie man den Übertrag parallel statt sequenziell gewinnt, zeigt die nächste Folie.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-echte-addierer-carry-lookahead-cla" class="slide level2">
+<h2>Der „echte“ Addierer: Carry-Lookahead (CLA)</h2>
+<ul>
+<li>Idee: Carry nicht durchreichen, sondern <strong>vorhersagen</strong></li>
+<li>Pro Bit zwei Hilfssignale (nur aus <span class="math inline">\(A_i\)</span>, <span class="math inline">\(B_i\)</span> — ohne Warten):
+<ul>
+<li>Generate: <span class="math inline">\(G_i = A_i \land B_i\)</span> (erzeugt Carry unabhängig von <span class="math inline">\(C_i\)</span>)</li>
+<li>Propagate: <span class="math inline">\(P_i = A_i \oplus B_i\)</span> (reicht <span class="math inline">\(C_i\)</span> weiter)</li>
+</ul></li>
+<li>Carry-Formel: <span class="math inline">\(C_{i+1} = G_i \lor (P_i \land C_i)\)</span></li>
+<li>Alle <span class="math inline">\(G_i\)</span>, <span class="math inline">\(P_i\)</span> parallel → Carry-Netzwerk berechnet <span class="math inline">\(C_1 \ldots C_{32}\)</span> in wenigen Gatterstufen</li>
+<li>Preis: mehr Hardware; Speedup oft von <span class="math inline">\(O(n)\)</span> auf <span class="math inline">\(O(\log n)\)</span></li>
+</ul>
+<aside class="notes">
+<p>Generate und Propagate kennt man schon aus dem Volladdierer — CLA baut daraus ein flaches Logiknetz für alle Überträge. So bleibt die Summe korrekt, aber der kritische Pfad wächst nicht linear mit der Wortbreite. Moderne CPUs nutzen Varianten (CLA, Carry-Select, Prefix-Addierer); didaktisch bleibt der RCA das mentale Modell, CLA die Brücke zur Realität.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="die-arithmetic-logic-unit-alu" class="title-slide slide level1 center">
+<h1>8. Die Arithmetic Logic Unit (ALU)</h1>
+
+</section>
+<section id="die-alu-überblick" class="slide level2">
+<h2>Die ALU — Überblick</h2>
+<ul>
+<li>Mathematischer Motor jedes Prozessors</li>
+<li>Arithmetik: Add, Sub</li>
+<li>Logik: And, Or, Xor, …</li>
+<li>Vereint Addierer und Routing (MUX)</li>
+<li>Reagiert auf Control Signals aus der Instruktion</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/alu-overview.svg"></p>
+<figcaption>ALU-Blockschaltbild mit Operanden, Steuerung, Ergebnis und Zero-Flag</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>MUX + Volladdierer → ALU. In Software <code>C = A + B</code> landet hier. Multifunktional: addieren, subtrahieren, bitweise Verknüpfen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="ein-taschenrechner-ohne-tasten" class="slide level2">
+<h2>Ein Taschenrechner ohne Tasten</h2>
+<ul>
+<li>Keine „Plus-Taste“ — Auswahl über Steuersignale</li>
+<li>Trick: intern oft alle Operationen parallel</li>
+<li>Ergebnis fließt durch Addierer, AND, OR, …</li>
+<li>MUX am Ende wählt das gewünschte Ergebnis</li>
+<li>Select kommt von der Control Unit</li>
+</ul>
+<aside class="notes">
+<p>Daten fließen parallel in alle Rechenpfade; der MUX wirft unerwünschte Ergebnisse weg. Effizient in Silizium, anders als sequentieller Software-Kontrollfluss.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="struktur-einer-1-bit-alu" class="slide level2">
+<h2>Struktur einer 1-Bit-ALU</h2>
+<ul>
+<li>Parallel: AND · OR · FA → MUX → <span class="math inline">\(Y\)</span> (ALUControl)</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/alu-1bit-structure.svg"></p>
+<figcaption>1-Bit-ALU: parallele AND/OR/FA-Pfade mit Ausgangs-MUX</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>Beispiel-Kodierung: <code>00</code> AND, <code>01</code> OR, <code>10</code> Addierer; <code>11</code> oft Reserve. Genau dieses Muster skaliert auf 32 Bit.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="subtraktion-elegant-integrieren" class="slide level2">
+<h2>Subtraktion elegant integrieren</h2>
+<ul>
+<li><span class="math inline">\(A - B = A + \overline{B} + 1\)</span> · MUX vor <span class="math inline">\(B\)</span>, <span class="math inline">\(C_{in}=1\)</span></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/alu-subtract.svg"></p>
+<figcaption>Subtraktion in der ALU: NOT und MUX vor dem Volladdierer</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>Aus dem Zweierkomplement-Block: Bits kippen und +1. Der MUX vor <span class="math inline">\(B\)</span> liefert <span class="math inline">\(\overline{B}\)</span>; das <span class="math inline">\(+1\)</span> kommt als Carry-In. Reines Routing macht aus dem Addierer einen Subtrahierer.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-zero-flag-null-erkennung" class="slide level2">
+<h2>Das Zero-Flag (Null-Erkennung)</h2>
+<ul>
+<li>Status-Flags neben dem Ergebnis <span class="math inline">\(Y\)</span></li>
+<li>Zero-Flag (<span class="math inline">\(Z\)</span>): 1, wenn Ergebnis exakt 0</li>
+<li>Hardware: oft großes NOR über alle Ergebnis-Bits</li>
+<li>Vergleich <span class="math inline">\(A == B\)</span>: rechne <span class="math inline">\(A - B\)</span>; <span class="math inline">\(Z=1\)</span> ⇒ gleich</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb13-1"><a aria-label="1"></a><span class="co">// Software:</span></span>
+<span id="cb13-2"><a aria-label="2"></a><span class="cf">if</span> <span class="op">(</span>A <span class="op">==</span> B<span class="op">)</span> <span class="op">{</span> <span class="op">...</span> <span class="op">}</span></span>
+<span id="cb13-3"><a aria-label="3"></a></span>
+<span id="cb13-4"><a aria-label="4"></a><span class="co">// Hardware-Idee:</span></span>
+<span id="cb13-5"><a aria-label="5"></a>Ergebnis <span class="op">=</span> A <span class="op">-</span> B<span class="op">;</span></span>
+<span id="cb13-6"><a aria-label="6"></a><span class="cf">if</span> <span class="op">(</span>Zero_Flag <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span> <span class="op">...</span> <span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Wichtigstes Flag für bedingte Sprünge in RISC-V. Control Unit liest <span class="math inline">\(Z\)</span> und entscheidet über den Kontrollfluss.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-32-bit-risc-v-alu" class="slide level2">
+<h2>Die 32-Bit RISC-V ALU</h2>
+<ul>
+<li>32 Slices · gemeinsame ALUControl · Carry wie RCA</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/alu-32bit-cascade.svg"></p>
+<figcaption>32-Bit-ALU als Kaskade von 1-Bit-Slices</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>32 Scheiben, Carry verbunden, gemeinsame Steuerung — der Motor für Integer-Arithmetik und Logik.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-alu-schaltsymbol" class="slide level2">
+<h2>Das ALU-Schaltsymbol</h2>
+<ul>
+<li>Interne Gatter final abstrahiert (Black Box)</li>
+<li>Klassisches Symbol: „hosenförmiges“ V / Trapez</li>
+<li>Oben: Operanden <span class="math inline">\(A\)</span>, <span class="math inline">\(B\)</span> (32 Bit)</li>
+<li>Unten: Ergebnis (32 Bit)</li>
+<li>Seitlich: ALUControl und Flags (z. B. Zero)</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/alu-symbol.svg"></p>
+<figcaption>Klassisches ALU-Schaltsymbol als Trapez mit Operanden, Steuerung und Zero-Flag</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>Kreis zur Abstraktion: Transistor → Gatter → Addierer → 32-Bit-ALU. Ab der nächsten Einheit zeichnen wir nur noch das V-Symbol — Sie wissen, dass dahinter Multiplexer umklappen und Carry-Ketten laufen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="die-notwendigkeit-der-zeit" class="title-slide slide level1 center">
+<h1>9. Die Notwendigkeit der Zeit</h1>
+
+</section>
+<section id="die-notwendigkeit-der-zeit-überblick" class="slide level2">
+<h2>Die Notwendigkeit der Zeit — Überblick</h2>
+<ul>
+<li>Die vierte Dimension der Computerarchitektur</li>
+<li>Warum kombinatorische Logik allein keinen Computer ergibt</li>
+<li>Zeitliche Synchronisation in Hardware</li>
+<li>Fließende vs.&nbsp;diskrete Daten</li>
+<li>Vorbereitung auf sequenzielle Schaltungstechnik</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A[Kombinatorik] --&gt;|Ohne Gedächtnis| B[Daten fließen sofort ab]
+  C[Sequenziell] --&gt;|Mit Gedächtnis| D[Daten warten auf den Takt]
+  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Letzter großer Grundlagenblock: MUX und ALU haben wir — aber kein Gedächtnis. Wir fügen die Dimension Zeit hinzu und führen den Takt (Clock) als Herzschlag des Systems ein.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-problem-der-reinen-kombinatorik" class="slide level2">
+<h2>Das Problem der reinen Kombinatorik</h2>
+<ul>
+<li>Reagiert sofort auf Eingangsänderungen</li>
+<li>Kein Mechanismus, ein Ergebnis „einzufrieren“</li>
+<li>Fallen die Eingänge weg, ist das Ergebnis weg</li>
+<li>Laufzeitunterschiede → temporäre Glitches</li>
+<li>Fazit: Mit einer ALU allein lassen sich keine Programme ausführen</li>
+</ul>
+<aside class="notes">
+<p>Metapher: ALU wie ein Rohrsystem — ohne Pumpe läuft es leer. Für <span class="math inline">\(C = A + B\)</span> und später <span class="math inline">\(D = C + 5\)</span> brauchen wir Schleusen: Ergebnisse müssen überleben, wenn sich die Eingänge ändern.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-lösung-zustandsspeicherung" class="slide level2">
+<h2>Die Lösung: Zustandsspeicherung</h2>
+<ul>
+<li>Bauteile, die Ladungen/Daten über Zeit halten</li>
+<li>Globale Synchronisation aller Speicherelemente</li>
+<li>Speicherelemente = Dämme/Schleusen im Datenpfad</li>
+<li>ALU-Ergebnisse werden zwischengespeichert</li>
+<li>Weiterfluss erst beim Öffnen der Schleusen</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A[ALU-Ausgang] --&gt;|fließendes Datum| B[Schleuse / Speicher]
+  B --&gt;|gefrorener Zustand| C[Neue Berechnung]
+  S[Synchronisation] -.-&gt; B
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Datentresore im Datenpfad — nicht asynchron jeder für sich, sondern global synchron: im selben Nanosekundenbruchteil öffnen, aufnehmen, verriegeln. Dirigent: der Taktgeber.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-taktsignal-clock-clk" class="slide level2">
+<h2>Das Taktsignal (Clock / CLK)</h2>
+<ul>
+<li>Oszillator = Herzschlag / Metronom des Prozessors</li>
+<li>Periodisches Rechtecksignal (<span class="math inline">\(0 \leftrightarrow 1\)</span>)</li>
+<li>Periode <span class="math inline">\(T\)</span>: Dauer eines Zyklus (z. B. <span class="math inline">\(1\,\text{ns}\)</span>)</li>
+<li>Frequenz <span class="math inline">\(f = 1/T\)</span> (z. B. <span class="math inline">\(1\,\text{GHz}\)</span>)</li>
+<li>Alle Speicherelemente hören auf dieses globale Signal</li>
+</ul>
+<aside class="notes">
+<p>CLK vom Quarz-Oszillator: Bei 3 GHz tickt das Metronom drei Milliarden Mal pro Sekunde — jeder Tick ein Schritt vorwärts für die gesamte CPU.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="flankensteuerung-edge-triggering" class="slide level2">
+<h2>Flankensteuerung (Edge-Triggering)</h2>
+<div class="columns">
+<div class="column" style="width:46%;">
+<ul>
+<li>Reaktion nicht auf konstanten Pegel, sondern auf den Übergang</li>
+<li>Steigende Flanke: <span class="math inline">\(0 \rightarrow 1\)</span></li>
+<li>Fallende Flanke: <span class="math inline">\(1 \rightarrow 0\)</span></li>
+<li>RISC-V / die meisten CPUs: Speichern primär bei steigender Flanke</li>
+</ul>
+</div><div class="column" style="width:54%;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb14-1"><a aria-label="1"></a>Clock: 00000000111111110000000011111111</span>
+<span id="cb14-2"><a aria-label="2"></a>              ^       ^       ^       ^</span>
+<span id="cb14-3"><a aria-label="3"></a>            Rise    Fall    Rise    Fall</span>
+<span id="cb14-4"><a aria-label="4"></a>(Prozessor speichert typisch nur beim Rise)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></div>
+<aside class="notes">
+<p>Edge-Triggering: Bei konstantem CLK-Pegel passiert im Speicher nichts. Nur im Moment der steigenden Flanke öffnet der Tresor kurz, nimmt D auf und verriegelt wieder — danach hat die ALU Zeit bis zum nächsten Tick.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="sequenzielle-logik" class="title-slide slide level1 center">
+<h1>10. Sequenzielle Logik</h1>
+
+</section>
+<section id="sequenzielle-logik-überblick" class="slide level2">
+<h2>Sequenzielle Logik — Überblick</h2>
+<ul>
+<li>Entwurf elementarer Speicherzellen</li>
+<li>Rückkopplung zur Zustandserhaltung</li>
+<li>Physikalische Grenzen des Speicherns</li>
+<li>Vom Flip-Flop zum Register</li>
+<li>Setup-/Hold-Time als zeitliche Parameter</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A[Eingang] --&gt; B[Sequenzielle Logik]
+  B --&gt;|Gedächtnis-Schleife| B
+  CLK[Takt] -.-&gt; B
+  B --&gt; C[Ausgang]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Aus kombinatorischen Gattern per Rückkopplung ein Gedächtnis bauen → D-Flip-Flop. Kurz: warum Overclocking scheitert (Setup/Hold).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-rückkopplungs-konzept" class="slide level2">
+<h2>Das Rückkopplungs-Konzept</h2>
+<ul>
+<li>Kombinatorik: Fluss Eingang → Ausgang</li>
+<li>Gedächtnis: Ausgang wieder auf den eigenen Eingang zurückführen</li>
+<li>Bistabile Kippstufe / Latch hält sich selbst</li>
+<li>Zustand bleibt, bis ein externes Signal ihn überschreibt</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  Eingang --&gt; OR[OR]
+  OR --&gt; Y[Ausgang]
+  Y --&gt;|Rückkopplung| OR
+  style OR fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>OR mit Feedback: kurze 1 am Eingang → Ausgang 1 → rückgekoppelt → bleibt 1, auch wenn der Impuls weg ist. Basis aller Speicherzellen — wir abstrahieren das sofort zum D-FF.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-d-flip-flop-d-ff" class="slide level2">
+<h2>Das D-Flip-Flop (D-FF)</h2>
+<ul>
+<li>Wichtigster 1-Bit-Speicher der Architektur</li>
+<li>D (Data): neuer Wert</li>
+<li>Q: aktuell gespeicherter Wert</li>
+<li>CLK (Dreieck): flankengesteuerter Takteingang</li>
+<li>Ignoriert <span class="math inline">\(D\)</span>, bis die steigende Flanke an CLK eintrifft</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/d-flip-flop.svg"></p>
+<figcaption>Schaltsymbol D-Flip-Flop mit D, CLK, Q und Q̄</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>Symbol: Rechteck, D links, Q rechts, Dreieck am linken Rand = Edge-Triggered (steigende Flanke). Taub gegenüber <span class="math inline">\(D\)</span>, außer im Moment der Flanke.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-verhalten-der-kamera-metapher" class="slide level2">
+<h2>Das Verhalten der Kamera (Metapher)</h2>
+<div class="columns">
+<div class="column" style="width:46%;">
+<ul>
+<li>Motiv vor der Linse = Eingang <span class="math inline">\(D\)</span></li>
+<li>Foto in der Hand = Ausgang <span class="math inline">\(Q\)</span></li>
+<li>Auslöser = Taktflanke</li>
+<li>Nur im Klick-Moment: <span class="math inline">\(D \rightarrow Q\)</span></li>
+</ul>
+</div><div class="column" style="width:54%;">
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Zeit</th>
+<th style="text-align: center;"><span class="math inline">\(D\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(Q\)</span></th>
+<th style="text-align: center;">CLK</th>
+<th style="text-align: left;">Ergebnis</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: left;"><span class="math inline">\(Q\)</span> bleibt 0</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;"><span class="math inline">\(\uparrow\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(Q\)</span> wird 1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;"><span class="math inline">\(Q\)</span> bleibt 1</td>
+</tr>
+</tbody>
+</table>
+</div></div>
+<aside class="notes">
+<p>Kamera-Metapher prägt sich ein: Motiv ändert sich, Foto nicht — bis zum nächsten Auslöser. In Zeile 2 übernimmt <span class="math inline">\(Q\)</span> den Wert von <span class="math inline">\(D\)</span> nur an der steigenden Flanke.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="physikalische-limits-setup--und-hold-time" class="slide level2">
+<h2>Physikalische Limits: Setup- und Hold-Time</h2>
+<ul>
+<li>Setup: <span class="math inline">\(D\)</span> stabil <em>vor</em> der Flanke · Hold: <em>danach</em></li>
+<li>Verletzung → Metastabilität · ALU muss rechtzeitig fertig sein</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A[ALU] --&gt; B[Setup] --&gt; C[Flanke] --&gt; D[Hold]
+  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Zu hoher Takt → ALU zu langsam → Setup verletzt → undefinierte Zustände / Absturz. Deshalb gibt es eine maximale sinnvolle Frequenz.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="vom-1-bit-d-ff-zum-32-bit-register" class="slide level2">
+<h2>Vom 1-Bit-D-FF zum 32-Bit-Register</h2>
+<ul>
+<li>RV32I arbeitet mit 32-Bit-Words</li>
+<li>Ein D-FF speichert 1 Bit</li>
+<li>Lösung: 32 D-FFs parallel</li>
+<li>Gemeinsames CLK-Signal an alle — synchroner „Auslöser“</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph TD
+  Bus[32-Bit Data In] --&gt;|Bit 31| FF31[D-FF 31]
+  Bus --&gt;|Bit 0| FF0[D-FF 0]
+  CLK[Clock] --&gt; FF31
+  CLK --&gt; FF0
+  style CLK fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>32 Kameras, ein gemeinsamer Auslöser — ein 32-Bit-Zustandsspeicher.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-write-enable-signal-we" class="slide level2">
+<h2>Das Write-Enable-Signal (WE)</h2>
+<ul>
+<li>Problem: sonst Speichern bei <em>jedem</em> Takt</li>
+<li>Oft soll ein Register unverändert bleiben</li>
+<li>WE / EN: Erlaubnis-Pin</li>
+<li>WE = 0: Flanke ignorieren; WE = 1: bei Flanke speichern</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb15-1"><a aria-label="1"></a><span class="cf">if</span> <span class="op">(</span>RISING_EDGE<span class="op">(</span>clock<span class="op">))</span> <span class="op">{</span></span>
+<span id="cb15-2"><a aria-label="2"></a>    <span class="cf">if</span> <span class="op">(</span>WriteEnable <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb15-3"><a aria-label="3"></a>        Register <span class="op">=</span> DataIn<span class="op">;</span></span>
+<span id="cb15-4"><a aria-label="4"></a>    <span class="op">}</span></span>
+<span id="cb15-5"><a aria-label="5"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Sicherungshebel am Auslöser: Nur wenn die Control Unit WE = 1 setzt, überschreibt die Flanke den Inhalt.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-abstrahierte-register-symbol" class="slide level2">
+<h2>Das abstrahierte Register-Symbol</h2>
+<ul>
+<li>Komplexität → Black Box „Register“</li>
+<li>Symbol: stehendes Rechteck</li>
+<li>Ports: Data In (<span class="math inline">\(D\)</span>), Data Out (<span class="math inline">\(Q\)</span>), CLK (Dreieck), WE</li>
+<li>Baustein für Registersatz und Program Counter</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/register-symbol.svg"></p>
+<figcaption>Abstrahiertes Register-Symbol mit D, WE, CLK und Q</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>Ab jetzt: Viereck mit <span class="math inline">\(D\)</span>, <span class="math inline">\(Q\)</span>, WE und Dreieck. Innere Rückkopplungen und Setup-Zeiten bleiben im Hintergrund — wir nutzen das Register als Baustein.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="das-register-file-registersatz" class="title-slide slide level1 center">
+<h1>11. Das Register File (Registersatz)</h1>
+
+</section>
+<section id="das-register-file-überblick" class="slide level2">
+<h2>Das Register File — Überblick</h2>
+<ul>
+<li>Extrem schnelle „Werkbank“ der ALU</li>
+<li>Zusammenschluss vieler Register</li>
+<li>Bindeglied Software-Variablen ↔︎ Hardware</li>
+<li>Multi-Porting: gleichzeitig lesen und schreiben</li>
+<li>RISC-V-Konvention: u. a. hartverdrahtetes <span class="math inline">\(x0\)</span></li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A[Register File] --&gt;|Operanden| B[ALU]
+  B --&gt;|Ergebnis| A
+  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>ALU = Taschenrechner, Register File = Schreibtisch daneben. Kleiner, ultraschneller On-Chip-Speicher — jede Assembler-Rechnung liest und schreibt hier.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="was-ist-ein-registersatz" class="slide level2">
+<h2>Was ist ein Registersatz?</h2>
+<ul>
+<li>RAM: groß, aber weit weg und langsam</li>
+<li>ALU braucht Daten ohne Wartezeit</li>
+<li>Register File: lokales Array direkt auf dem Die</li>
+<li>Adressierung per Assembler (z. B. <code>x5</code>)</li>
+<li>Zwischenspeicher für intensiv genutzte Variablen</li>
+</ul>
+<aside class="notes">
+<p>Physik der Distanz: RAM-Zugriff ist teuer. Register File = Werkbank — Daten einmal holen, dann schnell rechnen, ohne ständig ins Lager zu laufen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="architektur-des-register-files" class="slide level2">
+<h2>Architektur des Register Files</h2>
+<p>Befehl <code>add x3, x1, x2</code> in einem Durchlauf:</p>
+<ul>
+<li>Lesen: <span class="math inline">\(A1\)</span>/<span class="math inline">\(A2\)</span> → <span class="math inline">\(RD1\)</span>/<span class="math inline">\(RD2\)</span> · Schreiben: <span class="math inline">\(A3\)</span>, <span class="math inline">\(WD3\)</span>, freigegeben durch <span class="math inline">\(WE3\)</span></li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A1[A1] --&gt; RF[Register File]
+  A2[A2] --&gt; RF
+  RF --&gt; RD1[RD1]
+  RF --&gt; RD2[RD2]
+  WD3[WD3] --&gt; RF
+  A3[A3] --&gt; RF
+  style RF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>A1/A2 wählen die Quellregister → Daten an RD1/RD2 zur ALU. Ergebnis zurück auf WD3; A3 und Write-Enable WE3 wählen das Zielregister.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="interner-aufbau-lesen-kombinatorisch" class="slide level2">
+<h2>Interner Aufbau: Lesen (kombinatorisch)</h2>
+<ul>
+<li>Intern: 32 Register (<span class="math inline">\(x0\)</span>–<span class="math inline">\(x31\)</span>)</li>
+<li>Jeder Leseausgang: großer 32-zu-1-MUX</li>
+<li>5-Bit-Adressen <span class="math inline">\(A1\)</span>/<span class="math inline">\(A2\)</span> = Select</li>
+<li>Lesen <strong>ohne Takt</strong> — asynchron/kombinatorisch</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  R1[Reg x1] --&gt; MUX["32:1 MUX"]
+  R2[Reg x2] --&gt; MUX
+  R31[Reg x31] --&gt; MUX
+  A1[Adresse A1] -.-&gt;|Select| MUX
+  MUX --&gt; RD1[RD1]
+  style MUX fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Sobald A1 wechselt, schaltet der MUX um — Wert fließt sofort nach RD1. Lesen ist reine Kombinatorik.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="interner-aufbau-schreiben-sequenziell" class="slide level2">
+<h2>Interner Aufbau: Schreiben (sequenziell)</h2>
+<ul>
+<li><span class="math inline">\(WD3\)</span> liegt parallel an allen 32 Registern</li>
+<li>Decoder: 5-Bit-<span class="math inline">\(A3\)</span> → genau ein WE-Pin aktiv</li>
+<li>Schreiben erst bei steigender Flanke</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb16-1"><a aria-label="1"></a>A3 = 00101 (Register 5), WE3 = 1</span>
+<span id="cb16-2"><a aria-label="2"></a></span>
+<span id="cb16-3"><a aria-label="3"></a>Reg 0 WE = 0</span>
+<span id="cb16-4"><a aria-label="4"></a>...</span>
+<span id="cb16-5"><a aria-label="5"></a>Reg 5 WE = 1   ← nur x5 speichert</span>
+<span id="cb16-6"><a aria-label="6"></a>...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Alle sehen dieselben Daten; nur das dekodierte Register hat WE = 1 und übernimmt bei der Flanke.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-risc-v-register-x0x31" class="slide level2">
+<h2>Die RISC-V-Register (<span class="math inline">\(x0\)</span>–<span class="math inline">\(x31\)</span>)</h2>
+<ul>
+<li>RV32I: exakt 32 Architekturregister à 32 Bit</li>
+<li>Assembler: <code>x0</code> … <code>x31</code> (plus ABI-Aliase: <code>sp</code>, <code>ra</code>, …)</li>
+<li>5 Bit Adresse reichen: <span class="math inline">\(2^5 = 32\)</span></li>
+</ul>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Register</th>
+<th>Alias</th>
+<th>Zweck</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(x0\)</span></td>
+<td><code>zero</code></td>
+<td>hartverdrahtete 0</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(x1\)</span></td>
+<td><code>ra</code></td>
+<td>Return Address</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(x2\)</span></td>
+<td><code>sp</code></td>
+<td>Stack Pointer</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(x10\)</span>–<span class="math inline">\(x17\)</span></td>
+<td><code>a0</code>–<code>a7</code></td>
+<td>Argumente / Rückgabewerte</td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>Kompakte Instruktionskodierung: je 5 Bit für rs1, rs2, rd. ABI-Namen vertiefen wir im Praktikum.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="das-hardwired-zero-register-x0" class="slide level2">
+<h2>Das Hardwired-Zero-Register (<span class="math inline">\(x0\)</span>)</h2>
+<ul>
+<li>Fest auf logisch 0 verdrahtet</li>
+<li>Schreiben wird ignoriert — Wert bleibt 0</li>
+<li>Spart Spezialbefehle (RISC-Philosophie)</li>
+<li>Beispiel „Copy“: <code>add x2, x1, x0</code> ⇒ <span class="math inline">\(x2 = x1 + 0\)</span></li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb17-1"><a aria-label="1"></a><span class="bu">add</span> x2<span class="op">,</span> x1<span class="op">,</span> x0   <span class="op">#</span> Kopie<span class="op">:</span> x2 ← x1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Kein eigener MOVE-Befehl nötig — Addition mit Null recycelt die ALU-Hardware. Typisch RISC: wenige Instruktionen, clever genutzt.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="speicherarchitektur" class="title-slide slide level1 center">
+<h1>12. Speicherarchitektur</h1>
+
+</section>
+<section id="speicherarchitektur-überblick" class="slide level2">
+<h2>Speicherarchitektur — Überblick</h2>
+<ul>
+<li>Big Picture: CPU und Außenwelt (RAM)</li>
+<li>Flaschenhals des gemeinsamen Busses</li>
+<li>Zwei Denkschulen: Von Neumann vs.&nbsp;Harvard</li>
+<li>Vorbereitung auf den Single-Cycle-Datenpfad in Ripes</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  A[CPU] &lt;--&gt;|Befehle &amp; Daten| B[(Arbeitsspeicher)]
+  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Register File speichert nur 32 Werte — Programme und große Arrays liegen im RAM. Zwei Anschlussschulen; im Simulator nutzen wir die eine, im PC oft die andere (bzw. Hybride).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="wo-liegen-die-programme" class="slide level2">
+<h2>Wo liegen die Programme?</h2>
+<ul>
+<li>Register File: 32 Wörter — zu wenig für Code</li>
+<li>Programm und große Daten: im RAM</li>
+<li>RAM: byte-adressierbar, Gigabytes</li>
+<li>CPU: Instruction Fetch aus dem RAM</li>
+<li>Daten: Load/Store zwischen CPU und RAM</li>
+</ul>
+<aside class="notes">
+<p>Binary landet im RAM; die CPU holt den ersten Befehl (Fetch). Load holt Daten — wieder RAM. Ständiger Ansprechpartner für Code und Daten.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-von-neumann-architektur" class="slide level2">
+<h2>Die Von-Neumann-Architektur</h2>
+<ul>
+<li>1940er (John von Neumann)</li>
+<li>Ein gemeinsamer Speicher für Code und Daten</li>
+<li>Ein gemeinsamer Bus</li>
+<li>Vorteil: flexibel</li>
+<li>Nachteil (Flaschenhals): nicht gleichzeitig Instruktion lesen und Daten speichern</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  CPU[CPU] &lt;--&gt;|Bus Flaschenhals| RAM[Gemeinsamer Speicher]
+  RAM --- C[Code]
+  RAM --- D[Daten]
+  style RAM fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Standard in PCs/Macs: Code und Daten sind Zahlen im selben Speicher. Flexibel, aber der eine Bus serialisiert Zugriffe.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="die-harvard-architektur" class="slide level2">
+<h2>Die Harvard-Architektur</h2>
+<ul>
+<li>Getrennte Speicher für Instruktionen und Daten</li>
+<li>Zwei physische Busse zur CPU</li>
+<li>Vorteil: Fetch und Datenzugriff parallel möglich</li>
+<li>Nachteil: starre Grenzen zwischen den Speichern</li>
+</ul>
+<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+graph LR
+  IM[(Instruction Memory)] --&gt;|Befehls-Bus| CPU[CPU]
+  CPU &lt;--&gt;|Daten-Bus| DM[(Data Memory)]
+  style CPU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Harvard (Mark I): getrennte Welten — kein Buskonflikt, aber kein „Ausborgen“ von Platz zwischen den Speichern.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-risc-v-kompromiss-im-labor" class="slide level2">
+<h2>Der RISC-V-Kompromiss im Labor</h2>
+<div class="columns">
+<div class="column" style="width:46%;">
+<ul>
+<li>Ripes: Harvard (getrennte Memories)</li>
+<li>Ziel: Single-Cycle ohne Buskonflikt</li>
+</ul>
+</div><div class="column" style="width:54%;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb18-1"><a aria-label="1"></a>1. Fetch (IM)</span>
+<span id="cb18-2"><a aria-label="2"></a>2. Register lesen</span>
+<span id="cb18-3"><a aria-label="3"></a>3. ALU</span>
+<span id="cb18-4"><a aria-label="4"></a>4. Store (DM)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></div>
+<aside class="notes">
+<p>Nächste Schritte: In Ripes zwei Speicherblöcke — Fetch und Memory-Access parallel. Damit schließen wir den Kickoff: Sie haben die Bausteine für den vollständigen RISC-V-Datenpfad. Vielen Dank für Ihre Mitarbeit!</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+
+
+</section></section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<p><img src="../assets/dhbw_logo.svg" class="slide-logo"></p>
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="../site_libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="../site_libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="../site_libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="../site_libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="../site_libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="../site_libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="../site_libs/revealjs/plugin/search/search.js"></script>
+  <script src="../site_libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="../site_libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': true,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'none',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1280,
+
+        height: 720,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 8.0e-2,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script>
+    /**
+     * Fit Quarto/Reveal Mermaid SVGs to remaining slide space.
+     * Dimensions from getBoundingClientRect are viewport pixels; CSS sizes inside
+     * Reveal slides are unscaled — divide by Reveal.getScale().
+     */
+    (function () {
+      const BOTTOM_PAD = 36;
+      const SIDE_PAD_RATIO = 0.92;
+      const MAX_SCALE = 3.4;
+
+      function presentSlide() {
+        var present = document.querySelector("section.present");
+        if (!present) return null;
+        var nested = present.querySelector(":scope > section.present");
+        return nested || present;
+      }
+
+      function revealScale() {
+        if (window.Reveal && typeof Reveal.getScale === "function") {
+          var s = Reveal.getScale();
+          return s > 0.05 ? s : 1;
+        }
+        return 1;
+      }
+
+      function ensureWrap(svg) {
+        var parent = svg.parentElement;
+        if (!parent) return null;
+        if (parent.classList.contains("mermaid-fit")) return parent;
+        var wrap = document.createElement("div");
+        wrap.className = "mermaid-fit";
+        parent.insertBefore(wrap, svg);
+        wrap.appendChild(svg);
+        return wrap;
+      }
+
+      function contentBottomAbove(slide, wrap) {
+        var top = slide.getBoundingClientRect().top;
+        var bottom = top + 8;
+        var children = slide.children;
+        for (var i = 0; i < children.length; i++) {
+          var el = children[i];
+          if (el === wrap || el.classList.contains("mermaid-fit")) break;
+          if (el.querySelector && el.querySelector("svg.mermaid-js")) break;
+          if (el.tagName === "ASIDE") continue;
+          var r = el.getBoundingClientRect();
+          if (r.height > 1) bottom = Math.max(bottom, r.bottom);
+        }
+        return bottom;
+      }
+
+      function naturalSize(svg) {
+        if (svg.dataset.natW && svg.dataset.natH) {
+          return { w: +svg.dataset.natW, h: +svg.dataset.natH };
+        }
+        var vb = svg.viewBox && svg.viewBox.baseVal;
+        if (vb && vb.width > 0 && vb.height > 0) {
+          svg.dataset.natW = String(vb.width);
+          svg.dataset.natH = String(vb.height);
+          return { w: vb.width, h: vb.height };
+        }
+        var wAttr = parseFloat(svg.getAttribute("width"));
+        var hAttr = parseFloat(svg.getAttribute("height"));
+        if (wAttr > 0 && hAttr > 0) {
+          svg.dataset.natW = String(wAttr);
+          svg.dataset.natH = String(hAttr);
+          return { w: wAttr, h: hAttr };
+        }
+        var r = svg.getBoundingClientRect();
+        var rs = revealScale();
+        var w = r.width / rs || 320;
+        var h = r.height / rs || 120;
+        svg.dataset.natW = String(w);
+        svg.dataset.natH = String(h);
+        return { w: w, h: h };
+      }
+
+      function fitMermaids() {
+        var slide = presentSlide();
+        if (!slide) return;
+
+        var rs = revealScale();
+        var slideRect = slide.getBoundingClientRect();
+        var svgs = slide.querySelectorAll("svg.mermaid-js");
+
+        for (var i = 0; i < svgs.length; i++) {
+          var svg = svgs[i];
+          var wrap = ensureWrap(svg);
+          if (!wrap) continue;
+
+          svg.style.removeProperty("transform");
+          svg.style.removeProperty("max-width");
+          svg.style.removeProperty("zoom");
+          wrap.style.zoom = "";
+
+          var nat = naturalSize(svg);
+          var above = contentBottomAbove(slide, wrap);
+          var availW = (slideRect.width * SIDE_PAD_RATIO) / rs;
+          var availH = Math.max(72, (slideRect.bottom - above - BOTTOM_PAD) / rs);
+
+          var scale = Math.min(availW / nat.w, availH / nat.h, MAX_SCALE);
+          if (!(scale > 0)) scale = 1;
+
+          var targetW = Math.max(1, Math.round(nat.w * scale));
+          var targetH = Math.max(1, Math.round(nat.h * scale));
+
+          svg.setAttribute("width", targetW);
+          svg.setAttribute("height", targetH);
+          svg.style.width = targetW + "px";
+          svg.style.height = targetH + "px";
+          svg.style.display = "block";
+          svg.style.margin = "0.35rem auto 0";
+        }
+      }
+
+      function scheduleFit() {
+        requestAnimationFrame(function () {
+          fitMermaids();
+          setTimeout(fitMermaids, 150);
+          setTimeout(fitMermaids, 500);
+          setTimeout(fitMermaids, 1100);
+        });
+      }
+
+      window.addEventListener("load", scheduleFit);
+
+      function bindReveal() {
+        if (!window.Reveal || !Reveal.on) return false;
+        Reveal.on("ready", scheduleFit);
+        Reveal.on("slidechanged", scheduleFit);
+        if (Reveal.isReady && Reveal.isReady()) scheduleFit();
+        return true;
+      }
+
+      if (!bindReveal()) {
+        window.addEventListener("load", function () {
+          var tries = 0;
+          var id = setInterval(function () {
+            if (bindReveal() || ++tries > 50) clearInterval(id);
+          }, 100);
+        });
+      }
+
+      window.mctMermaidFit = fitMermaids;
+    })();
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp("https:\/\/dantschi\.github\.io\/mct1\/");
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="230" viewBox="0 0 600 230" role="img">
+  <style>
+.gate { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .wire { fill: none; stroke: #86868B; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+  .bubble { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .lbl { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 500; }
+  .sym { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; }
+  .accent { stroke: #E2001A; }
+  .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; }
+  </style>
+  <text class="pin" x="40" y="100" text-anchor="start">Bus A /32</text>
+  <text class="pin" x="40" y="160" text-anchor="start">Bus B /32</text>
+  <text class="pin" x="290" y="40" text-anchor="middle">S /1</text>
+  <path class="wire" d="M 140 96 L 240 96"/>
+  <path class="wire" d="M 140 156 L 240 156"/>
+  <path class="wire" d="M 290 50 L 290 70"/>
+  <path class="wire" d="M 180 88 L 180 104"/>
+  <path class="wire" d="M 180 148 L 180 164"/>
+  <rect class="gate accent" x="240" y="70" width="100" height="120" rx="4" ry="4"/>
+  <text class="sym" x="290.0" y="137.0" text-anchor="middle">MUX</text>
+  <path class="wire" d="M 340 130 L 450 130"/>
+  <path class="wire" d="M 390 122 L 390 138"/>
+  <path class="wire" d="M 442 125 L 450 130 L 442 135" fill="none"/>
+  <text class="pin" x="465" y="134" text-anchor="start">Bus Y /32</text>
+
+</svg>

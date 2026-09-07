@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="300" viewBox="0 0 580 300" role="img">
+  <style>
+    .gate { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+    .wire { fill: none; stroke: #86868B; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+    .sym { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 22px; font-weight: 600; }
+    .accent { stroke: #E2001A; }
+    .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; }
+    .bus { fill: #86868B; font-family: Inter, sans-serif; font-size: 12px; font-weight: 500; }
+  </style>
+
+  <!-- Operanden A, B von oben -->
+  <text class="pin" x="220" y="36" text-anchor="middle">A</text>
+  <text class="bus" x="238" y="36" text-anchor="start">/32</text>
+  <path class="wire" d="M 220 42 L 220 90"/>
+  <path class="wire" d="M 214 82 L 220 90 L 226 82" fill="none"/>
+
+  <text class="pin" x="360" y="36" text-anchor="middle">B</text>
+  <text class="bus" x="378" y="36" text-anchor="start">/32</text>
+  <path class="wire" d="M 360 42 L 360 90"/>
+  <path class="wire" d="M 354 82 L 360 90 L 366 82" fill="none"/>
+
+  <!-- Klassisches ALU-Trapez (Hosenform / V): oben breit, unten schmal -->
+  <path class="gate accent" d="M 150 90 L 430 90 L 370 220 L 210 220 Z"/>
+  <text class="sym" x="290" y="162" text-anchor="middle">ALU</text>
+
+  <!-- ALUControl von links -->
+  <text class="pin" x="48" y="160" text-anchor="end">ALUControl</text>
+  <path class="wire" d="M 55 156 L 180 156"/>
+  <path class="wire" d="M 172 150 L 180 156 L 172 162" fill="none"/>
+
+  <!-- Zero-Flag nach rechts -->
+  <path class="wire" d="M 400 156 L 500 156"/>
+  <path class="wire" d="M 492 150 L 500 156 L 492 162" fill="none"/>
+  <text class="pin" x="512" y="160" text-anchor="start">Zero</text>
+
+  <!-- Ergebnis nach unten -->
+  <path class="wire" d="M 290 220 L 290 268"/>
+  <path class="wire" d="M 284 260 L 290 268 L 296 260" fill="none"/>
+  <text class="pin" x="290" y="288" text-anchor="middle">Result</text>
+  <text class="bus" x="328" y="288" text-anchor="start">/32</text>
+</svg>

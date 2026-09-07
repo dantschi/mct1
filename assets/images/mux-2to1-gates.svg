@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="280" viewBox="0 0 660 280" role="img">
+  <style>
+.gate { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .wire { fill: none; stroke: #86868B; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+  .bubble { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .lbl { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 500; }
+  .sym { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; }
+  .accent { stroke: #E2001A; }
+  .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; }
+  </style>
+  <text class="pin" x="40" y="54" text-anchor="end">S</text>
+  <text class="pin" x="40" y="114" text-anchor="end">A</text>
+  <text class="pin" x="40" y="224" text-anchor="end">B</text>
+  <path class="wire" d="M 50 50 L 140 50 L 140 65 L 180 65"/>
+  <rect class="gate" x="180" y="40" width="60" height="50" rx="4" ry="4"/>
+  <text class="sym" x="210.0" y="72.0" text-anchor="middle">1</text>
+  <circle class="bubble" cx="240" cy="65" r="6"/>
+  <path class="wire" d="M 246 65 L 280 65 L 280 95 L 320 95"/>
+  <path class="wire" d="M 50 110 L 280 110 L 280 115 L 320 115"/>
+  <rect class="gate" x="320" y="80" width="70" height="50" rx="4" ry="4"/>
+  <text class="sym" x="355.0" y="112.0" text-anchor="middle">&amp;</text>
+  <path class="wire" d="M 140 50 L 140 192 L 320 192"/>
+  <path class="wire" d="M 50 220 L 320 220"/>
+  <rect class="gate" x="320" y="180" width="70" height="50" rx="4" ry="4"/>
+  <text class="sym" x="355.0" y="212.0" text-anchor="middle">&amp;</text>
+  <path class="wire" d="M 390 105 L 420 105 L 420 142 L 460 142"/>
+  <path class="wire" d="M 390 205 L 420 205 L 420 168 L 460 168"/>
+  <rect class="gate accent" x="460" y="130" width="70" height="50" rx="4" ry="4"/>
+  <text class="sym" x="495.0" y="162.0" text-anchor="middle">≥1</text>
+  <path class="wire" d="M 530 155 L 590 155"/>
+  <path class="wire" d="M 582 150 L 590 155 L 582 160" fill="none"/>
+  <text class="pin" x="605" y="159" text-anchor="start">Y</text>
+
+</svg>

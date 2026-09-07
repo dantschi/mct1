@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="280" viewBox="0 0 660 280" role="img">
+  <style>
+.gate { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .wire { fill: none; stroke: #86868B; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+  .bubble { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .lbl { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 500; }
+  .sym { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; }
+  .accent { stroke: #E2001A; }
+  .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; }
+  </style>
+  <text class="pin" x="40" y="104" text-anchor="end">B</text>
+  <text class="pin" x="40" y="54" text-anchor="end">A</text>
+  <text class="pin" x="40" y="234" text-anchor="end">Cin=1</text>
+  <path class="wire" d="M 50 100 L 200 100 L 200 105 L 280 105"/>
+  <path class="wire" d="M 120 100 L 120 185 L 160 185"/>
+  <rect class="gate" x="160" y="160" width="60" height="50" rx="4" ry="4"/>
+  <text class="sym" x="190.0" y="192.0" text-anchor="middle">1</text>
+  <circle class="bubble" cx="220" cy="185" r="6"/>
+  <path class="wire" d="M 226 185 L 250 185 L 250 155 L 280 155"/>
+  <rect class="gate" x="280" y="80" width="80" height="100" rx="4" ry="4"/>
+  <text class="sym" x="320.0" y="137.0" text-anchor="middle">MUX</text>
+  <text class="pin" x="265" y="110" text-anchor="end">0</text>
+  <text class="pin" x="265" y="160" text-anchor="end">1</text>
+  <path class="wire" d="M 50 50 L 400 50 L 400 108 L 440 108"/>
+  <path class="wire" d="M 360 130 L 400 130 L 400 132 L 440 132"/>
+  <path class="wire" d="M 50 230 L 480 230 L 480 160 L 480 160"/>
+  <path class="wire" d="M 480 160 L 480 145 L 440 145"/>
+  <rect class="gate accent" x="440" y="90" width="80" height="70" rx="4" ry="4"/>
+  <text class="sym" x="480.0" y="132.0" text-anchor="middle">FA</text>
+  <path class="wire" d="M 520 125 L 580 125"/>
+  <path class="wire" d="M 572 120 L 580 125 L 572 130" fill="none"/>
+  <text class="pin" x="595" y="129" text-anchor="start">Y</text>
+  <text class="pin" x="320" y="60" text-anchor="middle">Binvert</text>
+  <path class="wire" d="M 320 68 L 320 80"/>
+
+</svg>

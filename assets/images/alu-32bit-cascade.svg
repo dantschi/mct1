@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="220" viewBox="0 0 580 220" role="img">
+  <style>
+.gate { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .wire { fill: none; stroke: #86868B; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+  .bubble { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  .lbl { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 500; }
+  .sym { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; }
+  .accent { stroke: #E2001A; }
+  .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; }
+  </style>
+  <rect class="gate" x="40" y="80" width="100" height="70" rx="4" ry="4"/>
+  <text class="sym" x="90.0" y="122.0" text-anchor="middle">ALU0</text>
+  <rect class="gate accent" x="220" y="80" width="100" height="70" rx="4" ry="4"/>
+  <text class="sym" x="270.0" y="122.0" text-anchor="middle">ALU1</text>
+  <rect class="gate" x="420" y="80" width="110" height="70" rx="4" ry="4"/>
+  <text class="sym" x="475.0" y="122.0" text-anchor="middle">ALU31</text>
+  <path class="wire" d="M 140 115 L 220 115"/>
+  <path class="wire" d="M 320 115 L 360 115"/>
+  <text class="pin" x="380" y="110" text-anchor="middle">…</text>
+  <path class="wire" d="M 400 115 L 420 115"/>
+  <text class="pin" x="90" y="60" text-anchor="middle">Bit 0</text>
+  <text class="pin" x="270" y="60" text-anchor="middle">Bit 1</text>
+  <text class="pin" x="475" y="60" text-anchor="middle">Bit 31</text>
+  <text class="pin" x="90" y="180" text-anchor="middle">Carry</text>
+
+</svg>
