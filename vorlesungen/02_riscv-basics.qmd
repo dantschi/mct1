@@ -147,6 +147,28 @@ REP MOVSB
 
 ::: notes
 CISC packt maximale Komplexität in die Hardware. `REP MOVSB` kopiert Datenblöcke, führt Zähler und baut faktisch eine while-Schleife — komfortabel für Software, teuer für Silizium.
+
+Die x86-Befehlssatzarchitektur (ISA) ist formal gesehen eine CISC-Architektur. Die Realität moderner x86-Prozessoren ist heute jedoch vielschichtiger: Sie sind ein CISC-RISC-Hybrid.
+
+Um das zu verstehen, muss man streng zwischen der ISA (der Sprache, die der Prozessor versteht) und der Mikroarchitektur (wie der Prozessor intern arbeitet) unterscheiden.
+
+Die "CISC-Fassade" (Die ISA)
+Aus Sicht des Compilers, des Betriebssystems und des Programmierers ist x86 ein klassisches CISC-Design. Das zeigt sich an folgenden Merkmalen:
+
+Variable Befehlslänge: x86-Befehle können zwischen 1 und 15 Bytes lang sein. (RISC-Architekturen wie ARM haben in der Regel feste Befehlslängen, z.B. immer 4 Bytes).
+
+Komplexe Speicheroperationen: x86 erlaubt Befehle, die Daten direkt aus dem Speicher lesen, mit einem Register addieren und das Ergebnis direkt wieder in den Speicher schreiben. (RISC erfordert dafür separate Load-, Add- und Store-Befehle).
+
+Historischer Ballast: Die Architektur ist seit dem Intel 8086 aus dem Jahr 1978 rückwärtskompatibel. Es gibt Tausende von Befehlen und komplexe Adressierungsmodi.
+
+Der "RISC-Maschinenraum" (Die Mikroarchitektur)
+Das direkte Ausführen dieser hochkomplexen x86-Befehle in Hardware wurde in den 1990er Jahren zu einem massiven Flaschenhals, der die Taktraten bremste.
+
+Mit dem Intel Pentium Pro (1995) und dem AMD K5 (1996) gab es daher einen radikalen Paradigmenwechsel, der bis heute in Prozessoren wie Intel Core und AMD Ryzen genutzt wird:
+
+Dekodierung: Wenn ein x86-Befehl in den Prozessor geladen wird, führt die CPU diesen nicht direkt aus. Ein Hardware-Decoder zerlegt den komplexen x86-Befehl in kleinere, einfache und gleich lange Teilbefehle. Diese nennt man Micro-Operations (µops).
+
+Ausführung: Diese µops werden an den eigentlichen Rechenkern der CPU weitergeleitet. Dieser Kern ist eine superskalare, stark optimierte RISC-Engine. Er nutzt typische RISC-Techniken wie Out-of-Order Execution (Befehle werden in der effizientesten Reihenfolge abgearbeitet, nicht zwingend in der programmierten) und Register Renaming.
 :::
 
 ## Die Nachteile von CISC
@@ -284,6 +306,10 @@ graph LR
 
 ::: notes
 Wir kennen die RISC-Welt — jetzt den konkreten Vertrag: die ISA von RV32I. Spezifikation, Register-Namen und ABI, damit wir Register im Code korrekt ansprechen.
+
+Die ABI ist der Grund dafür, warum ein Programm, das du für Linux auf ARM (z.B. einen Raspberry Pi) kompilierst, nicht einfach unter Windows auf ARM läuft. Die zugrundeliegende ISA (der ARM-Prozessor) ist exakt dieselbe. Die Hardware würde die Befehle verstehen. Aber die Betriebssysteme haben völlig unterschiedliche ABIs (unterschiedliche Systemaufrufe, unterschiedliche Dateiformate, etc.).
+
+Außerdem ermöglicht eine standardisierte ABI, dass Programme, die in C geschrieben wurden, problemlos Bibliotheken nutzen können, die in C++, Rust oder Go geschrieben wurden. Solange sich die Compiler aller Sprachen an dieselbe ABI halten, passt der Maschinencode am Ende wie Lego zusammen.
 :::
 
 ## Der RISC-V Modulbaukasten
@@ -303,6 +329,65 @@ Wir kennen die RISC-Welt — jetzt den konkreten Vertrag: die ISA von RV32I. Spe
 
 ::: notes
 Mikrowellen-Controller braucht keine Float-Hardware — Modul weglassen. Jeder Chip braucht nur `I` (ca. 40 Grundbefehle). G = IMAFD (plus Zicsr/Zifencei); C ist separat — daher RV64GC = RV64IMAFDC. Labor und Klausur: nur der übersichtliche RV32I-Kern.
+
+Hier ist die genaue Aufschlüsselung von RV64IMAFDC:
+
+RV: Steht schlicht für RISC-V.
+
+64: Gibt die Registerbreite an (hier also ein 64-Bit-Prozessor). Es gibt auch RV32 (für kleine Mikrocontroller) oder sogar RV128.
+
+I (Base Integer): Das ist der fundamentale Basis-Befehlssatz für grundlegende Ganzzahl-Operationen (addieren, laden, speichern, springen). Dieses Modul ist als einziges absolute Pflicht.
+
+M (Multiply/Divide): Fügt Befehle für die Hardware-Multiplikation und -Division von Ganzzahlen hinzu (ohne dieses Modul müsste die CPU das mühsam in Software simulieren).
+
+A (Atomic): "Atomare" Befehle. Diese sind zwingend nötig, wenn man Betriebssysteme wie Linux und Multi-Core-Prozessoren nutzen will, damit mehrere Kerne sicher auf denselben Speicherbereich zugreifen können, ohne sich in die Quere zu kommen.
+
+F (Single-Precision Floating-Point): Erlaubt das Rechnen mit einfachen Kommazahlen (32-Bit Gleitkomma).
+
+D (Double-Precision Floating-Point): Erlaubt das Rechnen mit präziseren, großen Kommazahlen (64-Bit Gleitkomma).
+
+C (Compressed Instructions): Ein sehr wichtiges Modul für die Effizienz. Normalerweise sind alle RISC-V-Befehle genau 32 Bit lang. Das "C"-Modul erlaubt es der CPU, die häufigsten Befehle in einem stark komprimierten 16-Bit-Format zu lesen. Das spart massiv Speicherplatz (Code-Größe) und reduziert die Ladezeiten aus dem RAM.
+
+Und was bedeutet nun das "G"?
+Da die Kombination aus IMAFD (Ganzzahlen, Multiplikation, Atomics, Kommazahlen) der absolute Standard für jeden normalen Allzweck-Computer ist (z.B. für einen Desktop-PC, ein Smartphone oder einen Server, auf dem Linux laufen soll), hat man diese fünf Buchstaben zu einem einzigen Alias zusammengefasst: G (für General-Purpose).
+
+Daher gilt:
+IMAFD = G
+
+Wenn man nun noch das C (Compressed) anhängt, wird aus RV64IMAFDC schlicht und ergreifend RV64GC.
+
+RV64GC ist heute der absolute Goldstandard für 64-Bit RISC-V Hardware. Wenn du heute einen RISC-V-fähigen Linux-Rechner kaufst, wird das Betriebssystem voraussetzen, dass die CPU genau diesen "RV64GC"-Befehlssatz beherrscht.
+
+
+Das "Z" am Anfang der Namen hat eine besondere Bedeutung: Während die großen, grundlegenden Module (wie I, M, A, F, D, C) nur einen einzigen Buchstaben bekommen, steht das "Z" in der RISC-V-Nomenklatur für spezifischere Standard-Erweiterungen, deren Namen aus mehreren Buchstaben bestehen.
+
+Interessant an Zicsr und Zifencei ist ihre Geschichte: Ursprünglich (in älteren Versionen des RISC-V-Standards) waren diese Befehle fest im Basis-Modul "I" (Base Integer) eingebaut. Man hat sie später jedoch herausgelöst, um das Basis-Modul für extrem simple und winzige Mikrocontroller noch kleiner zu machen.
+
+Hier ist, was die beiden Module genau tun:
+
+1. Zicsr (Control and Status Registers)
+Diese Erweiterung stellt Befehle zur Verfügung, um die internen Verwaltungsregister (CSRs) des Prozessors zu lesen und zu beschreiben.
+
+Was sind CSRs? Neben den normalen Registern (in denen die CPU rechnet, z.B. 5 + 3), hat eine CPU interne Systemregister. Diese speichern den "Zustand" der Maschine.
+
+Wofür braucht man sie? Über diese CSRs werden grundlegende Systemfunktionen gesteuert:
+
+Interrupts und Ausnahmen: Wenn ein Fehler passiert (z.B. Division durch Null) oder eine externe Hardware (wie eine Tastatur) Aufmerksamkeit braucht.
+
+Privilegienstufen: Um festzulegen, ob der Prozessor gerade im sicheren "Machine Mode" (für die Firmware), "Supervisor Mode" (für das Betriebssystem, z.B. Linux) oder "User Mode" (für deine Apps) läuft.
+
+Timer und Leistungszähler: Um die Uhrzeit des Systems abzufragen oder zu messen, wie viele Taktzyklen vergangen sind.
+
+Fazit: Ein winziger Controller für eine Kaffeemaschine braucht diese Register vielleicht nicht zwingend. Aber jedes System, auf dem ein echtes Betriebssystem laufen soll, muss die Zicsr-Erweiterung haben.
+
+2. Zifencei (Instruction-Fetch Fence)
+Diese Erweiterung fügt dem Prozessor exakt einen einzigen, aber extrem wichtigen Befehl hinzu: fence.i.
+
+Das Problem: Moderne Prozessoren haben Caches (sehr schnellen Zwischenspeicher). Ein Teil davon (der Instruction Cache) speichert die nächsten Programm-Befehle, die ausgeführt werden sollen. Wenn ein Programm nun aber neuen Code in den Arbeitsspeicher (RAM) schreibt und diesen danach direkt ausführen will, weiß der Instruction Cache der CPU davon nichts. Er würde im schlimmsten Fall veralteten "Müll" ausführen.
+
+Die Lösung: Der fence.i-Befehl ist eine Art Stoppschild und Reset-Knopf für die CPU. Er sagt dem Prozessor im Grunde: "Wirf alle zwischengespeicherten Befehle in deinem Cache weg und lade sie komplett neu aus dem RAM, bevor du weiterarbeitest."
+
+Wofür braucht man das? Das ist absolut essenziell für JIT-Compiler (Just-in-Time). Wenn dein Browser JavaScript ausführt oder dein Rechner Java-Programme laufen lässt, übersetzt das System den Code während der Laufzeit in Maschinencode, schreibt ihn in den RAM und führt ihn sofort aus. Ohne Zifencei würde das nicht sicher funktionieren. Auch Betriebssysteme brauchen den Befehl, wenn sie ein neues Programm in den RAM laden, um es zu starten.
 :::
 
 ## Die Definition von RV32I
@@ -1047,6 +1132,32 @@ Das I-Type-Immediate ersetzt beim R-Type die Felder für das zweite Quellregiste
 
 ::: notes
 Das oberste der zwölf Bits ist das Vorzeichenbit. Daher ist 2048 nicht direkt darstellbar.
+
+Das li steht bei RISC-V für "Load Immediate" (zu Deutsch etwa: "Lade einen direkten/unmittelbaren Wert"). Es handelt sich dabei um einen sogenannten Pseudobefehl (Pseudo-Instruction). Das bedeutet: Diesen Befehl gibt es in der eigentlichen Hardware (der ISA) gar nicht. Er ist eine reine Hilfsfunktion des Assemblers (dem Programm, das deinen Text-Code in Maschinencode übersetzt), um dem Programmierer das Leben leichter zu machen.
+
+Das Platzproblem in RISC-Architekturen
+In einen regulären Befehl passen nur Konstanten (Immediates) mit einer Größe von 12 Bit. Das liegt daran, dass der gesamte Befehl bei RISC-V genau 32 Bit lang ist. Ein Teil dieser 32 Bit wird bereits benötigt, um dem Prozessor mitzuteilen, was er tun soll (Opcode) und welches Register er nutzen soll. Für die eigentliche Zahl bleiben also nur 12 Bit übrig (Zahlen von -2048 bis 2047).
+
+Was passiert, wenn du eine größere Zahl brauchst?
+Wenn du in deinem Code beispielsweise die Zahl 50.000 in ein Register laden möchtest, passt diese unmöglich in diese 12 Bit. In der Hardware müsstest du das manuell mit zwei echten Befehlen lösen:
+
+lui (Load Upper Immediate): Lädt die oberen Bits der Zahl in das Register.
+
+addi (Add Immediate): Addiert die restlichen unteren Bits dazu.
+
+Weil es für einen Programmierer extrem nervig und fehleranfällig ist, jede größere Zahl manuell in obere und untere Bits zu zerschneiden, gibt es den Pseudobefehl li.
+
+Die Aufgabe von li
+Als Programmierer schreibst du einfach völlig entspannt:
+li x1, 50000 (Lade die Zahl 50.000 in das Register x1)
+
+Der Assembler liest das und entscheidet automatisch:
+
+Ist die Zahl zwischen -2048 und 2047? Dann übersetzt er li einfach in einen einzigen, schnellen addi-Befehl.
+
+Ist die Zahl größer? Dann zerlegt er deinen li-Befehl automatisch in eine Kombination aus lui und addi (oder nutzt andere nötige Befehle), um die große Zahl korrekt zusammenzubauen.
+
+Fazit: li ist ein Komfort-Befehl, der dir die Arbeit abnimmt, dir selbst Gedanken darüber machen zu müssen, ob eine Konstante in 12 Bit passt oder ob du sie über mehrere Instruktionen hinweg stückeln musst.
 :::
 
 ## Sign-Extension bei Immediates
