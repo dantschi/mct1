@@ -355,7 +355,7 @@ graph LR
 <span id="cb1-3"><a aria-label="3"></a>-&gt; Ohne elektrische Vorgabe: undefinierter Zustand</span>
 <span id="cb1-4"><a aria-label="4"></a>-&gt; Daten kollidieren, der Prozessor friert ein</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Zentrale Erkenntnis: Der Datenpfad ist blind. Ein Multiplexer kennt keinen Code — nur ein Steuerkabel mit Strom an (1) oder aus (0). Ohne aktives Setzen wählt der MUX undefiniert; ALU und RAM arbeiten mit Müll.</p>
+<p>Zentrale Erkenntnis: Der Datenpfad reagiert auf logische Pegel 0 und 1. Ein nicht angesteuerter MUX hat in der Synthese keinen „Strom aus“, sondern einen festzulegenden Wert. Schreibfreigaben dürfen nicht als Don’t Care stehen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -483,7 +483,7 @@ graph LR
 <ul>
 <li>Auf der Ausgangsseite treten die Steuerleitungen aus</li>
 <li>Für unseren RV32I-Single-Cycle-Prozessor: sieben primäre Steuersignale</li>
-<li>Die meisten Signale sind 1 Bit breit (Strom an = 1, aus = 0)</li>
+<li>Die meisten Signale sind 1 Bit: logischer Pegel 0 oder 1</li>
 </ul>
 <table class="caption-top">
 <thead>
@@ -647,14 +647,13 @@ graph LR
 <section id="der-risc-v-vorteil" class="slide level2">
 <h2>Der RISC-V-Vorteil</h2>
 <ul>
-<li>x86 (CISC): hunderte komplexe Befehle, teils bis 15 Bytes</li>
-<li>Hardwired-Design dort praktisch unmöglich — große Microcode-ROMs</li>
-<li>RISC-V: uniforme 32-Bit-Befehle</li>
-<li>Steuerwerk oft mit wenigen Dutzend Logikgattern hardwired</li>
-<li>Vorteil: Strom, Chipfläche und Herstellungskosten</li>
+<li>x86-Implementierungen nutzen oft Mikrocode oder µOp-Zerlegung</li>
+<li>Das ist eine typische Entwurfsentscheidung, kein Beweis, dass Hardwired unmöglich ist</li>
+<li>Eine vollständig aufgelistete Wahrheitstabelle ist nicht die synthetisierte Fläche</li>
+<li>Konkrete Gatterzahl und Timing brauchen eine Implementierung und Messung</li>
 </ul>
 <aside class="notes">
-<p>RISC-Philosophie aus Einheit 2: CISC braucht riesige Microcode-Tabellen. RISC-V ist so entworfen, dass Steuersignale mit einer Handvoll Gatter ausrechenbar sind — die Control Unit bleibt winzig.</p>
+<p>RISC-V trennt Main Control und ALU Control, damit nicht jedes funct-Bit in jede Zeile wandert. Zwei Stufen sind eine verständliche Zerlegung. Sie sind nicht die Behauptung, das Steuerwerk bestehe aus wenigen Dutzend Gattern.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1199,10 +1198,10 @@ graph TD
 <h2>Das eiserne Gesetz der Präzision</h2>
 <ul>
 <li>Ein Fehler in der Matrix kann das System crashen lassen</li>
-<li>Beispiel: <code>RegWrite = 0</code> bei <code>sw</code> vergessen</li>
-<li>Zufälliges Zielregister (z. B. <code>s0</code>) wird mit Müll überschrieben</li>
-<li>Unvorhersehbare Variablenzerstörung — klassischer Heisenbug</li>
-<li>Chip-Verifikation ist deshalb ein Milliardenmarkt</li>
+<li>Beispiel: <code>RegWrite</code> bei <code>sw</code> vergessen und auf 1 gesetzt</li>
+<li>Die Schreibadresse ist das Bitfeld, das im R-Format <code>rd</code> wäre</li>
+<li>Bei <code>sw</code> sind das Teile des Immediate; das beschriebene Register folgt aus diesen Bits</li>
+<li>Der Schreibwert ist der am Write-Data-Eingang anliegende Wert, nicht unbestimmter Abfall</li>
 </ul>
 <aside class="notes">
 <p>Hier schreiben wir keine Software mit Patch. Eine falsche Null in der Tabelle kostet Wafer. Deshalb verifizieren Konzerne diese Matrizen intensiv, bevor Silizium gefertigt wird.</p>
@@ -1514,14 +1513,13 @@ graph RL
 <section id="die-gefahr-memread-und-memwrite" class="slide level2">
 <h2>Die Gefahr: MemRead und MemWrite</h2>
 <ul>
-<li>Logikfehler könnte beide Signale gleichzeitig auf 1 setzen</li>
-<li>Gleichzeitig schreiben und lesen auf denselben Leitungen</li>
-<li>Risiko: Kurzschluss / Datenkorruption auf Chip-Ebene</li>
-<li>Unsere Wahrheitstabelle: nie beide zugleich 1</li>
-<li>Entweder laden oder speichern — nicht beides</li>
+<li>Im Lehrmodell sind <code>MemRead</code> und <code>MemWrite</code> gegenseitig ausgeschlossen</li>
+<li><code>MemRead = 0</code> bedeutet hier „nicht lesen“, nicht zwingend hochohmig</li>
+<li>Ein elektrischer Kurzschluss gilt nur für ein konkret gezeigtes Busmodell</li>
+<li>Speichermodule können ein definiertes Read-during-write haben; das nutzen wir nicht</li>
 </ul>
 <aside class="notes">
-<p>Viele Speicherchips teilen Lese-/Schreibpfade. MemRead und MemWrite gleichzeitig kann Sense Amps zerstören. In der Matrix ist immer höchstens eines aktiv.</p>
+<p>Im Modell ist höchstens eines der beiden Signale 1. Das ist eine Tabellenregel, keine allgemeine elektrische Aussage.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1691,11 +1689,10 @@ graph LR
 <section id="das-problem-mit-r-types" class="slide level2">
 <h2>Das Problem mit R-Types</h2>
 <ul>
-<li>Exakte Operation steckt in <code>funct3</code> und <code>funct7</code></li>
-<li>Opcode + <code>funct3</code> + <code>funct7</code> = 17 Bit Input</li>
-<li><span class="math inline">\(2^{17} = 131\,072\)</span> Zeilen Wahrheitstabelle</li>
-<li>Ein so großer Gatterblock wäre langsam und flächenhungrig</li>
-<li>Gegenteil der schnellen RISC-Philosophie</li>
+<li>Opcode, <code>funct3</code> und <code>funct7</code> sind zusammen viele Eingangsbits</li>
+<li>Eine naive Tabelle hätte <span class="math inline">\(2^{17} = 131072\)</span> Zeilen</li>
+<li>Die synthetisierte Schaltung listet diese Zeilen nicht physisch auf</li>
+<li>Don’t-Care und die Zweistufigkeit verkleinern die Beschreibung, nicht per se die gemessene Fläche</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -2627,7 +2624,7 @@ graph LR
 <li>Store Word (Opcode <code>0100011</code>)</li>
 <li>Adresse wieder Base + Offset → <code>ALUSrc = 1</code></li>
 <li>In den RAM schreiben? Ja → <code>MemWrite = 1</code></li>
-<li><code>MemRead = 0</code> (kein Kurzschluss)</li>
+<li><code>MemRead = 0</code> im Modell: dieser Zugriff liest nicht</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb19-1"><a aria-label="1"></a>sw:</span>
 <span id="cb19-2"><a aria-label="2"></a>ALUSrc   = 1</span>

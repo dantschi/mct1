@@ -835,7 +835,7 @@ graph LR
 <span id="cb8-5"><a aria-label="5"></a><span class="co">/* Rettung (Compiler): */</span></span>
 <span id="cb8-6"><a aria-label="6"></a><span class="dt">volatile</span> <span class="dt">int</span> <span class="op">*</span>button <span class="op">=</span> <span class="op">(</span><span class="dt">volatile</span> <span class="dt">int</span> <span class="op">*)</span><span class="bn">0xF0000000</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>volatile</code> zwingt den Compiler zu echten Loads. Separat: SoC/Page-Attribute müssen MMIO als non-cacheable markieren, sonst liefert der Cache veraltete Werte.</p>
+<p><code>volatile</code> hindert den Compiler daran, wiederholte Zugriffe zu streichen. Es macht den Zugriff nicht automatisch uncached und ersetzt weder <code>FENCE</code> noch Synchronisation mit DMA oder anderen Kernen. „Jedes <code>lw</code> ist ein Buszugriff“ gilt nur im uncached-MMIO-Modell dieser Folie.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -946,7 +946,10 @@ graph LR
 <h2>Software-Debouncing</h2>
 <ul>
 <li>Erste 1 erkannt: Druck erkannt</li>
-<li>~20 ms Signal ignorieren (Kontakte beruhigen)</li>
+<li>Entprellung und ein neues Druckereignis sind zwei Schritte</li>
+<li>Eine Schleife mit 10000 Iterationen ist ohne Takt und CPI keine belegte Wartezeit von 20 ms</li>
+<li>Im Simulator: Ereignis plus Release, nicht eine angenommene Millisekundenzahl</li>
+<li>An echter Hardware: Zeitfenster über einen dokumentierten Timer</li>
 <li>Delay-Loop: Takte absichtlich verbrennen</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb11-1"><a aria-label="1"></a>li t1<span class="op">,</span> <span class="dv">10000</span></span>
@@ -1090,9 +1093,9 @@ graph LR
 <section id="die-nachteile-von-polling" class="slide level2">
 <h2>Die Nachteile von Polling</h2>
 <ul>
-<li>Energieverschwendung: CPU unter Volllast, Hitze, leerer Akku</li>
-<li>Keine Nebenläufigkeit: Browser, Audio, UI blockiert</li>
-<li>In der Praxis nur noch Nischen (z. B. Ultra-Low-Latency)</li>
+<li>Busy Waiting ist eine Variante: die CPU prüft ununterbrochen</li>
+<li>Periodisches Polling in einer sonstigen Anwendung ist weiterhin üblich</li>
+<li>Es ist nicht gleichbedeutend mit „kein Multitasking“</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -1114,7 +1117,7 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Polling saugt den Akku leer und tötet Multitasking. Für moderne Systeme architektonisch tödlich.</p>
+<p>Busy Waiting hält einen Kern beschäftigt. Polling in Embedded-Systemen bleibt eine normale Methode, wenn die Periode und die übrige Arbeit festliegen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1601,7 +1604,8 @@ graph TD
 <li>Wo wurde der User-Code unterbrochen?</li>
 <li>Hardware kopiert den unterbrochenen PC automatisch nach <code>mepc</code></li>
 <li>Bei synchronen Exceptions/<code>ecall</code>: <code>mepc</code> zeigt auf den auslösenden Befehl</li>
-<li>Handler muss typischerweise <code>mepc = mepc + 4</code> setzen, sonst Endlosschleife</li>
+<li><code>mepc + 4</code> nur, wenn ein 4-Byte-<code>ecall</code> konsumiert wird</li>
+<li>Bei einem Interrupt die Fortsetzungsadresse in <code>mepc</code> nicht pauschal erhöhen</li>
 </ul>
 <aside class="notes">
 <p><code>mepc</code> = Rückflugticket. Ohne +4 kehrt <code>mret</code> zum selben <code>ecall</code> zurück. Simulatoren wie Venus erledigen das intern.</p>
@@ -1685,16 +1689,25 @@ graph TD
 <section id="der-trap-handler-isr" class="slide level2">
 <h2>Der Trap-Handler (ISR)</h2>
 <ul>
-<li>Schritt 1: Kontextsicherung aller genutzten x-Register</li>
-<li>Echter Kernel: zuerst <code>sp</code> mit <code>mscratch</code> tauschen (User-<code>sp</code> ist unsicher)</li>
-<li>Unten: vereinfachte Lehr-Sequenz (Stack bereits gültig angenommen)</li>
+<li><p>Schritt 1: Kontextsicherung aller genutzten x-Register</p></li>
+<li><p>Echter Kernel: zuerst <code>sp</code> mit <code>mscratch</code> tauschen (User-<code>sp</code> ist unsicher)</p></li>
+<li><p>Unten: vereinfachte Lehr-Sequenz (Stack bereits gültig angenommen)</p></li>
+<li><p><code>mtvec</code> enthält BASE und MODE; dieser Kurs nimmt Direct an</p></li>
+<li><p>Nicht jeder CSR ist im User Mode verboten</p></li>
+<li><p>MIE ist der globale Machine-Interrupt-Enable, nicht die gesamte Konfiguration</p></li>
+<li><p>Einzelne Quellen und Pending-Bits kommen dazu</p></li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb21-1"><a aria-label="1"></a><span class="fu">Trap_Handler:</span></span>
-<span id="cb21-2"><a aria-label="2"></a>    # real<span class="op">:</span> csrrw <span class="kw">sp</span><span class="op">,</span> mscratch<span class="op">,</span> <span class="kw">sp</span></span>
-<span id="cb21-3"><a aria-label="3"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
-<span id="cb21-4"><a aria-label="4"></a>    sw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb21-5"><a aria-label="5"></a>    sw t1<span class="op">,</span> <span class="dv">4</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb21-6"><a aria-label="6"></a>    sw a0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb21-2"><a aria-label="2"></a>    # Lehrannahmen<span class="op">:</span> gültiger ausgerichteter Stack<span class="op">,</span> keine verschachtelten Traps</span>
+<span id="cb21-3"><a aria-label="3"></a>    # Leaf<span class="op">-</span>Handler<span class="op">:</span> nur die selbst benutzten Register</span>
+<span id="cb21-4"><a aria-label="4"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
+<span id="cb21-5"><a aria-label="5"></a>    sw   t0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb21-6"><a aria-label="6"></a>    csrr t0<span class="op">,</span> mcause</span>
+<span id="cb21-7"><a aria-label="7"></a>    # Quelle quittieren<span class="op">,</span> ohne weiteren Call</span>
+<span id="cb21-8"><a aria-label="8"></a>    lw   t0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb21-9"><a aria-label="9"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span>
+<span id="cb21-10"><a aria-label="10"></a>    mret</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Ein Handler mit Unteraufruf muss <code>ra</code> und alle möglicherweise veränderten Caller-Saved-Register sichern. Für <code>ra</code>, <code>t0</code>–<code>t6</code> und <code>a0</code>–<code>a7</code> sind das 16 Wörter, also 64 Byte. <code>mepc</code> wird nur bei einem bewusst konsumierten 4-Byte-<code>ecall</code> um 4 erhöht. Ein Interrupt setzt bei <code>mepc</code> bereits die Fortsetzungsadresse; dort nicht pauschal addieren.</p>
 <aside class="notes">
 <p>Produktionssysteme tauschen auf den Kernel-Stack. Die Kurzform dient nur der Lesbarkeit.</p>
 <style type="text/css">
@@ -1715,15 +1728,11 @@ graph TD
 <li>Schritt 2: <code>mcause</code> lesen, Treiber, eigentliche Aufgabe</li>
 <li>Schritt 3: Register spiegelverkehrt wiederherstellen</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb22-1"><a aria-label="1"></a>    csrr a0<span class="op">,</span> mcause</span>
-<span id="cb22-2"><a aria-label="2"></a>    <span class="cf">call</span> Lese_Tastatur</span>
-<span id="cb22-3"><a aria-label="3"></a></span>
-<span id="cb22-4"><a aria-label="4"></a>    lw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb22-5"><a aria-label="5"></a>    lw t1<span class="op">,</span> <span class="dv">4</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb22-6"><a aria-label="6"></a>    lw a0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb22-7"><a aria-label="7"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb22-1"><a aria-label="1"></a># Nicht so<span class="op">:</span> call zerstört ra und weitere Caller<span class="op">-</span>Saved<span class="op">-</span>Register<span class="op">,</span></span>
+<span id="cb22-2"><a aria-label="2"></a># die der <span class="dv">16</span><span class="op">-</span><span class="dt">Byte</span><span class="op">-</span>Leaf<span class="op">-</span>Frame oben nicht gesichert hat<span class="op">.</span></span>
+<span id="cb22-3"><a aria-label="3"></a># Entweder Leaf ohne Call<span class="op">,</span> oder <span class="dv">64</span><span class="op">-</span><span class="dt">Byte</span><span class="op">-</span>Frame für ra<span class="op">,</span> t0–t6<span class="op">,</span> a0–a7<span class="op">.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Nach Sicherung freie Bahn; danach Zustand exakt wie vor dem Interrupt.</p>
+<p>Nach Sicherung nur Register benutzen, die der Frame enthält. Ein <code>call</code> ohne gesichertes <code>ra</code> kehrt nicht zuverlässig zurück.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2473,7 +2482,9 @@ graph TD
 <h2>Clobbering bei ecall (Warnung)</h2>
 <ul>
 <li><code>ecall</code> = ABI-Funktionsaufruf in den Kernel</li>
-<li>Laut ABI darf der Kernel Caller-Saved (<code>t0</code>–<code>t6</code>, <code>a0</code>–<code>a7</code>) zerstören</li>
+<li>Der Clobber-Vertrag folgt aus der konkreten Umgebung, nicht aus der Funktions-ABI</li>
+<li>Venus-Dienste dieses Kurses: Rückgabe und erhaltene Register in der Venus-Tabelle nachlesen</li>
+<li>Nicht jeder <code>ecall</code> darf alle Caller-Saved-Register zerstören</li>
 <li>Venus erhält <code>t</code>-Register faktisch oft — das ist nicht garantiert und nicht portabel</li>
 <li>Schleifenzähler in <code>t0</code> + Print in der Schleife: auf anderen Systemen riskant</li>
 <li>Lösung: vor <code>ecall</code> auf Stack sichern oder <code>s0</code>–<code>s11</code> nutzen</li>

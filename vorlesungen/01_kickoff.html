@@ -286,6 +286,27 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
+<section id="lernziele" class="slide level2">
+<h2>Lernziele</h2>
+<ul>
+<li>Dieselben Bitmuster als vorzeichenlos und als Zweierkomplement lesen, einschließlich der einen Null und des Bereichs <span class="math inline">\(-2^{n-1}\)</span> bis <span class="math inline">\(2^{n-1}-1\)</span>.</li>
+<li>Byte-Reihenfolge und Alignment als getrennte Begriffe verwenden.</li>
+<li>Eine steigende Taktflanke und Setup/Hold als Eigenschaft <strong>dieses</strong> Flip-Flop-Lehrmodells beschreiben.</li>
+</ul>
+<aside class="notes">
+<p>Prüffrage: Warum sind <code>0000</code> und <code>1000</code> in 4-Bit-Sign-Magnitude verschiedene Codierungen derselben Zahl Null, ohne dass daraus eine C-Vergleichsregel folgt?</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
 <section id="organisatorisches-spielregeln" class="slide level2">
 <h2>Organisatorisches &amp; Spielregeln</h2>
 <ul>
@@ -1060,25 +1081,36 @@ graph LR
 </section>
 <section id="die-0-und-die-0" class="slide level2">
 <h2>Die +0 und die −0</h2>
-<div class="columns">
-<div class="column" style="width:46%;">
 <ul>
-<li>Sign-Magnitude: <code>0000</code> = <span class="math inline">\(+0\)</span>, <code>1000</code> = <span class="math inline">\(-0\)</span></li>
-<li>Mathematik kennt nur eine Null</li>
-<li>Hardware-Vergleicher: <code>0000 ≠ 1000</code></li>
-<li>ALU-Schaltungsaufwand würde enorm steigen</li>
+<li>Hypothetische 4-Bit-Sign-Magnitude-Codierung</li>
+<li><code>0000</code> und <code>1000</code>: verschiedene Bitmuster, numerisch beide Null</li>
+<li>Bitmustervergleich: ungleich</li>
+<li>Numerischer Vergleich: gleich</li>
+<li>C vergleicht Werte, nicht rohe Codierungen</li>
 </ul>
-</div><div class="column" style="width:54%;">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb7-1"><a aria-label="1"></a><span class="dt">int</span> a <span class="op">=</span> <span class="op">+</span><span class="dv">0</span><span class="op">;</span> <span class="co">// 0000</span></span>
-<span id="cb7-2"><a aria-label="2"></a><span class="dt">int</span> b <span class="op">=</span> <span class="op">-</span><span class="dv">0</span><span class="op">;</span> <span class="co">// 1000</span></span>
-<span id="cb7-3"><a aria-label="3"></a></span>
-<span id="cb7-4"><a aria-label="4"></a><span class="cf">if</span> <span class="op">(</span>a <span class="op">==</span> b<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb7-5"><a aria-label="5"></a>    <span class="co">// würde bei Sign-Magnitude NIE laufen —</span></span>
-<span id="cb7-6"><a aria-label="6"></a>    <span class="co">// Bitmuster sind unterschiedlich!</span></span>
-<span id="cb7-7"><a aria-label="7"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div></div>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Codierung</th>
+<th>Bitmustervergleich</th>
+<th>numerischer Wert</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0000</code></td>
+<td>Referenz</td>
+<td><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td><code>1000</code></td>
+<td>verschieden von <code>0000</code></td>
+<td><span class="math inline">\(0\)</span></td>
+</tr>
+</tbody>
+</table>
 <aside class="notes">
-<p>Zwei Bitmuster für denselben Wert Null: <code>if (a == b)</code> vergleicht bitweise und scheitert. Zusatzschaltungen wären langsam und teuer — Sign-Magnitude ist damit ungeeignet.</p>
+<p>Das ist ausdrücklich kein C-Programm. <code>int a = +0</code> und <code>int b = -0</code> sind in C dieselbe Zahl; <code>a == b</code> ist wahr, weil C numerisch vergleicht. Ein naiver Hardware-Gleichheitsvergleich der Bitmuster würde <code>0000</code> und <code>1000</code> unterscheiden. Genau dieser doppelte Nullcode macht Sign-Magnitude für eine ALU unhandlich.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1125,9 +1157,9 @@ N = -x_{n-1} \cdot 2^{n-1} + \sum_{i=0}^{n-2} x_i \cdot 2^i
 <li>Exakt <span class="math inline">\(+1\)</span> addieren</li>
 <li>Übertrag über das MSB hinaus: ignorieren</li>
 </ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb8-1"><a aria-label="1"></a>1. Positiver Binärwert</span>
-<span id="cb8-2"><a aria-label="2"></a>2. Bits kippen (NOT)</span>
-<span id="cb8-3"><a aria-label="3"></a>3. +1 addieren</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb7-1"><a aria-label="1"></a>1. Positiver Binärwert</span>
+<span id="cb7-2"><a aria-label="2"></a>2. Bits kippen (NOT)</span>
+<span id="cb7-3"><a aria-label="3"></a>3. +1 addieren</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Mechanischer Algorithmus, in Hardware leicht: invertieren, dann +1. Damit ist die Zahl negiert.</p>
 <style type="text/css">
@@ -1185,9 +1217,9 @@ graph LR
 <li><span class="math inline">\(-5\)</span>: <code>1111 1011</code> → invertieren → <code>0000 0100</code> → <span class="math inline">\(+1\)</span> → <code>0000 0101</code> (= <span class="math inline">\(+5\)</span>)</li>
 <li>Zweimal negieren führt zum Ursprung zurück</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb9-1"><a aria-label="1"></a>-(-5) = +5</span>
-<span id="cb9-2"><a aria-label="2"></a>Der Algorithmus kümmert sich nicht darum,</span>
-<span id="cb9-3"><a aria-label="3"></a>ob der Startwert positiv oder negativ war!</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb8-1"><a aria-label="1"></a>-(-5) = +5</span>
+<span id="cb8-2"><a aria-label="2"></a>Der Algorithmus kümmert sich nicht darum,</span>
+<span id="cb8-3"><a aria-label="3"></a>ob der Startwert positiv oder negativ war!</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Symmetrie: keine neuen Regeln für die Rückrichtung. Eine simple Schaltung reicht, um Vorzeichen zu drehen.</p>
 <style type="text/css">
@@ -1208,11 +1240,12 @@ graph LR
 <li>Register begrenzt (z. B. 8 Bit) — wie ein Kilometerzähler</li>
 <li>Unsigned: <span class="math inline">\(0\)</span> bis <span class="math inline">\(255\)</span></li>
 <li>Signed (Zweierkomplement): <span class="math inline">\(-128\)</span> bis <span class="math inline">\(+127\)</span></li>
+<li>Kleinster Wert <span class="math inline">\(-128\)</span> hat kein positives Gegenstück in 8 Bit</li>
 <li><span class="math inline">\(+127 + 1\)</span> → <code>1000 0000</code> (= <span class="math inline">\(-128\)</span>)</li>
-<li>Dieser Sprung heißt <strong>Overflow</strong></li>
+<li>Registerarithmetik: modulo <span class="math inline">\(2^{n}\)</span>, ISA-Regel ohne Trap in RV32I</li>
 </ul>
 <aside class="notes">
-<p>Bei RV32I: 32-Bit-Register, harte Grenzen. Overflow: vom Maximalpositiven ins Extremnegative. Viele Architekturen setzen dafür Status-Flags; RV32I verzichtet auf ein Flag-Register — Overflow-Behandlung liegt in der Software.</p>
+<p>Bei RV32I arbeitet die Register-ALU modulo <span class="math inline">\(2^{32}\)</span>. Das ist definiert und setzt kein Flag. In C ist vorzeichenbehafteter Überlauf von <code>int</code> undefiniertes Verhalten — eine andere Ebene als die ISA. Der asymmetrische Bereich entsteht, weil eine der <span class="math inline">\(2^{n}\)</span> Codierungen für die Null verbraucht ist und das MSB das Gewicht <span class="math inline">\(-2^{n-1}\)</span> trägt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1262,12 +1295,12 @@ graph LR
       }</style></aside>
 </section></section>
 <section>
-<section id="speicherausrichtung-endianness" class="title-slide slide level1 center">
-<h1>5. Speicherausrichtung (Endianness)</h1>
+<section id="byte-reihenfolge-endianness" class="title-slide slide level1 center">
+<h1>5. Byte-Reihenfolge (Endianness)</h1>
 
 </section>
-<section id="speicherausrichtung-überblick" class="slide level2">
-<h2>Speicherausrichtung — Überblick</h2>
+<section id="byte-reihenfolge-überblick" class="slide level2">
+<h2>Byte-Reihenfolge — Überblick</h2>
 <ul>
 <li>RAM als lineares Array von Bytes</li>
 <li>Adressen als „Hausnummern“</li>
@@ -1361,9 +1394,9 @@ graph TD
 <li>Lösung: Word auf 4 aufeinanderfolgende Adressen aufteilen</li>
 <li>Streitfrage: Welches Byte kommt an die kleinste Adresse?</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb10-1"><a aria-label="1"></a>DE  (MSB)   AD   BE   EF  (LSB)</span>
-<span id="cb10-2"><a aria-label="2"></a></span>
-<span id="cb10-3"><a aria-label="3"></a>Wohin mit EF — Adresse 0x00 oder 0x03?</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb9-1"><a aria-label="1"></a>DE  (MSB)   AD   BE   EF  (LSB)</span>
+<span id="cb9-2"><a aria-label="2"></a></span>
+<span id="cb9-3"><a aria-label="3"></a>Wohin mit EF — Adresse 0x00 oder 0x03?</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>32-Bit-Word passt nicht in ein 8-Bit-Fach → vier aufeinanderfolgende Bytes. Reihenfolge: Kopf (DE) zuerst oder Schwanz (EF) zuerst?</p>
 <style type="text/css">
@@ -1403,11 +1436,22 @@ graph TD
           display:block!important;
       }</style></aside>
 </section>
-<section id="endianness-in-der-risc-v-architektur" class="slide level2">
-<h2>Endianness in der RISC-V Architektur</h2>
+<section id="endianness-in-der-kursumgebung" class="slide level2">
+<h2>Endianness in der Kursumgebung</h2>
 <ul>
-<li>RISC-V (wie x86): <strong>Little-Endian</strong></li>
-<li><code>0xDEADBEEF</code> ab Adresse <code>0x00</code>:</li>
+<li>Gewählte Kurs- und Simulatorumgebung: <strong>Little Endian</strong></li>
+<li>Der Zeiger bezeichnet die erste adressierte Speicherstelle</li>
+<li>Dort liegt das niederwertigste Byte eines Mehrbytewerts</li>
+<li>Alignment ist ein anderes Thema (Einheit 3)</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/endian-12345678.svg"></p>
+<figcaption>Vier Bytezellen für 0x12345678 in Little und Big Endian</figcaption>
+</figure>
+</div>
+<ul>
+<li>Beispiel <code>0xDEADBEEF</code> ab Adresse <code>0x00</code>:</li>
 </ul>
 <table class="caption-top">
 <thead>
@@ -1436,7 +1480,7 @@ graph TD
 </tbody>
 </table>
 <ul>
-<li>Ein Pointer auf ein Word zeigt auf das LSB!</li>
+<li>Ein Zeiger auf das Wort zeigt auf das LSB.</li>
 </ul>
 <aside class="notes">
 <p>Im Labor: <code>DEADBEEF</code> erscheint im Speicher als <code>EF BE AD DE</code> — kein Simulatorfehler, sondern korrektes Little-Endian. MSB auf der höchsten Adresse. Damit sind Sie für den Speicherdump in Venus gerüstet.</p>
@@ -1729,15 +1773,15 @@ graph LR
 <li>Ternärer Operator <code>? :</code> ≈ Software-MUX</li>
 </ul>
 </div><div class="column" style="width:54%;">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb11-1"><a aria-label="1"></a><span class="co">// MUX als ternärer Operator:</span></span>
-<span id="cb11-2"><a aria-label="2"></a><span class="dt">int</span> Y <span class="op">=</span> <span class="op">(</span>S <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">?</span> B <span class="op">:</span> A<span class="op">;</span></span>
-<span id="cb11-3"><a aria-label="3"></a></span>
-<span id="cb11-4"><a aria-label="4"></a><span class="co">// Alternativ:</span></span>
-<span id="cb11-5"><a aria-label="5"></a><span class="cf">if</span> <span class="op">(</span>S <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb11-6"><a aria-label="6"></a>    Y <span class="op">=</span> B<span class="op">;</span></span>
-<span id="cb11-7"><a aria-label="7"></a><span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
-<span id="cb11-8"><a aria-label="8"></a>    Y <span class="op">=</span> A<span class="op">;</span></span>
-<span id="cb11-9"><a aria-label="9"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb10-1"><a aria-label="1"></a><span class="co">// MUX als ternärer Operator:</span></span>
+<span id="cb10-2"><a aria-label="2"></a><span class="dt">int</span> Y <span class="op">=</span> <span class="op">(</span>S <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">?</span> B <span class="op">:</span> A<span class="op">;</span></span>
+<span id="cb10-3"><a aria-label="3"></a></span>
+<span id="cb10-4"><a aria-label="4"></a><span class="co">// Alternativ:</span></span>
+<span id="cb10-5"><a aria-label="5"></a><span class="cf">if</span> <span class="op">(</span>S <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb10-6"><a aria-label="6"></a>    Y <span class="op">=</span> B<span class="op">;</span></span>
+<span id="cb10-7"><a aria-label="7"></a><span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb10-8"><a aria-label="8"></a>    Y <span class="op">=</span> A<span class="op">;</span></span>
+<span id="cb10-9"><a aria-label="9"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div></div>
 <aside class="notes">
 <p>Software springt in einen Zweig. Hardware: A und B liegen permanent an; der MUX wählt, was weiterfließt. Der ternäre Operator bildet genau dieses Verhalten ab.</p>
@@ -1858,10 +1902,10 @@ graph LR
 <li>Summe <span class="math inline">\(\leftrightarrow\)</span> XOR · Carry <span class="math inline">\(\leftrightarrow\)</span> AND</li>
 </ul>
 </div><div class="column" style="width:50%;">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb12-1"><a aria-label="1"></a>  1011  (11)</span>
-<span id="cb12-2"><a aria-label="2"></a>+ 0011  ( 3)</span>
-<span id="cb12-3"><a aria-label="3"></a>-------</span>
-<span id="cb12-4"><a aria-label="4"></a>  1110  (14)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb11-1"><a aria-label="1"></a>  1011  (11)</span>
+<span id="cb11-2"><a aria-label="2"></a>+ 0011  ( 3)</span>
+<span id="cb11-3"><a aria-label="3"></a>-------</span>
+<span id="cb11-4"><a aria-label="4"></a>  1110  (14)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div></div>
 <aside class="notes">
 <p>Bei <span class="math inline">\(1+1\)</span> gibt es keine „2“ — wir schreiben 0 und Carry 1. Summenspalte = XOR-Wahrheitstabelle, Carry = AND. Mathematik wird zu Logik.</p>
@@ -2124,12 +2168,12 @@ graph LR
 <li>Hardware: oft großes NOR über alle Ergebnis-Bits</li>
 <li>Vergleich <span class="math inline">\(A == B\)</span>: rechne <span class="math inline">\(A - B\)</span>; <span class="math inline">\(Z=1\)</span> ⇒ gleich</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb13-1"><a aria-label="1"></a><span class="co">// Software:</span></span>
-<span id="cb13-2"><a aria-label="2"></a><span class="cf">if</span> <span class="op">(</span>A <span class="op">==</span> B<span class="op">)</span> <span class="op">{</span> <span class="op">...</span> <span class="op">}</span></span>
-<span id="cb13-3"><a aria-label="3"></a></span>
-<span id="cb13-4"><a aria-label="4"></a><span class="co">// Hardware-Idee:</span></span>
-<span id="cb13-5"><a aria-label="5"></a>Ergebnis <span class="op">=</span> A <span class="op">-</span> B<span class="op">;</span></span>
-<span id="cb13-6"><a aria-label="6"></a><span class="cf">if</span> <span class="op">(</span>Zero_Flag <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span> <span class="op">...</span> <span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb12-1"><a aria-label="1"></a><span class="co">// Software:</span></span>
+<span id="cb12-2"><a aria-label="2"></a><span class="cf">if</span> <span class="op">(</span>A <span class="op">==</span> B<span class="op">)</span> <span class="op">{</span> <span class="op">...</span> <span class="op">}</span></span>
+<span id="cb12-3"><a aria-label="3"></a></span>
+<span id="cb12-4"><a aria-label="4"></a><span class="co">// Hardware-Idee:</span></span>
+<span id="cb12-5"><a aria-label="5"></a>Ergebnis <span class="op">=</span> A <span class="op">-</span> B<span class="op">;</span></span>
+<span id="cb12-6"><a aria-label="6"></a><span class="cf">if</span> <span class="op">(</span>Zero_Flag <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span> <span class="op">...</span> <span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Wichtigstes Flag für bedingte Sprünge in RISC-V. Control Unit liest <span class="math inline">\(Z\)</span> und entscheidet über den Kontrollfluss.</p>
 <style type="text/css">
@@ -2340,10 +2384,10 @@ graph LR
 <li>RISC-V / die meisten CPUs: Speichern primär bei steigender Flanke</li>
 </ul>
 </div><div class="column" style="width:54%;">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb14-1"><a aria-label="1"></a>Clock: 00000000111111110000000011111111</span>
-<span id="cb14-2"><a aria-label="2"></a>              ^       ^       ^       ^</span>
-<span id="cb14-3"><a aria-label="3"></a>            Rise    Fall    Rise    Fall</span>
-<span id="cb14-4"><a aria-label="4"></a>(Prozessor speichert typisch nur beim Rise)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb13-1"><a aria-label="1"></a>Clock: 00000000111111110000000011111111</span>
+<span id="cb13-2"><a aria-label="2"></a>              ^       ^       ^       ^</span>
+<span id="cb13-3"><a aria-label="3"></a>            Rise    Fall    Rise    Fall</span>
+<span id="cb13-4"><a aria-label="4"></a>(Prozessor speichert typisch nur beim Rise)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div></div>
 <aside class="notes">
 <p>Edge-Triggering: Bei konstantem CLK-Pegel passiert im Speicher nichts. Nur im Moment der steigenden Flanke öffnet der Tresor kurz, nimmt D auf und verriegelt wieder — danach hat die ALU Zeit bis zum nächsten Tick.</p>
@@ -2460,7 +2504,7 @@ graph LR
 </figure>
 </div>
 <aside class="notes">
-<p>Symbol: Rechteck, D links, Q rechts, Dreieck am linken Rand = Edge-Triggered (steigende Flanke). Taub gegenüber <span class="math inline">\(D\)</span>, außer im Moment der Flanke.</p>
+<p>Annahme unseres Lehrmodells: positive Taktflanke, kombinatorisches Lesen des Registerfiles und synchrones Schreiben. Das ist eine Schaltungseigenschaft, keine Vorschrift der RISC-V-ISA. Symbol: Rechteck, D links, Q rechts, Dreieck = steigende Flanke.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2619,11 +2663,11 @@ graph TD
 <li>WE / EN: Erlaubnis-Pin</li>
 <li>WE = 0: Flanke ignorieren; WE = 1: bei Flanke speichern</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb15-1"><a aria-label="1"></a><span class="cf">if</span> <span class="op">(</span>RISING_EDGE<span class="op">(</span>clock<span class="op">))</span> <span class="op">{</span></span>
-<span id="cb15-2"><a aria-label="2"></a>    <span class="cf">if</span> <span class="op">(</span>WriteEnable <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb15-3"><a aria-label="3"></a>        Register <span class="op">=</span> DataIn<span class="op">;</span></span>
-<span id="cb15-4"><a aria-label="4"></a>    <span class="op">}</span></span>
-<span id="cb15-5"><a aria-label="5"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb14-1"><a aria-label="1"></a><span class="cf">if</span> <span class="op">(</span>RISING_EDGE<span class="op">(</span>clock<span class="op">))</span> <span class="op">{</span></span>
+<span id="cb14-2"><a aria-label="2"></a>    <span class="cf">if</span> <span class="op">(</span>WriteEnable <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb14-3"><a aria-label="3"></a>        Register <span class="op">=</span> DataIn<span class="op">;</span></span>
+<span id="cb14-4"><a aria-label="4"></a>    <span class="op">}</span></span>
+<span id="cb14-5"><a aria-label="5"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Sicherungshebel am Auslöser: Nur wenn die Control Unit WE = 1 setzt, überschreibt die Flanke den Inhalt.</p>
 <style type="text/css">
@@ -2821,12 +2865,12 @@ graph LR
 <li>Decoder: 5-Bit-<span class="math inline">\(A3\)</span> → genau ein WE-Pin aktiv</li>
 <li>Schreiben erst bei steigender Flanke</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb16-1"><a aria-label="1"></a>A3 = 00101 (Register 5), WE3 = 1</span>
-<span id="cb16-2"><a aria-label="2"></a></span>
-<span id="cb16-3"><a aria-label="3"></a>Reg 0 WE = 0</span>
-<span id="cb16-4"><a aria-label="4"></a>...</span>
-<span id="cb16-5"><a aria-label="5"></a>Reg 5 WE = 1   ← nur x5 speichert</span>
-<span id="cb16-6"><a aria-label="6"></a>...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb15-1"><a aria-label="1"></a>A3 = 00101 (Register 5), WE3 = 1</span>
+<span id="cb15-2"><a aria-label="2"></a></span>
+<span id="cb15-3"><a aria-label="3"></a>Reg 0 WE = 0</span>
+<span id="cb15-4"><a aria-label="4"></a>...</span>
+<span id="cb15-5"><a aria-label="5"></a>Reg 5 WE = 1   ← nur x5 speichert</span>
+<span id="cb15-6"><a aria-label="6"></a>...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Alle sehen dieselben Daten; nur das dekodierte Register hat WE = 1 und übernimmt bei der Flanke.</p>
 <style type="text/css">
@@ -2901,7 +2945,7 @@ graph LR
 <li>Spart Spezialbefehle (RISC-Philosophie)</li>
 <li>Beispiel „Copy“: <code>add x2, x1, x0</code> ⇒ <span class="math inline">\(x2 = x1 + 0\)</span></li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb17-1"><a aria-label="1"></a><span class="bu">add</span> x2<span class="op">,</span> x1<span class="op">,</span> x0   <span class="op">#</span> Kopie<span class="op">:</span> x2 ← x1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb16-1"><a aria-label="1"></a><span class="bu">add</span> x2<span class="op">,</span> x1<span class="op">,</span> x0   <span class="op">#</span> Kopie<span class="op">:</span> x2 ← x1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Kein eigener MOVE-Befehl nötig — Addition mit Null recycelt die ALU-Hardware. Typisch RISC: wenige Instruktionen, clever genutzt.</p>
 <style type="text/css">
@@ -2985,10 +3029,10 @@ graph LR
 <h2>Die Von-Neumann-Architektur</h2>
 <ul>
 <li>1940er (John von Neumann)</li>
-<li>Ein gemeinsamer Speicher für Code und Daten</li>
-<li>Ein gemeinsamer Bus</li>
-<li>Vorteil: flexibel</li>
-<li>Nachteil (Flaschenhals): nicht gleichzeitig Instruktion lesen und Daten speichern</li>
+<li>Gemeinsamer Adressraum für Code und Daten</li>
+<li>Ein gemeinsamer Bus ist ein zusätzliches Ressourcenmodell</li>
+<li>Der Buskonflikt entsteht erst, wenn Fetch und Datenzugriff denselben Port brauchen</li>
+<li>Ein gemeinsamer Adressraum allein erzwingt diesen Konflikt nicht</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -3008,7 +3052,7 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Standard in PCs/Macs: Code und Daten sind Zahlen im selben Speicher. Flexibel, aber der eine Bus serialisiert Zugriffe.</p>
+<p>Gemeinsamer Adressraum, getrennte Zugriffsports und physisch getrennte Speicher sind drei verschiedene Aussagen. Der Flaschenhals gehört zum Ein-Bus-Modell, nicht schon zum gemeinsamen Adressraum. Harvard in dieser Folie meint getrennte Ports.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -3046,7 +3090,7 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Harvard (Mark I): getrennte Welten — kein Buskonflikt, aber kein „Ausborgen“ von Platz zwischen den Speichern.</p>
+<p>Harvard in diesem Bild: getrennte Speicher und getrennte Ports. Ein gemeinsamer Adressraum wäre davon noch unabhängig.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -3068,13 +3112,35 @@ graph LR
 <li>Ziel: Single-Cycle ohne Buskonflikt</li>
 </ul>
 </div><div class="column" style="width:54%;">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb18-1"><a aria-label="1"></a>1. Fetch (IM)</span>
-<span id="cb18-2"><a aria-label="2"></a>2. Register lesen</span>
-<span id="cb18-3"><a aria-label="3"></a>3. ALU</span>
-<span id="cb18-4"><a aria-label="4"></a>4. Store (DM)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb17-1"><a aria-label="1"></a>1. Fetch (IM)</span>
+<span id="cb17-2"><a aria-label="2"></a>2. Register lesen</span>
+<span id="cb17-3"><a aria-label="3"></a>3. ALU</span>
+<span id="cb17-4"><a aria-label="4"></a>4. Store (DM)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div></div>
 <aside class="notes">
 <p>Damit schließen wir den Kickoff: Sie haben die Bausteine für den vollständigen RISC-V-Datenpfad.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="abschlussblatt" class="slide level2">
+<h2>Abschlussblatt</h2>
+<ul>
+<li>Begriffe: Zweierkomplement, Byte-Reihenfolge, Alignment, kombinatorisch, sequenziell.</li>
+<li>Modellannahme: positive Flanke und Little Endian der Kursumgebung.</li>
+<li>Typischer Fehler: C-Vergleich mit einem Bitmustervergleich von Sign-Magnitude gleichsetzen.</li>
+<li>Übung: Labor 1, Zahlenrad und Speicherbytes zu <code>0x12345678</code>.</li>
+</ul>
+<aside class="notes">
+<p>Verbindliche Festlegungen stehen in <code>referenz/kursvertrag.md</code>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;

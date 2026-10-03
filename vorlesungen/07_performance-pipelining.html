@@ -388,7 +388,7 @@ graph LR
 <ul>
 <li>Unbestechliche Formel der Rechnerarchitektur:</li>
 <li><span class="math inline">\(\mathrm{CPU\text{-}Zeit} = \text{Befehlsanzahl} \cdot \mathrm{CPI} \cdot \text{Taktzeit}\)</span></li>
-<li>Befehlsanzahl: Codevolumen (Compiler-Optimierung)</li>
+<li>Befehlsanzahl: dynamisch ausgeführte echte Maschineninstruktionen, nicht Dateigröße oder Assemblerzeilen</li>
 <li>CPI (Cycles per Instruction): mittlere Takte pro Befehl</li>
 <li>Taktzeit: Dauer eines Clock-Ticks (Nanosekunden)</li>
 </ul>
@@ -919,17 +919,34 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
-<section id="der-ideale-speedup" class="slide level2">
-<h2>Der ideale Speedup</h2>
+<section id="der-ideale-durchsatz" class="slide level2">
+<h2>Der ideale Durchsatz</h2>
 <ul>
-<li>Theoretisch: <span class="math inline">\(\mathrm{Speedup} = \text{Anzahl der Stufen}\)</span></li>
-<li>Fünf Stufen → idealer Speedup <span class="math inline">\(5\)</span></li>
-<li>Beispiel: Programm, das single-cycle 5 Minuten braucht → ideal 1 Minute</li>
-<li>Taktzeit bricht stark ein; Durchsatz steigt</li>
+<li>Im Waschsalonvergleich bleibt die Latenz eines Korbs gleich</li>
+<li>Eine echte Pipeline kann die Einzellatenz durch Registeroverhead erhöhen</li>
+<li>Sie erhöht zuerst den Durchsatz</li>
+<li>Ohne Hazards brauchen <span class="math inline">\(N\)</span> Instruktionen und 5 Stufen <span class="math inline">\(N+4\)</span> Zyklen</li>
+<li>„Speedup immer 5“ gilt nicht</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb10-1"><a aria-label="1"></a>Ideale Belohnung:</span>
-<span id="cb10-2"><a aria-label="2"></a>CPI bleibt ~1, Taktzeit sinkt drastisch</span>
-<span id="cb10-3"><a aria-label="3"></a>-&gt; Durchsatz steigt mit der Stufenzahl</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/pipeline-timing-lehr.svg"></p>
+<figcaption>Lehrzeiten 820 ps und 270 ps</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>Lehrwerte, keine Messung: Stufen 200, 100, 150, 250 und 100 ps, je Registerübergang 20 ps. Single-Cycle-Takt 820 ps, Pipeline-Takt 270 ps, Latenz einer Instruktion <span class="math inline">\(5 \times 270 = 1350\)</span> ps. Für 20 unabhängige Instruktionen: <span class="math inline">\(20 \times 820 = 16400\)</span> ps gegenüber <span class="math inline">\(24 \times 270 = 6480\)</span> ps, Speedup etwa 2,53.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 <aside class="notes">
 <p>Traum des Ingenieurs: idealer Speedup gleich Stufenzahl (bei vollem Fließband und ohne Hazards). CPI bleibt ideal ~1, aber mit viel kürzerer Taktzeit. Hazards und Overhead senken den realen Faktor.</p>
 <style type="text/css">
@@ -944,14 +961,13 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
-<section id="warum-nicht-genau-fünffach" class="slide level2">
-<h2>Warum nicht genau fünffach?</h2>
+<section id="warum-der-faktor-nicht-5-ist" class="slide level2">
+<h2>Warum der Faktor nicht 5 ist</h2>
 <ul>
-<li>Real eher Faktor <span class="math inline">\(4\)</span> bis <span class="math inline">\(4{,}5\)</span></li>
-<li>Overhead: Pipeline-Register kosten Setup-Zeit</li>
-<li>Imbalance: Stufen nie exakt gleich lang (RAM oft langsamer als ALU)</li>
-<li>Uhr richtet sich nach der längsten Stufe</li>
-<li>Trotzdem: eine der wichtigsten Performance-Technologien</li>
+<li>Füllung und Leerung kosten Zyklen</li>
+<li>Registeroverhead und ungleiche Stufen verlängern den Takt der längsten Stufe</li>
+<li>Das Lehrbeispiel oben ergibt für <span class="math inline">\(N = 20\)</span> etwa 2,53</li>
+<li>Keine unbelegte Spanne „typisch 4 bis 4,5“</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="4" data-layout-align="default">
 <div class="cell-output-display">
@@ -961,7 +977,7 @@ graph LR
 <pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 
 graph TD
-  Ideal[Idealer Speedup 5x] --&gt; Real[Realer Speedup ca. 4.3x]
+  Ideal[Stufenvergleich] --&gt; Real[Lehrbeispiel ca. 2,53]
   Real --&gt; G1[Register-Verzoegerung]
   Real --&gt; G2[Ungleiche Stufen]
   style Real fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -1060,10 +1076,10 @@ graph LR
 <li>Realität: Code-Zeilen brauchen ständig Daten voneinander</li>
 <li>Nächster Schritt: die Gefahren (Hazards) des Fließbands</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb11-1"><a aria-label="1"></a><span class="co">/* Illusion: alles unabhaengig */</span></span>
-<span id="cb11-2"><a aria-label="2"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></span>
-<span id="cb11-3"><a aria-label="3"></a><span class="dt">int</span> b <span class="op">=</span> <span class="dv">6</span><span class="op">;</span></span>
-<span id="cb11-4"><a aria-label="4"></a><span class="dt">int</span> c <span class="op">=</span> <span class="dv">7</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb10-1"><a aria-label="1"></a><span class="co">/* Illusion: alles unabhaengig */</span></span>
+<span id="cb10-2"><a aria-label="2"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></span>
+<span id="cb10-3"><a aria-label="3"></a><span class="dt">int</span> b <span class="op">=</span> <span class="dv">6</span><span class="op">;</span></span>
+<span id="cb10-4"><a aria-label="4"></a><span class="dt">int</span> c <span class="op">=</span> <span class="dv">7</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Pipeline funktioniert nur perfekt bei unabhängigen Befehlen. Software ist verflochten — als Nächstes: Blockaden und Hazards.</p>
 <style type="text/css">
@@ -1200,9 +1216,9 @@ graph LR
 <li>Single-Cycle: kein Problem — Zeile 1 ist fertig, bevor Zeile 2 startet</li>
 <li>Pipeline: Überhol-Problem auf dem Fließband</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb12-1"><a aria-label="1"></a><span class="co">/* Klassischer Data Hazard (RAW): */</span></span>
-<span id="cb12-2"><a aria-label="2"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">10</span> <span class="op">+</span> <span class="dv">5</span><span class="op">;</span>   <span class="co">/* schreibt a */</span></span>
-<span id="cb12-3"><a aria-label="3"></a><span class="dt">int</span> d <span class="op">=</span> a <span class="op">+</span> <span class="dv">20</span><span class="op">;</span>   <span class="co">/* liest a sofort danach */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb11-1"><a aria-label="1"></a><span class="co">/* Klassischer Data Hazard (RAW): */</span></span>
+<span id="cb11-2"><a aria-label="2"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">10</span> <span class="op">+</span> <span class="dv">5</span><span class="op">;</span>   <span class="co">/* schreibt a */</span></span>
+<span id="cb11-3"><a aria-label="3"></a><span class="dt">int</span> d <span class="op">=</span> a <span class="op">+</span> <span class="dv">20</span><span class="op">;</span>   <span class="co">/* liest a sofort danach */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Im Single-Cycle lag das Ergebnis fest im Register File, bevor der nächste Befehl startete. In der Pipeline überholt der Leser den Schreiber.</p>
 <style type="text/css">
@@ -1226,8 +1242,8 @@ graph LR
 <li>Konflikt: <code>sub</code> verlangt einen Wert, der noch nicht im Register File liegt</li>
 <li>Schreiben erst in WB (Stufe 5), Lesen schon in ID (Stufe 2)</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb13-1"><a aria-label="1"></a><span class="bu">add</span> t0<span class="op">,</span> t1<span class="op">,</span> t2    <span class="op">#</span> t0 erst in WB <span class="op">(</span>Stufe <span class="dv">5</span><span class="op">)</span></span>
-<span id="cb13-2"><a aria-label="2"></a><span class="bu">sub</span> t3<span class="op">,</span> t0<span class="op">,</span> t4    <span class="op">#</span> t0 schon in ID <span class="op">(</span>Stufe <span class="dv">2</span><span class="op">)</span> gelesen</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb12-1"><a aria-label="1"></a><span class="bu">add</span> t0<span class="op">,</span> t1<span class="op">,</span> t2    <span class="op">#</span> t0 erst in WB <span class="op">(</span>Stufe <span class="dv">5</span><span class="op">)</span></span>
+<span id="cb12-2"><a aria-label="2"></a><span class="bu">sub</span> t3<span class="op">,</span> t0<span class="op">,</span> t4    <span class="op">#</span> t0 schon in ID <span class="op">(</span>Stufe <span class="dv">2</span><span class="op">)</span> gelesen</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>RAW: Write von <code>add</code>, Read von <code>sub</code>. Physikalisch klaffen Stufe 5 und Stufe 2 auseinander.</p>
 <style type="text/css">
@@ -1304,9 +1320,9 @@ graph LR
 <li>Preis: typisch drei verlorene Taktzyklen (Konvention ohne Write/Read-Split im selben Takt; mit H&amp;H-Registerfile-Hälften oft nur 2 Bubbles)</li>
 <li>Der Speedup durch kürzeren Takt wird teilweise zunichtegemacht</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb14-1"><a aria-label="1"></a>ADD:  IF ID EX MEM WB(schreibt)</span>
-<span id="cb14-2"><a aria-label="2"></a>SUB:     IF .. .. .. ID(liest sicher) EX MEM WB</span>
-<span id="cb14-3"><a aria-label="3"></a>             ^--- drei Takte Warten ---^</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb13-1"><a aria-label="1"></a>ADD:  IF ID EX MEM WB(schreibt)</span>
+<span id="cb13-2"><a aria-label="2"></a>SUB:     IF .. .. .. ID(liest sicher) EX MEM WB</span>
+<span id="cb13-3"><a aria-label="3"></a>             ^--- drei Takte Warten ---^</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Stall rettet die Korrektheit, vernichtet aber Durchsatz. Gibt es einen besseren Weg?</p>
 <style type="text/css">
@@ -1330,9 +1346,9 @@ graph LR
 <li>Idee: Ergebnis direkt am ALU-Ausgang abgreifen und zur nächsten ALU leiten</li>
 <li>Kein Umweg über das Register File</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb15-1"><a aria-label="1"></a>Forwarding (Bypassing):</span>
-<span id="cb15-2"><a aria-label="2"></a>Nutze das Ergebnis, sobald es physikalisch fertig ist.</span>
-<span id="cb15-3"><a aria-label="3"></a>Warte nicht auf Write-Back.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb14-1"><a aria-label="1"></a>Forwarding (Bypassing):</span>
+<span id="cb14-2"><a aria-label="2"></a>Nutze das Ergebnis, sobald es physikalisch fertig ist.</span>
+<span id="cb14-3"><a aria-label="3"></a>Warte nicht auf Write-Back.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Am Ende von EX liegt die Summe im EX/MEM-Register bereit. Wir reichen sie dem bedürftigen Befehl über den Tisch.</p>
 <style type="text/css">
@@ -1459,9 +1475,9 @@ graph LR
 <li>Übersetzt: Vorgänger speichert, Ziel ist nicht <code>x0</code>, Ziel = meine Quelle</li>
 <li>Dann: ForwardA-MUX auf Bypass (z. B. <code>10</code>)</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb16-1"><a aria-label="1"></a><span class="cf">if</span> <span class="op">(</span>vorheriger_schreibt <span class="op">&amp;&amp;</span> sein_ziel <span class="op">==</span> meine_quelle<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb16-2"><a aria-label="2"></a>    aktiviere_abkuerzung<span class="op">();</span></span>
-<span id="cb16-3"><a aria-label="3"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb15-1"><a aria-label="1"></a><span class="cf">if</span> <span class="op">(</span>vorheriger_schreibt <span class="op">&amp;&amp;</span> sein_ziel <span class="op">==</span> meine_quelle<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb15-2"><a aria-label="2"></a>    aktiviere_abkuerzung<span class="op">();</span></span>
+<span id="cb15-3"><a aria-label="3"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Großes AND: RegWrite, nicht x0, rd == rs1. Dann Weiche umlegen. Analog für rs2.</p>
 <style type="text/css">
@@ -1562,9 +1578,9 @@ graph LR
 <li>Zusammenspiel aus Datenpfad-Erweiterung und Kontroll-Logik</li>
 <li>Aber: Ist Forwarding allmächtig?</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb17-1"><a aria-label="1"></a>Performance-Check:</span>
-<span id="cb17-2"><a aria-label="2"></a>Bei RAW von Rechenbefehlen: 0 Taktzyklen Verlust.</span>
-<span id="cb17-3"><a aria-label="3"></a>CPI bleibt ~1.0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb16-1"><a aria-label="1"></a>Performance-Check:</span>
+<span id="cb16-2"><a aria-label="2"></a>Bei RAW von Rechenbefehlen: 0 Taktzyklen Verlust.</span>
+<span id="cb16-3"><a aria-label="3"></a>CPI bleibt ~1.0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Triumph bei ALU-zu-ALU-Abhängigkeiten. Es gibt jedoch einen Befehl, bei dem die Physik im Weg steht.</p>
 <style type="text/css">
@@ -1655,8 +1671,8 @@ graph TD
 <li>Daten eines <code>lw</code> erst am Ende von MEM (Stufe 4)</li>
 <li>Der RAM ist träge</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb18-1"><a aria-label="1"></a>lw  t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span>    <span class="op">#</span> Daten erst in MEM <span class="op">(</span>Takt <span class="dv">4</span><span class="op">)</span></span>
-<span id="cb18-2"><a aria-label="2"></a><span class="bu">add</span> t3<span class="op">,</span> t0<span class="op">,</span> t2   <span class="op">#</span> braucht Daten schon in EX <span class="op">(</span>Takt <span class="dv">4</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb17-1"><a aria-label="1"></a>lw  t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span>    <span class="op">#</span> Daten erst in MEM <span class="op">(</span>Takt <span class="dv">4</span><span class="op">)</span></span>
+<span id="cb17-2"><a aria-label="2"></a><span class="bu">add</span> t3<span class="op">,</span> t0<span class="op">,</span> t2   <span class="op">#</span> braucht Daten schon in EX <span class="op">(</span>Takt <span class="dv">4</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>In Takt 4: <code>lw</code> in MEM liefert erst am Taktende; <code>add</code> in EX braucht die Daten sofort.</p>
 <style type="text/css">
@@ -1771,7 +1787,7 @@ graph RL
 <li>Abhängiger Befehl wird in ID eingefroren (kein Wechsel nach EX)</li>
 <li>PC ebenfalls eingefroren (kein neuer Fetch)</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb19-1"><a aria-label="1"></a>Erzwungener STALL = Kaffeepause-Takt fuer das Fließband</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb18-1"><a aria-label="1"></a>Erzwungener STALL = Kaffeepause-Takt fuer das Fließband</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Notbremse: Produzent darf Daten holen, Konsument und Fetch stehen still.</p>
 <style type="text/css">
@@ -1816,9 +1832,9 @@ graph RL
 <li>Befehl darf nichts Speichern/Schreiben</li>
 <li>Hardware „schläft“ einen Takt</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb20-1"><a aria-label="1"></a>NOP in Assembler (Beispiel):</span>
-<span id="cb20-2"><a aria-label="2"></a>addi x0, x0, 0</span>
-<span id="cb20-3"><a aria-label="3"></a># sinnlos, ungefährlich, wirkungslos = Bubble</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb19-1"><a aria-label="1"></a>NOP in Assembler (Beispiel):</span>
+<span id="cb19-2"><a aria-label="2"></a>addi x0, x0, 0</span>
+<span id="cb19-3"><a aria-label="3"></a># sinnlos, ungefährlich, wirkungslos = Bubble</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>NOP = alle sensiblen Steuersignale auf Null. ALU-Müll prallt am geschlossenen Register File ab.</p>
 <style type="text/css">
@@ -1898,7 +1914,7 @@ graph RL
 <li>Viele Arrays laden + sofort verrechnen → viele Blasen</li>
 <li>Hardware am Limit — Rettung durch Software</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb21-1"><a aria-label="1"></a>Jeder Load-Use Hazard: typisch 1 Takt Penalty</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb20-1"><a aria-label="1"></a>Jeder Load-Use Hazard: typisch 1 Takt Penalty</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Forwarding und Stalling sind ausgereizt. Der Compiler muss helfen.</p>
 <style type="text/css">
@@ -1961,10 +1977,10 @@ graph TD
 <li>Gut (0 Bubbles):</li>
 <li><code>lw</code> / <code>sub</code> (Lücke füllen) / <code>add</code> (Daten haben Zeit)</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb22-1"><a aria-label="1"></a># Bubble durch produktive Arbeit ersetzt<span class="op">:</span></span>
-<span id="cb22-2"><a aria-label="2"></a>lw  t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
-<span id="cb22-3"><a aria-label="3"></a><span class="bu">sub</span> t4<span class="op">,</span> t5<span class="op">,</span> t6    <span class="op">#</span> unabhaengig<span class="op">,</span> fuellt die Luecke</span>
-<span id="cb22-4"><a aria-label="4"></a><span class="bu">add</span> t3<span class="op">,</span> t0<span class="op">,</span> t2    <span class="op">#</span> Forwarding greift</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb21-1"><a aria-label="1"></a># Bubble durch produktive Arbeit ersetzt<span class="op">:</span></span>
+<span id="cb21-2"><a aria-label="2"></a>lw  t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
+<span id="cb21-3"><a aria-label="3"></a><span class="bu">sub</span> t4<span class="op">,</span> t5<span class="op">,</span> t6    <span class="op">#</span> unabhaengig<span class="op">,</span> fuellt die Luecke</span>
+<span id="cb21-4"><a aria-label="4"></a><span class="bu">add</span> t3<span class="op">,</span> t0<span class="op">,</span> t2    <span class="op">#</span> Forwarding greift</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Dasselbe Programm, ein Takt schneller: Scheduling ersetzt die leere Bubble.</p>
 <style type="text/css">
@@ -2056,9 +2072,9 @@ graph TD
 <li>Pipeline: Fließband steht niemals still</li>
 <li>Während <code>beq</code> durch die ersten Stufen kriecht, muss der PC in jedem Takt die nächste Fetch-Adresse wählen</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb23-1"><a aria-label="1"></a>Fundamentales Problem:</span>
-<span id="cb23-2"><a aria-label="2"></a>Der PC muss wissen, wo er weitergeht (Fetch), BEVOR</span>
-<span id="cb23-3"><a aria-label="3"></a>die CPU verstanden hat, ob sie springen muss!</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb22-1"><a aria-label="1"></a>Fundamentales Problem:</span>
+<span id="cb22-2"><a aria-label="2"></a>Der PC muss wissen, wo er weitergeht (Fetch), BEVOR</span>
+<span id="cb22-3"><a aria-label="3"></a>die CPU verstanden hat, ob sie springen muss!</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Control Hazard: Der PC zieht stur den nächsten Befehl, ohne zu wissen, dass in der Röhre ein Sprung steckt, der die Route ändert.</p>
 <style type="text/css">
@@ -2081,11 +2097,11 @@ graph TD
 <li>Zero-Flag erst am Ende von Takt 3</li>
 <li>AND vor dem PC gibt die Zieladresse erst zu Beginn von Takt 4 frei</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb24-1"><a aria-label="1"></a>beq-Latenz:</span>
-<span id="cb24-2"><a aria-label="2"></a>Takt 1: IF</span>
-<span id="cb24-3"><a aria-label="3"></a>Takt 2: ID (Opcode bekannt, Bedingung noch unklar)</span>
-<span id="cb24-4"><a aria-label="4"></a>Takt 3: EX (ALU rechnet, Zero am Ende)</span>
-<span id="cb24-5"><a aria-label="5"></a>Takt 4: PC kann umschalten</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb23-1"><a aria-label="1"></a>beq-Latenz:</span>
+<span id="cb23-2"><a aria-label="2"></a>Takt 1: IF</span>
+<span id="cb23-3"><a aria-label="3"></a>Takt 2: ID (Opcode bekannt, Bedingung noch unklar)</span>
+<span id="cb23-4"><a aria-label="4"></a>Takt 3: EX (ALU rechnet, Zero am Ende)</span>
+<span id="cb23-5"><a aria-label="5"></a>Takt 4: PC kann umschalten</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>In ID weiß die CPU nur, dass es ein Branch ist — nicht, ob die Bedingung gilt. Die ALU in EX entscheidet.</p>
 <style type="text/css">
@@ -2188,10 +2204,10 @@ graph TD
 <li>Ständiges Flushen zerstört den Throughput</li>
 <li>Nächster Schritt: Penalty in Hardware reduzieren</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb25-1"><a aria-label="1"></a>Ein Fließband ist nur schnell, wenn es nicht stoppt.</span>
-<span id="cb25-2"><a aria-label="2"></a>Jeder Flush ist ein Riss im Getriebe.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb24-1"><a aria-label="1"></a>Ein Fließband ist nur schnell, wenn es nicht stoppt.</span>
+<span id="cb24-2"><a aria-label="2"></a>Jeder Flush ist ein Riss im Getriebe.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Zwei Takte pro Sprung summieren sich: fast 30–40 % Verlust bei naivem Flushen.</p>
+<p>Zwei Takte Penalty sind die Folge der Auflösung in EX. Daraus folgt kein fester Prozentverlust, solange Branch-Häufigkeit und Programm nicht gegeben sind.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2275,9 +2291,9 @@ graph LR
 <li>Richtig geraten: null Taktverlust</li>
 <li>Falsch: Flush — im Schnitt oft noch Gewinn</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb26-1"><a aria-label="1"></a>Assume Not Taken:</span>
-<span id="cb26-2"><a aria-label="2"></a>Nehmen Sie an, der Sprung werde nicht genommen,</span>
-<span id="cb26-3"><a aria-label="3"></a>bis der Zero-Ausgang des Vergleichers Sie eines Besseren belehrt.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb25-1"><a aria-label="1"></a>Assume Not Taken:</span>
+<span id="cb25-2"><a aria-label="2"></a>Nehmen Sie an, der Sprung werde nicht genommen,</span>
+<span id="cb25-3"><a aria-label="3"></a>bis der Zero-Ausgang des Vergleichers Sie eines Besseren belehrt.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Naive, aber wirksame Strategie, wenn Sprünge selten genommen werden.</p>
 <style type="text/css">
@@ -2382,12 +2398,12 @@ graph LR
 <h2>Spekulative Ausführung</h2>
 <ul>
 <li>Herzstück moderner CPUs (Apple M, AMD Ryzen, Intel Core)</li>
-<li>Vorhersagen oft <span class="math inline">\(&gt;95\,\%\)</span> Trefferquote</li>
+<li>Vorhersage ist eine weitere Mikroarchitektur; eine Trefferquote wird hier nicht als Messwert behauptet</li>
 <li>Fließband führt Code aus, bevor die Legalität feststeht</li>
 <li>Trivia: Spectre/Meltdown hängen an Spekulation und Caches</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb27-1"><a aria-label="1"></a>Ohne Branch Prediction würde ein 5-GHz-Prozessor</span>
-<span id="cb27-2"><a aria-label="2"></a>durch ständiges Flushen nur einen Bruchteil leisten.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb26-1"><a aria-label="1"></a>Ohne Branch Prediction würde ein 5-GHz-Prozessor</span>
+<span id="cb26-2"><a aria-label="2"></a>durch ständiges Flushen nur einen Bruchteil leisten.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Ohne spekulatives Raten würden tiefe Pipelines ständig stottern.</p>
 <style type="text/css">
@@ -2434,7 +2450,10 @@ graph LR
 <ul>
 <li>Chip-Icon oben links</li>
 <li><code>5-Stage Processor</code> wählen (Standard mit Hazard/Forwarding)</li>
-<li>Variante ohne Forwarding: Programm liefert bei Abhängigkeiten falsche Ergebnisse (zum Ausprobieren)</li>
+<li>Mit Forwarding und Hazard-Erkennung: Standard für die Aufgaben</li>
+<li>Ohne Forwarding, aber mit Erkennung: zusätzliche Stalls, Ergebnis bleibt korrekt</li>
+<li>Ohne ausreichende Hazard-Behandlung: falsche Operanden</li>
+<li>Ripes-5-Stage der Installation beobachten und nicht mit dem Drei-Stall-Lehrmodell vermischen</li>
 <li>Processor-Tab: Datenpfad hat sich radikal verändert</li>
 </ul>
 <aside class="notes">
@@ -2523,10 +2542,10 @@ graph LR
 <ul>
 <li>Forwarding testen mit:</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb28-1"><a aria-label="1"></a>li  t0<span class="op">,</span> <span class="dv">50</span></span>
-<span id="cb28-2"><a aria-label="2"></a>li  t1<span class="op">,</span> <span class="dv">100</span></span>
-<span id="cb28-3"><a aria-label="3"></a><span class="bu">add</span> t2<span class="op">,</span> t0<span class="op">,</span> t1    <span class="op">#</span> Ergebnis in t2</span>
-<span id="cb28-4"><a aria-label="4"></a><span class="bu">sub</span> a0<span class="op">,</span> t2<span class="op">,</span> t0    <span class="op">#</span> Abhaengigkeit von t2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb27-1"><a aria-label="1"></a>li  t0<span class="op">,</span> <span class="dv">50</span></span>
+<span id="cb27-2"><a aria-label="2"></a>li  t1<span class="op">,</span> <span class="dv">100</span></span>
+<span id="cb27-3"><a aria-label="3"></a><span class="bu">add</span> t2<span class="op">,</span> t0<span class="op">,</span> t1    <span class="op">#</span> Ergebnis in t2</span>
+<span id="cb27-4"><a aria-label="4"></a><span class="bu">sub</span> a0<span class="op">,</span> t2<span class="op">,</span> t0    <span class="op">#</span> Abhaengigkeit von t2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>Clock Takt für Takt: wenn <code>add</code> in MEM und <code>sub</code> in EX</li>
 </ul>
@@ -2571,12 +2590,12 @@ graph LR
 <ul>
 <li>Daten und Code, dann:</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb29-1"><a aria-label="1"></a>.<span class="bu">data</span></span>
-<span id="cb29-2"><a aria-label="2"></a><span class="fu">array:</span> .<span class="dt">word</span> <span class="dv">42</span></span>
-<span id="cb29-3"><a aria-label="3"></a>.text</span>
-<span id="cb29-4"><a aria-label="4"></a>la  s1<span class="op">,</span> array</span>
-<span id="cb29-5"><a aria-label="5"></a>lw  t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
-<span id="cb29-6"><a aria-label="6"></a><span class="bu">add</span> a0<span class="op">,</span> t0<span class="op">,</span> t0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb28-1"><a aria-label="1"></a>.<span class="bu">data</span></span>
+<span id="cb28-2"><a aria-label="2"></a><span class="fu">array:</span> .<span class="dt">word</span> <span class="dv">42</span></span>
+<span id="cb28-3"><a aria-label="3"></a>.text</span>
+<span id="cb28-4"><a aria-label="4"></a>la  s1<span class="op">,</span> array</span>
+<span id="cb28-5"><a aria-label="5"></a>lw  t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
+<span id="cb28-6"><a aria-label="6"></a><span class="bu">add</span> a0<span class="op">,</span> t0<span class="op">,</span> t0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>Pipeline-Tab: was passiert in Takt 4 oder 5?</li>
 </ul>
@@ -2618,12 +2637,13 @@ graph LR
 <section id="labor-aufgabe-3-control-hazard-flushing" class="slide level2">
 <h2>Labor-Aufgabe 3: Control Hazard (Flushing)</h2>
 <ul>
-<li>Endlosschleife:</li>
+<li>Countdown über zehn Schritte, danach Ende:</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb30-1"><a aria-label="1"></a>li t0<span class="op">,</span> <span class="dv">10</span></span>
-<span id="cb30-2"><a aria-label="2"></a><span class="fu">Loop:</span></span>
-<span id="cb30-3"><a aria-label="3"></a>  addi t0<span class="op">,</span> t0<span class="op">,</span> <span class="op">-</span><span class="dv">1</span></span>
-<span id="cb30-4"><a aria-label="4"></a>  bne  t0<span class="op">,</span> zero<span class="op">,</span> Loop</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb29-1"><a aria-label="1"></a>li t0<span class="op">,</span> <span class="dv">10</span></span>
+<span id="cb29-2"><a aria-label="2"></a><span class="fu">Loop:</span></span>
+<span id="cb29-3"><a aria-label="3"></a>  addi t0<span class="op">,</span> t0<span class="op">,</span> <span class="op">-</span><span class="dv">1</span></span>
+<span id="cb29-4"><a aria-label="4"></a>  bne  t0<span class="op">,</span> zero<span class="op">,</span> Loop</span>
+<span id="cb29-5"><a aria-label="5"></a># hier ist t0 <span class="op">=</span> <span class="dv">0</span><span class="co">; die Schleife ist beendet</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>Was passiert, wenn <code>bne</code> springt und der PC zurückgeht?</li>
 </ul>
@@ -2670,7 +2690,7 @@ graph LR
 <li>Vor <code>lw</code> oder nach <code>add</code>: Stall bleibt</li>
 <li>Genau zwischen <code>lw</code> und <code>add</code>: Stall verschwindet</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb31-1"><a aria-label="1"></a>Werden Sie zum Compiler: sortieren, bis keine NOPs mehr da sind.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb30-1"><a aria-label="1"></a>Werden Sie zum Compiler: sortieren, bis keine NOPs mehr da sind.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Unabhängige Arbeit füllt die Bubble — gleiches Ergebnis, ein Takt schneller.</p>
 <style type="text/css">
@@ -2694,8 +2714,8 @@ graph LR
 <li>Load-Use: Stall; Compiler hilft durch Scheduling</li>
 <li>Control Hazards: Flush; moderne Rettung Branch Prediction</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb32-1"><a aria-label="1"></a>Pipelining-Verständnis trennt den Coder</span>
-<span id="cb32-2"><a aria-label="2"></a>vom Computer-Engineer.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb31-1"><a aria-label="1"></a>Pipelining-Verständnis trennt den Coder</span>
+<span id="cb31-2"><a aria-label="2"></a>vom Computer-Engineer.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Forwarding, Stalling und Branch Prediction machen Hochleistungs-CPUs erst möglich.</p>
 <style type="text/css">

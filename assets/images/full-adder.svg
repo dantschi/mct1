@@ -26,7 +26,7 @@
   <path class="wire" d="M 205 110 L 205 218 L 280 218"/>
   <path class="wire" d="M 385 110 L 385 280 L 250 280 L 250 242 L 280 242"/>
   <rect class="gate accent" x="280" y="200" width="80" height="56" rx="4" ry="4"/>
-  <text class="sym" x="320.0" y="235.0" text-anchor="middle">≥1</text>
+  <text class="sym" x="320.0" y="235.0" text-anchor="middle">OR</text>
   <path class="wire" d="M 360 228 L 450 228"/>
   <path class="wire" d="M 442 223 L 450 228 L 442 233" fill="none"/>
   <text class="pin" x="465" y="232" text-anchor="start">Cout</text>

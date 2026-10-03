@@ -387,7 +387,10 @@ graph LR
 <section id="der-übersetzungsprozess" class="slide level2">
 <h2>Der Übersetzungsprozess</h2>
 <ul>
-<li><code>gcc main.c</code> startet vier verkettete Werkzeuge</li>
+<li><code>riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32</code> erzeugt RISC-V-Code</li>
+<li>Ein nacktes <code>gcc main.c</code> auf dem Host tut das nicht</li>
+<li>Ausgabearten: Assemblertext, Objektdatei mit Relocation, gelinktes ELF</li>
+<li><code>printf</code> braucht eine passende Laufzeit; ein ELF ist kein Venus-Assemblertext</li>
 <li>Output des einen = Input des nächsten</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
@@ -785,14 +788,12 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb14-1"><a aria-label="1"></a><span class="dt">int</span> calc<span class="op">(</span><span class="dt">int</span> a<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb14-2"><a aria-label="2"></a>    <span class="cf">return</span> a <span class="op">*</span> <span class="dv">2</span><span class="op">;</span></span>
 <span id="cb14-3"><a aria-label="3"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb15-1"><a aria-label="1"></a><span class="fu">calc:</span>                 # Leaf<span class="op">:</span> kein Stack nötig</span>
-<span id="cb15-2"><a aria-label="2"></a>    slli a0<span class="op">,</span> a0<span class="op">,</span> <span class="dv">1</span></span>
-<span id="cb15-3"><a aria-label="3"></a>    <span class="cf">ret</span></span>
-<span id="cb15-4"><a aria-label="4"></a></span>
-<span id="cb15-5"><a aria-label="5"></a><span class="fu">main:</span></span>
-<span id="cb15-6"><a aria-label="6"></a>    li a0<span class="op">,</span> <span class="dv">5</span></span>
-<span id="cb15-7"><a aria-label="7"></a>    jal ra<span class="op">,</span> calc</span>
-<span id="cb15-8"><a aria-label="8"></a>    # Ergebnis in a0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb15-1"><a aria-label="1"></a># Fragment<span class="op">,</span> kein vollständiges Programm<span class="op">:</span></span>
+<span id="cb15-2"><a aria-label="2"></a><span class="fu">calc:</span></span>
+<span id="cb15-3"><a aria-label="3"></a>    slli a0<span class="op">,</span> a0<span class="op">,</span> <span class="dv">1</span></span>
+<span id="cb15-4"><a aria-label="4"></a>    <span class="cf">ret</span></span>
+<span id="cb15-5"><a aria-label="5"></a></span>
+<span id="cb15-6"><a aria-label="6"></a># Aufrufer separat<span class="op">,</span> mit Exit<span class="op">,</span> damit calc nicht per Fall<span class="op">-</span>through erneut läuft</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Leaf-Funktionen können ohne Frame auskommen. Ruft die Funktion weiter auf oder nutzt <code>s</code>-Register, greifen Prolog/Epilog aus Einheit 4.</p>
 <style type="text/css">
@@ -810,9 +811,11 @@ graph TD
 <section id="compiler-output-in-echt-godbolt" class="slide level2">
 <h2>Compiler-Output in Echt (Godbolt)</h2>
 <ul>
-<li>Unoptimiert (<code>-O0</code>): Muster wie oben</li>
-<li><code>-O3</code>: Loop Unrolling, Scheduling gegen Hazards (Einheit 7)</li>
-<li>Tipp: <a href="https://godbolt.org">Compiler Explorer</a> - C live als RISC-V-Assembler</li>
+<li>Lehrübersetzung und Compileroutput unterscheiden</li>
+<li><code>-O0</code> verspricht keine feste Belegung von <code>s0</code>/<code>s1</code></li>
+<li><code>-O3</code> verspricht keinen bestimmten Pipelineplan</li>
+<li>Konstanten wie <code>a = 5; b = 10; c = a + b</code> können vollständig entfallen</li>
+<li>Compiler Explorer: Version, <code>-march=rv32i</code>, <code>-mabi=ilp32</code> dokumentieren</li>
 </ul>
 <aside class="notes">
 <p>Release-Builds optimieren aggressiv für Pipeline und Latenz.</p>
@@ -920,37 +923,24 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
-<section id="beispiel-ampelschaltung" class="slide level2">
-<h2>Beispiel: Ampelschaltung</h2>
+<section id="code-schloss" class="slide level2">
+<h2>Code-Schloss</h2>
 <ul>
-<li>Zustände: 0 Rot, 1 Rot/Gelb, 2 Grün, 3 Gelb</li>
-<li>Übergang z. B. per Timer</li>
-<li>In C: <code>switch</code>/<code>case</code> oder <code>while</code> + <code>if</code></li>
+<li>S0 gesperrt, LED rot; S1 nach UP, LED gelb; S2 nach DOWN, LED blau; S3 offen, LED grün</li>
+<li>Sequenz der Ereignisse: UP, DOWN, RIGHT</li>
+<li>Halten erzeugt höchstens ein Ereignis; Release trennt die Drücke</li>
+<li>Falsche Taste und Reset nach S0; ohne Taste und bei mehreren Tasten bleiben</li>
+<li>S3 bleibt offen bis Reset</li>
 </ul>
-<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Rot[State 0 Rot] --&gt;|Timer| RG[State 1 Rot/Gelb]
-  RG --&gt;|Timer| Grn[State 2 Grün]
-  Grn --&gt;|Timer| Gelb[State 3 Gelb]
-  Gelb --&gt;|Timer| Rot
-  style Rot fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style RG fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style Grn fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style Gelb fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-</pre>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/fsm-code-lock.svg"></p>
+<figcaption>Zustände des Code-Schlosses</figcaption>
+</figure>
 </div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
+<p>Trace: UP, Release, DOWN, Release, RIGHT, Release führt von S0 über S1 und S2 nach S3.</p>
 <aside class="notes">
-<p>Immer genau ein Zustand; Transitionen deterministisch.</p>
+<p>Entprellung erzeugt das Ereignis. Die FSM sieht einen Druck nur einmal, auch wenn der Pegel gehalten wird.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;

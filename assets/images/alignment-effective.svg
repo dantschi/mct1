@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="240" viewBox="0 0 860 240" role="img" aria-label="Effektive Adresse und Alignment">
+  <style>
+    .h { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 600; }
+    .s { fill: #86868B; font-family: Inter, sans-serif; font-size: 14px; }
+    .c { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 15px; font-weight: 600; }
+    .bad { fill: #FFFFFF; stroke: #E2001A; stroke-width: 2; }
+    .ok { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+  </style>
+  <text class="h" x="16" y="28">Alignment gilt für Basis + Offset</text>
+  <rect class="ok" x="16" y="48" width="400" height="70"/>
+  <text class="c" x="32" y="78">Basis 0x10000000 + Offset 4</text>
+  <text class="s" x="32" y="100">effektiv 0x10000004 · durch 4 teilbar · lw zulässig</text>
+  <rect class="bad" x="440" y="48" width="400" height="70"/>
+  <text class="c" x="456" y="78">Basis 0x10000001 + Offset 2</text>
+  <text class="s" x="456" y="100">effektiv 0x10000003 · Offset gerade, Adresse nicht</text>
+  <text class="s" x="16" y="160">Kursmodell: unausgerichtete lw/lh/sw/sh werden nicht verwendet.</text>
+  <text class="s" x="16" y="186">Ob eine Ausführungsumgebung einen Trap auslöst, ist implementierungsabhängig und hier nicht pauschal garantiert.</text>
+  <text class="s" x="16" y="220">Halbwort-Alignment verlangt eine durch 2 teilbare effektive Adresse, nicht nur einen geraden Offset.</text>
+</svg>

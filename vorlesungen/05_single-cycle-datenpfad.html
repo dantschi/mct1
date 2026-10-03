@@ -402,6 +402,28 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
+<section id="befehlsumfang-dieses-lehrmodells" class="slide level2">
+<h2>Befehlsumfang dieses Lehrmodells</h2>
+<ul>
+<li>Implementiert: <code>add</code>, <code>sub</code>, <code>and</code>, <code>or</code>, <code>lw</code>, <code>sw</code>, <code>beq</code></li>
+<li>Kein vollständiger RV32I-Prozessor</li>
+<li><code>addi</code>, <code>bne</code> und <code>jal</code> erst nach Ergänzung von ImmGen, Vergleich oder Link-Write-Back</li>
+<li>ImmGen liefert für <code>beq</code> den Byteoffset einschließlich implizitem Bit 0</li>
+</ul>
+<aside class="notes">
+<p>Annahme unseres Lehrmodells. Ripes zeigt ein reicheres Modell; die Folien behaupten nur das genannte Subset. Die Zuordnung der Signalnamen steht in der Mapping-Tabelle weiter unten, nicht als Identität mit Ripes.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
 <section id="der-single-cycle-prozessor" class="slide level2">
 <h2>Der Single-Cycle-Prozessor</h2>
 <ul>
@@ -1608,9 +1630,8 @@ graph LR
 <h2>Store und das Register File</h2>
 <ul>
 <li><code>sw</code> schreibt in den RAM, nicht in Register</li>
-<li>S-Type: kein <code>rd</code> — auf dem rd-Kabel liegt Müll</li>
-<li><code>RegWrite</code> muss bei Store zwingend 0 sein</li>
-<li>Sonst würde die Flanke ein Zufallsregister überschreiben</li>
+<li>S-Type hat kein <code>rd</code>; dieselben Bits sind Immediate und <code>rs2</code></li>
+<li><code>RegWrite</code> muss 0 sein, sonst wird das aus den Bits decodierte Register beschrieben</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb4-1"><a aria-label="1"></a>Ohne RegWrite=0:</span>
 <span id="cb4-2"><a aria-label="2"></a>MUX MemtoReg leitet immer etwas weiter —</span>
@@ -1822,7 +1843,7 @@ graph LR
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">31:25</td>
-<td style="text-align: left;"><code>imm[12\|10:5]</code></td>
+<td style="text-align: left;">imm[12] und imm[10:5]</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">24:20</td>
@@ -1838,7 +1859,7 @@ graph LR
 </tr>
 <tr class="odd">
 <td style="text-align: left;">11:7</td>
-<td style="text-align: left;"><code>imm[4:1\|11]</code></td>
+<td style="text-align: left;">imm[4:1] und imm[11]</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">6:0</td>
@@ -1860,31 +1881,16 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
-<section id="offset-aufbereitung-shift-left-1" class="slide level2">
-<h2>Offset-Aufbereitung (Shift Left 1)</h2>
+<section id="offset-aufbereitung-im-lehrmodell" class="slide level2">
+<h2>Offset-Aufbereitung im Lehrmodell</h2>
 <ul>
-<li>Immediate vor der PC-Addition um 1 Bit nach links (<span class="math inline">\(\cdot 2\)</span>)</li>
-<li>Instruktionen enden nie auf ungerader Byte-Adresse</li>
-<li>Unterstes Bit der Distanz ist implizit 0 — Compiler speichert es nicht</li>
-<li>Hardware hängt die 0 per Shift an — größere Sprungreichweite</li>
+<li>ImmGen liefert den vorzeichenerweiterten <strong>Byteoffset</strong></li>
+<li>Bit 0 ist implizit 0 und bereits enthalten</li>
+<li>Danach kein zweites Shift-left-1</li>
+<li>Der Branch-Addierer rechnet alten PC plus diesen Byteoffset</li>
 </ul>
-<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  ImmGen[32-Bit Immediate] --&gt; SL1[Shift Left 1]
-  SL1 --&gt;|Offset| Addierer
-  style SL1 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb7-1"><a aria-label="1"></a>Byteoffset = signextend(B-Immediate mit implizitem Bit 0)</span>
+<span id="cb7-2"><a aria-label="2"></a>Target     = oldPC + Byteoffset</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Vereinfachte Darstellung für RV32I: Wortausrichtung und B-Immediate-Skalierung. Details im Lehrbuchdiagramm (Patterson &amp; Hennessy) und in Ripes nachvollziehbar.</p>
 <style type="text/css">
@@ -2132,9 +2138,10 @@ graph LR
 <li>Extra-MUX/Kabel zum Write-Back — im Blockdiagramm vereinfacht</li>
 <li>In Ripes im Labor sichtbar</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb7-1"><a aria-label="1"></a>jal ra, Label:</span>
-<span id="cb7-2"><a aria-label="2"></a>  PC = Target</span>
-<span id="cb7-3"><a aria-label="3"></a>  ra = PC+4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb8-1"><a aria-label="1"></a>jal ra, Label, beide Werte aus dem alten PC:</span>
+<span id="cb8-2"><a aria-label="2"></a>  nextPC = oldPC + Byteoffset</span>
+<span id="cb8-3"><a aria-label="3"></a>  ra     = oldPC + 4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>jal</code> liegt außerhalb des Basismodells add/sub/and/or/lw/sw/beq, bis der Write-Back-Pfad für den Linkwert ergänzt ist. Die sequenzielle Schreibweise „erst PC = Target, dann ra = PC+4“ wäre falsch, weil der Linkwert den alten PC braucht.</p>
 <aside class="notes">
 <p>Vereinfachung: Wir blenden die <code>jal</code>-Write-Back-Kabel hier aus; Einheit 4 und Ripes zeigen den Link-Pfad.</p>
 <style type="text/css">
@@ -2383,8 +2390,8 @@ graph LR
 <li>0: zweites Register (RD2)</li>
 <li>1: Immediate aus ImmGen</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb8-1"><a aria-label="1"></a>add  t0, t1, t2  -&gt; ALUSrc = 0</span>
-<span id="cb8-2"><a aria-label="2"></a>addi t0, t1, 5   -&gt; ALUSrc = 1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb9-1"><a aria-label="1"></a>add  t0, t1, t2  -&gt; ALUSrc = 0</span>
+<span id="cb9-2"><a aria-label="2"></a>addi t0, t1, 5   -&gt; ALUSrc = 1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>R-Type: Registerkabel. I-Type/<code>lw</code>: ImmGen-Pfad.</p>
 <style type="text/css">
@@ -2408,8 +2415,8 @@ graph LR
 <li>1: RAM-Daten</li>
 <li>Bei <code>sw</code>/<code>beq</code>: Stellung oft Don’t Care (weil <code>RegWrite = 0</code>)</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb9-1"><a aria-label="1"></a>add t0, t1, t2  -&gt; MemtoReg = 0</span>
-<span id="cb9-2"><a aria-label="2"></a>lw  t0, 0(s1)   -&gt; MemtoReg = 1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb10-1"><a aria-label="1"></a>add t0, t1, t2  -&gt; MemtoReg = 0</span>
+<span id="cb10-2"><a aria-label="2"></a>lw  t0, 0(s1)   -&gt; MemtoReg = 1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Ohne <code>RegWrite</code> prallt Müll am Register File ab — Don’t Care ist ungefährlich.</p>
 <style type="text/css">
@@ -2432,8 +2439,8 @@ graph LR
 <li>1: Branch Target</li>
 <li>Einzige Weiche, die auch vom ALU-Zero abhängt (AND mit Branch)</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb10-1"><a aria-label="1"></a>add ...              -&gt; PCSrc = 0</span>
-<span id="cb10-2"><a aria-label="2"></a>beq ... (genommen)   -&gt; PCSrc = 1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb11-1"><a aria-label="1"></a>add ...              -&gt; PCSrc = 0</span>
+<span id="cb11-2"><a aria-label="2"></a>beq ... (genommen)   -&gt; PCSrc = 1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Navigator des Prozessors: linear weiter oder Sprung — Control plus Live-Ergebnis der ALU.</p>
 <style type="text/css">
@@ -2664,8 +2671,8 @@ graph LR
 <li>Ripes: Hardware-Fokus, Bits auf Leitungen, MUX und ALU live</li>
 <li>Code in Ripes etwas unbequemer — visuelles Feedback unschlagbar</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb11-1"><a aria-label="1"></a>Venus = Blick des Programmierers</span>
-<span id="cb11-2"><a aria-label="2"></a>Ripes = Blick des Chip-Designers</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb12-1"><a aria-label="1"></a>Venus = Blick des Programmierers</span>
+<span id="cb12-2"><a aria-label="2"></a>Ripes = Blick des Chip-Designers</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Tool nach Fragestellung wählen: Algorithmus → Venus; Datenpfad → Ripes.</p>
 <style type="text/css">
@@ -2689,7 +2696,7 @@ graph LR
 <li>5-Stage Pipeline wäre für heute irreführend</li>
 </ul>
 <aside class="notes">
-<p>Chip-Icon oben links: Single-Cycle wählen — exakt der Folien-Prozessor.</p>
+<p>Chip-Icon oben links: Single-Cycle wählen. Das ist das Ripes-Modell der installierten Version, nicht bitgleich das Folien-Subset. Signalnamen von Patterson/Hennessy, Harris/Harris und Ripes nebeneinander lesen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2709,10 +2716,10 @@ graph LR
 <li>Kleine Tests: <code>add</code>, <code>lw</code>, <code>beq</code></li>
 <li>Ripes assembliert oft live (kein separater Compile-Klick)</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb12-1"><a aria-label="1"></a>.text</span>
-<span id="cb12-2"><a aria-label="2"></a>    li t0<span class="op">,</span> <span class="dv">10</span></span>
-<span id="cb12-3"><a aria-label="3"></a>    li t1<span class="op">,</span> <span class="dv">15</span></span>
-<span id="cb12-4"><a aria-label="4"></a>    <span class="bu">add</span> t2<span class="op">,</span> t0<span class="op">,</span> t1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb13-1"><a aria-label="1"></a>.text</span>
+<span id="cb13-2"><a aria-label="2"></a>    li t0<span class="op">,</span> <span class="dv">10</span></span>
+<span id="cb13-3"><a aria-label="3"></a>    li t1<span class="op">,</span> <span class="dv">15</span></span>
+<span id="cb13-4"><a aria-label="4"></a>    <span class="bu">add</span> t2<span class="op">,</span> t0<span class="op">,</span> t1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p><code>.text</code>-Direktiven und Mnemonics wie gewohnt. Danach Processor-Tab öffnen.</p>
 <style type="text/css">
@@ -2815,11 +2822,11 @@ graph LR
 <li>Seitenleisten: Registers und Memory (wie Venus)</li>
 <li>Bei <code>sw</code>: MemWrite im Diagramm auf 1, Byte im Memory-Tab aktualisiert</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb13-1"><a aria-label="1"></a>Kette fuer sw t0, 0(s1):</span>
-<span id="cb13-2"><a aria-label="2"></a>1. Code tippen</span>
-<span id="cb13-3"><a aria-label="3"></a>2. Clock</span>
-<span id="cb13-4"><a aria-label="4"></a>3. MemWrite = 1 im Datenpfad</span>
-<span id="cb13-5"><a aria-label="5"></a>4. Memory-Tab: Wert liegt im RAM</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb14-1"><a aria-label="1"></a>Kette fuer sw t0, 0(s1):</span>
+<span id="cb14-2"><a aria-label="2"></a>1. Code tippen</span>
+<span id="cb14-3"><a aria-label="3"></a>2. Clock</span>
+<span id="cb14-4"><a aria-label="4"></a>3. MemWrite = 1 im Datenpfad</span>
+<span id="cb14-5"><a aria-label="5"></a>4. Memory-Tab: Wert liegt im RAM</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Diagramm und Tabellen zusammen lesen — Store wird physisch sichtbar.</p>
 <style type="text/css">
@@ -2864,11 +2871,11 @@ graph LR
 <li>Welche Adresse berechnet die ALU?</li>
 <li>Stellung von <code>MemtoReg</code> ganz rechts?</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb14-1"><a aria-label="1"></a>.<span class="bu">data</span></span>
-<span id="cb14-2"><a aria-label="2"></a><span class="fu">werte:</span> .<span class="dt">word</span> <span class="dv">99</span><span class="op">,</span> <span class="dv">88</span></span>
-<span id="cb14-3"><a aria-label="3"></a>.text</span>
-<span id="cb14-4"><a aria-label="4"></a>    la s1<span class="op">,</span> werte</span>
-<span id="cb14-5"><a aria-label="5"></a>    lw a0<span class="op">,</span> <span class="dv">4</span><span class="op">(</span>s1<span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb15-1"><a aria-label="1"></a>.<span class="bu">data</span></span>
+<span id="cb15-2"><a aria-label="2"></a><span class="fu">werte:</span> .<span class="dt">word</span> <span class="dv">99</span><span class="op">,</span> <span class="dv">88</span></span>
+<span id="cb15-3"><a aria-label="3"></a>.text</span>
+<span id="cb15-4"><a aria-label="4"></a>    la s1<span class="op">,</span> werte</span>
+<span id="cb15-5"><a aria-label="5"></a>    lw a0<span class="op">,</span> <span class="dv">4</span><span class="op">(</span>s1<span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Kritischer Pfad live: ImmGen, Adress-ALU, RAM, MemtoReg — langsamster Befehl.</p>
 <style type="text/css">

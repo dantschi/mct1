@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="320" viewBox="0 0 860 320" role="img" aria-label="Code-Schloss Zustände">
+  <style>
+    .n { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+    .hot { fill: #FFFFFF; stroke: #E2001A; stroke-width: 2.5; }
+    .h { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 600; }
+    .c { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; font-weight: 600; }
+    .s { fill: #86868B; font-family: Inter, sans-serif; font-size: 13px; }
+    .w { fill: none; stroke: #86868B; stroke-width: 1.75; }
+  </style>
+  <text class="h" x="16" y="28">Code-Schloss · Ereignisse, nicht Pegel</text>
+  <rect class="hot" x="30" y="70" width="150" height="64" rx="32"/>
+  <rect class="n" x="240" y="70" width="150" height="64" rx="32"/>
+  <rect class="n" x="450" y="70" width="150" height="64" rx="32"/>
+  <rect class="n" x="660" y="70" width="150" height="64" rx="32"/>
+  <text class="c" x="105" y="98" text-anchor="middle">S0 gesperrt</text>
+  <text class="s" x="105" y="118" text-anchor="middle">LED rot</text>
+  <text class="c" x="315" y="98" text-anchor="middle">S1</text>
+  <text class="s" x="315" y="118" text-anchor="middle">LED gelb</text>
+  <text class="c" x="525" y="98" text-anchor="middle">S2</text>
+  <text class="s" x="525" y="118" text-anchor="middle">LED blau</text>
+  <text class="c" x="735" y="98" text-anchor="middle">S3 offen</text>
+  <text class="s" x="735" y="118" text-anchor="middle">LED grün</text>
+  <path class="w" d="M 180 102 L 240 102"/>
+  <path class="w" d="M 390 102 L 450 102"/>
+  <path class="w" d="M 600 102 L 660 102"/>
+  <text class="s" x="210" y="92" text-anchor="middle">UP</text>
+  <text class="s" x="420" y="92" text-anchor="middle">DOWN</text>
+  <text class="s" x="630" y="92" text-anchor="middle">RIGHT</text>
+  <text class="s" x="16" y="180">Trace: UP, Release, DOWN, Release, RIGHT, Release ’ S0, S1, S2, S3.</text>
+  <text class="s" x="16" y="204">Halten löst kein zweites Ereignis aus. Falsche Taste und Reset führen nach S0.</text>
+  <text class="s" x="16" y="228">Keine Taste: Zustand bleibt. Mehrere Tasten gleichzeitig: kein gültiges Ereignis, Zustand bleibt.</text>
+  <text class="s" x="16" y="252">Offener Zustand S3 bleibt, bis Reset. Entprellung erzeugt das Ereignis, die FSM sieht es nur einmal.</text>
+  <text class="s" x="16" y="290">Selbst gezeichnetes Lehrdiagramm. LED-Farbe gehört zum Zustand, das Ereignis zur Kante.</text>
+</svg>
