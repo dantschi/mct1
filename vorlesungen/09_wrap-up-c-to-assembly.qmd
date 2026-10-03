@@ -109,7 +109,10 @@ Brücke zwischen C und dem 5-Stufen-Prozessor: die Toolchain.
 
 ## Der Übersetzungsprozess
 
-- `gcc main.c` startet vier verkettete Werkzeuge
+- `riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32` erzeugt RISC-V-Code
+- Ein nacktes `gcc main.c` auf dem Host tut das nicht
+- Ausgabearten: Assemblertext, Objektdatei mit Relocation, gelinktes ELF
+- `printf` braucht eine passende Laufzeit; ein ELF ist kein Venus-Assemblertext
 - Output des einen = Input des nächsten
 
 ```{mermaid}
@@ -387,14 +390,12 @@ int calc(int a) {
 ```
 
 ```asm
-calc:                 # Leaf: kein Stack nötig
+# Fragment, kein vollständiges Programm:
+calc:
     slli a0, a0, 1
     ret
 
-main:
-    li a0, 5
-    jal ra, calc
-    # Ergebnis in a0
+# Aufrufer separat, mit Exit, damit calc nicht per Fall-through erneut läuft
 ```
 
 ::: notes
@@ -403,9 +404,11 @@ Leaf-Funktionen können ohne Frame auskommen. Ruft die Funktion weiter auf oder 
 
 ## Compiler-Output in Echt (Godbolt)
 
-- Unoptimiert (`-O0`): Muster wie oben
-- `-O3`: Loop Unrolling, Scheduling gegen Hazards (Einheit 7)
-- Tipp: [Compiler Explorer](https://godbolt.org) - C live als RISC-V-Assembler
+- Lehrübersetzung und Compileroutput unterscheiden
+- `-O0` verspricht keine feste Belegung von `s0`/`s1`
+- `-O3` verspricht keinen bestimmten Pipelineplan
+- Konstanten wie `a = 5; b = 10; c = a + b` können vollständig entfallen
+- Compiler Explorer: Version, `-march=rv32i`, `-mabi=ilp32` dokumentieren
 
 ::: notes
 Release-Builds optimieren aggressiv für Pipeline und Latenz.
@@ -463,29 +466,20 @@ FSM bündelt Kontrollfluss, I/O und Logik des Semesters.
 FSM merkt sich den Status; Sensorereignisse triggern Zustandswechsel.
 :::
 
-## Beispiel: Ampelschaltung
+## Code-Schloss
 
-- Zustände: 0 Rot, 1 Rot/Gelb, 2 Grün, 3 Gelb
-- Übergang z. B. per Timer
-- In C: `switch`/`case` oder `while` + `if`
+- S0 gesperrt, LED rot; S1 nach UP, LED gelb; S2 nach DOWN, LED blau; S3 offen, LED grün
+- Sequenz der Ereignisse: UP, DOWN, RIGHT
+- Halten erzeugt höchstens ein Ereignis; Release trennt die Drücke
+- Falsche Taste und Reset nach S0; ohne Taste und bei mehreren Tasten bleiben
+- S3 bleibt offen bis Reset
 
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+![Zustände des Code-Schlosses](../assets/images/fsm-code-lock.svg)
 
-graph LR
-  Rot[State 0 Rot] -->|Timer| RG[State 1 Rot/Gelb]
-  RG -->|Timer| Grn[State 2 Grün]
-  Grn -->|Timer| Gelb[State 3 Gelb]
-  Gelb -->|Timer| Rot
-  style Rot fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style RG fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style Grn fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style Gelb fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-```
+Trace: UP, Release, DOWN, Release, RIGHT, Release führt von S0 über S1 und S2 nach S3.
 
 ::: notes
-Immer genau ein Zustand; Transitionen deterministisch.
+Entprellung erzeugt das Ereignis. Die FSM sieht einen Druck nur einmal, auch wenn der Pegel gehalten wird.
 :::
 
 ## Umsetzung in Assembler

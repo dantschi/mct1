@@ -86,14 +86,14 @@ Kurz rekapituliert: Im letzten Labor haben Sie Register addiert, Bits verschoben
 
 ## Das Register-Limit (Die Werkbank)
 
-- Die CPU besitzt exakt 32 Architektur-Register (unsere „Werkbank“)
-- Jedes Register fasst exakt 32 Bit (4 Bytes)
-- Gesamte Arbeitskapazität der CPU: nur 128 Bytes
-- Ein C-Array mit 1000 Integern benötigt bereits 4000 Bytes
-- Echte Programme und Datenmassen passen nie komplett in die CPU
+- Die ISA sieht 32 Architekturregister vor
+- Jedes Register fasst 32 Bit (4 Bytes)
+- `x0` ist fest 0; 31 Register sind beschreibbar
+- Das ist nicht die Speicherkapazität der CPU: Caches und CSRs sind weiterer Zustand
+- Ein ILP32-`int`-Array mit 1000 Elementen braucht 4000 Bytes im Speicher
 
 ::: notes
-Zentrale Erkenntnis: Das Register-File ist extrem schnell, aber winzig — $32 \times 4 = 128$ Bytes. Das reicht kaum für einen kurzen Text. Sensordaten oder Bilder brauchen den Main Memory (RAM) mit vielen Gigabytes. Hardwarenahe Programmierung heißt: Daten geschickt vom großen, langsameren Lager auf die kleine, schnelle Werkbank jonglieren.
+Zentrale Erkenntnis: Das Registerfile ist klein und schnell. $31$ beschreibbare Wörter sind keine Aussage über RAM, Cache oder den gesamten Prozessorzustand. Große Daten liegen im Speicher und werden per Load/Store geholt. Externe DRAM-Latenzen und ein privater Prozessadressraum sind Annahmen einer Betriebssystemumgebung, nicht der nackten ISA.
 :::
 
 ## Die Memory Wall (Latenzen)
@@ -125,7 +125,8 @@ Warum nicht einfach mehr Register? Physik setzt Grenzen. Der Arbeitsspeicher lie
 - RAM als langes Array aus winzigen Fächern
 - Jedes Fach hat eine eindeutige Hausnummer: die Speicheradresse
 - Adressen in RV32I: 32 Bit (`0x00000000` bis `0xFFFFFFFF`)
-- Ein 32-Bit-Pointer adressiert $2^{32}$ Bytes — also 4 Gigabyte
+- Ein 32-Bit-Zeiger kann $2^{32}$ Bytes benennen
+- Das ist die Adressraumgröße dieser Kurskonfiguration, kein Zwang jeder RISC-V-Plattform
 - Das C-Programm sieht diesen linearen Adressraum für sich allein
 
 | Adresse (Hex) | Wert (Hex) | Bedeutung   |
@@ -464,15 +465,16 @@ Offset 4 und 8 laden die nächsten Elemente, ohne `s1` zu zerstören. Intern ber
 - Assembler enttarnt diese High-Level-Abstraktion
 
 ```c
-// Sie schreiben:
+// Sie schreiben in ILP32, sizeof(int) = 4:
 int x = array[i];
 
-// Der Compiler denkt:
-// Typ int (4 Byte) → Adresse = &array + (i * 4)
+// Typisiert: array + i  bzw.  &array[i]
+// Byteadresse: Basis + i * sizeof(array[0])
+// &array hat den Typ int (*)[N] und eine andere Schrittweite
 ```
 
 ::: notes
-C abstrahiert die Physik. Der Datentyp `int` signalisiert 4 Bytes; `array[3]` erzeugt unsichtbar die Offset-Rechnung $3 \cdot 4 = 12$. In Assembler gibt es diese Typ-Magie nicht — Sie steuern jedes Byte.
+C abstrahiert die Elementgröße. In ILP32 ist `sizeof(int)` gleich 4. `array + i` und `&array[i]` sind typisierte Ausdrücke mit Schrittweite eines `int`. Die Byteformel lautet Basisadresse plus $i \cdot 4$. `&array` ist ein Zeiger auf das ganze Array und hat eine andere Schrittweite.
 :::
 
 ## Komplettes Beispiel (Lesen)
@@ -515,10 +517,13 @@ Die ALU schreibt nicht direkt in den RAM. Erst `add` nach `t1`, dann `sw` mit Of
 
 ## Speicherausrichtung (Alignment)
 
-- 32-Bit-Wörter beginnen auf durch 4 teilbaren Adressen
-- Gültig: `0x00`, `0x04`, `0x08`, `0x0C`, …
-- Laden ab `0x01`? Oft Alignment Fault / Trap — Verhalten implementierungsabhängig
-- Der 32-Bit-Datenbus zieht physisch 4-Byte-Blöcke im Raster
+- Die **effektive** Adresse `Basis + Offset` muss zur Zugriffsbreite passen
+- Ein gerader Offset reicht bei ungerader Basis nicht
+- Wort: effektiv durch 4 teilbar; Halbwort: durch 2
+- Kursmodell: unausgerichtete Zugriffe werden nicht verwendet
+- Ein Alignment-Trap ist nicht für jede RISC-V-Umgebung garantiert
+
+![Effektive Adresse statt nur Offset](../assets/images/alignment-effective.svg)
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -534,7 +539,7 @@ graph TD
 ```
 
 ::: notes
-Wörter müssen auf 0, 4, 8, 12 … ausgerichtet sein. Der Bus ist fest verdrahtet; viele Implementierungen trapen bei schiefen Zugriffen, echte Hardware oft strikt — Venus ist dagegen häufig toleranter. Offsets trotzdem sorgfältig wählen.
+Wörter und Halbwörter werden an der effektiven Adresse ausgerichtet, nicht am Offset allein. Im Kursmodell vermeiden wir unausgerichtete `lw`/`lh`. Ob eine konkrete CPU dann einen Trap meldet, steht nicht pauschal in der ISA.
 :::
 
 ## Teilzugriffe & S-Type-Format
@@ -626,10 +631,11 @@ Gleiches Problem wie bei Immediates: 8 Bits vom RAM, 32-Bit-Register. Wäre das 
 ## Unsigned Load (`lbu`)
 
 - Manche Bytes sind keine Zweierkomplement-Zahlen
-- ASCII oder RGB (0 bis 255) haben kein negatives Vorzeichen
-- MSB = 1 bedeutet dort nur einen hohen Wert (z. B. Rot = 255)
-- Befehl: `lbu` (Load Byte Unsigned)
-- Deaktiviert Sign-Extension und füllt links immer mit Nullen
+- ASCII ist 7 Bit; ein Kanalwert oder ein allgemeines Byte kann 0 bis 255 sein
+- Dafür `lbu`, nicht `lb`
+- `lb` von Byte `0x80` ergibt `0xFFFFFF80`; `lbu` ergibt `0x00000080`
+
+![lb und lbu desselben Bytes 0x80](../assets/images/lb-lbu-0x80.svg)
 
 ```asm
 # Farbwert 0-255 aus dem RAM
@@ -934,7 +940,9 @@ Gleichheit reicht oft nicht. `blt` und `bge` nutzen vorzeichenbehaftete Arithmet
 
 - Pointer und Rohdaten (Farben) sind oft vorzeichenlos
 - Adresse `0xF0000000` wäre als signed negativ — `blt` läge falsch
-- Suffix `u`: `bltu`, `bgeu` vergleichen rein positiv (ohne Vorzeichen)
+- Suffix `u`: `bltu`, `bgeu` vergleichen die Bitmuster vorzeichenlos
+- Dasselbe Muster `0xFFFFFFFF`: signed kleiner als `1`, unsigned größer als `1`
+- Adressvergleiche in diesem Kurs deshalb mit `bltu`/`bgeu`
 
 ```asm
 bltu t0, t1, AdresseIstKleiner
@@ -1418,9 +1426,45 @@ Checkliste:
 - Zähler um 1 erhöhen
 
 ```asm
-# Viel Erfolg im Venus-Simulator!
+.data
+myArray:  .word  10, 20, 30, 40, 50
+
+.text
+.globl main
+main:
+    la   s1, myArray
+    li   t0, 0
+    li   t1, 5
+    li   s0, 0
+Loop:
+    bge  t0, t1, Done
+    lw   t2, 0(s1)
+    add  s0, s0, t2
+    addi s1, s1, 4
+    addi t0, t0, 1
+    j    Loop
+Done:
+    # Sollwert: s0 = 150
+    mv   a1, s0
+    li   a0, 1
+    ecall
+    li   a0, 10
+    ecall
 ```
 
+Die Summe $10+20+30+40+50$ ist 150. Venus: Dienst 1 druckt `a1`, Dienst 10 beendet. `j` ist eine Pseudoinstruktion. Der Branch-Zieloffset ist ein vorzeichenbehafteter Byteabstand zur Branch-Instruktion; Bit 0 des B-Immediate ist implizit 0.
+
 ::: notes
-For-Gerüst wie auf den Folien: `lw`, aufaddieren, am Ende Zähler +1 und Pointer +4. Liegt die Summe in `a0`, sind Speicher und Kontrollfluss verstanden. Viel Erfolg im Hands-on!
+Schleifeninvariante: nach $k$ Durchläufen steht in `s0` die Summe der ersten $k$ Elemente und `s1` zeigt auf Element $k$. Nach fünf Durchläufen ist `s0` gleich 150. Dieses Programm ist ein vollständiges Lehrbeispiel mit Einstieg und Venus-Abschluss, kein isoliertes Snippet.
+:::
+
+## Abschlussblatt
+
+- Begriffe: effektive Adresse, `lb`/`lbu`, Branch-Offset, Little Endian.
+- Modellannahme: ILP32, `sizeof(int) = 4`, unausgerichtete Zugriffe vermeiden.
+- Typischer Fehler: `&array + i*4` als C-Ausdruck oder ASCII mit dem Bereich 0 bis 255 gleichsetzen.
+- Übung: Array 10, 20, 30, 40, 50 summieren, Sollwert 150.
+
+::: notes
+Verbindliche Festlegungen stehen in `referenz/kursvertrag.md`.
 :::

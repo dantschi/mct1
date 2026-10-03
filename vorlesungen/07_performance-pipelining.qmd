@@ -112,7 +112,7 @@ Bei `add` ist die ALU nach wenigen Nanosekunden fertig — dann Schlaf bis zum T
 
 - Unbestechliche Formel der Rechnerarchitektur:
 - $\mathrm{CPU\text{-}Zeit} = \text{Befehlsanzahl} \cdot \mathrm{CPI} \cdot \text{Taktzeit}$
-- Befehlsanzahl: Codevolumen (Compiler-Optimierung)
+- Befehlsanzahl: dynamisch ausgeführte echte Maschineninstruktionen, nicht Dateigröße oder Assemblerzeilen
 - CPI (Cycles per Instruction): mittlere Takte pro Befehl
 - Taktzeit: Dauer eines Clock-Ticks (Nanosekunden)
 
@@ -411,37 +411,37 @@ Maximale Last: Instruktion 1 schreibt zurück, während Instruktion 5 gerade geh
 Klassisches Klausur-/Lehrbuchdiagramm: Treppenstruktur als Sinnbild des Pipelining.
 :::
 
-## Der ideale Speedup
+## Der ideale Durchsatz
 
-- Theoretisch: $\mathrm{Speedup} = \text{Anzahl der Stufen}$
-- Fünf Stufen → idealer Speedup $5$
-- Beispiel: Programm, das single-cycle 5 Minuten braucht → ideal 1 Minute
-- Taktzeit bricht stark ein; Durchsatz steigt
+- Im Waschsalonvergleich bleibt die Latenz eines Korbs gleich
+- Eine echte Pipeline kann die Einzellatenz durch Registeroverhead erhöhen
+- Sie erhöht zuerst den Durchsatz
+- Ohne Hazards brauchen $N$ Instruktionen und 5 Stufen $N+4$ Zyklen
+- „Speedup immer 5“ gilt nicht
 
-```text
-Ideale Belohnung:
-CPI bleibt ~1, Taktzeit sinkt drastisch
--> Durchsatz steigt mit der Stufenzahl
-```
+![Lehrzeiten 820 ps und 270 ps](../assets/images/pipeline-timing-lehr.svg)
+
+::: notes
+Lehrwerte, keine Messung: Stufen 200, 100, 150, 250 und 100 ps, je Registerübergang 20 ps. Single-Cycle-Takt 820 ps, Pipeline-Takt 270 ps, Latenz einer Instruktion $5 \times 270 = 1350$ ps. Für 20 unabhängige Instruktionen: $20 \times 820 = 16400$ ps gegenüber $24 \times 270 = 6480$ ps, Speedup etwa 2,53.
+:::
 
 ::: notes
 Traum des Ingenieurs: idealer Speedup gleich Stufenzahl (bei vollem Fließband und ohne Hazards). CPI bleibt ideal ~1, aber mit viel kürzerer Taktzeit. Hazards und Overhead senken den realen Faktor.
 :::
 
-## Warum nicht genau fünffach?
+## Warum der Faktor nicht 5 ist
 
-- Real eher Faktor $4$ bis $4{,}5$
-- Overhead: Pipeline-Register kosten Setup-Zeit
-- Imbalance: Stufen nie exakt gleich lang (RAM oft langsamer als ALU)
-- Uhr richtet sich nach der längsten Stufe
-- Trotzdem: eine der wichtigsten Performance-Technologien
+- Füllung und Leerung kosten Zyklen
+- Registeroverhead und ungleiche Stufen verlängern den Takt der längsten Stufe
+- Das Lehrbeispiel oben ergibt für $N = 20$ etwa 2,53
+- Keine unbelegte Spanne „typisch 4 bis 4,5“
 
 ```{mermaid}
 %%| fig-width: 4.0
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 
 graph TD
-  Ideal[Idealer Speedup 5x] --> Real[Realer Speedup ca. 4.3x]
+  Ideal[Stufenvergleich] --> Real[Lehrbeispiel ca. 2,53]
   Real --> G1[Register-Verzoegerung]
   Real --> G2[Ungleiche Stufen]
   style Real fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
@@ -1090,7 +1090,7 @@ Jeder Flush ist ein Riss im Getriebe.
 ```
 
 ::: notes
-Zwei Takte pro Sprung summieren sich: fast 30–40 % Verlust bei naivem Flushen.
+Zwei Takte Penalty sind die Folge der Auflösung in EX. Daraus folgt kein fester Prozentverlust, solange Branch-Häufigkeit und Programm nicht gegeben sind.
 :::
 
 ## Hardware-Optimierung: Der Komparator
@@ -1188,7 +1188,7 @@ Die CPU lernt Ihr Programm: Statistik in Flip-Flops, spekulativer Fetch auf das 
 ## Spekulative Ausführung
 
 - Herzstück moderner CPUs (Apple M, AMD Ryzen, Intel Core)
-- Vorhersagen oft $>95\,\%$ Trefferquote
+- Vorhersage ist eine weitere Mikroarchitektur; eine Trefferquote wird hier nicht als Messwert behauptet
 - Fließband führt Code aus, bevor die Legalität feststeht
 - Trivia: Spectre/Meltdown hängen an Spekulation und Caches
 
@@ -1218,7 +1218,10 @@ Single-Cycle beiseitelegen, 5-Stage laden: Forwarding, Stalls und Flushes in Far
 
 - Chip-Icon oben links
 - `5-Stage Processor` wählen (Standard mit Hazard/Forwarding)
-- Variante ohne Forwarding: Programm liefert bei Abhängigkeiten falsche Ergebnisse (zum Ausprobieren)
+- Mit Forwarding und Hazard-Erkennung: Standard für die Aufgaben
+- Ohne Forwarding, aber mit Erkennung: zusätzliche Stalls, Ergebnis bleibt korrekt
+- Ohne ausreichende Hazard-Behandlung: falsche Operanden
+- Ripes-5-Stage der Installation beobachten und nicht mit dem Drei-Stall-Lehrmodell vermischen
 - Processor-Tab: Datenpfad hat sich radikal verändert
 
 ::: notes
@@ -1322,13 +1325,14 @@ Decode eingefroren, NOP wandert als Platzhalter durch die hinteren Stufen.
 
 ## Labor-Aufgabe 3: Control Hazard (Flushing)
 
-- Endlosschleife:
+- Countdown über zehn Schritte, danach Ende:
 
 ```asm
 li t0, 10
 Loop:
   addi t0, t0, -1
   bne  t0, zero, Loop
+# hier ist t0 = 0; die Schleife ist beendet
 ```
 
 - Was passiert, wenn `bne` springt und der PC zurückgeht?

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="260" viewBox="0 0 860 260" role="img" aria-label="sra von minus 3">
+  <style>
+    .h { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 600; }
+    .s { fill: #86868B; font-family: Inter, sans-serif; font-size: 14px; }
+    .c { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 15px; font-weight: 600; }
+  </style>
+  <text class="h" x="16" y="28">8-Bit-Ausschnitt · srai und C-Division</text>
+  <text class="c" x="16" y="70">3 = 1111 1101</text>
+  <text class="c" x="16" y="100">srai um 1 = 1111 1110 = 2</text>
+  <text class="s" x="16" y="128">Rechts herausfallendes Bit 1 wird verworfen. Links wird das Vorzeichenbit nachgezogen. Das rundet nach .</text>
+  <text class="c" x="16" y="170">C, ILP32: 3 / 2 = 1</text>
+  <text class="s" x="16" y="198">C-Integerdivision rundet gegen 0 (N1570, 6.5.5). sra ist deshalb keine allgemeine C-Division.</text>
+  <text class="s" x="16" y="230">sll ist Multiplikation mit 2^k nur, solange keine relevanten Bits herausfallen. Registershifts nutzen die unteren 5 Bits.</text>
+</svg>

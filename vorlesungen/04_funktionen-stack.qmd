@@ -190,18 +190,16 @@ Ab heute Pflichtwissen: $x1$/`ra`. Konvention: vor/beim Betreten der Funktion li
 
 ## Jump and Link (`jal`)
 
-- Ein Befehl, zwei Aktionen in einem Takt
-- Syntax: `jal rd, Label`
-- Link: Hardware kopiert $PC+4$ nach `rd` (meist `ra`)
-- Jump: Hardware setzt PC auf die Label-Adresse
-- Atomar — kein Zwischenzustand
+- Ein Befehl, zwei Ergebnisse aus dem **alten** PC
+- „Ein Takt“ ist eine Annahme des Single-Cycle-Lehrmodells, keine ISA-Regel
+- Linkwert = alter PC $+ 4$
+- Ziel = alter PC $+$ Byteoffset
+- `ra` ist ein normales GPR mit ABI-Rolle
 
 ```asm
 jal ra, Quadriere
-
-# In einem Takt:
-# 1. ra = PC + 4
-# 2. PC = Adresse(Quadriere)
+# ra  = oldPC + 4
+# PC   = oldPC + Byteoffset
 ```
 
 ::: notes
@@ -231,7 +229,9 @@ Kreis zu Einheit 3: Beim Else-Überspringen wird das Rückflugticket berechnet u
 
 - Am Funktionsende hilft `jal` nicht (braucht festes Label)
 - Ziel ist die dynamische Adresse in `ra`
-- Lösung: `jalr rd, offset(rs1)` — Sprung zu Registerinhalt
+- `jalr`: Ziel $= (rs1 + \mathrm{signextend}(imm))$ mit gelöschtem Bit 0
+- Linkwert = alter PC $+ 4$
+- `ret` ist `jalr x0, 0(ra)`
 
 ```asm
 jalr x0, 0(ra)
@@ -370,7 +370,7 @@ Main bereitet Argumente vor, Addiere schreibt die Summe nach `a0`, Main sichert 
 
 ## Der Register-Konflikt
 
-- Nur 32 Hardware-Register für alle Funktionen
+- Nur 32 Architekturregister, von allen Funktionen geteilt
 - Szenario: `Main` speichert Zwischenwert in `s0`, ruft `Print()` auf
 - `Print()` nutzt `s0` ahnungslos als Zähler
 - Nach `ret`: Wert in `Main` ist zerstört
@@ -390,11 +390,15 @@ Main:
     li s0, 99
     jal ra, BoeseFunc
     # s0 ist jetzt 0
+    li a0, 10
+    ecall
 
 BoeseFunc:
     li s0, 0
     ret
 ```
+
+`Main` endet mit dem Venus-Exit. Es gibt keinen Fall-through in `BoeseFunc`. Der isolierte Fehler ist das ungesicherte `s0`.
 
 ::: notes
 Clobbering: stille Zerstörung. Ohne strenge Konventionen ist fremder Code unsicher aufrufbar.
@@ -471,14 +475,18 @@ Freiwild für den Callee. Nach jedem `jal`: alle `t`-Register mental als gelösc
 - Vorteil: kleine Hilfsfunktionen ohne teure RAM-Backups
 
 ```c
-int t0 = 5;
-print(t0); // jal ra, print
-// Anfänger: t0 ist noch 5
-// Realität: t0 ist undefiniert
+/* Kein C-Beispiel: der Compiler erhält die Lebensdauer. */
+```
+
+```asm
+# Isolierter ABI-Fehler, kein C:
+    li   t0, 5
+    jal  ra, Print      # Print darf t0 überschreiben
+    # t0 ist danach nicht mehr verlässlich 5
 ```
 
 ::: notes
-Klassischer Labor-Bug: Schleifenzähler in `t0`, dann `print` im Body — Schleife bricht. RAM-Save kostet viele Takte; deshalb dürfen winzige Callees `t` frei nutzen.
+Das ist Assembler, keine C-Semantik. Ein korrekter C-Compiler legt die Variable so, dass sie den Aufruf überlebt: anderes Register oder Sicherung. Ungesichertes `t0` über `jal` ist der eigentliche Fehler.
 :::
 
 ## Callee-Saved Register (Sicher)
@@ -574,7 +582,7 @@ graph TD
 ```
 
 ::: notes
-Unten: Programmcode, darüber Static Data und Heap (wächst nach oben). Oben bei hohen Adressen (z. B. $0x7FFFFFFF$) beginnt der Stack und wächst nach unten — so verzögert sich die Kollision mit dem Heap.
+Unten: Programmcode, darüber statische Daten und Heap. Der Stack beginnt bei einer hohen Adresse und wächst nach unten. Das ist eine gewählte Belegung mit Betriebssystem. Der Stack muss den Heap nicht erreichen, bevor eine Grenze gilt.
 :::
 
 
@@ -629,13 +637,11 @@ Orientieren Sie sich am `sp`: Er ist die Hausnummer der Stack-Spitze. Ohne ihn w
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 
 graph TD
-  A[sp = 0x7FFFF010] -->|Push| B[sp = 0x7FFFF00C]
-  B -->|Push| C[sp = 0x7FFFF008]
-  C --> D[Subtraktion vergroessert den belegten Platz]
+  A[sp = 0x7FFFF010] -->|Frame −16| B[sp = 0x7FFFF000]
+  B --> D[16-Byte-Frame, ABI-ausgerichtet]
   style D fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
@@ -644,18 +650,19 @@ Kontraintuitiv, aber Standard: nach unten wachsen heißt `sp` verkleinern zum Re
 
 ## Push: Etwas ablegen (Schritt 1)
 
-- Register `s0` (32 Bit / 4 Bytes) vor Zerstörung retten
-- Zuerst Platz im RAM „kaufen“
-- `sp` um 4 Bytes nach unten: `addi sp, sp, -4`
-- `sp` zeigt nun auf ein leeres 4-Byte-Fach
-- Hinweis: Reale RISC-V-ABI oft 16-Byte-Stack-Alignment; Kurs/Venus vereinfacht auf Wortgranularität
+- Register `s0` vor dem Überschreiben sichern
+- ABI-Konvention ILP32: der Frame ist 16 Byte groß, auch für ein Wort
+- `addi sp, sp, -16`, danach `sw` innerhalb des Frames
+- Padding füllt den Rest; `sp` bleibt an der Aufrufgrenze ausgerichtet
 
 ```asm
-addi sp, sp, -4     # Stack waechst um 1 Wort nach unten
+addi sp, sp, -16    # ein Wort plus Padding
 ```
 
+![16-Byte-Frame mit einem gesicherten Register](../assets/images/stack-frame-16.svg)
+
 ::: notes
-Schritt 1 eines Push: Speicher reservieren. Erst danach dürfen Daten geschrieben werden. Reale ABI: oft 16-Byte-Alignment; hier Wortgranularität wie in Venus.
+Schritt 1: 16 Byte reservieren. Erst danach schreiben. Ein einzelnes Register liegt bei `12(sp)`; die übrigen 12 Byte sind Padding. Venus akzeptiert auch kleinere Subtraktionen, der Kurs lehrt die ILP32-Ausrichtung.
 :::
 
 ## Push: Etwas ablegen (Schritt 2)
@@ -665,8 +672,8 @@ Schritt 1 eines Push: Speicher reservieren. Erst danach dürfen Daten geschriebe
 - Befehl: `sw s0, 0(sp)`
 
 ```asm
-addi sp, sp, -4
-sw s0, 0(sp)        # s0 sicher im RAM
+addi sp, sp, -16
+sw s0, 12(sp)
 ```
 
 ::: notes
@@ -681,7 +688,7 @@ Kompletter Push: erst Platz, dann Store. `s0` liegt im Tresor; das Register darf
 - RAM-Platz ist noch als belegt markiert
 
 ```asm
-lw s0, 0(sp)        # Wert wiederherstellen
+lw s0, 12(sp)
 ```
 
 ::: notes
@@ -690,13 +697,13 @@ Erst laden, dann freigeben. Nach dem `lw` liegt der Wert wieder in `s0`, der Tel
 
 ## Pop: Etwas herunternehmen (Schritt 2)
 
-- Platz logisch freigeben: `addi sp, sp, 4`
+- Platz freigeben: `addi sp, sp, 16`
 - Bits im RAM bleiben als „Elektroschrott“, bis der nächste Push überschreibt
 - `sp` steht wieder dort, wo er vor dem Push war
 
 ```asm
-lw s0, 0(sp)
-addi sp, sp, 4      # Platz freigeben
+lw s0, 12(sp)
+addi sp, sp, 16
 ```
 
 ::: notes
@@ -707,7 +714,7 @@ Freigabe = `sp` nach oben. Kein explizites Löschen nötig — der nächste Push
 
 - Jede Funktion hinterlässt den Stack exakt wie vorgefunden
 - Summe der Pushes = Summe der Pops
-- Beispiel: Prolog $-12$ → Epilog $+12$ vor `ret`
+- Beispiel: Prolog $-16$ → Epilog $+16$ vor `ret`
 - Ungleichgewicht verschiebt Frames des Aufrufers — Crash
 
 ```{mermaid}
@@ -715,8 +722,8 @@ Freigabe = `sp` nach oben. Kein explizites Löschen nötig — der nächste Push
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 
 graph LR
-  A[sp = 1000] -->|Push -12| B[sp = 988]
-  B -->|Pop +8| C[sp = 996]
+  A[sp = 0x1000] -->|Frame −16| B[sp = 0x0FF0]
+  B -->|Epilog +8| C[sp = 0x0FF8]
   C -->|ret| D((Crash))
   style D fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
@@ -730,20 +737,16 @@ Take nothing but pictures, leave nothing but footprints: Was Sie am Anfang vom `
 
 ## Effizienz: Multi-Push
 
-- Oft mehrere Register gleichzeitig retten (`s0`, `s1`, `ra`, …)
-- Viermal `addi sp, sp, -4` ist ineffizient
-- Besser: Platz für alle auf einmal — z. B. $-12$ für drei Wörter
-- Danach Offsets wie in einem Array
+- Viermal einzeln reservieren ist unnötig
+- Besser: ein Frame, Vielfaches von 16 Byte
+- Zwei Register passen in denselben 16-Byte-Frame
 
 ```asm
-# Ineffizient:
-addi sp, sp, -4
-sw s0, 0(sp)
-addi sp, sp, -4
-sw s1, 0(sp)
-
-# Effizient:
-addi sp, sp, -8     # Platz fuer 2 Register
+# Ineffizient: vier einzelne Wortreservierungen
+# Kursrahmen: ein gemeinsamer 16-Byte-Frame
+addi sp, sp, -16
+sw s0, 12(sp)
+sw s1, 8(sp)
 ```
 
 ::: notes
@@ -752,15 +755,14 @@ Compiler reservieren den gesamten Frame in einem Rutsch und belegen ihn mit Offs
 
 ## Array auf dem Stack (Offsets)
 
-- Nach `addi sp, sp, -12` zeigt `sp` auf das untere Ende des Blocks
-- Zugriff: `0(sp)`, `4(sp)`, `8(sp)` — Pointer-Arithmetik aus Einheit 3
-- Der Block gehört exklusiv dieser Funktion
+- Nach `addi sp, sp, -16` zeigt `sp` auf das untere Ende
+- Drei Wörter plus 4 Byte Padding: Offsets 12, 8 und 4
 
 ```asm
-addi sp, sp, -12
-sw ra, 8(sp)
-sw s1, 4(sp)
-sw s0, 0(sp)
+addi sp, sp, -16
+sw ra, 12(sp)
+sw s1, 8(sp)
+sw s0, 4(sp)
 ```
 
 ::: notes
@@ -771,16 +773,16 @@ sw s0, 0(sp)
 
 - So sieht ein Multi-Push im Venus-Memory-Tab aus:
 
-| Adresse (relativ) | Inhalt                              |
-|-------------------|-------------------------------------|
-| `sp + 12`         | Daten des Aufrufers (Caller-Frame)  |
-| `sp + 8`          | `ra` (Rücksprungadresse)         |
-| `sp + 4`          | `s1` (Backup)                       |
-| `sp + 0`          | `s0` (Backup) — `sp` zeigt hierhin |
-| `sp - 4`          | noch freier RAM für den nächsten Push |
+| Adresse (relativ) | Inhalt |
+|-------------------|--------|
+| alte `sp` | Caller-Frame |
+| `12(sp)` | `ra` |
+| `8(sp)` | `s1` |
+| `4(sp)` | `s0` |
+| `0(sp)` | Padding, neue `sp` |
 
 ::: notes
-Pop in umgekehrter Reihenfolge: von `0`, `4`, `8` laden, dann `addi sp, sp, 12`. Bereich ab `sp+12` ist Tabu — Frame des Callers.
+Pop: `lw` von 4, 8 und 12, dann `addi sp, sp, 16`. Der Bereich ab der alten `sp` gehört dem Caller.
 :::
 
 ## Stack Frames (Prolog und Epilog)
@@ -841,11 +843,9 @@ Lokale Arrays erweitern den Frame (z. B. $-1000$). Stack Overflow = Stack und He
 
 ```asm
 MeineFunktion:
-    # --- PROLOG ---
-    addi sp, sp, -8
-    sw s1, 4(sp)
-    sw s0, 0(sp)
-    # --- PROLOG ENDE ---
+    addi sp, sp, -16
+    sw s1, 12(sp)
+    sw s0, 8(sp)
 ```
 
 ::: notes
@@ -878,10 +878,9 @@ Hier rechnen, iterieren, Sensoren auswerten — ABI-Rückgabe in `a0` nicht verg
 - erst dann `ret`
 
 ```asm
-    # --- EPILOG ---
-    lw s0, 0(sp)
-    lw s1, 4(sp)
-    addi sp, sp, 8
+    lw s0, 8(sp)
+    lw s1, 12(sp)
+    addi sp, sp, 16
     ret
 ```
 
@@ -891,13 +890,13 @@ Wiederherstellen, Frame vernichten, Heimreise. `ret` erst nach dem Gleichgewicht
 
 ## Die Gefahr des Off-by-One
 
-- Prolog $-8$, Epilog versehentlich $+4$?
+- Prolog $-16$, Epilog versehentlich $+8$
 - Ein Wort „Müll“ bleibt auf dem Stack
 - Caller-Offsets greifen daneben — Kettenreaktion
 - Schwer zu debuggen: `ret` wirkt noch korrekt
 
 ```asm
-addi sp, sp, 4      # FATAL, wenn Prolog -8 hatte
+addi sp, sp, 8      # zu wenig, wenn der Prolog −16 war
 ret
 ```
 
@@ -912,16 +911,13 @@ Das Gleichgewichtsgesetz verzeiht keine Tippfehler im Epilog. Der Caller liest M
 
 ```asm
 MeineTolleFunktion:
-    # --- PROLOG ---
-    addi sp, sp, -4
-    sw s0, 0(sp)
+    addi sp, sp, -16
+    sw s0, 12(sp)
 
-    # --- BODY ---
-    # ... rechnen ...
+    # Body
 
-    # --- EPILOG ---
-    lw s0, 0(sp)
-    addi sp, sp, 4
+    lw s0, 12(sp)
+    addi sp, sp, 16
     ret
 ```
 
@@ -1053,7 +1049,7 @@ Calc_Zeile_Y:
 
 - Laut ABI ist `ra` Caller-Saved (flüchtig)
 - Eine Non-Leaf-Funktion ist Callee und Caller zugleich
-- Regel: vor jedem weiteren `jal` muss `ra` auf den Stack
+- Regel: `ra` einmal im Prolog des Non-Leaf sichern. Weitere innere Aufrufe nutzen dasselbe Backup, sofern der Frame stehen bleibt.
 - `ra` wandert typisch als oberstes Element in den Stack Frame
 
 ```{mermaid}
@@ -1074,17 +1070,15 @@ Vor dem inneren `jal`: Kopie von `ra` in den Frame. Überschreiben durch Hardwar
 
 ## Prolog für Non-Leafs
 
-- Prolog wächst um ein Wort (4 Bytes) für `ra`
-- Statt nur $-4$ für `s0` nun z. B. $-8$
-- Konvention: `ra` auf das höhere Offset (`4(sp)`), darunter die `s`-Register
-- Danach ist der Body vor `jal`-Zerstörung geschützt
+- `ra` einmal im Prolog sichern, im Epilog wiederherstellen
+- Nicht vor jedem inneren `jal` erneut, solange derselbe Frame gilt
+- Ein Tailcall kann die Sicherung entbehrlich machen; das ist die Ausnahme
 
 ```asm
 Calc:
-    # PROLOG Non-Leaf
-    addi sp, sp, -8
-    sw ra, 4(sp)        # Main-Ruecksprungadresse
-    sw s0, 0(sp)
+    addi sp, sp, -16
+    sw ra, 12(sp)
+    sw s0, 8(sp)
 ```
 
 ::: notes
@@ -1094,15 +1088,14 @@ Minimal größerer Frame: `ra` oben, `s0` darunter. Beliebig viele Hilfsaufrufe 
 ## Epilog für Non-Leafs
 
 - Spiegelverkehrt zum Prolog: zuerst `s0`, dann `ra` aus dem Frame
-- `addi sp, sp, 8` — Frame abbauen
+- `addi sp, sp, 16` gibt den Frame frei
 - Erst danach `ret` — liest das wiederhergestellte `ra` (zurück zu Main)
 
 ```asm
-    # EPILOG Non-Leaf
-    lw s0, 0(sp)
-    lw ra, 4(sp)
-    addi sp, sp, 8
-    ret                 # korrekt zu Main
+    lw s0, 8(sp)
+    lw ra, 12(sp)
+    addi sp, sp, 16
+    ret
 ```
 
 ::: notes

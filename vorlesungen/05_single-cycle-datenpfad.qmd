@@ -117,6 +117,17 @@ graph LR
 Datenpfad = Nutzdaten-Fluss. Steuerwerk = Hebel an den Ventilen. Heute exklusiv das Rohrleitungssystem.
 :::
 
+## Befehlsumfang dieses Lehrmodells
+
+- Implementiert: `add`, `sub`, `and`, `or`, `lw`, `sw`, `beq`
+- Kein vollständiger RV32I-Prozessor
+- `addi`, `bne` und `jal` erst nach Ergänzung von ImmGen, Vergleich oder Link-Write-Back
+- ImmGen liefert für `beq` den Byteoffset einschließlich implizitem Bit 0
+
+::: notes
+Annahme unseres Lehrmodells. Ripes zeigt ein reicheres Modell; die Folien behaupten nur das genannte Subset. Die Zuordnung der Signalnamen steht in der Mapping-Tabelle weiter unten, nicht als Identität mit Ripes.
+:::
+
 ## Der Single-Cycle-Prozessor
 
 - Viele Steuerungsarten: Pipelining, Multi-Cycle, …
@@ -774,9 +785,8 @@ RD2 wackelt oft am Speicher. Nur bei echtem Store öffnet `MemWrite` den Schreib
 ## Store und das Register File
 
 - `sw` schreibt in den RAM, nicht in Register
-- S-Type: kein `rd` — auf dem rd-Kabel liegt Müll
-- `RegWrite` muss bei Store zwingend 0 sein
-- Sonst würde die Flanke ein Zufallsregister überschreiben
+- S-Type hat kein `rd`; dieselben Bits sind Immediate und `rs2`
+- `RegWrite` muss 0 sein, sonst wird das aus den Bits decodierte Register beschrieben
 
 ```text
 Ohne RegWrite=0:
@@ -902,32 +912,27 @@ Hinweis Terminologie: In RISC-V-Datenpfaden ist Zero ein ALU-Ausgangspin, kein s
 
 | Bits | Feld |
 |:---|:---|
-| 31:25 | `imm[12\|10:5]` |
+| 31:25 | imm[12] und imm[10:5] |
 | 24:20 | `rs2` |
 | 19:15 | `rs1` |
 | 14:12 | `funct3` |
-| 11:7 | `imm[4:1\|11]` |
+| 11:7 | imm[4:1] und imm[11] |
 | 6:0 | `opcode` |
 
 ::: notes
 ImmGen kennt auch das B-Format. Zweierkomplement erlaubt rückwärts gerichtete Sprünge.
 :::
 
-## Offset-Aufbereitung (Shift Left 1)
+## Offset-Aufbereitung im Lehrmodell
 
-- Immediate vor der PC-Addition um 1 Bit nach links ($\cdot 2$)
-- Instruktionen enden nie auf ungerader Byte-Adresse
-- Unterstes Bit der Distanz ist implizit 0 — Compiler speichert es nicht
-- Hardware hängt die 0 per Shift an — größere Sprungreichweite
+- ImmGen liefert den vorzeichenerweiterten **Byteoffset**
+- Bit 0 ist implizit 0 und bereits enthalten
+- Danach kein zweites Shift-left-1
+- Der Branch-Addierer rechnet alten PC plus diesen Byteoffset
 
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  ImmGen[32-Bit Immediate] --> SL1[Shift Left 1]
-  SL1 -->|Offset| Addierer
-  style SL1 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
+```text
+Byteoffset = signextend(B-Immediate mit implizitem Bit 0)
+Target     = oldPC + Byteoffset
 ```
 
 ::: notes
@@ -1064,10 +1069,12 @@ Fall-Through: lineare Fortsetzung. Eleganz reiner Kombinatorik plus einer Flanke
 - In Ripes im Labor sichtbar
 
 ```text
-jal ra, Label:
-  PC = Target
-  ra = PC+4
+jal ra, Label, beide Werte aus dem alten PC:
+  nextPC = oldPC + Byteoffset
+  ra     = oldPC + 4
 ```
+
+`jal` liegt außerhalb des Basismodells add/sub/and/or/lw/sw/beq, bis der Write-Back-Pfad für den Linkwert ergänzt ist. Die sequenzielle Schreibweise „erst PC = Target, dann ra = PC+4“ wäre falsch, weil der Linkwert den alten PC braucht.
 
 ::: notes
 Vereinfachung: Wir blenden die `jal`-Write-Back-Kabel hier aus; Einheit 4 und Ripes zeigen den Link-Pfad.
@@ -1373,7 +1380,7 @@ Tool nach Fragestellung wählen: Algorithmus → Venus; Datenpfad → Ripes.
 - 5-Stage Pipeline wäre für heute irreführend
 
 ::: notes
-Chip-Icon oben links: Single-Cycle wählen — exakt der Folien-Prozessor.
+Chip-Icon oben links: Single-Cycle wählen. Das ist das Ripes-Modell der installierten Version, nicht bitgleich das Folien-Subset. Signalnamen von Patterson/Hennessy, Harris/Harris und Ripes nebeneinander lesen.
 :::
 
 ## Die UI: Editor-Tab

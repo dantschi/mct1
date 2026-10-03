@@ -116,7 +116,7 @@ Beantworten Sie kurz:
 
 1. Welche Register übergibt der Caller typischerweise für die ersten beiden Argumente? (3 Pkt)
 2. Ist `ra` Caller-saved oder Callee-saved — und warum muss eine Non-Leaf-Funktion `ra` sichern? (6 Pkt)
-3. Skizzieren Sie den Prolog einer Leaf-Funktion, die nur `s0` auf dem Stack sichert (Wortgranularität wie in Venus; reale ABI: 16-Byte-Alignment). (6 Pkt)
+3. Skizzieren Sie den Prolog einer Funktion, die nur `s0` sichert. Der Frame ist 16 Byte groß (ILP32). (6 Pkt)
 
 ::: {.content-hidden when-profile="solution"}
 \vspace{6cm}
@@ -129,11 +129,11 @@ Beantworten Sie kurz:
 2. `ra` ist **Caller-saved** (bzw. gehört dem Caller); eine Non-Leaf-Funktion überschreibt `ra` beim eigenen `jal` und muss den alten Rückkehrwert daher im Prolog auf dem Stack sichern (6 Pkt).
 3. Beispiel (4 Pkt Prolog + 2 Pkt Epilog-Idee):
 ```asm
-    addi sp, sp, -4
-    sw   s0, 0(sp)
+    addi sp, sp, -16
+    sw   s0, 12(sp)
     # … Rumpf …
-    lw   s0, 0(sp)
-    addi sp, sp, 4
+    lw   s0, 12(sp)
+    addi sp, sp, 16
     ret
 ```
 :::

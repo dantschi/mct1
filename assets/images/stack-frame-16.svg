@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="280" viewBox="0 0 920 280" role="img" aria-label="16-Byte-Stackframe ILP32">
+  <style>
+    .box { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
+    .pad { fill: #F5F5F7; stroke: #E5E5EA; stroke-width: 2; }
+    .hot { fill: #FFFFFF; stroke: #E2001A; stroke-width: 2; }
+    .h { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 600; }
+    .c { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 14px; font-weight: 600; }
+    .s { fill: #86868B; font-family: Inter, sans-serif; font-size: 13px; }
+  </style>
+  <text class="h" x="16" y="26">ILP32-Frame, 16 Byte, ein gesichertes Register plus Padding</text>
+  <text class="s" x="16" y="48">ABI-Konvention. sp vor und nach dem Aufruf durch 16 teilbar. Erst reservieren, dann schreiben.</text>
+  <rect class="box" x="40" y="70" width="280" height="36"/>
+  <rect class="hot" x="40" y="106" width="280" height="36"/>
+  <rect class="pad" x="40" y="142" width="280" height="36"/>
+  <rect class="pad" x="40" y="178" width="280" height="36"/>
+  <text class="c" x="180" y="94" text-anchor="middle">Caller · alte sp</text>
+  <text class="c" x="180" y="130" text-anchor="middle">12(sp) = s0</text>
+  <text class="c" x="180" y="166" text-anchor="middle">8(sp) Padding</text>
+  <text class="c" x="180" y="202" text-anchor="middle">0(sp) neue sp</text>
+  <text class="s" x="360" y="120">addi sp, sp, -16</text>
+  <text class="s" x="360" y="144">sw s0, 12(sp)</text>
+  <text class="s" x="360" y="180">lw s0, 12(sp)</text>
+  <text class="s" x="360" y="204">addi sp, sp, 16</text>
+  <text class="s" x="16" y="250">Mehrere Register teilen sich denselben Frame. ra einer Non-Leaf-Funktion wird einmal im Prolog gesichert.</text>
+</svg>

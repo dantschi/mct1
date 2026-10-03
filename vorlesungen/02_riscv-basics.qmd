@@ -201,10 +201,10 @@ Die ALU kann keine Arrays kopieren — nur addieren. CISC-Decoder zerlegen Monst
 ## RISC (Reduced Instruction Set Computer)
 
 - Vertreter: ARM, MIPS, RISC-V
-- Philosophie: Hardware simpel, schnell, energieeffizient
-- Wenige atomare Befehle (Addieren, Laden, Speichern, …)
-- Keine eingebauten komplexen Schleifenstrukturen
-- Kompromiss: Compiler erzeugt mehr Code (mehr Bytes)
+- Entwurfsidee dieses Befehlssatzes: feste Länge, Load/Store, wenige Befehlsformate
+- Ein einzelner RISC-Befehl ist kein Synchronisationsvertrag einer atomaren Speicheroperation
+- Pipelining ist eine Mikroarchitekturfrage; CISC-Implementierungen zerlegen oft in einfachere µOps
+- Kompromiss: der Compiler erzeugt oft mehr Befehle
 
 ```text
 // Dieselbe Schleife in RISC:
@@ -218,7 +218,7 @@ LOOP:
 ```
 
 ::: notes
-In den 1980ern (Berkeley/Stanford): Speicher ist billig geworden — Komplexität aus der Hardware heraus. Der Compiler erzeugt mehr Befehle, die Hardware wird klein und hoch taktfähig. Deshalb steckt in Smartphones RISC, nicht klassisches CISC.
+In den 1980ern (Berkeley/Stanford) wurde Komplexität aus dem Befehlssatz in den Compiler verlagert. Energie oder Takt sind keine automatische Folge des Etiketts RISC. Die Load/Store-Regel dieses Befehlssatzes hält Rechnen und Speicherzugriff auseinander.
 :::
 
 ## Die eiserne RISC-Regel: Load/Store
@@ -315,20 +315,24 @@ Außerdem ermöglicht eine standardisierte ABI, dass Programme, die in C geschri
 ## Der RISC-V Modulbaukasten
 
 - Nicht ein starrer Satz, sondern modular
-- Pflicht: Base Integer (`I`)
+- Unsere gewählte Basis: RV32I
+- Weitere Basen existieren; `I` ist nicht die einzige zulässige Basis
 - Optionale Extensions, u. a.:
   - `M` — Multiply/Divide
   - `F` / `D` — Float / Double
-  - `C` — Compressed (16-Bit-Befehle)
-- Kursfokus: ausschließlich RV32I
+  - `C` — Compressed (16-Bit-Befehle); in den Kernbeispielen aus
+- `G` = `IMAFD` sowie `Zicsr` und `Zifencei`
 
 | String | Bedeutung |
 |--------|-----------|
-| RV32I | 32-Bit Basis — Fokus dieses Kurses |
-| RV64GC (= RV64IMAFDC) | 64-Bit + G (= IMAFD, inkl. Zicsr/Zifencei) + C |
+| RV32I | 32-Bit-Basis dieses Kurses, ohne `C` |
+| RV64G | RV64 mit I, M, A, F, D, Zicsr, Zifencei |
+| RV64GC | RV64G plus Compressed |
 
 ::: notes
-Mikrowellen-Controller braucht keine Float-Hardware — Modul weglassen. Jeder Chip braucht nur `I` (ca. 40 Grundbefehle). G = IMAFD (plus Zicsr/Zifencei); C ist separat — daher RV64GC = RV64IMAFDC. Labor und Klausur: nur der übersichtliche RV32I-Kern.
+Mikrowellen-Controller braucht keine Float-Hardware — Modul weglassen. Unser Kurs und die Klausur bleiben bei RV32I ohne `C`. `G` ist IMAFD plus Zicsr und Zifencei; `RV64GC` ist deshalb nicht dasselbe wie `RV64IMAFDC`.
+
+Interrupts und Ausnahmen gehören zu `Zicsr`. Ein Beispiel für einen Trap ist ein illegaler Befehl oder ein privilegiertes Ereignis. Die Integer-Division der Erweiterung M liefert bei Divisor 0 ein definiertes Ergebnis und löst keinen RISC-V-Trap aus. RV32I selbst enthält keinen `div`-Befehl.
 
 Hier ist die genaue Aufschlüsselung von RV64IMAFDC:
 
@@ -336,7 +340,7 @@ RV: Steht schlicht für RISC-V.
 
 64: Gibt die Registerbreite an (hier also ein 64-Bit-Prozessor). Es gibt auch RV32 (für kleine Mikrocontroller) oder sogar RV128.
 
-I (Base Integer): Das ist der fundamentale Basis-Befehlssatz für grundlegende Ganzzahl-Operationen (addieren, laden, speichern, springen). Dieses Modul ist als einziges absolute Pflicht.
+I (Base Integer): Ganzzahlbefehle, Laden, Speichern, Sprünge. Das ist die Basis, die wir wählen. Die Spezifikation erlaubt weitere Basen; „I ist immer Pflicht“ gilt so nicht.
 
 M (Multiply/Divide): Fügt Befehle für die Hardware-Multiplikation und -Division von Ganzzahlen hinzu (ohne dieses Modul müsste die CPU das mühsam in Software simulieren).
 
@@ -351,10 +355,7 @@ C (Compressed Instructions): Ein sehr wichtiges Modul für die Effizienz. Normal
 Und was bedeutet nun das "G"?
 Da die Kombination aus IMAFD (Ganzzahlen, Multiplikation, Atomics, Kommazahlen) der absolute Standard für jeden normalen Allzweck-Computer ist (z.B. für einen Desktop-PC, ein Smartphone oder einen Server, auf dem Linux laufen soll), hat man diese fünf Buchstaben zu einem einzigen Alias zusammengefasst: G (für General-Purpose).
 
-Daher gilt:
-IMAFD = G
-
-Wenn man nun noch das C (Compressed) anhängt, wird aus RV64IMAFDC schlicht und ergreifend RV64GC.
+Daher gilt für den allgemeinen Alias: G umfasst IMAFD sowie Zicsr und Zifencei. C kommt separat dazu. RV64GC ist nicht die Abkürzung für RV64IMAFDC allein.
 
 RV64GC ist heute der absolute Goldstandard für 64-Bit RISC-V Hardware. Wenn du heute einen RISC-V-fähigen Linux-Rechner kaufst, wird das Betriebssystem voraussetzen, dass die CPU genau diesen "RV64GC"-Befehlssatz beherrscht.
 
@@ -372,7 +373,7 @@ Was sind CSRs? Neben den normalen Registern (in denen die CPU rechnet, z.B. 5 + 
 
 Wofür braucht man sie? Über diese CSRs werden grundlegende Systemfunktionen gesteuert:
 
-Interrupts und Ausnahmen: Wenn ein Fehler passiert (z.B. Division durch Null) oder eine externe Hardware (wie eine Tastatur) Aufmerksamkeit braucht.
+Interrupts und Ausnahmen: externe Anforderungen oder synchrone Ausnahmen, etwa ein illegaler Befehl. Division durch Null ist dafür kein RISC-V-Beispiel: die M-Erweiterung definiert das Ergebnis, und RV32I hat keinen Divisionsbefehl.
 
 Privilegienstufen: Um festzulegen, ob der Prozessor gerade im sicheren "Machine Mode" (für die Firmware), "Supervisor Mode" (für das Betriebssystem, z.B. Linux) oder "User Mode" (für deine Apps) läuft.
 
@@ -410,11 +411,11 @@ Spielregeln fürs Semester: 32-Bit-Register, feste 32-Bit-Befehlslänge (kein x8
 
 ## Die 32 Architektur-Register
 
-- Register File: exakt 32 Plätze ($x0$–$x31$)
-- Kompromiss: Zugriffsgeschwindigkeit vs. Chipfläche
-- Adressierung: $5$ Bits ($2^5 = 32$)
-- Hardware-Namen: $x0$ bis $x31$
-- Ohne Strom: Inhalte sind verloren (volatile)
+- Register File der ISA: 32 Architekturregister ($x0$–$x31$)
+- Nicht dasselbe wie physische Register einer Mikroarchitektur
+- Adressierung im Befehlswort: $5$ Bits ($2^5 = 32$)
+- `x0` ist fest 0; die übrigen 31 sind beschreibbar
+- Ohne Versorgung verlieren die Flip-Flops ihren Zustand
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -527,8 +528,9 @@ int main(void) {
 
 - Namen: `a0`–`a7` ($x10$–$x17$)
 - Zweck: Parameterübergabe an Funktionen
-- Rückgabewert: immer in `a0`
+- Rückgabewert unserer einfachen Integer-Funktionen: `a0`
 - Ebenfalls flüchtig (Not Preserved)
+- Simulator-`ecall` ist ein anderer Vertrag: in Venus Dienstkennung in `a0`, erster Parameter in `a1`
 
 ```c
 int sum(int a, int b) { return a + b; }
@@ -545,11 +547,17 @@ Parameter und Rückgabewerte laufen über `a0`–`a7`. `sum(5, 10)`: Compiler le
 
 ## Warum sich an die ABI halten?
 
-- Venus erzwingt die ABI nicht — rein `$x$`-Code wäre möglich
-- Mit C-Bibliotheken / OS-Aufrufen bricht das System sonst
-- Beispiel: Print erwartet den Wert typischerweise in `a0`
-- Im Kurs: ausschließlich ABI-Namen
-- Lesbarkeit und Software-Engineering
+- Venus erzwingt die ABI nicht
+- Normale Funktion und `ecall` nicht vermischen
+- Venus-Druck einer Ganzzahl: `a0 = 1`, Wert in `a1`; Exit: `a0 = 10`
+- Funktionsergebnis skalarer 32-Bit-Werte: `a0`
+- Im Kurs: ABI-Namen für Funktionen
+
+| Vertrag | Kennung | Argument | Rückgabe |
+|---------|---------|----------|----------|
+| ILP32-Funktion | — | `a0`, `a1`, … | `a0` |
+| Venus-`ecall` | `a0` | erster Wert in `a1` | abhängig vom Dienst |
+| Ripes-`ecall` | Tabelle der installierten Version | nicht mit Venus gleichsetzen | siehe `ecalls.md` |
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -562,7 +570,7 @@ graph LR
 ```
 
 ::: notes
-Der Prozessor kennt nur $x0$–$x31$. Aber Syscalls und Bibliotheken suchen Parameter in `a0`. Liegt Ihr Ergebnis in $x31$, kommt Müll auf die Konsole. Deshalb ab heute ABI-Namen.
+Der Prozessor kennt nur die Architekturregister $x0$–$x31$. Eine C-Funktion sucht ihr skalares Ergebnis in `a0`. Ein Venus-`ecall` sucht die Dienstnummer ebenfalls in `a0` und den Druckwert in `a1`. Wer beides vertauscht, sieht nicht die Zahl, die die Funktion zurückgegeben hat.
 :::
 
 # 3. R-Type Befehle (Register)
@@ -684,11 +692,11 @@ sub t0, t1, t2
 
 ## Komplexe Gleichungen
 
-- Maximal zwei Quellen pro Befehl
-- C-Zeile `a = b + c - d` sprengt die Syntax
-- ALU hat physisch nur zwei Eingänge
-- Unmöglich, drei Operanden in einen 32-Bit-Befehl zu quetschen
-- Compiler zerlegt in atomare Schritte
+- Maximal zwei Quellregister im R-Format dieses Befehlssatzes
+- C-Zeile `a = b + c - d` passt nicht in ein R-Format
+- Die ALU dieses Lehrmodells hat zwei Dateneingänge
+- Drei Quellregister wären ein anderes Befehlsformat, kein physikalisches Verbot von 32 Bit
+- Der Compiler zerlegt den Ausdruck in mehrere Instruktionen
 
 ```c
 // a=s0, b=s1, c=s2, d=s3
@@ -699,7 +707,7 @@ a = b + c - d;
 In C sind lange Formeln üblich. In RISC: zwei ALU-Eingänge, zwei Quellfelder. `a = b + c - d` geht nicht in einem Befehl — der Prozessor braucht Zerlegung.
 :::
 
-## Lösung: Mehrzeiler (atomare Schritte)
+## Lösung: Mehrzeiler
 
 - Zerlegung in Zwischenschritte
 - Temporäre Register (`t0`–`t6`) als Schmierzettel
@@ -759,9 +767,9 @@ Stellen Sie sich 32 Bits wie Perlen auf einer Schnur vor: gemeinsames Verschiebe
 ## Logical Shift Left (`sll`)
 
 - Bits nach links; LSB-Lücke mit $0$ gefüllt
-- Shift um 1 ≅ Multiplikation mit $2$
-- Shift um 3 ≅ Multiplikation mit $2^3 = 8$
-- Vorsicht: großes $N$ kann das Vorzeichen-Bit am MSB ändern
+- Entspricht einer Multiplikation mit $2^{k}$ nur, wenn keine relevanten Bits herausfallen
+- Registershift: nur die unteren fünf Bits des Shift-Registers zählen
+- Ein C-Shift um 32 ist ein anderer, undefinierter Fall
 
 ```asm
 # t1 = 5 (...0101), t2 = 1
@@ -776,9 +784,8 @@ sll t0, t1, t2
 ## Logical Shift Right (`srl`)
 
 - Bits nach rechts; MSB-Lücke mit $0$ gefüllt
-- ≅ Division durch $2$ (Integer, Rest verworfen)
-- Korrekt nur für nichtnegative Werte
-- Bei negativen Zahlen: Null-Fill zerstört das Vorzeichen
+- Entspricht der Division des **vorzeichenlos** gelesenen Bitmusters durch $2^{k}$
+- Bei negativem Zweierkomplement zerstört die Nullfüllung das Vorzeichen
 
 ```asm
 # t1 = 12 (...1100), t2 = 2
@@ -792,18 +799,22 @@ srl t0, t1, t2
 
 ## Arithmetic Shift Right (`sra`)
 
-- Lösung für negative Zahlen
 - Lücke links: Sign-Extension (altes MSB nachfüllen)
-- Erhält Zweierkomplement-Mathematik bei Division durch $2$
+- Rundet bei negativen Werten nach $-\infty$, nicht wie C gegen 0
+- Beispiel: `srai` von $-3$ um 1 ergibt $-2$; in C gilt $-3/2 = -1$
 
 ```asm
 # t1 = -4 (1111...1100); Shift-Amount 1 in t2
 sra t0, t1, t2
 # t0 = -2 (1111...1110)
+
+# srai von -3 um 1 → -2, nicht -1
 ```
 
+![srai von −3 gegenüber der C-Division](../assets/images/shift-srai-neg3.svg)
+
 ::: notes
-`sra` schaut das MSB an und füllt links mit Einsen bzw. Nullen (Vorzeichenerweiterung). Aus $-4$ wird $-2$ — korrektes Zweierkomplement.
+`sra` zieht das Vorzeichenbit nach. Aus $-4$ wird $-2$. Aus $-3$ wird nach einem arithmetischen Rechtsshift $-2$. Die C-Division $-3/2$ ergibt in ILP32 dagegen $-1$, weil sie gegen null rundet.
 :::
 
 ## Der $x0$-Trick: Variablen kopieren
@@ -1010,6 +1021,8 @@ Hex:     0    1    5    A    0    4    B    3
 Maschinencode: 0x015A04B3
 ```
 
+![R-Typ-Bitfelder von add x9, x20, x21](../assets/images/rtype-015A04B3.svg)
+
 ::: notes
 Puzzleteile in die Schablone, Nibbles → Hex. Venus schreibt genau diesen Wert bei `add x9, x20, x21` in den Speicher. Ihr erster manuell assemblierter Befehl.
 :::
@@ -1136,7 +1149,7 @@ Das oberste der zwölf Bits ist das Vorzeichenbit. Daher ist 2048 nicht direkt d
 Das li steht bei RISC-V für "Load Immediate" (zu Deutsch etwa: "Lade einen direkten/unmittelbaren Wert"). Es handelt sich dabei um einen sogenannten Pseudobefehl (Pseudo-Instruction). Das bedeutet: Diesen Befehl gibt es in der eigentlichen Hardware (der ISA) gar nicht. Er ist eine reine Hilfsfunktion des Assemblers (dem Programm, das deinen Text-Code in Maschinencode übersetzt), um dem Programmierer das Leben leichter zu machen.
 
 Das Platzproblem in RISC-Architekturen
-In einen regulären Befehl passen nur Konstanten (Immediates) mit einer Größe von 12 Bit. Das liegt daran, dass der gesamte Befehl bei RISC-V genau 32 Bit lang ist. Ein Teil dieser 32 Bit wird bereits benötigt, um dem Prozessor mitzuteilen, was er tun soll (Opcode) und welches Register er nutzen soll. Für die eigentliche Zahl bleiben also nur 12 Bit übrig (Zahlen von -2048 bis 2047).
+Das I-Format codiert ein 12-Bit-Immediate. U-, B- und J-Formate nutzen andere Immediate-Felder; nicht jede Instruktion hat nur 12 Immediate-Bits. Eine kleine Konstante, etwa `li t0, 5`, wird in diesem Assembler typischerweise zu einem `addi`. Eine große Konstante, etwa `li t0, 50000`, braucht `lui` und ein folgendes Immediate. Die konkrete Expansion steht in der Disassembly der verwendeten Venus-Version.
 
 Was passiert, wenn du eine größere Zahl brauchst?
 Wenn du in deinem Code beispielsweise die Zahl 50.000 in ein Register laden möchtest, passt diese unmöglich in diese 12 Bit. In der Hardware müsstest du das manuell mit zwei echten Befehlen lösen:
@@ -1190,11 +1203,12 @@ Die Sign-Extension bewahrt den Zahlenwert beim Übergang von 12 auf 32 Bit.
 ```asm
 andi t0, t1, 0x0F
 ori  t0, t0, 0x80
-xori t0, t0, 0x01
+xori t0, t1, -1
+# -1 ist 12-Bit-Zweierkomplement und wird auf 0xFFFFFFFF erweitert
 ```
 
 ::: notes
-Diese Befehle eignen sich für Bitmasken. Auch logische Immediates werden sign-extended.
+Auch logische Immediates werden vorzeichenerweitert. `xori t0, t1, -1` invertiert deshalb alle 32 Bits, nicht nur die unteren zwölf.
 :::
 
 ## Shift I-Types (`slli`, `srli`, `srai`)
@@ -1460,5 +1474,16 @@ graph LR
 ```
 
 ::: notes
-Damit endet der Theorieteil. Folien als Spickzettel offen lassen, Venus starten, formatieren und kommentieren. Step + Tracing nutzen; Frustrationstoleranz hilft. Syntax-Fehler, die Sie in unter zwei Minuten nicht klären, gerne melden. Viel Erfolg bei Ihren ersten RISC-V-Schritten!
+Damit endet der Theorieteil. Folien als Spickzettel offen lassen, Venus starten, formatieren und kommentieren.
+:::
+
+## Abschlussblatt
+
+- Begriffe: Architekturregister, R-/I-Format, Pseudoinstruktion, ABI, `ecall`.
+- ISA-Regel: RV32I, Little Endian, keine `C`-Instruktionen in den Kernbeispielen.
+- Typischer Fehler: Funktions-`a0` und Venus-Dienstnummer verwechseln.
+- Übung: `add x9, x20, x21` als `0x015A04B3` prüfen; `srai` von $-3$ um 1 ergibt $-2$.
+
+::: notes
+Verbindliche Festlegungen stehen in `referenz/kursvertrag.md`.
 :::

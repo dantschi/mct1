@@ -24,7 +24,7 @@
   <path class="wire" d="M 245 52 L 280 52"/>
   <path class="wire" d="M 245 82 L 280 82"/>
   <rect class="gate" x="280" y="40" width="80" height="56" rx="4" ry="4"/>
-  <text class="sym" x="320.0" y="75.0" text-anchor="middle">≥1</text>
+  <text class="sym" x="320.0" y="75.0" text-anchor="middle">OR</text>
   <path class="wire" d="M 360 68 L 410 68"/>
   <path class="wire" d="M 402 63 L 410 68 L 402 73" fill="none"/>
   <text class="pin" x="420" y="72" text-anchor="start">Y</text>

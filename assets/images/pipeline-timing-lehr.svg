@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="220" viewBox="0 0 920 220" role="img" aria-label="Lehrzeiten Single-Cycle und Pipeline">
+  <style>
+    .h { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 16px; font-weight: 600; }
+    .s { fill: #86868B; font-family: Inter, sans-serif; font-size: 13px; }
+    .bar { fill: #E2001A; }
+    .dim { fill: #E5E5EA; }
+  </style>
+  <text class="h" x="16" y="28">Lehrzeiten, nicht gemessen</text>
+  <text class="s" x="16" y="52">Stufen 200 / 100 / 150 / 250 / 100 ps, je Registerübergang 20 ps</text>
+  <text class="s" x="16" y="88">Single-Cycle 820 ps</text>
+  <rect class="bar" x="220" y="72" width="656" height="22"/>
+  <text class="s" x="16" y="128">Pipeline-Takt 270 ps</text>
+  <rect class="bar" x="220" y="112" width="216" height="22"/>
+  <rect class="dim" x="436" y="112" width="440" height="22"/>
+  <text class="s" x="16" y="176">20 Instruktionen: 16400 ps gegenüber 24 × 270 ps = 6480 ps</text>
+  <text class="s" x="16" y="200">Speedup etwa 2,53. Füllung und Leerung: N + 5  1 Zyklen ohne Hazards.</text>
+</svg>

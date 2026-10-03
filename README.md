@@ -29,13 +29,20 @@ Pro Einheit: Folien (Reveal.js), Handout-PDF sowie Übungsblatt (Studierende / M
 | 8 | I/O und Systemarchitektur | MMIO, Interrupts/Traps, CSR, Syscalls | [HTML](https://dantschi.github.io/mct1/vorlesungen/08_io-systemarchitektur.html) | [PDF](https://dantschi.github.io/mct1/vorlesungen/08_io-systemarchitektur-handout.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_08_io-systemarchitektur.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_08_io-systemarchitektur-musterloesung.pdf) |
 | 9 | Wrap-Up und C-to-Assembly | Toolchain, Compiler-Muster, FSM, Klausur | [HTML](https://dantschi.github.io/mct1/vorlesungen/09_wrap-up-c-to-assembly.html) | [PDF](https://dantschi.github.io/mct1/vorlesungen/09_wrap-up-c-to-assembly-handout.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_09_wrap-up-state-machine.pdf) | [PDF](https://dantschi.github.io/mct1/labs/lab_09_wrap-up-state-machine-musterloesung.pdf) |
 
-**Hinweise:** Folien im Browser öffnen (Speaker View: Taste **S**). Handout-PDF = Folieninhalt mit Skriptnotizen. Quelltexte unter [`vorlesungen/`](vorlesungen/) und [`labs/`](labs/).
+**Hinweise:** Folien im Browser öffnen (Speaker View: Taste **S**). Handout-PDF = Folieninhalt mit Skriptnotizen. Quelltexte unter [`vorlesungen/`](vorlesungen/) und [`labs/`](labs/). Der gemeinsame [Kursvertrag](referenz/kursvertrag.md) und das [Glossar](referenz/glossar.md) legen RV32I, ILP32, Simulatoren, Datenpfad-Subset und Pipeline-Modell fest.
 
 ### Probeklausur
 
 | Dokument | Studierende | Musterlösung |
 |----------|:-----------:|:------------:|
 | Probeklausur (90 Min., 100 Punkte) | [PDF](https://dantschi.github.io/mct1/labs/probeklausur.pdf) | [PDF](https://dantschi.github.io/mct1/labs/probeklausur-musterloesung.pdf) |
+
+## Primärquellen des Kursvertrags
+
+- RISC-V Unprivileged ISA: [docs.riscv.org/reference/isa/unpriv/rv32.html](https://docs.riscv.org/reference/isa/unpriv/rv32.html)
+- RISC-V Privileged ISA, Machine Level: [docs.riscv.org/reference/isa/priv/machine.html](https://docs.riscv.org/reference/isa/priv/machine.html)
+- RISC-V ELF psABI: [riscv-non-isa.github.io/riscv-elf-psabi-doc](https://riscv-non-isa.github.io/riscv-elf-psabi-doc/)
+- C-Grundlagen dieses Kurses: WG14 N1570, Abschnitte 6.2.4, 6.2.6.2, 6.5.5, 6.5.6 und 6.5.9
 
 ## Literatur
 

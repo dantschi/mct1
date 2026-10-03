@@ -372,7 +372,7 @@ volatile int *button = (volatile int *)0xF0000000;
 ```
 
 ::: notes
-`volatile` zwingt den Compiler zu echten Loads. Separat: SoC/Page-Attribute müssen MMIO als non-cacheable markieren, sonst liefert der Cache veraltete Werte.
+`volatile` hindert den Compiler daran, wiederholte Zugriffe zu streichen. Es macht den Zugriff nicht automatisch uncached und ersetzt weder `FENCE` noch Synchronisation mit DMA oder anderen Kernen. „Jedes `lw` ist ein Buszugriff“ gilt nur im uncached-MMIO-Modell dieser Folie.
 :::
 
 ## I/O-Module in Ripes (Vorschau)
@@ -434,7 +434,10 @@ Counter-Variablen explodieren ohne Entprellung.
 ## Software-Debouncing
 
 - Erste 1 erkannt: Druck erkannt
-- ~20 ms Signal ignorieren (Kontakte beruhigen)
+- Entprellung und ein neues Druckereignis sind zwei Schritte
+- Eine Schleife mit 10000 Iterationen ist ohne Takt und CPI keine belegte Wartezeit von 20 ms
+- Im Simulator: Ereignis plus Release, nicht eine angenommene Millisekundenzahl
+- An echter Hardware: Zeitfenster über einen dokumentierten Timer
 - Delay-Loop: Takte absichtlich verbrennen
 
 ```asm
@@ -522,9 +525,9 @@ Load und Branch milliardenfach: sinnlose Abfragen, während der Mensch überlegt
 
 ## Die Nachteile von Polling
 
-- Energieverschwendung: CPU unter Volllast, Hitze, leerer Akku
-- Keine Nebenläufigkeit: Browser, Audio, UI blockiert
-- In der Praxis nur noch Nischen (z. B. Ultra-Low-Latency)
+- Busy Waiting ist eine Variante: die CPU prüft ununterbrochen
+- Periodisches Polling in einer sonstigen Anwendung ist weiterhin üblich
+- Es ist nicht gleichbedeutend mit „kein Multitasking“
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -539,7 +542,7 @@ graph TD
 ```
 
 ::: notes
-Polling saugt den Akku leer und tötet Multitasking. Für moderne Systeme architektonisch tödlich.
+Busy Waiting hält einen Kern beschäftigt. Polling in Embedded-Systemen bleibt eine normale Methode, wenn die Periode und die übrige Arbeit festliegen.
 :::
 
 ## Die Hardware-Lösung: Die Türklingel
@@ -807,7 +810,8 @@ Zentrale Notaufnahme-Adresse: Hardware springt blind dorthin.
 - Wo wurde der User-Code unterbrochen?
 - Hardware kopiert den unterbrochenen PC automatisch nach `mepc`
 - Bei synchronen Exceptions/`ecall`: `mepc` zeigt auf den auslösenden Befehl
-- Handler muss typischerweise `mepc = mepc + 4` setzen, sonst Endlosschleife
+- `mepc + 4` nur, wenn ein 4-Byte-`ecall` konsumiert wird
+- Bei einem Interrupt die Fortsetzungsadresse in `mepc` nicht pauschal erhöhen
 
 ::: notes
 `mepc` = Rückflugticket. Ohne +4 kehrt `mret` zum selben `ecall` zurück. Simulatoren wie Venus erledigen das intern.
@@ -858,14 +862,25 @@ Hauptschalter der Ohren: Notaufnahme darf nicht durch einen zweiten Interrupt ze
 - Echter Kernel: zuerst `sp` mit `mscratch` tauschen (User-`sp` ist unsicher)
 - Unten: vereinfachte Lehr-Sequenz (Stack bereits gültig angenommen)
 
+- `mtvec` enthält BASE und MODE; dieser Kurs nimmt Direct an
+- Nicht jeder CSR ist im User Mode verboten
+- MIE ist der globale Machine-Interrupt-Enable, nicht die gesamte Konfiguration
+- Einzelne Quellen und Pending-Bits kommen dazu
+
 ```asm
 Trap_Handler:
-    # real: csrrw sp, mscratch, sp
+    # Lehrannahmen: gültiger ausgerichteter Stack, keine verschachtelten Traps
+    # Leaf-Handler: nur die selbst benutzten Register
     addi sp, sp, -16
-    sw t0, 0(sp)
-    sw t1, 4(sp)
-    sw a0, 8(sp)
+    sw   t0, 12(sp)
+    csrr t0, mcause
+    # Quelle quittieren, ohne weiteren Call
+    lw   t0, 12(sp)
+    addi sp, sp, 16
+    mret
 ```
+
+Ein Handler mit Unteraufruf muss `ra` und alle möglicherweise veränderten Caller-Saved-Register sichern. Für `ra`, `t0`–`t6` und `a0`–`a7` sind das 16 Wörter, also 64 Byte. `mepc` wird nur bei einem bewusst konsumierten 4-Byte-`ecall` um 4 erhöht. Ein Interrupt setzt bei `mepc` bereits die Fortsetzungsadresse; dort nicht pauschal addieren.
 
 ::: notes
 Produktionssysteme tauschen auf den Kernel-Stack. Die Kurzform dient nur der Lesbarkeit.
@@ -877,17 +892,13 @@ Produktionssysteme tauschen auf den Kernel-Stack. Die Kurzform dient nur der Les
 - Schritt 3: Register spiegelverkehrt wiederherstellen
 
 ```asm
-    csrr a0, mcause
-    call Lese_Tastatur
-
-    lw t0, 0(sp)
-    lw t1, 4(sp)
-    lw a0, 8(sp)
-    addi sp, sp, 16
+# Nicht so: call zerstört ra und weitere Caller-Saved-Register,
+# die der 16-Byte-Leaf-Frame oben nicht gesichert hat.
+# Entweder Leaf ohne Call, oder 64-Byte-Frame für ra, t0–t6, a0–a7.
 ```
 
 ::: notes
-Nach Sicherung freie Bahn; danach Zustand exakt wie vor dem Interrupt.
+Nach Sicherung nur Register benutzen, die der Frame enthält. Ein `call` ohne gesichertes `ra` kehrt nicht zuverlässig zurück.
 :::
 
 ## Die Rückkehr (mret)
@@ -1312,7 +1323,9 @@ Memory-Tab verrät, ob `sw` traf; Venus: ID in `a0`, Payload in `a1`.
 ## Clobbering bei ecall (Warnung)
 
 - `ecall` = ABI-Funktionsaufruf in den Kernel
-- Laut ABI darf der Kernel Caller-Saved (`t0`–`t6`, `a0`–`a7`) zerstören
+- Der Clobber-Vertrag folgt aus der konkreten Umgebung, nicht aus der Funktions-ABI
+- Venus-Dienste dieses Kurses: Rückgabe und erhaltene Register in der Venus-Tabelle nachlesen
+- Nicht jeder `ecall` darf alle Caller-Saved-Register zerstören
 - Venus erhält `t`-Register faktisch oft — das ist nicht garantiert und nicht portabel
 - Schleifenzähler in `t0` + Print in der Schleife: auf anderen Systemen riskant
 - Lösung: vor `ecall` auf Stack sichern oder `s0`–`s11` nutzen

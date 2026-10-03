@@ -45,6 +45,16 @@ graph LR
 Heute legen wir das Fundament: von Datenrepräsentation über kombinatorische Logik und ALU bis zu Takt, sequenziellen Speichern, Register File und der Anbindung an den RAM — die Bausteine des späteren RISC-V-Datenpfads.
 :::
 
+## Lernziele
+
+- Dieselben Bitmuster als vorzeichenlos und als Zweierkomplement lesen, einschließlich der einen Null und des Bereichs $-2^{n-1}$ bis $2^{n-1}-1$.
+- Byte-Reihenfolge und Alignment als getrennte Begriffe verwenden.
+- Eine steigende Taktflanke und Setup/Hold als Eigenschaft **dieses** Flip-Flop-Lehrmodells beschreiben.
+
+::: notes
+Prüffrage: Warum sind `0000` und `1000` in 4-Bit-Sign-Magnitude verschiedene Codierungen derselben Zahl Null, ohne dass daraus eine C-Vergleichsregel folgt?
+:::
+
 ## Organisatorisches & Spielregeln
 
 - Klausur am Semesterende · Übungsblätter essenziell
@@ -457,28 +467,19 @@ Frühzeit der Computer: MSB zweckentfremden als Plus/Minus-Schalter, Rest = Betr
 
 ## Die +0 und die −0
 
-:::: {.columns}
-::: {.column width="46%"}
-- Sign-Magnitude: `0000` = $+0$, `1000` = $-0$
-- Mathematik kennt nur eine Null
-- Hardware-Vergleicher: `0000 ≠ 1000`
-- ALU-Schaltungsaufwand würde enorm steigen
-:::
-::: {.column width="54%"}
-```c
-int a = +0; // 0000
-int b = -0; // 1000
+- Hypothetische 4-Bit-Sign-Magnitude-Codierung
+- `0000` und `1000`: verschiedene Bitmuster, numerisch beide Null
+- Bitmustervergleich: ungleich
+- Numerischer Vergleich: gleich
+- C vergleicht Werte, nicht rohe Codierungen
 
-if (a == b) {
-    // würde bei Sign-Magnitude NIE laufen —
-    // Bitmuster sind unterschiedlich!
-}
-```
-:::
-::::
+| Codierung | Bitmustervergleich | numerischer Wert |
+|-----------|--------------------|------------------|
+| `0000` | Referenz | $0$ |
+| `1000` | verschieden von `0000` | $0$ |
 
 ::: notes
-Zwei Bitmuster für denselben Wert Null: `if (a == b)` vergleicht bitweise und scheitert. Zusatzschaltungen wären langsam und teuer — Sign-Magnitude ist damit ungeeignet.
+Das ist ausdrücklich kein C-Programm. `int a = +0` und `int b = -0` sind in C dieselbe Zahl; `a == b` ist wahr, weil C numerisch vergleicht. Ein naiver Hardware-Gleichheitsvergleich der Bitmuster würde `0000` und `1000` unterscheiden. Genau dieser doppelte Nullcode macht Sign-Magnitude für eine ALU unhandlich.
 :::
 
 ## Ansatz 2: Das Zweierkomplement
@@ -553,11 +554,12 @@ Symmetrie: keine neuen Regeln für die Rückrichtung. Eine simple Schaltung reic
 - Register begrenzt (z. B. 8 Bit) — wie ein Kilometerzähler
 - Unsigned: $0$ bis $255$
 - Signed (Zweierkomplement): $-128$ bis $+127$
+- Kleinster Wert $-128$ hat kein positives Gegenstück in 8 Bit
 - $+127 + 1$ → `1000 0000` (= $-128$)
-- Dieser Sprung heißt **Overflow**
+- Registerarithmetik: modulo $2^{n}$, ISA-Regel ohne Trap in RV32I
 
 ::: notes
-Bei RV32I: 32-Bit-Register, harte Grenzen. Overflow: vom Maximalpositiven ins Extremnegative. Viele Architekturen setzen dafür Status-Flags; RV32I verzichtet auf ein Flag-Register — Overflow-Behandlung liegt in der Software.
+Bei RV32I arbeitet die Register-ALU modulo $2^{32}$. Das ist definiert und setzt kein Flag. In C ist vorzeichenbehafteter Überlauf von `int` undefiniertes Verhalten — eine andere Ebene als die ISA. Der asymmetrische Bereich entsteht, weil eine der $2^{n}$ Codierungen für die Null verbraucht ist und das MSB das Gewicht $-2^{n-1}$ trägt.
 :::
 
 ## Vorzeichenerweiterung (Sign Extension)
@@ -578,9 +580,9 @@ graph LR
 Häufiger Laborfehler: $-5$ als 8 Bit laden und links mit Nullen auffüllen → MSB wird 0 → positive $+251$. Richtig: Vorzeichenbit nach links kopieren (Sign Extension).
 :::
 
-# 5. Speicherausrichtung (Endianness)
+# 5. Byte-Reihenfolge (Endianness)
 
-## Speicherausrichtung — Überblick
+## Byte-Reihenfolge — Überblick
 
 - RAM als lineares Array von Bytes
 - Adressen als „Hausnummern“
@@ -655,10 +657,16 @@ Little-Endian: Das unbedeutendste Byte wird zuerst gespeichert.
 Die Analogie dient als humorvolle Beschreibung für technische Unterschiede in der Byte-Reihenfolge, die keine fundamentale Überlegenheit einer Methode über die andere implizieren, sondern lediglich unterschiedliche Konventionen darstellen.
 :::
 
-## Endianness in der RISC-V Architektur
+## Endianness in der Kursumgebung
 
-- RISC-V (wie x86): **Little-Endian**
-- `0xDEADBEEF` ab Adresse `0x00`:
+- Gewählte Kurs- und Simulatorumgebung: **Little Endian**
+- Der Zeiger bezeichnet die erste adressierte Speicherstelle
+- Dort liegt das niederwertigste Byte eines Mehrbytewerts
+- Alignment ist ein anderes Thema (Einheit 3)
+
+![Vier Bytezellen für 0x12345678 in Little und Big Endian](../assets/images/endian-12345678.svg)
+
+- Beispiel `0xDEADBEEF` ab Adresse `0x00`:
 
 | Adresse | Byte |
 |---------|------|
@@ -667,7 +675,7 @@ Die Analogie dient als humorvolle Beschreibung für technische Unterschiede in d
 | `0x02` | `AD` |
 | `0x03` | `DE` (MSB) |
 
-- Ein Pointer auf ein Word zeigt auf das LSB!
+- Ein Zeiger auf das Wort zeigt auf das LSB.
 
 ::: notes
 Im Labor: `DEADBEEF` erscheint im Speicher als `EF BE AD DE` — kein Simulatorfehler, sondern korrektes Little-Endian. MSB auf der höchsten Adresse. Damit sind Sie für den Speicherdump in Venus gerüstet.
@@ -1176,7 +1184,7 @@ OR mit Feedback: kurze 1 am Eingang → Ausgang 1 → rückgekoppelt → bleibt 
 ![Schaltsymbol D-Flip-Flop mit D, CLK, Q und Q̄](../assets/images/d-flip-flop.svg)
 
 ::: notes
-Symbol: Rechteck, D links, Q rechts, Dreieck am linken Rand = Edge-Triggered (steigende Flanke). Taub gegenüber $D$, außer im Moment der Flanke.
+Annahme unseres Lehrmodells: positive Taktflanke, kombinatorisches Lesen des Registerfiles und synchrones Schreiben. Das ist eine Schaltungseigenschaft, keine Vorschrift der RISC-V-ISA. Symbol: Rechteck, D links, Q rechts, Dreieck = steigende Flanke.
 :::
 
 ## Das Verhalten der Kamera (Metapher)
@@ -1443,10 +1451,10 @@ Binary landet im RAM; die CPU holt den ersten Befehl (Fetch). Load holt Daten �
 ## Die Von-Neumann-Architektur
 
 - 1940er (John von Neumann)
-- Ein gemeinsamer Speicher für Code und Daten
-- Ein gemeinsamer Bus
-- Vorteil: flexibel
-- Nachteil (Flaschenhals): nicht gleichzeitig Instruktion lesen und Daten speichern
+- Gemeinsamer Adressraum für Code und Daten
+- Ein gemeinsamer Bus ist ein zusätzliches Ressourcenmodell
+- Der Buskonflikt entsteht erst, wenn Fetch und Datenzugriff denselben Port brauchen
+- Ein gemeinsamer Adressraum allein erzwingt diesen Konflikt nicht
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -1459,7 +1467,7 @@ graph LR
 ```
 
 ::: notes
-Standard in PCs/Macs: Code und Daten sind Zahlen im selben Speicher. Flexibel, aber der eine Bus serialisiert Zugriffe.
+Gemeinsamer Adressraum, getrennte Zugriffsports und physisch getrennte Speicher sind drei verschiedene Aussagen. Der Flaschenhals gehört zum Ein-Bus-Modell, nicht schon zum gemeinsamen Adressraum. Harvard in dieser Folie meint getrennte Ports.
 :::
 
 ## Die Harvard-Architektur
@@ -1479,7 +1487,7 @@ graph LR
 ```
 
 ::: notes
-Harvard (Mark I): getrennte Welten — kein Buskonflikt, aber kein „Ausborgen“ von Platz zwischen den Speichern.
+Harvard in diesem Bild: getrennte Speicher und getrennte Ports. Ein gemeinsamer Adressraum wäre davon noch unabhängig.
 :::
 
 ## Der RISC-V-Kompromiss im Labor
@@ -1501,4 +1509,15 @@ Harvard (Mark I): getrennte Welten — kein Buskonflikt, aber kein „Ausborgen�
 
 ::: notes
 Damit schließen wir den Kickoff: Sie haben die Bausteine für den vollständigen RISC-V-Datenpfad.
+:::
+
+## Abschlussblatt
+
+- Begriffe: Zweierkomplement, Byte-Reihenfolge, Alignment, kombinatorisch, sequenziell.
+- Modellannahme: positive Flanke und Little Endian der Kursumgebung.
+- Typischer Fehler: C-Vergleich mit einem Bitmustervergleich von Sign-Magnitude gleichsetzen.
+- Übung: Labor 1, Zahlenrad und Speicherbytes zu `0x12345678`.
+
+::: notes
+Verbindliche Festlegungen stehen in `referenz/kursvertrag.md`.
 :::

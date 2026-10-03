@@ -94,7 +94,7 @@ Ist das Eingangssignal 0 oder 1?
 ```
 
 ::: notes
-Zentrale Erkenntnis: Der Datenpfad ist blind. Ein Multiplexer kennt keinen Code — nur ein Steuerkabel mit Strom an (1) oder aus (0). Ohne aktives Setzen wählt der MUX undefiniert; ALU und RAM arbeiten mit Müll.
+Zentrale Erkenntnis: Der Datenpfad reagiert auf logische Pegel 0 und 1. Ein nicht angesteuerter MUX hat in der Synthese keinen „Strom aus“, sondern einen festzulegenden Wert. Schreibfreigaben dürfen nicht als Don't Care stehen.
 :::
 
 ## Die Marionetten-Metapher
@@ -164,7 +164,7 @@ Das 32-Bit-Kabel aus dem Befehlsspeicher wird aufgespleißt: ein Teil liefert Re
 
 - Auf der Ausgangsseite treten die Steuerleitungen aus
 - Für unseren RV32I-Single-Cycle-Prozessor: sieben primäre Steuersignale
-- Die meisten Signale sind 1 Bit breit (Strom an = 1, aus = 0)
+- Die meisten Signale sind 1 Bit: logischer Pegel 0 oder 1
 
 | Kategorie | Signale |
 |-----------|---------|
@@ -237,14 +237,13 @@ Zwei Philosophien: Hardwired Logic gießt die Matrix in Gatter — schnell und s
 
 ## Der RISC-V-Vorteil
 
-- x86 (CISC): hunderte komplexe Befehle, teils bis 15 Bytes
-- Hardwired-Design dort praktisch unmöglich — große Microcode-ROMs
-- RISC-V: uniforme 32-Bit-Befehle
-- Steuerwerk oft mit wenigen Dutzend Logikgattern hardwired
-- Vorteil: Strom, Chipfläche und Herstellungskosten
+- x86-Implementierungen nutzen oft Mikrocode oder µOp-Zerlegung
+- Das ist eine typische Entwurfsentscheidung, kein Beweis, dass Hardwired unmöglich ist
+- Eine vollständig aufgelistete Wahrheitstabelle ist nicht die synthetisierte Fläche
+- Konkrete Gatterzahl und Timing brauchen eine Implementierung und Messung
 
 ::: notes
-RISC-Philosophie aus Einheit 2: CISC braucht riesige Microcode-Tabellen. RISC-V ist so entworfen, dass Steuersignale mit einer Handvoll Gatter ausrechenbar sind — die Control Unit bleibt winzig.
+RISC-V trennt Main Control und ALU Control, damit nicht jedes funct-Bit in jede Zeile wandert. Zwei Stufen sind eine verständliche Zerlegung. Sie sind nicht die Behauptung, das Steuerwerk bestehe aus wenigen Dutzend Gattern.
 :::
 
 # Befehlsdecodierung und Opcode
@@ -479,10 +478,10 @@ Struktur: ALUSrc in Phase EX, MemRead/MemWrite in MEM, MemtoReg/RegWrite in WB. 
 ## Das eiserne Gesetz der Präzision
 
 - Ein Fehler in der Matrix kann das System crashen lassen
-- Beispiel: `RegWrite = 0` bei `sw` vergessen
-- Zufälliges Zielregister (z. B. `s0`) wird mit Müll überschrieben
-- Unvorhersehbare Variablenzerstörung — klassischer Heisenbug
-- Chip-Verifikation ist deshalb ein Milliardenmarkt
+- Beispiel: `RegWrite` bei `sw` vergessen und auf 1 gesetzt
+- Die Schreibadresse ist das Bitfeld, das im R-Format `rd` wäre
+- Bei `sw` sind das Teile des Immediate; das beschriebene Register folgt aus diesen Bits
+- Der Schreibwert ist der am Write-Data-Eingang anliegende Wert, nicht unbestimmter Abfall
 
 ::: notes
 Hier schreiben wir keine Software mit Patch. Eine falsche Null in der Tabelle kostet Wafer. Deshalb verifizieren Konzerne diese Matrizen intensiv, bevor Silizium gefertigt wird.
@@ -675,14 +674,13 @@ MemWrite ist der Tresorschlüssel. Nur bei Opcode `0100011` (Store) auf 1; sonst
 
 ## Die Gefahr: MemRead und MemWrite
 
-- Logikfehler könnte beide Signale gleichzeitig auf 1 setzen
-- Gleichzeitig schreiben und lesen auf denselben Leitungen
-- Risiko: Kurzschluss / Datenkorruption auf Chip-Ebene
-- Unsere Wahrheitstabelle: nie beide zugleich 1
-- Entweder laden oder speichern — nicht beides
+- Im Lehrmodell sind `MemRead` und `MemWrite` gegenseitig ausgeschlossen
+- `MemRead = 0` bedeutet hier „nicht lesen“, nicht zwingend hochohmig
+- Ein elektrischer Kurzschluss gilt nur für ein konkret gezeigtes Busmodell
+- Speichermodule können ein definiertes Read-during-write haben; das nutzen wir nicht
 
 ::: notes
-Viele Speicherchips teilen Lese-/Schreibpfade. MemRead und MemWrite gleichzeitig kann Sense Amps zerstören. In der Matrix ist immer höchstens eines aktiv.
+Im Modell ist höchstens eines der beiden Signale 1. Das ist eine Tabellenregel, keine allgemeine elektrische Aussage.
 :::
 
 ## Branch (Entscheidungs-Signal)
@@ -768,11 +766,10 @@ Genialität und Hindernis der RISC-V-Codierung: `add`, `sub`, `and`, `or` haben 
 
 ## Das Problem mit R-Types
 
-- Exakte Operation steckt in `funct3` und `funct7`
-- Opcode + `funct3` + `funct7` = 17 Bit Input
-- $2^{17} = 131\,072$ Zeilen Wahrheitstabelle
-- Ein so großer Gatterblock wäre langsam und flächenhungrig
-- Gegenteil der schnellen RISC-Philosophie
+- Opcode, `funct3` und `funct7` sind zusammen viele Eingangsbits
+- Eine naive Tabelle hätte $2^{17} = 131072$ Zeilen
+- Die synthetisierte Schaltung listet diese Zeilen nicht physisch auf
+- Don't-Care und die Zweistufigkeit verkleinern die Beschreibung, nicht per se die gemessene Fläche
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -1187,7 +1184,7 @@ RegWrite = 1, Branch = 0. Main Control zwingt mit ALUOp 00 eine unbedingte Addit
 - Store Word (Opcode `0100011`)
 - Adresse wieder Base + Offset → `ALUSrc = 1`
 - In den RAM schreiben? Ja → `MemWrite = 1`
-- `MemRead = 0` (kein Kurzschluss)
+- `MemRead = 0` im Modell: dieser Zugriff liest nicht
 
 ```text
 sw:
