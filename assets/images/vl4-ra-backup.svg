@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="220" viewBox="0 0 920 220"><style>
+.b{fill:#fff;stroke:#E5E5EA;stroke-width:2}
+.h{fill:#fff;stroke:#E2001A;stroke-width:2}
+.t{fill:#1D1D1F;font-family:Inter,sans-serif;font-size:14px;font-weight:600}
+.s{fill:#86868B;font-family:Inter,sans-serif;font-size:12px}
+</style>
+<text class="t" x="16" y="28">Register ra und Slot 12(sp) sind verschiedene Orte.</text>
+<rect class="h" x="20" y="56" width="280" height="100"/>
+<text class="t" x="160" y="96" text-anchor="middle">ra nach jal Sum</text>
+<text class="s" x="160" y="122" text-anchor="middle">0x208, Folge in Calc</text>
+<rect class="b" x="360" y="56" width="300" height="100"/>
+<text class="t" x="510" y="96" text-anchor="middle">Backup im Frame</text>
+<text class="s" x="510" y="122" text-anchor="middle">bleibt 0x104 nach Main</text>
+<text class="s" x="20" y="190">Erst lw ra, 12(sp), dann ret. Illustrative Adressen der Fehlerfolie.</text>
+</svg>

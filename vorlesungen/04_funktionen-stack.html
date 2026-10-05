@@ -221,7 +221,24 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <section>
 <section id="funktionen-der-stack" class="title-slide slide level1 center">
 <h1>Funktionen &amp; der Stack</h1>
-
+<aside class="notes">
+<p>Diese Einheit gehört zu Mikrocomputertechnik 1 an der DHBW Stuttgart.</p>
+<p>Sie lernen, wie ein Unterprogramm angesprungen wird, wie Integer-Argumente und ein 32-Bit-Ergebnis übergeben werden und wie verschachtelte Aufrufe Register und Stack benutzen.</p>
+<p>Ausgangspunkt ist der vertraute C-Aufruf. Die technische Umsetzung durch den Program Counter, die ABI (Application Binary Interface, die binäre Schnittstellenvereinbarung) und den Stack wird erst in den folgenden Folien aufgebaut.</p>
+<p>Beispiel: calc(5, 10) ist zunächst nur die Schreibweise, noch kein Registerbild.</p>
+<p>Ein typischer Denkfehler ist, man müsse die Calling Convention schon kennen, um die Einheit zu beginnen. Kontrollfrage: Was leistet der Prozessor hinter einem Funktionsaufruf? Er springt zu einer Adresse und die Softwarekonvention legt fest, welche Register dabei welche Rolle haben.</p>
+<p>Als Nächstes wird aus der bekannten Schreibweise die konkrete Arbeit von Prozessor und Konvention.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="die-kunst-der-unterprogramme" class="slide level2">
 <h2>Die Kunst der Unterprogramme</h2>
@@ -230,7 +247,7 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <li>Wir verlassen das Niveau einfacher Skripte und Spaghetti-Codes</li>
 <li>Ziel: wiederverwendbare, professionelle Code-Blöcke (Funktionen)</li>
 <li>Wie findet der Prozessor zu seinem Aufrufer zurück?</li>
-<li>Der Stack als sicherer Tresor für lokale Variablen und gerettete Register</li>
+<li>Zusätzliche Speicherplätze für Werte, die einen Aufruf überdauern müssen</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -251,7 +268,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Herzlich willkommen zu Einheit 4. Arithmetik, Speicher und Kontrollfluss beherrschen Sie. Was fehlt, ist Struktur: In C/Java lagern Sie Logik in Funktionen aus. In RISC-V teilen sich alle Funktionen 32 Register — das braucht Spielregeln (ABI) und den Stack.</p>
+<p>Ein Unterprogramm ist ein Instruktionsbereich mit Eintrittslabel und vereinbartem Verhalten. Eine Funktion im C-Sinn ist derselbe Gedanke auf höherer Ebene.</p>
+<p>RISC-V ist der Name der offenen Befehlssatzarchitektur; das V ist kein Hinweis auf die Wortbreite. RV32I meint hier 32-Bit-Integer-Register x0 bis x31 mit dem Basisbefehlssatz I. x0 ist konstant null. Die ABI weist den übrigen Registern Rollen zu, erzeugt aber keine getrennten Registersätze pro Funktion.</p>
+<p>Ein Analog-Digital-Wandler, englisch Analog-to-Digital Converter, liefert einen Integer-Rohwert. Eine Umrechnung dafür soll einmal als Funktion vorliegen und von mehreren Stellen aufgerufen werden.</p>
+<p>Beispiel: Dieselbe Funktion liest dieselben physischen Register wie der Aufrufer.</p>
+<p>Ein typischer Denkfehler ist, der Stack sei ein automatischer Tresor, den die Hardware für jede Funktion anlegt. Kontrollfrage: Bekommt jede Funktion eigene Hardware-Register? Nein. Alle teilen sich die Architekturregister.</p>
+<p>Die Aufgabe zerfällt in Rückweg, Datenübergabe, Registererhaltung und Speicherverwaltung.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -270,7 +292,7 @@ graph LR
 <li>Rücksprünge — warum einfache Jumps nicht reichen und das Register <code>ra</code></li>
 <li>Die ABI und der Register-Krieg — wer darf welches Register wann überschreiben?</li>
 <li>Der Stack — LIFO und der Stack Pointer im Arbeitsspeicher</li>
-<li>Prolog und Epilog — der standardisierte Frame für jede Funktion</li>
+<li>Prolog und Epilog — Vorbereitung und Aufräumen, wenn ein Frame nötig ist</li>
 <li>Verschachtelung — wenn Funktionen wiederum Funktionen aufrufen</li>
 <li>Praxis (Venus) — Stack-Traces und Vorbereitung der Rekursion</li>
 </ol>
@@ -298,7 +320,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Zuerst Navigation: Woher kam der Aufruf? Dann der Konflikt um Register. Danach der Stack als dynamischer Speicher für Save/Restore. Prolog/Epilog sind der Compiler-Bauplan; zum Schluss Verschachtelung und Venus. Den visuellen Datenpfad betrachten wir später in Ripes.</p>
+<p>Die Agenda beantwortet nacheinander vier Fragen.</p>
+<p>ra (return address, Rückkehradresse) klärt den Rückweg. Die ABI klärt, wer Registerwerte erhält. LIFO (Last In, First Out) und sp (stack pointer, Stapelzeiger) klären die Speicherverwaltung. Prolog und Epilog sind nur die Vorbereitung und das Aufräumen, soweit ein Frame nötig ist. Nicht jeder Aufruf braucht einen nichtleeren Frame.</p>
+<p>Venus ist der RISC-V-Simulator dieser Übung. Ripes dient später dem Datenpfad und der Pipeline und ist hier nicht die Ablaufumgebung.</p>
+<p>Beispiel: Lernziele: die Rückkehradresse aus dem alten PC bestimmen; begründen, wer einen Wert sichert; Frame-Adressen und den Endzustand von sp berechnen.</p>
+<p>Ein typischer Denkfehler ist, es gebe eine Pflichtschablone mit Frame für jede Funktion. Kontrollfrage: Was ist ein Prolog zunächst? Die Vorbereitung einer Funktion, wenn sie Speicher oder erhaltene Register braucht.</p>
+<p>Zuerst werden die schon bekannten Sprung- und Speicherbefehle für diese neue Aufgabe genutzt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -328,7 +355,12 @@ graph LR
 <span id="cb1-6"><a aria-label="6"></a><span class="fu">Ueberspringen:</span></span>
 <span id="cb1-7"><a aria-label="7"></a>    # hier geht <span class="kw">es</span> weiter</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Den PC manipulieren können Sie sicher. Labels und <code>j</code> reichen für If und Schleifen — aber nicht für wiederverwendbare Unterprogramme mit dynamischem Rückweg.</p>
+<p>Der Program Counter, kurz PC, hält die Adresse der gerade betrachteten Instruktion. Ein Label ist eine symbolische Adresse und keine ausgeführte Anweisung. Ein Offset ist ein Abstand in Byte.</p>
+<p>j heisst jump und ist ein unbedingter Sprung. beq heisst branch if equal, blt heisst branch if less than und vergleicht hier vorzeichenbehaftet. lw heisst load word, sw heisst store word.</p>
+<p>Im Beispiel springt j Überspringen über den folgenden Block. Der Block ist in diesem Ablauf nicht erreicht, aber nicht in jedem denkbaren Programm toter Code. Eine Quelltextzeile ist nicht automatisch eine Maschineninstruktion.</p>
+<p>Beispiel: j speichert keine Rückkehradresse in ra.</p>
+<p>Ein typischer Denkfehler ist, ein Sprungziel sei immer die nächste Quelltextzeile. Kontrollfrage: Kennt j sein Rücksprungziel? Nein. Der Sprung legt keine für die Rückkehr verwendete Adresse in ra ab.</p>
+<p>Einfache Sprünge lösen Kontrollfluss, aber noch nicht die Mehrfachverwendung eines Unterprogramms.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -347,7 +379,7 @@ graph LR
 <li>Szenario: Code-Block, der eine Zahl quadriert</li>
 <li>Benötigt an drei Stellen im Programm</li>
 <li>Bisher: Assembler-Zeilen dreimal kopieren</li>
-<li>Nachteil: <code>.text</code> wird groß und frisst RAM</li>
+<li>Nachteil: der Instruktionsspeicher wächst; auf Mikrocontrollern liegt Code oft in Flash, nicht im RAM</li>
 <li>Bugfixen heißt: drei Stellen pflegen</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb2-1"><a aria-label="1"></a><span class="dt">int</span> a <span class="op">=</span> quadriere<span class="op">(</span><span class="dv">5</span><span class="op">);</span></span>
@@ -355,7 +387,12 @@ graph LR
 <span id="cb2-3"><a aria-label="3"></a><span class="dt">int</span> b <span class="op">=</span> quadriere<span class="op">(</span><span class="dv">10</span><span class="op">);</span></span>
 <span id="cb2-4"><a aria-label="4"></a><span class="dt">int</span> c <span class="op">=</span> quadriere<span class="op">(</span>x<span class="op">);</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Funktionen vermeiden Aufblähen und Mehrfachpflege. Einmal definieren, vielfach aufrufen — Software-Engineering auf Hardware-Ebene.</p>
+<p>Dreimal kopierter Assembler und eine Funktion mit drei Aufrufstellen unterscheiden sich in der Pflege.</p>
+<p>Das gezeigte C mit quadriere ist der gewünschte Zielzustand, nicht der duplizierte Ausgang. Ein Bugfix in einer Kopie erreicht die anderen Kopien nicht.</p>
+<p>.text bezeichnet den Code. Mehr Code beansprucht Instruktionsspeicher. Auf einem Mikrocontroller liegt der oft in Flash oder ROM (Read-Only Memory), nicht im RAM (Random Access Memory, Arbeitsspeicher). Ein Aufruf kostet selbst Instruktionen und ist nicht automatisch die schnellere Ausführung.</p>
+<p>Beispiel: Quadriere kleiner Eingaben, damit ein C-Überlauf nicht zum Nebenthema wird.</p>
+<p>Ein typischer Denkfehler ist, Funktionen seien stets schneller als kopierter Code. Kontrollfrage: Warum reichen drei Kopien nicht? Weil eine Korrektur an drei Stellen nachgezogen werden müsste.</p>
+<p>Der Code soll einmal vorliegen; jetzt muss der Kontrollfluss hinein- und wieder herausführen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -371,7 +408,7 @@ graph LR
 <section id="funktionen-in-hardware" class="slide level2">
 <h2>Funktionen in Hardware</h2>
 <ul>
-<li>Den Quadrieren-Code nur einmal in den RAM legen</li>
+<li>Den Code nur einmal im Instruktionsspeicher ablegen</li>
 <li>Label z. B. <code>Quadriere:</code></li>
 <li>Bei Bedarf: PC dorthin springen</li>
 <li>Danach zurück zum Aufrufer (<code>main</code>)</li>
@@ -382,10 +419,15 @@ graph LR
 <span id="cb3-3"><a aria-label="3"></a>    # &lt;--- danach hier weiterarbeiten</span>
 <span id="cb3-4"><a aria-label="4"></a></span>
 <span id="cb3-5"><a aria-label="5"></a><span class="fu">Quadriere:</span></span>
-<span id="cb3-6"><a aria-label="6"></a>    # z<span class="op">.</span> B<span class="op">.</span> mit M<span class="op">-</span>Extension<span class="op">:</span> mul t0<span class="op">,</span> a0<span class="op">,</span> a0</span>
+<span id="cb3-6"><a aria-label="6"></a>    <span class="bu">add</span> t0<span class="op">,</span> a0<span class="op">,</span> a0      <span class="op">#</span> RV32I<span class="op">-</span>Lehrskizze<span class="op">,</span> kein lauffaehiges Programm</span>
 <span id="cb3-7"><a aria-label="7"></a>    # Zurueckspringen<span class="op">!</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Physikalisch: ein Instruktionsblock mit Label. Herausforderung: am Ende exakt in die Zeile unter dem Aufruf zurückkehren — nicht an eine fest verdrahtete Adresse.</p>
+<p>Eine Assemblerfunktion ist zunächst ein Bereich mit Label und vereinbartem Verhalten. Der Prozessor legt am Label keinen neuen Registersatz an.</p>
+<p>Das Fragment ist eine Skizze, kein lauffähiges Programm. Sichtbar sein müssen Eintritt, Rumpf und Rückkehrstelle. add bleibt im RV32I-Basisbefehlssatz. mul würde die M-Erweiterung verlangen und wird hier nicht vorausgesetzt.</p>
+<p>Parameter und Rückgabewert werden auf den nächsten Folien festgelegt. a0 und t0 haben hier noch keine stillschweigende Rollen.</p>
+<p>Beispiel: Der Code liegt im Instruktionsspeicher, nicht pauschal im RAM.</p>
+<p>Ein typischer Denkfehler ist, ein Label allein erzeuge eine fertige Funktion mit eigenen Registern. Kontrollfrage: Wohin muss die Funktion zurückkehren? Zur Folgeinstruktion des jeweiligen Aufrufs, nicht an eine fest eingebaute Adresse.</p>
+<p>Als Nächstes wird geprüft, ob ein einfacher j-Sprung den Hin- und Rückweg schon abbildet.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -409,12 +451,28 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb4-1"><a aria-label="1"></a><span class="fu">Main_Aufruf_1:</span></span>
 <span id="cb4-2"><a aria-label="2"></a>    j Quadriere</span>
 <span id="cb4-3"><a aria-label="3"></a><span class="fu">Main_Zeile_2:</span></span>
-<span id="cb4-4"><a aria-label="4"></a></span>
-<span id="cb4-5"><a aria-label="5"></a><span class="fu">Main_Aufruf_2:</span></span>
-<span id="cb4-6"><a aria-label="6"></a>    j Quadriere</span>
-<span id="cb4-7"><a aria-label="7"></a><span class="fu">Main_Zeile_50:</span>          # FATAL<span class="op">:</span> Funktion springt immer zu Zeile <span class="dv">2</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-4"><a aria-label="4"></a>    j Fertig</span>
+<span id="cb4-5"><a aria-label="5"></a></span>
+<span id="cb4-6"><a aria-label="6"></a><span class="fu">Main_Aufruf_2:</span></span>
+<span id="cb4-7"><a aria-label="7"></a>    j Quadriere</span>
+<span id="cb4-8"><a aria-label="8"></a><span class="fu">Main_Zeile_50:</span></span>
+<span id="cb4-9"><a aria-label="9"></a></span>
+<span id="cb4-10"><a aria-label="10"></a><span class="fu">Quadriere:</span></span>
+<span id="cb4-11"><a aria-label="11"></a>    j Main_Zeile_2</span>
+<span id="cb4-12"><a aria-label="12"></a><span class="fu">Fertig:</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/vl4-zwei-aufrufe.svg"></p>
+<figcaption>Zwei Aufrufstellen und ein festes Rücksprungziel</figcaption>
+</figure>
+</div>
 <aside class="notes">
-<p>Ein fester Rücksprung-Jump macht die Funktion unbrauchbar für mehrere Aufrufstellen. Wir brauchen einen dynamischen Rückweg.</p>
+<p>Dieser Abschnitt ist ein Fehlversuch. Er soll nur das Rückwegproblem zeigen.</p>
+<p>j ist eine Pseudoinstruktion, also eine Assembler-Schreibweise für jal x0, Ziel. Ein festes Rücksprunglabel ist eine festgelegte Adresse, kein Hardwaredefekt.</p>
+<p>Erster Aufruf: j Quadriere, am Ende j zurück zur ersten Folgeadresse. Zweiter Aufruf: wieder j Quadriere, derselbe Rücksprung trifft erneut die erste Folgeadresse und verfehlt die zweite.</p>
+<p>Beispiel: Der Aufbau darf keinen zusätzlichen Fall-through enthalten, der den ersten Aufruf schon scheitern lässt.</p>
+<p>Ein typischer Denkfehler ist, der erste Aufruf sei damit automatisch korrekt, auch wenn der Code danach weiterläuft. Kontrollfrage: Warum scheitert der zweite Aufruf? Weil das Rücksprungziel nicht vom aktuellen Aufruf abhängt.</p>
+<p>Die Funktion braucht statt eines festen Labels eine pro Aufruf bestimmte Adresse.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -457,7 +515,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Dynamisch: Beim Sprung die Hausnummer der Folgezeile (<span class="math inline">\(PC+4\)</span>) aufschreiben. Nur so findet die Funktion den Weg zurück — unabhängig vom Aufrufer.</p>
+<p>Die Return Address ist die Adresse der Maschineninstruktion direkt nach dem Aufruf.</p>
+<p>Im RV32I-Lehrmodell ohne komprimierte Instruktionen sind echte Instruktionen 4 Byte lang. Der PC ist byteadressiert. 0x kennzeichnet eine hexadezimale Zahl.</p>
+<p>Liegt der Aufruf bei 0x00400000, ist die Folgeadresse 0x00400004. Ein Label oder ein mehrzeiliger Pseudobefehl ist keine verlässliche Einheit namens Zeile darunter.</p>
+<p>Beispiel: Das Unterprogramm muss seinen Aufrufer nicht kennen, aber die Rückkehradresse dieses Aufrufs. Datenübergabe ist ein eigener Teil des Vertrags.</p>
+<p>Ein typischer Denkfehler ist, PC+4 meine vier Takte oder vier Quelltextzeilen. Kontrollfrage: Was steht in der Rückkehradresse? Nur die Fortsetzungsadresse, keine Parameter und kein Ergebnis.</p>
+<p>Als Nächstes wird diese Adresse unter dem ABI-Namen ra abgelegt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -473,7 +536,7 @@ graph LR
 <section id="die-return-address-ra" class="slide level2">
 <h2>Die Return Address (<code>ra</code>)</h2>
 <ul>
-<li>Dediziertes Spezial-Register: Architektur-Register <span class="math inline">\(x1\)</span></li>
+<li>Allgemeines Integer-Register <span class="math inline">\(x1\)</span>, ABI-Name <code>ra</code></li>
 <li>ABI-Name: <code>ra</code> (Return Address)</li>
 <li>Speichert die Adresse der Instruktion direkt nach dem Aufruf</li>
 <li>Rettungsanker für den Rückweg aus dem Unterprogramm</li>
@@ -481,7 +544,12 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb5-1"><a aria-label="1"></a># PC = 0x00400000  (Aufruf-Befehl)</span>
 <span id="cb5-2"><a aria-label="2"></a># ra muss 0x00400004 werden  (Zeile darunter)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Ab heute Pflichtwissen: <span class="math inline">\(x1\)</span>/<code>ra</code>. Konvention: vor/beim Betreten der Funktion liegt die Folgeadresse in <code>ra</code>. Die Funktion vertraut blind darauf.</p>
+<p>x1 ist ein allgemeines Integer-Register, ein GPR (General Purpose Register). Die Standard-ABI nennt es ra. Der PC ist ein anderes Register und nicht x1.</p>
+<p>Die ISA (Instruction Set Architecture, Befehlssatzarchitektur) schreibt keinen Software-Stack vor. jal und ret reservieren keinen Frame.</p>
+<p>Vorher: Aufruf bei 0x00400000, ra noch alt. Nachher: ra enthält 0x00400004. Diese Adresse bleibt nur erhalten, solange sie nicht überschrieben wird.</p>
+<p>Beispiel: Damit ist der spätere Konflikt verschachtelter Aufrufe vorbereitet.</p>
+<p>Ein typischer Denkfehler ist, ra sei ein dediziertes Spezialregister ausserhalb der normalen GPR. Kontrollfrage: Enthält ra Parameter oder das Ergebnis? Nein. Es enthält eine Adresse.</p>
+<p>jal berechnet diese Adresse und springt im selben architektonischen Vorgang.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -506,8 +574,19 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb6-1"><a aria-label="1"></a>jal ra<span class="op">,</span> Quadriere</span>
 <span id="cb6-2"><a aria-label="2"></a># ra  <span class="op">=</span> oldPC <span class="op">+</span> <span class="dv">4</span></span>
 <span id="cb6-3"><a aria-label="3"></a># PC   <span class="op">=</span> oldPC <span class="op">+</span> Byteoffset</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/vl4-jal-zyklus.svg"></p>
+<figcaption>jal aus altem PC 0x100 nach 0x180, Fortsetzung 0x104</figcaption>
+</figure>
+</div>
 <aside class="notes">
-<p><code>jal</code> = Jump and Link. Ticket nach Hause in <code>ra</code>, gleichzeitig Sprung zur Funktion. Das ist der Standard-Funktionsaufruf.</p>
+<p>jal heisst jump and link. rd ist das Zielregister des Linkwerts, der Byteoffset ist vorzeichenbehaftet.</p>
+<p>Beide Ergebnisse kommen aus dem alten PC: ra_neu = PC_alt + 4 und PC_neu = PC_alt + Offset. Die Zahl 4 ist die Instruktionslänge in Byte, keine Taktzahl. Single Cycle ist nur das Lehrmodell einer Instruktion pro Takt, keine ISA-Pflicht.</p>
+<p>Illustration: Aufruf bei 0x100, Ziel 0x180, Linkwert 0x104, Offset +0x80. Das Assemblerlabel wird in diesen Offset umgesetzt. Die Länge der Funktion ändert den Linkwert nicht. rd darf architektonisch ein anderes Register sein; der Standardaufruf nutzt ra.</p>
+<p>Beispiel: Abbildung vl4-jal-zyklus.svg zeigt alt, neu und Fortsetzung getrennt.</p>
+<p>Ein typischer Denkfehler ist, der Linkwert hänge davon ab, wie lang das Unterprogramm ist. Kontrollfrage: Welcher PC wird für ra und das Ziel benutzt? Beide Rechnungen nutzen den alten PC.</p>
+<p>Als Nächstes steht dieser Aufruf dem Sprung ohne verwendeten Linkwert gegenüber.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -526,7 +605,7 @@ graph LR
 <li>Standard ab heute: <code>jal ra, Label</code></li>
 <li>Pseudo <code>j</code> aus Einheit 3 war getarntes <code>jal</code></li>
 <li>Venus übersetzt <code>j Label</code> zu <code>jal x0, Label</code></li>
-<li><span class="math inline">\(PC+4\)</span> landet in <span class="math inline">\(x0\)</span> und verpufft (schreibgeschützt)</li>
+<li>Der berechnete Linkwert wird nach <span class="math inline">\(x0\)</span> geschrieben und damit verworfen; <code>ra</code> bleibt unverändert</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb7-1"><a aria-label="1"></a># Aufruf mit Rueckkehr<span class="op">:</span></span>
 <span id="cb7-2"><a aria-label="2"></a>jal ra<span class="op">,</span> MeineFunktion</span>
@@ -534,7 +613,12 @@ graph LR
 <span id="cb7-4"><a aria-label="4"></a># Simpler Sprung ohne Rueckkehr <span class="op">(</span>If<span class="op">/</span>Else<span class="op">):</span></span>
 <span id="cb7-5"><a aria-label="5"></a>j ElseBlock      <span class="op">#</span> intern<span class="op">:</span> jal x0<span class="op">,</span> ElseBlock</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Kreis zu Einheit 3: Beim Else-Überspringen wird das Rückflugticket berechnet und in <span class="math inline">\(x0\)</span> verworfen. Für echte Funktionen: <code>jal ra</code>, damit das Ticket in <code>ra</code> landet.</p>
+<p>jal ra, Label speichert die Folgeadresse in ra und springt. j Label ist die Pseudoinstruktion für jal x0, Label.</p>
+<p>x0 bleibt null. Der berechnete Schreibwert PC+4 wird verworfen, ra bleibt bei diesem j unverändert. j beendet nicht jede spätere Rückkehrmöglichkeit; es erzeugt nur selbst keine neue Rückkehradresse.</p>
+<p>Das Else-Beispiel aus Einheit 3 ist ein Kontrollflusssprung. Ein Funktionsaufruf braucht jal ra.</p>
+<p>Beispiel: Eine Pseudoinstruktion ist Assembler-Schreibweise und kann in eine oder mehrere echte Instruktionen umgesetzt werden.</p>
+<p>Ein typischer Denkfehler ist, PC+4 verpuffe spurlos, ohne dass ein Zielregister beteiligt wäre. Kontrollfrage: Warum ändert j Label ra nicht? Weil das Zielregister x0 ist und x0 Schreibzugriffe verwirft.</p>
+<p>Der Rückweg muss die zur Laufzeit in ra stehende Adresse verwenden.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -550,7 +634,7 @@ graph LR
 <section id="jump-and-link-register-jalr" class="slide level2">
 <h2>Jump and Link Register (<code>jalr</code>)</h2>
 <ul>
-<li>Am Funktionsende hilft <code>jal</code> nicht (braucht festes Label)</li>
+<li><code>jal</code> hat ein PC-relatives Ziel; der Rücksprung braucht die Adresse aus <code>ra</code></li>
 <li>Ziel ist die dynamische Adresse in <code>ra</code></li>
 <li><code>jalr</code>: Ziel <span class="math inline">\(= (rs1 + \mathrm{signextend}(imm))\)</span> mit gelöschtem Bit 0</li>
 <li>Linkwert = alter PC <span class="math inline">\(+ 4\)</span></li>
@@ -561,7 +645,12 @@ graph LR
 <span id="cb8-3"><a aria-label="3"></a># PC <span class="op">=</span> ra <span class="op">+</span> <span class="dv">0</span></span>
 <span id="cb8-4"><a aria-label="4"></a># Link<span class="op">-</span>Ziel x0<span class="op">:</span> keine zweite Brotkrumenspur</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>jalr</code> springt zur Zahl in einem Register. Für die Heimreise: Quelle <code>ra</code>, Link-Ziel <code>x0</code> (kein neues Ticket nötig).</p>
+<p>jalr heisst jump and link register. rs1 ist das Basisregister, imm das Immediate, vorzeichenerweitert. Danach wird Bit 0 des Ziels gelöscht.</p>
+<p>Bei jalr x0, 0(ra) verwirft x0 den Linkwert PC_alt+4, ra liefert die Basis, 0 ist der Byteoffset. In einem normalen, ausgerichteten Beispiel ändert das Löschen von Bit 0 das Ziel nicht. Es garantiert aber keine beliebige gültige Adresse.</p>
+<p>Rücksprung nach 0x104: der PC wird 0x104, ra wird dabei nicht neu beschrieben.</p>
+<p>Beispiel: jal ist PC-relativ, jalr rechnet aus Register und Immediate.</p>
+<p>Ein typischer Denkfehler ist, jalr sei nur eine andere Schreibweise für ein festes Label. Kontrollfrage: Wird ra beim normalen ret überschrieben? Nein. Das Zielregister ist x0.</p>
+<p>Für diesen häufigen Fall stellt der Assembler die Schreibweise ret bereit.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -580,13 +669,18 @@ graph LR
 <li><code>jalr x0, 0(ra)</code> ist korrekt, aber unleserlich</li>
 <li>Pseudo-Instruktion: <code>ret</code></li>
 <li>Venus generiert daraus den <code>jalr</code>-Befehl</li>
-<li>Assembler-Äquivalent zu <code>return</code> in C/Java</li>
+<li>Nur der Sprung; ein C-<code>return</code> kann zusätzlich Ergebnis und Aufräumen enthalten</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb9-1"><a aria-label="1"></a><span class="fu">Quadriere:</span></span>
 <span id="cb9-2"><a aria-label="2"></a>    # ... Funktionsrumpf <span class="op">...</span></span>
 <span id="cb9-3"><a aria-label="3"></a>    <span class="cf">ret</span>                 <span class="op">#</span> <span class="op">=</span> jalr x0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>ra<span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Am Funktionsende einfach <code>ret</code> tippen — dynamischer Sprung über <code>ra</code> im Hintergrund.</p>
+<p>ret ist eine Pseudoinstruktion für jalr x0, 0(ra), kein zusätzlicher Hardwarebefehl.</p>
+<p>x0 verwirft den neuen Linkwert, ra liefert das Ziel. Ein C-return kann ausserdem das Ergebnis berechnen und aufräumen. ret allein setzt a0 nicht und stellt s-Register oder sp nicht wieder her.</p>
+<p>Steht in Quadriere am Ende nur ret, dann ist der PC danach der Wert, der gerade in ra steht.</p>
+<p>Beispiel: War ra vorher überschrieben, springt ret an diese neue Adresse.</p>
+<p>Ein typischer Denkfehler ist, ret sei dasselbe wie ein vollständiges C-return. Kontrollfrage: Stellt ret s0 wieder her? Nein. Das müssen passende Load-Befehle vorher tun.</p>
+<p>Hin- und Rückweg werden jetzt gemeinsam betrachtet.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -604,7 +698,7 @@ graph LR
 <ul>
 <li>Zusammenspiel von <code>jal</code> und <code>ret</code> als geschlossener Kreis</li>
 <li>Brotkrumenspur beim Absprung gelegt, beim Rücksprung eingelöst</li>
-<li>Skaliert: dieselbe Funktion von beliebig vielen Stellen aufrufbar</li>
+<li>Dieselbe Funktion ist von mehreren Aufrufstellen erreichbar; gleichzeitige Verschachtelung bleibt durch den Stack begrenzt</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -629,7 +723,12 @@ sequenceDiagram
 </div>
 </div>
 <aside class="notes">
-<p>Tanz der Register: <code>jal</code> speichert Ticket und springt; <code>ret</code> löst das Ticket ein. Die Funktion bleibt isoliert vom Aufrufer.</p>
+<p>Die Abbildung trennt Aufrufstelle, Funktionseintritt, Funktionsende und Fortsetzungsadresse.</p>
+<p>Der jal-Pfeil führt zum Label. Der ret-Pfeil führt zur Folgeinstruktion, nicht zurück auf die jal-Instruktion selbst. Eine zweite Aufrufstelle desselben Labels hat eine andere Folgeadresse.</p>
+<p>Lehrwerte: PC 0x100, ra danach 0x104, Funktions-PC 0x180, nach ret wieder 0x104.</p>
+<p>Beispiel: Die Funktion teilt Register und Speicher mit dem Aufrufer und folgt einem Vertrag. Sie ist nicht isoliert. Mehrere Aufrufstellen sind keine unbegrenzte gleichzeitige Verschachtelung.</p>
+<p>Ein typischer Denkfehler ist, ret führe wieder auf den jal-Befehl. Kontrollfrage: Wohin zeigt ret? Auf die Instruktion nach dem Aufruf.</p>
+<p>Die Navigation steht. Als Nächstes werden Parameter, Ergebnis und gemeinsame Register geregelt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -672,7 +771,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Navigation ist gelöst. Nun Daten und Register-Krieg: Wer überschreibt <span class="math inline">\(s0\)</span>? Ohne ABI würde jedes große Programm kollabieren.</p>
+<p>Die ABI ist die binäre Schnittstellenvereinbarung. Die Calling Convention ist der Teil für Aufrufe, Argumente, Rückgabe und Registererhaltung.</p>
+<p>Die ISA legt fest, wie ein Schreibbefehl wirkt. Die ABI legt fest, welche Werte eine korrekte Funktion bei Rückkehr erhalten muss. Die Hardware sperrt s-Register nicht.</p>
+<p>Zwei getrennt übersetzte Programmteile können zusammenarbeiten, wenn beide dieselbe ILP32-Konvention einhalten. ILP32 meint hier 32 Bit für int, long und Zeiger, nicht für jeden C-Typ.</p>
+<p>Beispiel: Caller-saved und callee-saved sind zunächst zwei Verantwortlichkeiten, noch keine Speicherimplementierung.</p>
+<p>Ein typischer Denkfehler ist, die ABI werde von der CPU automatisch erzwungen. Kontrollfrage: Wer prüft den Vertrag gewöhnlich nicht? Die CPU führt Instruktionen aus und prüft die ABI nicht.</p>
+<p>Zuerst die positive Seite: Wohin legt der Aufrufer die Argumente?</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -697,7 +801,12 @@ graph LR
 <span id="cb10-2"><a aria-label="2"></a>li a1<span class="op">,</span> <span class="dv">10</span></span>
 <span id="cb10-3"><a aria-label="3"></a>jal ra<span class="op">,</span> Calc</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Briefkästen der ABI: Argumente vor <code>jal</code> in <code>a0</code>–<code>a7</code>. Die Funktion liest starr dort.</p>
+<p>Ein Argument steht am Aufruf, ein Parameter in der Definition.</p>
+<p>li heisst load immediate und ist eine Pseudoinstruktion. Sie lädt eine Konstante in ein Register und liest nicht aus dem RAM. jal springt danach.</p>
+<p>Nach li a0, 5 und li a1, 10 stehen 5 und 10 in den vereinbarten Registern. Calc liest genau diese Werte. a0 bis a7 gelten hier für einfache 32-Bit-Integer-Argumente. Weitere Argumente können über den Stack gehen; mehr als acht Registerargumente sind kein Verbot einer Funktion mit mehr Parametern.</p>
+<p>Beispiel: Die Funktion erwartet die Werte an der vereinbarten Stelle, nicht in einem beliebigen Register.</p>
+<p>Ein typischer Denkfehler ist, li lese die Zahl aus dem Arbeitsspeicher. Kontrollfrage: Wo steht die 10 unmittelbar vor jal? In a1.</p>
+<p>Derselbe Vertrag muss festlegen, wo das Ergebnis liegt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -713,7 +822,7 @@ graph LR
 <section id="der-rückgabewert" class="slide level2">
 <h2>Der Rückgabewert</h2>
 <ul>
-<li>Ergebnis (Return-Value) zwingend in <code>a0</code></li>
+<li>Ein einzelnes 32-Bit-Integer-Ergebnis liegt in diesem Beispiel in <code>a0</code></li>
 <li>Vor <code>ret</code>: Endresultat nach <code>a0</code> kopieren</li>
 <li>Aufrufer holt die Antwort nach dem <code>jal</code> aus <code>a0</code></li>
 </ul>
@@ -722,7 +831,12 @@ graph LR
 <span id="cb11-3"><a aria-label="3"></a>    mv a0<span class="op">,</span> t0           <span class="op">#</span> ABI<span class="op">:</span> Ergebnis in a0</span>
 <span id="cb11-4"><a aria-label="4"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>a0</code> ist der Rückgabe-Briefkasten. Optional zweites Ergebnis in <code>a1</code> — selten. (<code>mv</code> ist Pseudo für <code>addi rd, rs, 0</code> bzw. <code>add</code> mit <span class="math inline">\(x0\)</span>.)</p>
+<p>Ein einzelnes 32-Bit-Integer-Ergebnis dieses Beispiels steht in a0. a0 ist zugleich Argument- und Ergebnisregister, deshalb darf der alte Argumentwert nach der Rückkehr fehlen.</p>
+<p>mv ist regulär addi mit Immediate 0. add mit x0 ist wirkungsgleich, aber nicht pauschal dieselbe Assembler-Expansion. t markiert ein temporary-Register, rd das Ziel, rs die Quelle.</p>
+<p>add t0, a0, a1 mit 5 und 10 ergibt 15 in t0. mv a0, t0 legt 15 nach a0. a1 kann bei manchen Rückgabetypen ein zweites Registerwort sein, ist aber kein frei wählbares zweites C-Ergebnis. a2 bis a7 sind keine allgemeinen Ergebnisregister. Eine Funktion ohne Ergebnis liefert keinen vertraglich nutzbaren Wert in a0.</p>
+<p>Beispiel: Der Aufrufer liest a0 nach jal.</p>
+<p>Ein typischer Denkfehler ist, jedes Ergebnis müssen a0 und a1 gemeinsam tragen. Kontrollfrage: Wo steht 15 nach ret? In a0, sofern der Epilog a0 nicht überschreibt.</p>
+<p>Argumente, Rechnung, Rücksprung und Übernahme folgen in einem Programm.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -753,7 +867,12 @@ graph LR
 <span id="cb12-10"><a aria-label="10"></a>    <span class="bu">add</span> a0<span class="op">,</span> a0<span class="op">,</span> a1      <span class="op">#</span> Summe direkt in a0</span>
 <span id="cb12-11"><a aria-label="11"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Main bereitet Argumente vor, Addiere schreibt die Summe nach <code>a0</code>, Main sichert nach <code>s0</code> — konventioneller ABI-Code. Ohne Exit nach dem <code>mv</code> würde der Fall-through in <code>Addiere</code> eine Endlosschleife erzeugen.</p>
+<p>Jede Zeile hat eine beobachtbare Wirkung. li und mv laden Werte, jal ruft auf, ret springt zurück, ecall ist der environment call der Umgebung.</p>
+<p>Nach der Vorbereitung: a0=5, a1=10. Nach add: a0=15. Nach ret am Fortsetzungslabel: a0=15. Nach mv s0, a0: s0=15. Nach der Exit-Vorbereitung: a0=10. Die 10 ist die Dienstnummer des Venus-Exit dieser Kurskonvention, nicht das Rechenergebnis und nicht die allgemeine RISC-V-ABI.</p>
+<p>Der Exit verhindert den Fall-through in Addiere. Main ist hier der Simulator-Einstieg mit Programmende, nicht ein normal zurückkehrendes C-main. Addiere ändert s0 nicht und braucht keinen Frame.</p>
+<p>Beispiel: s0 des Aufrufers bleibt 15, weil Addiere es nicht anfasst.</p>
+<p>Ein typischer Denkfehler ist, a0=10 nach dem Exit-Befehl sei die Summe. Kontrollfrage: Warum braucht Addiere keinen Frame? Es ist eine Leaf-Funktion ohne weitere Aufrufe und ohne veränderte s-Register.</p>
+<p>Als Nächstes wird gezeigt, was ein unerlaubtes Überschreiben anrichtet.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -775,7 +894,12 @@ graph LR
 <li>Nach <code>ret</code>: Wert in <code>Main</code> ist zerstört</li>
 </ul>
 <aside class="notes">
-<p>Lebenspunkte in <span class="math inline">\(s0\)</span>, Zeichenfunktion überschreibt <span class="math inline">\(s0\)</span> — nach Rückkehr ist der Spieler „tot“. Katastrophaler Logikfehler ohne sichtbare CPU-Warnung.</p>
+<p>Main und die aufgerufene Funktion sprechen dieselben Architekturregister an. Labels erzeugen keine lokalen Register.</p>
+<p>CPU heisst Central Processing Unit. Die ABI ist wieder die Schnittstellenvereinbarung. Liegt 99 in s0 und die aufgerufene Funktion schreibt 0 nach s0, ohne den Eintrittswert wiederherzustellen, ist das in diesem Beispiel ABI-widrig, nicht das normale Verhalten jeder Bibliothek.</p>
+<p>Main braucht den Wert nach dem Aufruf noch. Der Name Print meint hier nur eine Funktion, die s0 ändert, keine implementierte Ausgabe.</p>
+<p>Beispiel: Die Lebensdauer des Werts endet nicht am Aufruf, wenn Main ihn danach liest.</p>
+<p>Ein typischer Denkfehler ist, jede Bibliotheksfunktion zerstöre s0 zwangsläufig. Kontrollfrage: Ist der Konflikt ein Hardwarefehler? Nein. Es fehlt die vereinbarte Wiederherstellung.</p>
+<p>Ein Trace macht den Verlust beobachtbar.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -807,7 +931,12 @@ graph LR
 <span id="cb13-10"><a aria-label="10"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>Main</code> endet mit dem Venus-Exit. Es gibt keinen Fall-through in <code>BoeseFunc</code>. Der isolierte Fehler ist das ungesicherte <code>s0</code>.</p>
 <aside class="notes">
-<p>Clobbering: stille Zerstörung. Ohne strenge Konventionen ist fremder Code unsicher aufrufbar.</p>
+<p>Der Exit bleibt, damit kein Fall-through den Fehler verursacht.</p>
+<p>Ablauf: li s0, 99 setzt s0. jal ra, BoeseFunc speichert die Folgeadresse in ra und springt. li s0, 0 setzt s0 auf 0. ret kehrt zur Folgeadresse zurück. Danach ist s0 noch 0. Clobbering meint das Überschreiben eines noch benötigten Werts. BoeseFunc verstosst absichtlich gegen die ABI.</p>
+<p>Die CPU führt das regulär aus. Ein falscher Datenwert ist kein Absturz. Ein zweiter Fehler, etwa ein fehlendes ret, dürfte die Ursache verdecken.</p>
+<p>Beispiel: ra zeigt nach dem jal auf die Instruktion nach dem Aufruf, nicht auf BoeseFunc.</p>
+<p>Ein typischer Denkfehler ist, die CPU werde den Vertrag erkennen und den Schreibzugriff ablehnen. Kontrollfrage: Welcher Wert steht nach ret in s0? 0, weil nichts zurückgeladen wurde.</p>
+<p>Daraus folgt die Forderung, Save und Restore eindeutig zuzuordnen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -852,7 +981,12 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Evakuieren vor Nutzen: So wirkt das Register unverändert. Die Fraktionen Caller-Saved vs.&nbsp;Callee-Saved klären die Haftung.</p>
+<p>Save, Modify, Restore am Beispiel s0: Eintrittswert 99 sichern, im Rumpf einen anderen Wert benutzen, vor der Rückkehr 99 herstellen.</p>
+<p>Die ABI ist eine Softwarevereinbarung, keine automatische Hardwareaktion. Nicht jeder Wert wird bei jedem Aufruf in den RAM geschrieben. Gesichert wird, was der Vertrag und die weitere Lebensdauer verlangen.</p>
+<p>Unverändert nach dem Aufruf sind nur die vereinbarten erhaltenen Werte. a0 darf ein Ergebnis enthalten. Speicher darf vereinbarte Änderungen enthalten.</p>
+<p>Beispiel: Die Tabelle der Verantwortlichkeiten folgt, bevor alle Registernamen auf einmal nötig sind.</p>
+<p>Ein typischer Denkfehler ist, die ABI schreibe bei jedem Aufruf alle Register in den RAM. Kontrollfrage: Wer stellt 99 wieder her, wenn die Funktion s0 benutzt? Die Funktion selbst, weil s0 callee-saved ist.</p>
+<p>Caller und Callee benennen, wem welche Pflicht gehört.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -879,7 +1013,12 @@ graph TD
 <span id="cb14-4"><a aria-label="4"></a>Print:              &lt;--- CALLEE</span>
 <span id="cb14-5"><a aria-label="5"></a>    ret</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Wenn <code>Print</code> später <code>DrawPixel</code> aufruft, wird <code>Print</code> selbst zum Caller. Die Begriffe hängen am Aufruf, nicht am Funktionsnamen.</p>
+<p>Caller heisst Aufrufer, Callee heisst aufgerufene Funktion.</p>
+<p>Main ruft Print auf: Main ist Caller, Print ist Callee. Ruft Print danach DrawPixel auf, ist Print gegenüber DrawPixel selbst Caller. Die Rolle hängt am Aufruf, nicht am Namen.</p>
+<p>jal markiert den Aufruf, ret die Rückkehr zur Folgeadresse. Eine Funktion kann beide Rollen haben. Deshalb muss eine Non-Leaf-Funktion ihre eigene eingehende Rückkehradresse erhalten, wenn sie sie nach dem inneren Aufruf noch braucht.</p>
+<p>Beispiel: Dieselbe Funktion ist nicht für immer nur Callee.</p>
+<p>Ein typischer Denkfehler ist, Main sei immer Caller und nie etwas anderes. Kontrollfrage: Welche Rolle hat Print gegenüber DrawPixel? Caller.</p>
+<p>Zuerst wird die Pflicht der Aufruferseite für nicht erhaltene Register konkret.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -905,7 +1044,12 @@ graph TD
 <span id="cb15-3"><a aria-label="3"></a>    jal ra<span class="op">,</span> Funktion</span>
 <span id="cb15-4"><a aria-label="4"></a>    # ... t0 wiederherstellen <span class="op">...</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Freiwild für den Callee. Nach jedem <code>jal</code>: alle <code>t</code>-Register mental als gelöscht betrachten. Vertrauen Sie keinem <code>t0</code> über einen Aufruf hinweg.</p>
+<p>t0 bis t6, a0 bis a7 und ra sind caller-saved: ein normaler Aufruf sichert ihren alten Inhalt nicht zu. Not preserved heisst genau das.</p>
+<p>jal ra ändert ra selbst. Die anderen Register kann der Callee ändern, muss es aber nicht. Gelöscht wird nichts automatisch.</p>
+<p>Wird t0 nach dem Aufruf noch gebraucht, muss der Caller ihn erhalten. Ein neues Ergebnis in a0 ist die gewollte Belegung, kein Verlust. Die konkrete Speicherstelle folgt mit dem Stack. Jeden t-Wert nur deshalb in ein s-Register zu schieben, verschiebt die Erhaltungspflicht.</p>
+<p>Beispiel: Ein unveränderter t0 nach einem Aufruf ist Glück, kein Vertrag.</p>
+<p>Ein typischer Denkfehler ist, alle t-Register würden von jal auf null gesetzt. Kontrollfrage: Muss der Caller t0 immer sichern? Nur wenn er den alten Wert nach dem Aufruf noch braucht.</p>
+<p>Der Vergleich mit dem Compiler zeigt, warum C-Variablen trotzdem erhalten bleiben.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -922,7 +1066,7 @@ graph TD
 <h2>Die Konsequenz für t-Register</h2>
 <ul>
 <li><code>t</code>-Register nur für Kurzzeit-Rechnungen</li>
-<li>Bei <code>jal</code>: alle <code>t</code>-Register als gelöscht betrachten</li>
+<li>Nach <code>jal</code> ist ein alter <code>t</code>-Wert nur verlässlich, wenn er eigens erhalten wurde</li>
 <li>Vorteil: kleine Hilfsfunktionen ohne teure RAM-Backups</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb16-1"><a aria-label="1"></a><span class="co">/* Kein C-Beispiel: der Compiler erhält die Lebensdauer. */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -931,7 +1075,12 @@ graph TD
 <span id="cb17-3"><a aria-label="3"></a>    jal  ra<span class="op">,</span> Print      <span class="op">#</span> Print darf t0 überschreiben</span>
 <span id="cb17-4"><a aria-label="4"></a>    # t0 ist danach nicht mehr verlässlich <span class="dv">5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Das ist Assembler, keine C-Semantik. Ein korrekter C-Compiler legt die Variable so, dass sie den Aufruf überlebt: anderes Register oder Sicherung. Ungesichertes <code>t0</code> über <code>jal</code> ist der eigentliche Fehler.</p>
+<p>Das Fragment ist Assembler, kein C-Programm. t0 wird auf 5 gesetzt, danach folgt ein Aufruf. Danach darf man nicht voraussetzen, dass t0 noch 5 ist.</p>
+<p>Der Callee darf t0 unverändert lassen. Der Vertrag erlaubt die Änderung, also beweist ein einmal unveränderter Wert keinen Schutz. Ein korrekter C-Compiler erhält eine später noch benötigte Variable durch Registerwahl oder Sicherung.</p>
+<p>t-Register eignen sich bevorzugt für Werte, die über den Aufruf hinweg nicht erhalten werden müssen. Mit expliziter Sicherung dürfen sie auch länger leben.</p>
+<p>Beispiel: Unsichere Annahme: t0 ist nach jal noch 5. Zulässig: den Wert vorher sichern oder ihn nicht mehr brauchen.</p>
+<p>Ein typischer Denkfehler ist, dieses Fragment beweise, dass C-Variablen nach einem Aufruf undefiniert sind. Kontrollfrage: Was unterscheidet der Compiler? Er erhält die Semantik der Variablen, auch wenn das konkrete Register caller-saved wäre.</p>
+<p>Als Gegenstück müssen s-Register vom Aufgerufenen wiederhergestellt werden.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -958,7 +1107,12 @@ graph TD
 <span id="cb18-4"><a aria-label="4"></a>    # 3. altes s0 zurueck</span>
 <span id="cb18-5"><a aria-label="5"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Tresor-Register. Haftung liegt beim Callee: Save — Modify — Restore. Der Caller merkt von der Zwischennutzung nichts.</p>
+<p>saved und preserved bedeuten: der Eintrittswert ist nach korrekter Rückkehr wieder da. s0 bis s11 sind diese Register. Sicher heisst hier nicht gesperrt.</p>
+<p>Nur ein tatsächlich verändertes s-Register muss gesichert werden. Ein nur gelesenes s-Register braucht kein Backup. s0 kann zusätzlich die Rolle frame pointer haben; diese Einheit verlangt keinen Frame Pointer für jede Funktion.</p>
+<p>Eintritt s0=99, Rumpf s0=42, Rückkehr s0=99. Der Aufrufer darf den letzten Zustand erwarten.</p>
+<p>Beispiel: Die ABI wird lokal wieder als Schnittstellenvereinbarung verstanden.</p>
+<p>Ein typischer Denkfehler ist, s-Register seien während der Funktion unveränderlich. Kontrollfrage: Muss ein ungenutztes s-Register gesichert werden? Nein.</p>
+<p>Die nächste Folie zeigt den Zeitpunkt von Sicherung und Wiederherstellung.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -974,36 +1128,23 @@ graph TD
 <section id="das-versprechen-in-der-praxis" class="slide level2">
 <h2>Das Versprechen in der Praxis</h2>
 <ul>
-<li>Callee schützt <code>s0</code> vor der Zerstörung</li>
-<li>Caller sieht nach <code>ret</code> denselben Wert wie zuvor</li>
+<li><p>Callee schützt <code>s0</code> vor der Zerstörung</p></li>
+<li><p>Caller sieht nach <code>ret</code> denselben Wert wie zuvor</p></li>
+<li><p>Die Funktion teilt Register und Speicher; sie ist nicht hardwareseitig isoliert</p></li>
 </ul>
-<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-sequenceDiagram
-  participant Caller
-  participant s0 as Register s0
-  participant RAM
-  participant Callee
-  Caller-&gt;&gt;s0: speichert 42
-  Caller-&gt;&gt;Callee: jal
-  Callee-&gt;&gt;RAM: rettet 42
-  Callee-&gt;&gt;s0: rechnet mit 99
-  Callee-&gt;&gt;RAM: holt 42
-  Callee-&gt;&gt;s0: stellt 42 her
-  Callee--&gt;&gt;Caller: ret
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/vl4-save-restore.svg"></p>
+<figcaption>Save, Modify und Restore für s0</figcaption>
+</figure>
 </div>
 <aside class="notes">
-<p>Save-Modify-Restore: Evakuieren, nutzen, zurückschreiben — System bleibt stabil.</p>
+<p>Die Abbildung zeigt drei Zustände desselben Registers s0.</p>
+<p>Vorher liegt 99 im Register und als Kopie im Frame. Während des Rumpfs darf s0 42 enthalten, die Kopie bleibt 99. Nachher steht wieder 99 im Register. Save, Modify, Restore ist genau diese Folge.</p>
+<p>Offen bleibt nur der Ort der Kopie. Nicht der ganze Zustand der CPU ist unverändert: a0 darf das Ergebnis sein.</p>
+<p>Beispiel: Farben markieren den mittleren Zustand, die Beschriftung nennt die Zahlen. Die Bedeutung steht im Text, nicht in einer Metapher.</p>
+<p>Ein typischer Denkfehler ist, nach dem Aufruf seien alle Register wie vorher. Kontrollfrage: Wo liegt 99, während s0 im Rumpf 42 ist? In der Sicherung, nicht im Register.</p>
+<p>Mehrere gleichzeitige Aufrufe brauchen getrennte Speicherplätze.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1027,7 +1168,12 @@ sequenceDiagram
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb19-1"><a aria-label="1"></a>Benötigt: Ein Ort im RAM, der für JEDEN Funktionsaufruf</span>
 <span id="cb19-2"><a aria-label="2"></a>frisch und exklusiv bereitsteht.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Zehn rekursive Aufrufe dürfen sich nicht gegenseitig die Backups überschreiben. Lösung: der Stack — zuerst das RAM-Layout, dann LIFO und <code>sp</code>.</p>
+<p>Zwei aktive Aufrufe dürfen nicht denselben festen Slot, etwa die Lehradresse 0x1000, beschreiben. Der zweite Store würde den älteren Wert überschreiben.</p>
+<p>Ein anderes freies Register kann in engen Fällen genügen, ist aber begrenzt und hat selbst eine Erhaltungspflicht. Ein dynamisch verwalteter Bereich trägt verschachtelte Lebensdauern systematisch.</p>
+<p>0x1000 ist ein Lehrwert, keine universell vorhandene Adresse.</p>
+<p>Beispiel: Die Lebensdauer folgt der Aufrufverschachtelung: der innere Aufruf endet zuerst.</p>
+<p>Ein typischer Denkfehler ist, Retten in ein Register sei prinzipiell unmöglich. Kontrollfrage: Warum kollidieren zwei Aufrufe bei einer festen Adresse? Weil beide dieselbe Stelle beschreiben.</p>
+<p>Der Stack wird zunächst in ein schematisches Speicherbild eingeordnet.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1078,7 +1224,12 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Unten: Programmcode, darüber statische Daten und Heap. Der Stack beginnt bei einer hohen Adresse und wächst nach unten. Das ist eine gewählte Belegung mit Betriebssystem. Der Stack muss den Heap nicht erreichen, bevor eine Grenze gilt.</p>
+<p>Die Folie zeigt ein schematisches Adressbild der gewählten Umgebung, keine universelle physische RAM-Aufteilung.</p>
+<p>RAM ist Arbeitsspeicher. .text ist Code und kann auf einem Mikrocontroller in Flash liegen. .data sind statische Daten. Der Heap, zum Beispiel durch malloc, und der Stack sind getrennte Bereiche mit eigenen Grenzen. Eine virtülle Adresse ist nicht automatisch eine physische RAM-Adresse.</p>
+<p>Der Stack beginnt an einer von Simulator oder Startup gesetzten Adresse innerhalb eines reservierten Bereichs, nicht zwingend an der grössten Zahl. Heap und Stack müssen nicht aufeinander zuwachsen. Die Grenze gilt vor einer möglichen Kollision.</p>
+<p>Beispiel: Für Funktionsaufrufe reichen danach Lebensdauer, sp und die Speicherbefehle.</p>
+<p>Ein typischer Denkfehler ist, Code liege immer im selben physischen RAM wie der Stack. Kontrollfrage: Muss der Stack den Heap erreichen, bevor eine Grenze gilt? Nein.</p>
+<p>Als Nächstes werden nur Stack, sp und die Zugriffe gebraucht.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1100,7 +1251,12 @@ graph TD
 <li>Push und Pop in RISC-V-Assembler</li>
 </ul>
 <aside class="notes">
-<p>Das RAM-Layout kennen Sie. Nun die Mechanik: LIFO, <code>sp</code> und warum der Keller nach unten wächst.</p>
+<p>Ein Stack ist ein Speicherbereich mit einer Verwaltungsregel. LIFO heisst Last In, First Out: zuletzt abgelegt, zuerst entnommen.</p>
+<p>sp ist der ABI-Name von x2. Push und Pop sind Schritte des Lehrmodells, keine einzelnen RV32I-Befehle. Reservieren, speichern, laden und freigeben sind getrennte Instruktionen. Andere Erweiterungen sind nicht Thema dieser Einheit.</p>
+<p>Verschachtelte Aufrufe passen zu LIFO, weil der zuletzt aktivierte Aufruf zuerst endet.</p>
+<p>Beispiel: Die spätere Adressrechnung ersetzt die reine Stapelmetapher.</p>
+<p>Ein typischer Denkfehler ist, Push sei ein einzelner Maschinenbefehl von RV32I. Kontrollfrage: Welche vier Schritte ersetzen Push und Pop hier? addi zum Reservieren, sw, lw und addi zum Freigeben.</p>
+<p>Zuerst wird die abstrakte Reihenfolge gezeigt, danach die Adressen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1123,7 +1279,12 @@ graph TD
 <li>LIFO: Last In, First Out — keine Operation in der Mitte</li>
 </ul>
 <aside class="notes">
-<p>Push sichert eine Variable oben auf dem Stapel; Pop holt sie wieder. Die goldene Regel: immer nur an der Spitze arbeiten.</p>
+<p>Drei abgelegte Objekte A, B, C werden in der Reihenfolge C, B, A entnommen.</p>
+<p>Übertragen: Main ruft Calc, Calc ruft Sum. Sum endet zuerst, dann Calc, dann kehrt der Ablauf zu Main zurück.</p>
+<p>Keine Operation in der Mitte gilt für die abstrakte Freigabe ganzer Frames. Innerhalb eines reservierten Frames darf das Programm Slots über Offsets ansprechen. Das widerspricht LIFO nicht.</p>
+<p>Beispiel: Die zulässige Rückkehrreihenfolge ist die umgekehrte Aktivierungsreihenfolge.</p>
+<p>Ein typischer Denkfehler ist, man dürfe innerhalb eines Frames keine mittleren Slots lesen. Kontrollfrage: Wer endet zuerst, Sum oder Main? Sum.</p>
+<p>Die abstrakte Spitze wird zur Adresse in sp.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1144,10 +1305,15 @@ graph TD
 <li><code>sp</code> hält die Adresse des zuletzt belegten Faches</li>
 <li>Beim Boot: Betriebssystem setzt <code>sp</code> auf eine hohe RAM-Adresse</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb20-1"><a aria-label="1"></a># sp zeigt immer auf den aktuell obersten Eintrag</span>
-<span id="cb20-2"><a aria-label="2"></a># Ablegen <span class="op">=</span> <span class="kw">sp</span> verschieben<span class="op">,</span> dann speichern</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb20-1"><a aria-label="1"></a># sp zeigt auf die untere Grenze des reservierten Frames</span>
+<span id="cb20-2"><a aria-label="2"></a># Der zuletzt gespeicherte Wert kann bei einem positiven Offset liegen</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Orientieren Sie sich am <code>sp</code>: Er ist die Hausnummer der Stack-Spitze. Ohne ihn wäre Push/Pop nicht adressierbar.</p>
+<p>sp ist der stack pointer und der ABI-Name von x2. x2 und sp sind dasselbe Register.</p>
+<p>Bei den 16-Byte-Beispielen zeigt sp auf die untere reservierte Grenze. Der gespeicherte Wert kann bei 12(sp) liegen. sp zeigt also nicht allgemein auf den zuletzt beschriebenen Datenslot.</p>
+<p>Den Anfangswert setzt hier die Simulatorumgebung. Andere Systeme nutzen Startup-Code oder eine Laufzeitumgebung. Ein Betriebssystem beim Boot ist keine allgemeine Erklärung für Venus oder Bare-Metal. Der symbolische Startwert heisst S und muss gültig sowie durch 16 teilbar sein.</p>
+<p>Beispiel: Ein blindes li sp, 0x1000 ist kein Ersatz für einen reservierten Bereich.</p>
+<p>Ein typischer Denkfehler ist, das Betriebssystem setze in jeder Übung sp. Kontrollfrage: Zeigt sp immer auf die zuletzt gespeicherte Kopie? Nein. Es zeigt auf die untere Grenze des reservierten Frames.</p>
+<p>Die Wachstumsrichtung wird als Änderung dieses Zahlenwerts sichtbar.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1188,7 +1354,12 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Kontraintuitiv, aber Standard: nach unten wachsen heißt <code>sp</code> verkleinern zum Reservieren und vergrößern zum Freigeben.</p>
+<p>Die Richtung zu kleineren Adressen ist eine Konvention der betrachteten ABI, keine zwangsläufige Folge der RISC-V-Hardware.</p>
+<p>Lehrwerte: Reservieren von 0x1000 nach 0x0FF0, Freigeben zurück nach 0x1000. Oben und unten beziehen sich auf die Adresszahl, nicht auf die Lage in einer Zeichnung. 16 Byte sind vier RV32-Wörter. Eine historische Heap-Erklärung ist nur Kontext.</p>
+<p>Die Ausrichtung gilt während der Funktion, nicht nur an Aufrufgrenzen. Ein bereits falscher Eintritts-sp wird durch minus 16 nicht repariert.</p>
+<p>Beispiel: Die Abbildung markiert die Adressrichtung ausdrücklich.</p>
+<p>Ein typischer Denkfehler ist, der Stack wachse nach unten, weil die Hardware nichts anderes könne. Kontrollfrage: Welcher sp-Wert folgt aus 0x1000 und addi sp, sp, -16? 0x0FF0.</p>
+<p>Der erste Push-Schritt reserviert Speicher und schreibt noch keinen Wert.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1212,12 +1383,23 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb21-1"><a aria-label="1"></a>addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span>    <span class="op">#</span> ein Wort plus Padding</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-figure quarto-figure-center">
 <figure>
+<p><img data-src="../assets/images/vl4-frame-zustaende.svg"></p>
+<figcaption>Vier Zustände: reservieren, speichern, laden, freigeben</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure>
 <p><img data-src="../assets/images/stack-frame-16.svg"></p>
 <figcaption>16-Byte-Frame mit einem gesicherten Register</figcaption>
 </figure>
 </div>
 <aside class="notes">
-<p>Schritt 1: 16 Byte reservieren. Erst danach schreiben. Ein einzelnes Register liegt bei <code>12(sp)</code>; die übrigen 12 Byte sind Padding. Venus akzeptiert auch kleinere Subtraktionen, der Kurs lehrt die ILP32-Ausrichtung.</p>
+<p>addi heisst add immediate. addi sp, sp, -16 zieht 16 vom alten sp ab.</p>
+<p>ILP32 ist das Datenmodell dieser ABI. Padding sind reservierte, hier nicht als Nutzdaten verwendete Bytes. 16 Byte sind ein passender minimaler positiver Frame für ein gesichertes Wort, nicht die Frame-Grösse jeder Funktion. Ein Frame von 0 Byte ist zulässig, wenn nichts reserviert werden muss.</p>
+<p>Bei sp_alt=0x1000 umfasst der Frame die Adressen 0x0FF0 bis 0x0FFF. Der spätere s0-Slot beginnt bei 0x0FFC. Nach diesem addi sind noch keine Bytes von s0 gespeichert, und das Padding ist nicht automatisch null.</p>
+<p>Beispiel: Die vier Wortpositionen zeigt vl4-frame-zustaende.svg. Dieser Schritt ist nur die Reservierung.</p>
+<p>Ein typischer Denkfehler ist, die Reservierung lösche den Speicher oder schreibe Nullen. Kontrollfrage: Steht s0 nach addi schon im RAM? Nein.</p>
+<p>Der alte Registerwert wird jetzt in einen Slot dieses Frames geschrieben.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1234,13 +1416,18 @@ graph TD
 <h2>Push: Etwas ablegen (Schritt 2)</h2>
 <ul>
 <li>Daten mit <code>sw</code> in das reservierte Fach schreiben</li>
-<li>Base: der frisch verschobene <code>sp</code>, Offset 0</li>
-<li>Befehl: <code>sw s0, 0(sp)</code></li>
+<li>Base: der frisch verschobene <code>sp</code>, Byteoffset 12</li>
+<li>Befehl: <code>sw s0, 12(sp)</code></li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb22-1"><a aria-label="1"></a>addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
 <span id="cb22-2"><a aria-label="2"></a>sw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Kompletter Push: erst Platz, dann Store. <code>s0</code> liegt im Tresor; das Register darf im Body überschrieben werden.</p>
+<p>Auf der vorherigen Folie hat addi sp, sp, -16 nur die untere Grenze verschoben. Der alte Wert von s0 steht noch im Register.</p>
+<p>sw heisst store word. In RV32I schreibt es vier Byte. In sw s0, 12(sp) liefert s0 die Daten, sp die Basis, 12 den Byteoffset. Die Adresse ist sp+12. sp selbst ändert sich nicht.</p>
+<p>Lehrwert: Eintritt 0x1000, nach der Reservierung sp=0x0FF0, Store ab 0x0FFC bis 0x0FFF. War s0 gleich 99, enthält der Slot diese Kopie. Zwölf Byte Padding bleiben ungenutzt und werden nicht automatisch genullt. Danach darf der Rumpf s0 auf 42 setzen.</p>
+<p>Beispiel: Das Backup ist kein Rückgabewert. Die konkrete Bytefolge hängt von der Endianness ab; die Wortrechnung genügt hier.</p>
+<p>Ein typischer Denkfehler ist, Offset 0 und der Code mit 12 gehören zusammen. Das tun sie nicht: massgeblich ist 12. Kontrollfrage: Zeigt sp direkt auf das Backup? Nein. sp steht bei 0x0FF0, das Backup beginnt zwolf Byte höher.</p>
+<p>Vor der Rückkehr wird derselbe Slot mit lw gelesen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1257,13 +1444,18 @@ graph TD
 <h2>Pop: Etwas herunternehmen (Schritt 1)</h2>
 <ul>
 <li>Vor <code>ret</code>: <code>s0</code> aus dem RAM zurückholen</li>
-<li><code>sp</code> zeigt noch auf den abgelegten Eintrag</li>
-<li><code>lw s0, 0(sp)</code> — Wert wieder in der CPU</li>
+<li><code>sp</code> zeigt weiter auf die untere Frame-Grenze, nicht auf den s0-Slot</li>
+<li><code>lw s0, 12(sp)</code> holt das Wort zurück ins Register</li>
 <li>RAM-Platz ist noch als belegt markiert</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb23-1"><a aria-label="1"></a>lw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Erst laden, dann freigeben. Nach dem <code>lw</code> liegt der Wert wieder in <code>s0</code>, der Teller liegt aber noch auf dem Stapel.</p>
+<p>lw heisst load word. lw s0, 12(sp) liest vier Byte ab sp+12 nach s0.</p>
+<p>sp zeigt weiter auf 0x0FF0, nicht auf den Slot. Nach einem Rumpf mit s0=42 stellt der Load den Eintrittswert 99 wieder her. sp und die RAM-Bytes bleiben durch den Load unverändert.</p>
+<p>Belegt heisst hier: der Frame ist noch reserviert, weil sp noch auf der unteren Grenze steht. Es gibt keine separate Belegungstabelle in der CPU.</p>
+<p>Beispiel: Die Freigabe darf erst nach dem Load kommen, sonst würde man aus einem nicht mehr eigenen Bereich lesen.</p>
+<p>Ein typischer Denkfehler ist, der Load gebe den Frame schon frei. Kontrollfrage: Welcher sp-Wert gilt unmittelbar nach lw? Weiter 0x0FF0.</p>
+<p>s0 ist wiederhergestellt; der zweite Schritt gibt den Frame frei.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1280,13 +1472,18 @@ graph TD
 <h2>Pop: Etwas herunternehmen (Schritt 2)</h2>
 <ul>
 <li>Platz freigeben: <code>addi sp, sp, 16</code></li>
-<li>Bits im RAM bleiben als „Elektroschrott“, bis der nächste Push überschreibt</li>
+<li>Die nächste Reservierung verschiebt nur <code>sp</code>; erst spätere <code>sw</code> ändern Bytes</li>
 <li><code>sp</code> steht wieder dort, wo er vor dem Push war</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb24-1"><a aria-label="1"></a>lw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
 <span id="cb24-2"><a aria-label="2"></a>addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Freigabe = <code>sp</code> nach oben. Kein explizites Löschen nötig — der nächste Push überschreibt den alten Inhalt.</p>
+<p>addi sp, sp, 16 stellt den Eintritts-sp wieder her. Aus 0x0FF0 wird 0x1000.</p>
+<p>Die nächste Reservierung verschiebt nur sp. Erst spätere sw-Befehle ändern ihre Slots. Padding kann unberührt bleiben. Nach der Freigabe sind die alten Bytes kein verlässliches eigenes Backup mehr. Für die ABI müssen sie nicht gelöscht werden.</p>
+<p>Zuerst lw, danach die Freigabe: der Load adressiert noch den reservierten Frame. Ein Lesen nach der Freigabe ist keine Anleitung dieser Folie.</p>
+<p>Beispiel: Der Endzustand von sp ist der Eintrittswert.</p>
+<p>Ein typischer Denkfehler ist, der nächste Push überschreibe den alten Inhalt automatisch. Kontrollfrage: Warum steht lw vor addi sp, sp, 16? Weil die Adresse nur gültig im noch reservierten Frame benutzt werden soll.</p>
+<p>Reservierung und Freigabe müssen am Ende jedes normalen Aufrufs im Gleichgewicht sein.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1329,7 +1526,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Take nothing but pictures, leave nothing but footprints: Was Sie am Anfang vom <code>sp</code> abziehen, müssen Sie am Ende wieder addieren. Sonst liest der Caller falsche Offsets.</p>
+<p>Bei Rückkehr hat sp seinen Eintrittswert, erforderliche erhaltene Register sind restauriert, und keine eigene Reservierung bleibt bestehen.</p>
+<p>Die alten Frame-Bytes müssen nicht auf den Ursprungsinhalt zurückgesetzt werden. Korrekt ist die Nettoänderung -16+16=0. Ein Fehlfall hat eine Nettoänderung ungleich null. Zugriffe des Aufrufers, die relativ zu sp rechnen, treffen dann falsche Adressen. Nicht jeder solche Fehler stürzt sofort ab.</p>
+<p>Die Abbildung vl4-ungleichgewicht.svg zeigt den Fehlfall getrennt vom korrekten Paar.</p>
+<p>Beispiel: Gleichgewicht betrifft sp und die gesicherten Register, nicht eine Löschpflicht.</p>
+<p>Ein typischer Denkfehler ist, der RAM müsse nach dem Epilog byteweise wie vorher aussehen. Kontrollfrage: Welche Nettoänderung ist korrekt? Null.</p>
+<p>Ein Frame kann mehrere Werte aufnehmen, ohne sp vor jedem Store erneut zu verschieben.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1355,7 +1557,12 @@ graph LR
 <span id="cb25-4"><a aria-label="4"></a>sw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
 <span id="cb25-5"><a aria-label="5"></a>sw s1<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Compiler reservieren den gesamten Frame in einem Rutsch und belegen ihn mit Offsets — weniger ALU-Takte.</p>
+<p>Das gezeigte Beispiel sichert zwei Register, nicht vier.</p>
+<p>Zwei getrennte 16-Byte-Reservierungen wären ABI-konform, aber grösser. Eine gemeinsame 16-Byte-Reservierung fasst s0 und s1. Einzelne 4-Byte-Reservierungen sind hier keine standardkonforme Zwischenlösung.</p>
+<p>addi reserviert einmal, sw schreibt mit festen Offsets. Weniger Instruktionen und weniger reservierter Speicher sind sichtbar. Eine Aussage über ALU-Takte ohne Mikroarchitektur wäre unbelegt.</p>
+<p>Beispiel: Restore: die beiden Wörter laden, dann addi sp, sp, 16.</p>
+<p>Ein typischer Denkfehler ist, vier getrennte addi -4 seien die ABI. Kontrollfrage: Wie gross ist der gemeinsame Frame für zwei Wörter? 16 Byte, weil 8 Byte Nutzdaten auf 16 aufgerundet werden.</p>
+<p>Die Slots werden durch feste Byteoffsets unterschieden.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1368,8 +1575,8 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
-<section id="array-auf-dem-stack-offsets" class="slide level2">
-<h2>Array auf dem Stack (Offsets)</h2>
+<section id="mehrere-register-im-frame-offsets" class="slide level2">
+<h2>Mehrere Register im Frame (Offsets)</h2>
 <ul>
 <li>Nach <code>addi sp, sp, -16</code> zeigt <code>sp</code> auf das untere Ende</li>
 <li>Drei Wörter plus 4 Byte Padding: Offsets 12, 8 und 4</li>
@@ -1379,7 +1586,12 @@ graph LR
 <span id="cb26-3"><a aria-label="3"></a>sw s1<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
 <span id="cb26-4"><a aria-label="4"></a>sw s0<span class="op">,</span> <span class="dv">4</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>0(sp)</code> unten, positive Offsets nach oben im Frame. Kein weiteres Verschieben von <code>sp</code> nötig, bis der Epilog den Block freigibt.</p>
+<p>Der Code sichert Register. Er ist kein C-Array. Die Offsets unterscheiden Slots, nicht Array-Indizes.</p>
+<p>Drei Register: ra bei 12(sp), s1 bei 8(sp), s0 bei 4(sp), Padding bei 0(sp), zusammen 16 Byte. Jede Adresse ist neuer sp plus Offset. Die Zuordnung ist eine Wahl des Beispiels, kein universelles ABI-Layout. Die Slots liegen innerhalb der Reservierung und überlappen nicht.</p>
+<p>Ein echtes Array hätte eine eigene Basis und eine Elementgrösse. Das wird hier nicht mit den Save-Slots vermischt.</p>
+<p>Beispiel: B=12 Byte Nutzdaten, S=16, Padding=4.</p>
+<p>Ein typischer Denkfehler ist, 0(sp), 4(sp) und 8(sp) seien automatisch die Indizes eines C-Arrays. Kontrollfrage: Welcher Offset gehört in diesem Beispiel zu ra? 12.</p>
+<p>Dieselbe relative Tabelle bekommt jetzt absolute Lehradressen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1394,6 +1606,12 @@ graph LR
 </section>
 <section id="visualisierung-im-ram" class="slide level2">
 <h2>Visualisierung im RAM</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/vl4-drei-slots.svg"></p>
+<figcaption>Drei Slots und Padding bei Lehradresse 0x1000</figcaption>
+</figure>
+</div>
 <ul>
 <li>So sieht ein Multi-Push im Venus-Memory-Tab aus:</li>
 </ul>
@@ -1428,7 +1646,12 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p>Pop: <code>lw</code> von 4, 8 und 12, dann <code>addi sp, sp, 16</code>. Der Bereich ab der alten <code>sp</code> gehört dem Caller.</p>
+<p>Zur relativen Tabelle gehören illustrative Absolutadressen. sp_alt=0x1000, sp_neu=0x0FF0. Padding beginnt bei 0x0FF0, s0 bei 0x0FF4, s1 bei 0x0FF8, ra bei 0x0FFC. 0x1000 liegt ausserhalb.</p>
+<p>Ein Hex-Dump zeigt Speicherbytes. Ein Wort ist vier Byte. Die Bytefolge innerhalb des Worts hängt von Little Endian der Kursumgebung ab. Die Zeichnung ist ein Schema, kein Venus-Screenshot.</p>
+<p>Loads dürfen bei unverändertem sp in einer anderen Reihenfolge als die Stores erfolgen, solange jeder Load den richtigen Slot trifft und vor der Freigabe geschieht.</p>
+<p>Beispiel: Abbildung vl4-drei-slots.svg trägt Offset und Adresse gemeinsam.</p>
+<p>Ein typischer Denkfehler ist, die Tabelle sei ein Foto des Simulators. Kontrollfrage: Welche Adresse hat der ra-Slot bei sp=0x0FF0? 0x0FFC.</p>
+<p>Wiederkehrende Reservierung und Wiederherstellung heissen Prolog und Epilog.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1470,7 +1693,12 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Jeder C-Compiler baut Funktionen dreiteilig: Prolog, Body, Epilog. Wer die Schablone beherrscht, schreibt verschachtelbaren Assembler.</p>
+<p>Ein Stack Frame, auch Activation Record, ist der Speicherbereich einer Aktivierung, sofern sie einen braucht. Der Prolog bereitet vor, der Body rechnet, der Epilog räumt auf.</p>
+<p>Nicht jeder C-Compiler baut jede Funktion dreiteilig mit Speicherzugriffen. Einfache Leaf-Funktionen und Optimierungen können ohne Speicher-Prolog auskommen. ABI-konform ist das beobachtbare Verhalten, nicht eine feste Quelltextform.</p>
+<p>Leaf und Non-Leaf werden später genau getrennt. Eine Metapher darf die drei Teile ordnen, die Bedeutung tragen Code und Zustände.</p>
+<p>Beispiel: Ein Frame von 0 Byte ist ein zulässiger Sonderfall ohne Reservierung.</p>
+<p>Ein typischer Denkfehler ist, jede Funktion habe zwingend Prolog, Body und Epilog mit sw und lw. Kontrollfrage: Ist eine Funktion ohne Speicher-Prolog automatisch falsch? Nein, wenn sie nichts sichern und nichts reservieren muss.</p>
+<p>Die nächste Folie ordnet jedem Teil seine Verantwortung zu.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1491,7 +1719,12 @@ graph TD
 <li>Unteres Brötchen (Epilog): vor <code>ret</code> — Register wiederherstellen, Stack freigeben</li>
 </ul>
 <aside class="notes">
-<p>Ohne Brötchen fällt der Burger auseinander. Nie den Body ohne Prolog/Epilog liefern.</p>
+<p>Im gezeigten Muster reserviert der Prolog nötigen Speicher und sichert erforderliche Eintrittswerte. Der Body rechnet. Der Epilog stellt diese Werte und sp vor ret wieder her.</p>
+<p>Ohne Bedarf ist ein Body aus Registern und ret korrekt. Im Body sind nicht beliebige Register frei: ein weiteres s-Register darf nicht ungeplant geändert werden. Der Rückgabewert liegt in a0 und darf vom Epilog nicht überschrieben werden.</p>
+<p>Die Codeklammer Prolog, Body, Epilog ersetzt eine reine Bildmetapher.</p>
+<p>Beispiel: ret steht nach dem Epilog, nicht davor.</p>
+<p>Ein typischer Denkfehler ist, man dürfe den Body nie ohne Prolog schreiben. Kontrollfrage: Wo steht das Ergebnis, während s-Register restauriert werden? In a0, getrennt von den restaurierten Registern.</p>
+<p>Als Nächstes wird die Grösse des reservierten Bereichs berechnet.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1508,13 +1741,18 @@ graph TD
 <h2>Was ist ein Stack Frame?</h2>
 <ul>
 <li>Der per <code>addi sp, sp, -X</code> reservierte Bereich heißt Stack Frame (Activation Record)</li>
-<li>Jeder aktive Aufruf besitzt seinen privaten Frame</li>
-<li>Inhalt typisch: gerettete <code>s</code>-Register, <code>ra</code>, optional lokale Variablen/Arrays</li>
+<li>Nicht jeder Aufruf braucht einen Speicher-Frame</li>
+<li>Ein Frame gehört einer Aktivierung, die ihn benötigt</li>
+<li>Stack Overflow: die verfügbare Stack-Grenze ist überschritten</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb27-1"><a aria-label="1"></a>"Stack Overflow": zu viele Frames gestapelt</span>
-<span id="cb27-2"><a aria-label="2"></a>(z. B. endlose Rekursion) — Stack trifft auf den Heap.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb27-1"><a aria-label="1"></a>Eine Heap-Kollision ist nur eine moegliche Folge mancher Layouts.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Lokale Arrays erweitern den Frame (z. B. <span class="math inline">\(-1000\)</span>). Stack Overflow = Stack und Heap kollidieren.</p>
+<p>Ein Activation Record gehört einer konkreten Aktivierung, die Speicher braucht. Manche Aufrufe haben keinen Speicher-Frame.</p>
+<p>Typische Inhalte sind erhaltene Registerwerte, bei Bedarf die eigene Rückkehradresse, lokale Objekte und Padding. Stack Overflow bedeutet, dass die verfügbare Stack-Grenze überschritten ist. Eine Heap-Kollision ist nur eine mögliche Folge mancher Layouts. Der Fehler kann erkannt werden oder still andere Daten beschädigen.</p>
+<p>1000 Byte Nutzdaten allein werden auf 1008 Byte aufgerundet, weil 1008 das nächste Vielfache von 16 ist. Weitere Slots erhöhen den Bedarf vor der Rundung. Ein pauschales addi -1000 wäre nicht die ABI-Grösse.</p>
+<p>Beispiel: Die Formel lautet S = 16 * ceil(B/16).</p>
+<p>Ein typischer Denkfehler ist, Stack Overflow sei definiert als Treffen von Stack und Heap. Kontrollfrage: Wie gross ist der Frame für genau 1000 Byte Nutzdaten ohne weitere Slots? 1008 Byte.</p>
+<p>Der Bedarf wird jetzt am konkreten Prolog gezählt und ausgerichtet.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1531,16 +1769,21 @@ graph TD
 <h2>Der Prolog (Die Tür öffnen)</h2>
 <ul>
 <li>Steht direkt unter dem Funktions-Label</li>
-<li>Zählen: benötigte <code>s</code>-Register (+ <code>ra</code> falls Non-Leaf) <span class="math inline">\(\times 4\)</span></li>
-<li><code>sp</code> um diesen negativen Wert verschieben</li>
-<li>Register mit <code>sw</code> und steigenden Offsets sichern</li>
+<li>Nutzbedarf in Byte zählen, dann auf ein Vielfaches von 16 aufrunden</li>
+<li>Zwei RV32-Register: 8 Byte Nutzdaten, Frame 16 Byte, Padding 8 Byte</li>
+<li>Im Beispiel: <code>s1</code> bei <code>12(sp)</code>, <code>s0</code> bei <code>8(sp)</code></li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb28-1"><a aria-label="1"></a><span class="fu">MeineFunktion:</span></span>
 <span id="cb28-2"><a aria-label="2"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
 <span id="cb28-3"><a aria-label="3"></a>    sw s1<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
 <span id="cb28-4"><a aria-label="4"></a>    sw s0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Danach dürfen <code>s0</code>/<code>s1</code> im Body überschrieben werden — Originale ruhen im Frame.</p>
+<p>Nicht Registerzahl mal 4 von sp abziehen. Zuerst den Nutzbedarf B bestimmen, dann S = 16 * ceil(B/16).</p>
+<p>Zwei RV32-Registerkopien: B=8 Byte, S=16 Byte, Padding=8 Byte. Im Leaf-Beispiel liegt s1 bei 12(sp) und s0 bei 8(sp). Ein ra-Backup oder lokale Daten würden B erhöhen. Gesichert werden nur veränderte callee-saved Register.</p>
+<p>addi hat ein begrenztes Immediate. Sehr grosse Frames brauchen eine andere Reservierungsfolge; das bleibt hier ein Hinweis.</p>
+<p>Beispiel: Nach den beiden sw dürfen s0 und s1 im Body andere Werte annehmen.</p>
+<p>Ein typischer Denkfehler ist, zwei Register belegten genau 8 Byte Frame ohne Rundung. Kontrollfrage: Wie gross ist S bei B=8? 16.</p>
+<p>Der Body darf die gesicherten Register danach für die Rechnung nutzen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1566,7 +1809,12 @@ graph TD
 <span id="cb29-4"><a aria-label="4"></a>    <span class="bu">add</span> a0<span class="op">,</span> s0<span class="op">,</span> s1</span>
 <span id="cb29-5"><a aria-label="5"></a>    # --- BODY ENDE <span class="op">---</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Hier rechnen, iterieren, Sensoren auswerten — ABI-Rückgabe in <code>a0</code> nicht vergessen.</p>
+<p>li s0, 42 und li s1, 99 laden Arbeitswerte. add a0, s0, s1 schreibt 141 nach a0.</p>
+<p>Die Eintrittswerte von s0 und s1 liegen weiter in ihren Slots. li ändert nur die Register. Der Rückgabewert geht beim späteren Restore nicht verloren, weil er in a0 steht.</p>
+<p>Frei ist der Body nur für die passend gesicherten Register. Dieses Leaf-Muster enthält keinen inneren Aufruf, also bleiben Fragen zu t- und a-Registern über jal hier aussen vor.</p>
+<p>Beispiel: 141 ist 42+99 und ein Lehrwert ohne besonderen Hintergrund.</p>
+<p>Ein typischer Denkfehler ist, der Body dürfe jedes Register ohne Sicherung ändern. Kontrollfrage: Welcher Wert steht nach add in a0? 141.</p>
+<p>Die Rechnung ist fertig; der Vertrag verlangt die Eintrittswerte zurück.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1592,7 +1840,12 @@ graph TD
 <span id="cb30-3"><a aria-label="3"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span>
 <span id="cb30-4"><a aria-label="4"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Wiederherstellen, Frame vernichten, Heimreise. <code>ret</code> erst nach dem Gleichgewicht von <code>sp</code>.</p>
+<p>lw s0, 8(sp) und lw s1, 12(sp) lesen die Slots der vorigen Prolog-Folie. addi sp, sp, 16 gibt den Frame frei. ret springt danach.</p>
+<p>Endzustand: s0 und s1 haben ihre Eintrittswerte, sp seinen Eintrittswert, a0 bleibt 141, der PC erreicht die Fortsetzungsadresse. Die gewählte Load-Reihenfolge ist passend, aber keine universelle Pflicht für unabhängige Loads. Zwingend sind die richtigen Slots und das Laden vor der Freigabe. ret restauriert die Register nicht selbst. Die Bytes im freigegebenen Frame dürfen bleiben.</p>
+<p>Spiegelbild ist eine Merkhilfe, keine Pflicht zur buchstäblich umgekehrten Instruktionsliste.</p>
+<p>Beispiel: a0 wird von diesen lw nicht beschrieben.</p>
+<p>Ein typischer Denkfehler ist, ret stelle s0 automatisch wieder her. Kontrollfrage: Welcher Wert bleibt in a0? 141.</p>
+<p>Eine falsche Freigabe kann den Aufrufer beschädigen, obwohl ret noch springt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1605,18 +1858,26 @@ graph TD
           display:block!important;
       }</style></aside>
 </section>
-<section id="die-gefahr-des-off-by-one" class="slide level2">
-<h2>Die Gefahr des Off-by-One</h2>
+<section id="falsche-frame-freigabe" class="slide level2">
+<h2>Falsche Frame-Freigabe</h2>
 <ul>
-<li>Prolog <span class="math inline">\(-16\)</span>, Epilog versehentlich <span class="math inline">\(+8\)</span></li>
-<li>Ein Wort „Müll“ bleibt auf dem Stack</li>
-<li>Caller-Offsets greifen daneben — Kettenreaktion</li>
-<li>Schwer zu debuggen: <code>ret</code> wirkt noch korrekt</li>
+<li>Prolog <span class="math inline">\(-16\)</span>, Epilog nur <span class="math inline">\(+8\)</span>: Netto <span class="math inline">\(-8\)</span> Byte, also zwei RV32-Wörter</li>
+<li>Bei Lehrwert <code>sp</code> <span class="math inline">\(0x1000\)</span> endet der Fehler bei <span class="math inline">\(0x0FF8\)</span></li>
+<li>Die 16-Byte-Ausrichtung ist verletzt; ein Crash ist nicht garantiert</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb31-1"><a aria-label="1"></a>addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">8</span>      <span class="op">#</span> zu wenig<span class="op">,</span> wenn der Prolog −<span class="dv">16</span> war</span>
-<span id="cb31-2"><a aria-label="2"></a><span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/vl4-ungleichgewicht.svg"></p>
+<figcaption>Abweichung von 8 Byte bei Prolog minus 16 und Epilog plus 8</figcaption>
+</figure>
+</div>
 <aside class="notes">
-<p>Das Gleichgewichtsgesetz verzeiht keine Tippfehler im Epilog. Der Caller liest Müll und stürzt oft erst später ab.</p>
+<p>Die Folie zeigt ein Stack-Ungleichgewicht, nicht ein Off-by-One um ein Wort.</p>
+<p>Prolog -16 und Epilog +8 ergeben Netto -8. Es bleiben 8 Byte reserviert, also zwei RV32-Wörter. Bei sp_alt=0x1000 steht sp danach auf 0x0FF8 statt 0x1000. Die 16-Byte-Ausrichtung fehlt. Ein folgender Zugriff des Aufrufers wäre um 8 Byte verschoben. Ein Absturz ist nicht garantiert. ra kann trotzdem stimmen, deshalb prüft eine scheinbar gelungene Rückkehr den Vertrag nicht.</p>
+<p>Abbildung vl4-ungleichgewicht.svg zeigt 0x1000, 0x0FF0 und 0x0FF8.</p>
+<p>Beispiel: Off-by-One passt nur, wenn wirklich um eine betrachtete Einheit abgewichen wird.</p>
+<p>Ein typischer Denkfehler ist, hier bleibe ein einzelnes Wort übrig. Kontrollfrage: Wie viele Byte fehlen an der Freigabe? 8.</p>
+<p>Ein klar benanntes Muster vermindert das, wenn seine Grenzen sichtbar sind.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1632,20 +1893,25 @@ graph TD
 <section id="das-komplette-template" class="slide level2">
 <h2>Das komplette Template</h2>
 <ul>
-<li>Master-Schablone für das Labor</li>
-<li>Prolog und Epilog am besten sofort paarweise tippen</li>
+<li>Leaf-Muster nur für verändertes <code>s0</code>, ohne inneren Aufruf</li>
+<li>Keine universelle Schablone für Non-Leaf-Funktionen</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb32-1"><a aria-label="1"></a><span class="fu">MeineTolleFunktion:</span></span>
-<span id="cb32-2"><a aria-label="2"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
-<span id="cb32-3"><a aria-label="3"></a>    sw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb32-4"><a aria-label="4"></a></span>
-<span id="cb32-5"><a aria-label="5"></a>    # Body</span>
-<span id="cb32-6"><a aria-label="6"></a></span>
-<span id="cb32-7"><a aria-label="7"></a>    lw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb32-8"><a aria-label="8"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span>
-<span id="cb32-9"><a aria-label="9"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb31-1"><a aria-label="1"></a><span class="fu">MeineTolleFunktion:</span></span>
+<span id="cb31-2"><a aria-label="2"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
+<span id="cb31-3"><a aria-label="3"></a>    sw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb31-4"><a aria-label="4"></a></span>
+<span id="cb31-5"><a aria-label="5"></a>    # Body</span>
+<span id="cb31-6"><a aria-label="6"></a></span>
+<span id="cb31-7"><a aria-label="7"></a>    lw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb31-8"><a aria-label="8"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span>
+<span id="cb31-9"><a aria-label="9"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Dreiklang einüben: erst Prolog+Epilog skizzieren, dann Body füllen — verhindert Ungleichgewichte.</p>
+<p>Das Muster ist ein Leaf-Template für ein verändertes s0. Es sichert kein ra und taugt nicht für Bodies mit inneren normalen Aufrufen.</p>
+<p>Voraussetzung ist ein gültiger, durch 16 teilbarer Eintritts-sp. Der Body soll eine kleine Integerrechnung mit Ergebnis in a0 sein. Das Non-Leaf-Muster folgt später; der Verweis ersetzt nicht die Warnung auf dieser Folie. Eine Leaf-Funktion ohne veränderte s-Register und ohne lokale Daten kann noch kürzer sein: nur die Rechnung und ret.</p>
+<p>Slot: s0 bei 12(sp), 12 Byte Padding, Frame 16 Byte.</p>
+<p>Beispiel: Prolog und Epilog paarweise zu schreiben hilft, ist aber keine Formpflicht der ABI.</p>
+<p>Ein typischer Denkfehler ist, dieses Template sei die Master-Schablone für jeden Body. Kontrollfrage: Warum fehlt ra in diesem Prolog? Weil das Muster keinen inneren Aufruf enthält, der ra überschreibt.</p>
+<p>Der Begriff Leaf-Funktion begründet diese Vereinfachung.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1665,11 +1931,16 @@ graph TD
 <li>Vorteil: <code>ra</code> muss nicht auf dem Stack gesichert werden</li>
 <li>Kein <code>jal</code> im Body — niemand überschreibt <code>ra</code></li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb33-1"><a aria-label="1"></a><span class="dt">int</span> addiere<span class="op">(</span><span class="dt">int</span> a<span class="op">,</span> <span class="dt">int</span> b<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb33-2"><a aria-label="2"></a>    <span class="cf">return</span> a <span class="op">+</span> b<span class="op">;</span></span>
-<span id="cb33-3"><a aria-label="3"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb32-1"><a aria-label="1"></a><span class="dt">int</span> addiere<span class="op">(</span><span class="dt">int</span> a<span class="op">,</span> <span class="dt">int</span> b<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb32-2"><a aria-label="2"></a>    <span class="cf">return</span> a <span class="op">+</span> b<span class="op">;</span></span>
+<span id="cb32-3"><a aria-label="3"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Leaf-Funktionen sind günstig: oft nur <code>s</code>-Register im Prolog, kein <code>ra</code>-Backup.</p>
+<p>Leaf heisst: die Funktion ruft keine andere Funktion auf, sie ist ein Blatt im betrachteten Aufrufbaum.</p>
+<p>Ein nur bedingt ausgeführter innerer Aufruf macht die Funktion nicht allgemein zur Leaf-Funktion. Die gezeigte Leaf-Addition überschreibt ra nicht. Ein j ist jal mit rd=x0 und überschreibt ra ebenfalls nicht; entscheidend ist ein weiterer Aufruf, der die eigene Rückkehradresse noch braucht.</p>
+<p>RV32I-Lehrimplementierung: add a0, a0, a1 und ret. Kein Frame, kein s-Backup. Kleine Eingaben vermeiden signed Overflow in der C-Sicht. Eine Leaf-Funktion mit grossem lokalem Array kann trotzdem einen Frame brauchen.</p>
+<p>Beispiel: Oft nur s-Register im Prolog ist kein Mindestbedarf.</p>
+<p>Ein typischer Denkfehler ist, jede Leaf-Funktion sei framefrei und jedes j zerstöre ra. Kontrollfrage: Welche zwei Instruktionen genügen für addiere? add a0, a0, a1 und ret.</p>
+<p>Sobald eine Funktion selbst normal aufruft und danach weiterarbeitet, muss ihre Rückkehradresse erhalten werden.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1686,16 +1957,23 @@ graph TD
 <h2>Non-Leaf-Funktion</h2>
 <ul>
 <li>Non-Leaf: ruft selbst weitere Funktionen auf</li>
-<li>Jedes <code>jal</code> im Body überschreibt <code>ra</code> mit neuer Brotkrumenspur</li>
+<li>Jeder <code>jal</code> mit Zielregister <code>ra</code> überschreibt die bisherige Rückkehradresse</li>
 <li>Eigenes Rückflugticket zum Caller würde sonst verloren gehen</li>
 <li>Pflicht: <code>ra</code> im Prolog auf den Stack pushen</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb34-1"><a aria-label="1"></a><span class="dt">int</span> berechneDistanz<span class="op">(</span><span class="dt">int</span> x<span class="op">,</span> <span class="dt">int</span> y<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb34-2"><a aria-label="2"></a>    <span class="dt">int</span> z <span class="op">=</span> x<span class="op">*</span>x <span class="op">+</span> y<span class="op">*</span>y<span class="op">;</span></span>
-<span id="cb34-3"><a aria-label="3"></a>    <span class="cf">return</span> sqrt<span class="op">(</span>z<span class="op">);</span>   <span class="co">// jal ueberschreibt ra!</span></span>
-<span id="cb34-4"><a aria-label="4"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb33-1"><a aria-label="1"></a><span class="dt">int</span> sum<span class="op">(</span><span class="dt">int</span> a<span class="op">,</span> <span class="dt">int</span> b<span class="op">)</span> <span class="op">{</span> <span class="cf">return</span> a <span class="op">+</span> b<span class="op">;</span> <span class="op">}</span></span>
+<span id="cb33-2"><a aria-label="2"></a></span>
+<span id="cb33-3"><a aria-label="3"></a><span class="dt">int</span> calc<span class="op">(</span><span class="dt">int</span> a<span class="op">,</span> <span class="dt">int</span> b<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb33-4"><a aria-label="4"></a>    <span class="dt">int</span> zwischenwert <span class="op">=</span> sum<span class="op">(</span>a<span class="op">,</span> b<span class="op">);</span></span>
+<span id="cb33-5"><a aria-label="5"></a>    <span class="cf">return</span> zwischenwert <span class="op">+</span> a<span class="op">;</span>   <span class="co">/* nach dem Aufruf wird a noch gebraucht */</span></span>
+<span id="cb33-6"><a aria-label="6"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Ohne <code>ra</code> auf dem Stack endet <code>ret</code> nach dem inneren Aufruf an der falschen Adresse. Non-Leaf: <code>ra</code> immer retten.</p>
+<p>Das Integerbeispiel ersetzt eine Gleitkomma-sqrt. calc ruft sum auf und addiert danach noch a. Mit 5 und 10 gilt sum=15 und calc=20.</p>
+<p>Non-Leaf heisst: die Funktion ruft weitere Funktionen auf und ist gegenüber dem Äusseren Callee, gegenüber der inneren Funktion Caller. jal mit Zielregister ra überschreibt ra. Die eingehende Rückkehradresse wird vor dem ersten inneren Aufruf gesichert, wenn die normale Rückkehr sie noch braucht.</p>
+<p>Ein Tailcall wäre die kurze Ausnahme, bei der nach dem inneren Aufruf nichts mehr zu tun ist und die eigene Rückkehr direkt weitergereicht werden kann. Das gezeigte calc ist kein Tailcall, weil nach sum noch a addiert wird. Der Assembler ist eine Lehrimplementierung, kein beobachteter Compileroutput.</p>
+<p>Beispiel: Der Compiler darf inlinen oder andere Register wählen.</p>
+<p>Ein typischer Denkfehler ist, jedes jal, auch j mit x0, zerstöre ra. Kontrollfrage: Warum reicht ein Tailcall hier nicht als Normalfall? Weil nach dem inneren Aufruf noch gerechnet wird.</p>
+<p>Mehrere Aufrufe werden im Aufrufbaum und danach im Trace verfolgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1738,7 +2016,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Nested Calls: Brotkrumenspuren beliebig tief stapeln, ohne dass sie sich stören — genau dafür existiert der Stack.</p>
+<p>Nested Calls sind verschachtelte Aufrufe, nicht Funktionsdefinitionen innerhalb anderer Funktionen.</p>
+<p>Main ruft Calc, Calc ruft Sum, der Rückweg ist Sum, Calc, Main. Main ist hier ein Einstiegssymbol des Lehrprogramms. Sum ist im durchgehenden Beispiel eine Leaf ohne Frame. Calc braucht einen Frame. Nicht jede Ebene hat einen nichtleeren Frame.</p>
+<p>Verschachtelung ist durch Speicher und weitere Ressourcen begrenzt, nicht beliebig tief. Ein Stack-Trace ist hier das Ablaufprotokoll von Aufrufen, Registern und Speicher, nicht automatisch ein Debugger-Backtrace.</p>
+<p>Beispiel: Die Abbildung zeigt zwei jal und zwei ret in der richtigen Richtung.</p>
+<p>Ein typischer Denkfehler ist, beliebig tiefe Aufrufe seien immer zulässig. Kontrollfrage: Welche Funktion im Labor braucht keinen Frame? Sum.</p>
+<p>Zuerst wird der Fehler bei ungesichertem ra isoliert.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1760,14 +2043,19 @@ graph LR
 <li><code>calc()</code> ruft intern <code>sum()</code> auf</li>
 <li>Zwei <code>jal</code>-Befehle, zeitlich versetzt — bevor ein <code>ret</code> folgt</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb35-1"><a aria-label="1"></a><span class="dt">void</span> main<span class="op">()</span> <span class="op">{</span></span>
-<span id="cb35-2"><a aria-label="2"></a>    calc<span class="op">();</span> <span class="co">// Aufruf 1</span></span>
-<span id="cb35-3"><a aria-label="3"></a><span class="op">}</span></span>
-<span id="cb35-4"><a aria-label="4"></a><span class="dt">void</span> calc<span class="op">()</span> <span class="op">{</span></span>
-<span id="cb35-5"><a aria-label="5"></a>    sum<span class="op">();</span>  <span class="co">// Aufruf 2</span></span>
-<span id="cb35-6"><a aria-label="6"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb34-1"><a aria-label="1"></a><span class="dt">void</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb34-2"><a aria-label="2"></a>    calc<span class="op">();</span> <span class="co">// Aufruf 1</span></span>
+<span id="cb34-3"><a aria-label="3"></a><span class="op">}</span></span>
+<span id="cb34-4"><a aria-label="4"></a><span class="dt">void</span> calc<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb34-5"><a aria-label="5"></a>    sum<span class="op">();</span>  <span class="co">// Aufruf 2</span></span>
+<span id="cb34-6"><a aria-label="6"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Alltag: Main ruft Calc, Calc ruft Sum. Hardware: zwei <code>jal</code>, bevor das erste <code>ret</code> kommt.</p>
+<p>Main ruft Calc, Calc ruft Sum, bevor eine Rückkehr erfolgt. Das ist der zeitliche Ablauf, nicht nur der Baum.</p>
+<p>Der C-Text ist eine Skizze des Kontrollflusses. void main ist keine allgemeingültige Form eines C-Programmeinstiegs. Das vollständige Labor steht in beispiele/mct1_vl4_nested_calls_ok.s und ist von diesem absichtlich unvollständigen Fehlerbild getrennt.</p>
+<p>Argumente dürfen das Labor vorbereiten, dürfen den ra-Fehler aber nicht verdecken. Zuerst zählt, dass zwei Aufrufe nacheinander dasselbe Register ra beschreiben.</p>
+<p>Beispiel: Die spätere korrekte Datei sichert ra. Diese Folie tut das noch nicht.</p>
+<p>Ein typischer Denkfehler ist, die Skizze sei schon das lauffähige Labor. Kontrollfrage: Welcher Aufruf geschieht zuerst? Main ruft Calc, danach Calc ruft Sum.</p>
+<p>Jede Aufrufstelle schreibt eine andere Folgeadresse in dasselbe ra.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1780,8 +2068,8 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
-<section id="der-todesstoß-für-ra-der-trace" class="slide level2">
-<h2>Der Todesstoß für <code>ra</code> (Der Trace)</h2>
+<section id="der-zweite-aufruf-überschreibt-ra" class="slide level2">
+<h2>Der zweite Aufruf überschreibt <code>ra</code></h2>
 <ul>
 <li>Schritt 1: <code>Main</code> macht <code>jal ra, Calc</code> — <code>ra</code> = z. B. <span class="math inline">\(0x104\)</span> (zurück zu Main)</li>
 <li>Schritt 2: Code in <code>Calc</code> bis zum Aufruf von <code>Sum</code></li>
@@ -1806,7 +2094,12 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Ein Register speichert nur einen Wert. Der zweite <code>jal</code> schreddert das Rückflugticket nach Main. Ohne Backup ist der Weg verloren.</p>
+<p>Illustratives Fehlerlisting, nicht das korrigierte Programm mit Prolog. Main-jal bei 0x100 schreibt 0x104 nach ra. Calc-jal bei 0x204 schreibt 0x208 nach ra. Werden Instruktionen ergänzt, müssen die Adressen neu bestimmt werden. 0x208 gilt nicht automatisch für die Labordatei.</p>
+<p>Tabelle: Schritt, PC vor dem Befehl, Befehl, ra danach, PC danach. Nach dem ersten jal: ra=0x104, PC=Calc. Nach dem zweiten jal: ra=0x208, PC=Sum. 0x104 steht ohne Backup nicht mehr in ra. Ein Register hält nur einen aktuellen Wortwert.</p>
+<p>Labels verbrauchen keine Bytes. Pseudoinstruktionen können mehrere echte Instruktionen erzeugen. Zeilennummer mal 4 ist deshalb keine Adressrechnung.</p>
+<p>Beispiel: Abbildung vl4-ra-backup.svg trennt Register und Slot; der Slot existiert in diesem Fehlerbild noch nicht.</p>
+<p>Ein typischer Denkfehler ist, dieselben Adressen gelten unverändert im Programm mit Prolog. Kontrollfrage: Welcher Wert geht verloren? Die Folgeadresse zurück zu Main, 0x104 in diesem Bild.</p>
+<p>Der erste Rücksprung kann noch stimmen; der zweite zeigt den Fehler.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1819,20 +2112,25 @@ graph TD
           display:block!important;
       }</style></aside>
 </section>
-<section id="die-endlosschleife-der-crash" class="slide level2">
-<h2>Die Endlosschleife (Der Crash)</h2>
+<section id="der-zweite-ret-bleibt-in-calc" class="slide level2">
+<h2>Der zweite <code>ret</code> bleibt in Calc</h2>
 <ul>
-<li><code>Sum</code> ruft <code>ret</code> auf — <code>ra</code> zeigt auf <code>Calc</code> (<span class="math inline">\(0x208\)</span>): erster Rücksprung klappt</li>
-<li><code>Calc</code> ist fertig und ruft <code>ret</code> auf</li>
-<li>In <code>ra</code> steht noch <span class="math inline">\(0x208\)</span> (mitten in <code>Calc</code>)</li>
-<li><code>Calc</code> springt zu sich selbst — Endlosschleife</li>
+<li><code>Sum</code> kehrt zur Folgeinstruktion in <code>Calc</code> zurück</li>
+<li>Dort steht in diesem Minimalbeispiel sofort <code>ret</code></li>
+<li><code>ra</code> zeigt noch auf diese <code>ret</code>-Instruktion</li>
+<li>Es entsteht eine Schleife, nicht zwingend ein Absturz</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb36-1"><a aria-label="1"></a><span class="fu">Calc_Zeile_X:</span></span>
-<span id="cb36-2"><a aria-label="2"></a>    jal ra<span class="op">,</span> Sum     <span class="op">#</span> ra wird Calc_Zeile_X<span class="op">+</span><span class="dv">4</span></span>
-<span id="cb36-3"><a aria-label="3"></a><span class="fu">Calc_Zeile_Y:</span></span>
-<span id="cb36-4"><a aria-label="4"></a>    <span class="cf">ret</span>             <span class="op">#</span> springt wieder zu Zeile_Y<span class="op">!</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb35-1"><a aria-label="1"></a><span class="fu">Calc_Zeile_X:</span></span>
+<span id="cb35-2"><a aria-label="2"></a>    jal ra<span class="op">,</span> Sum     <span class="op">#</span> ra wird Calc_Zeile_X<span class="op">+</span><span class="dv">4</span></span>
+<span id="cb35-3"><a aria-label="3"></a><span class="fu">Calc_Zeile_Y:</span></span>
+<span id="cb35-4"><a aria-label="4"></a>    <span class="cf">ret</span>             <span class="op">#</span> springt wieder zu Zeile_Y<span class="op">!</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>Sum</code> kehrt korrekt nach <code>Calc</code> zurück. Das zweite <code>ret</code> liest dasselbe <code>ra</code> und landet erneut in <code>Calc</code> — nie bei Main.</p>
+<p>Im minimalen Fehlerlisting folgt auf jal ra, Sum unmittelbar ret. Sum.ret erreicht diese ret-Instruktion korrekt. Calc.ret liest dasselbe ra und springt wieder auf diese ret-Instruktion.</p>
+<p>Mindestens zwei Wiederholungen: PC bleibt auf calc_bad_return. Das ist eine Schleife, kein zwingender Crash. Liegen zwischen Aufruf und ret weitere Befehle, würden sie wiederholt; nicht jede ra-Verletzung erzeugt genau diese Schleife.</p>
+<p>Die Datei beispiele/mct1_vl4_ra_fehler.s enthält nur diesen Fehler, ohne zusätzliche falsche Frame-Freigabe. Die Ursache ist das fehlende Backup der Adresse zu Main, nicht ein grundsätzlich falscher ret.</p>
+<p>Beispiel: main_after_calc_bad wird nie erreicht.</p>
+<p>Ein typischer Denkfehler ist, jeder ra-Fehler stürze das Programm sofort ab. Kontrollfrage: Welche Adresse steht beim zweiten ret in ra? Weiter die Folgeadresse des inneren Aufrufs.</p>
+<p>Ein eigener Slot kann die ältere Adresse halten, während ra für den inneren Aufruf genutzt wird.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1847,11 +2145,17 @@ graph TD
 </section>
 <section id="die-lösung-ra-retten" class="slide level2">
 <h2>Die Lösung: <code>ra</code> retten</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/vl4-ra-backup.svg"></p>
+<figcaption>Register ra und Backup im Frame</figcaption>
+</figure>
+</div>
 <ul>
 <li>Laut ABI ist <code>ra</code> Caller-Saved (flüchtig)</li>
 <li>Eine Non-Leaf-Funktion ist Callee und Caller zugleich</li>
 <li>Regel: <code>ra</code> einmal im Prolog des Non-Leaf sichern. Weitere innere Aufrufe nutzen dasselbe Backup, sofern der Frame stehen bleibt.</li>
-<li><code>ra</code> wandert typisch als oberstes Element in den Stack Frame</li>
+<li><code>ra</code> einmal im Prolog sichern; die Lage bei <code>12(sp)</code> ist die Wahl dieses Beispiels</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -1873,7 +2177,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Vor dem inneren <code>jal</code>: Kopie von <code>ra</code> in den Frame. Überschreiben durch Hardware ist dann egal — das Backup liegt im RAM.</p>
+<p>Die vorige Folie hat gezeigt, dass Calc die Rückkehradresse zu Main verliert, sobald jal ra, Sum eine neue Adresse nach ra schreibt. ra ist der ABI-Name von x1. Die ABI zählt ra zu den caller-saved Registern: ein normaler Aufruf sichert den alten Inhalt nicht zu.</p>
+<p>Calc hat zwei Rollen. Gegenüber Main ist es Callee, gegenüber Sum ist es Caller. Beim Eintritt enthält ra die Fortsetzung in Main. Calc braucht diesen Wert nach Sum für die eigene Rückkehr und sichert ihn deshalb vor dem inneren Aufruf. Das widerspricht caller-saved nicht.</p>
+<p>Im Lehrbeispiel schreibt Calc die eingehende Adresse nach 12(sp). jal ra, Sum darf ra danach überschreiben. Sum.ret kehrt zu Calc zurück. lw ra, 12(sp) holt die Main-Adresse, bevor ret ausgeführt wird. Mehrere aufeinanderfolgende Hilfsaufrufe können dasselbe Backup nutzen. Die Lage am oberen Ende ist keine allgemeine Pflicht.</p>
+<p>Beispiel: Ein erneutes Speichern von ra auf denselben Slot vor jedem inneren Aufruf könnte die Main-Adresse überschreiben.</p>
+<p>Ein typischer Denkfehler ist, caller-saved bedeute, Calc dürfe ra nie sichern. Kontrollfrage: Muss ra vor jedem inneren Aufruf erneut auf denselben Slot geschrieben werden? Nein. Einmal beim Eintritt sichern und vor der normalen Rückkehr laden genügt hier.</p>
+<p>Der Prolog reserviert den 16-Byte-Frame und sichert ra sowie s0.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1893,12 +2202,17 @@ graph LR
 <li>Nicht vor jedem inneren <code>jal</code> erneut, solange derselbe Frame gilt</li>
 <li>Ein Tailcall kann die Sicherung entbehrlich machen; das ist die Ausnahme</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb37-1"><a aria-label="1"></a><span class="fu">Calc:</span></span>
-<span id="cb37-2"><a aria-label="2"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
-<span id="cb37-3"><a aria-label="3"></a>    sw ra<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb37-4"><a aria-label="4"></a>    sw s0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb36-1"><a aria-label="1"></a><span class="fu">Calc:</span></span>
+<span id="cb36-2"><a aria-label="2"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
+<span id="cb36-3"><a aria-label="3"></a>    sw ra<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb36-4"><a aria-label="4"></a>    sw s0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Minimal größerer Frame: <code>ra</code> oben, <code>s0</code> darunter. Beliebig viele Hilfsaufrufe im Body — Weg nach Main bleibt im RAM.</p>
+<p>addi sp, sp, -16 reserviert. sw ra, 12(sp) sichert die Rückkehr zu Main. sw s0, 8(sp) sichert den Eintrittswert, weil Calc s0 als Arbeitsregister nutzen wird.</p>
+<p>Gegenüber dem Einregister-Beispiel steigt der Nutzbedarf, der Frame bleibt 16 Byte, das Padding sinkt auf 8 Byte. Minimal grösser wäre die falsche Beschreibung der Reservierung.</p>
+<p>Danach wird a0, im Beispiel 5, nach s0 kopiert, weil Calc den Wert nach Sum noch braucht. Eine Kopie nur in t0 ohne Erhaltung wäre über den Aufruf hinweg unzuverlässig. ra und s0 dürfen nicht denselben Slot belegen.</p>
+<p>Beispiel: Nach den Stores enthält 12(sp) die Main-Adresse und 8(sp) den Wert 99, während s0 anschliessend 5 wird.</p>
+<p>Ein typischer Denkfehler ist, der Frame müsse grösser als 16 Byte werden, sobald zwei Wörter gesichert werden. Kontrollfrage: Warum wird s0 gesichert, ra aber auch? s0 ist ein verändertes callee-saved Register, ra die noch benötigte eigene Rückkehradresse.</p>
+<p>Nach dem inneren Aufruf lädt der Epilog genau diese beiden Werte zurück.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1918,12 +2232,17 @@ graph LR
 <li><code>addi sp, sp, 16</code> gibt den Frame frei</li>
 <li>Erst danach <code>ret</code> — liest das wiederhergestellte <code>ra</code> (zurück zu Main)</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb38-1"><a aria-label="1"></a>    lw s0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb38-2"><a aria-label="2"></a>    lw ra<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb38-3"><a aria-label="3"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span>
-<span id="cb38-4"><a aria-label="4"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb37-1"><a aria-label="1"></a>    lw s0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb37-2"><a aria-label="2"></a>    lw ra<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb37-3"><a aria-label="3"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span>
+<span id="cb37-4"><a aria-label="4"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Reihenfolge beachten: <code>ra</code> vor dem Freigeben des Frames laden. Dann zeigt <code>ret</code> wieder auf Main — Nested Call sicher.</p>
+<p>lw s0, 8(sp) stellt den Main-Eintrittswert wieder her. lw ra, 12(sp) stellt die Fortsetzung in Main wieder her. addi sp, sp, 16 gibt den Frame frei. ret nutzt danach ra.</p>
+<p>Vor dem Epilog enthält s0 im Body das Argument 5, a0 bereits 20, der Slot von s0 den Wert 99 und der Slot von ra die Main-Adresse. Nach dem Epilog: a0=20, s0=99, sp=S. ret erreicht main_after_calc.</p>
+<p>Restauriert werden Eintrittswerte, nicht alle Zwischenergebnisse. Die beiden Loads dürfen ihre Reihenfolge tauschen; beide müssen vor der Freigabe stehen. Die hier gewählte Reihenfolge ist s0 dann ra.</p>
+<p>Beispiel: a0 wird von diesen Loads nicht beschrieben.</p>
+<p>Ein typischer Denkfehler ist, der Epilog stelle auch das Arbeits-s0 mit dem Wert 5 wieder her und lösche damit das Ergebnis. Kontrollfrage: Welcher Wert steht nach ret in a0 und s0? a0 ist 20, s0 ist 99.</p>
+<p>Dieses Verhalten wird im Simulator an Haltepunkten geprüft, nicht aus Fragmenten zusammengesetzt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1967,7 +2286,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Im Labor: Nested-Beispiel aus den Folien tippen. Vor jedem Step laut vorhersagen, was <code>ra</code> und <code>sp</code> tun. Memory-Tab: Frame von <code>Calc</code> mit gerettetem <code>ra</code> sichtbar machen.</p>
+<p>Das vollständige Programm steht in beispiele/mct1_vl4_nested_calls_ok.s. Die absichtlich fehlerhafte Datei ist beispiele/mct1_vl4_ra_fehler.s.</p>
+<p>Angenommene Umgebung: die im Kurs verlinkte Venus-Distribution. Einstieg main, .globl main, Exit li a0, 10 und ecall. sp heisst S, ist zu Beginn durch 16 teilbar und wird vom Simulator bereitgestellt. Diese Vorlesungsfassung wurde statisch geprüft, nicht in Venus ausgeführt. Konkrete PC-Zahlen müssen aus dem Listing der Umgebung kommen, nicht aus Folie 53.</p>
+<p>Erwartung nach Calc.ret: s0=99, a0=20, sp=S. Nach mv s1, a0 ist s1=20. Nach li a0, 10 ist a0 die Dienstnummer, s1 bleibt 20. Step meint einen Schritt der Simulatoranzeige, nicht zwingend eine Quellzeile.</p>
+<p>Beispiel: Die Trace-Tabelle mit den 16 Kontrollpunkten steht im Änderungsbericht und in den Kommentaren der Datei. Unbekannte Frame-Bytes werden nicht als 0 erfunden.</p>
+<p>Ein typischer Denkfehler ist, man solle das Beispiel aus einzelnen Folienfragmenten selbst zusammensetzen. Kontrollfrage: Warum darf a0 am Exit 10 sein, obwohl das Ergebnis 20 war? Weil 20 vorher nach s1 übernommen wurde und 10 die Dienstnummer ist.</p>
+<p>Aus den Zuständen wird eine Prüfliste für eigene Funktionen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1990,7 +2314,12 @@ graph LR
 <li>Caller-Saved (<code>t*</code>) nach <code>jal</code> nicht weiterverwenden ohne Restore</li>
 </ul>
 <aside class="notes">
-<p>Klassiker: Epilog <span class="math inline">\(+4\)</span> statt <span class="math inline">\(+8\)</span>, oder <code>ra</code> nicht gerettet. Beides führt zu Endlosschleife oder Caller-Crash — Step und Memory-Tab entlarven das schnell.</p>
+<p>Die Prüfung nutzt die 16-Byte-Beispiele. Ein alter Hinweis auf +4 statt +8 gehört nicht mehr hierher.</p>
+<p>Beobachten: Eintritts-sp notieren, neue Grenze und Alignment prüfen, Stores innerhalb der Reservierung, ra vor dem ersten inneren Aufruf sichern, dieselben Register aus denselben Slots laden, sp exakt restaurieren, ret am richtigen Fortsetzungslabel. Direkt nach Calc.ret müssen s0=99 und a0=20 sein.</p>
+<p>Ein alter caller-saved Wert muss erhalten werden, wenn er nach dem Aufruf noch gebraucht wird. Nicht jedes Lesen eines t-Registers nach jal ist automatisch falsch. Die Rückkehr führt zum unmittelbaren Aufrufer, nicht bei jeder Funktion direkt zu Main. Ein falscher Wert ohne Absturz ist eine gültige Diagnose.</p>
+<p>Beispiel: Der Fehlfall +8 statt +16 lässt sp auf S-8 stehen und kann trotzdem ein richtiges ra haben.</p>
+<p>Ein typischer Denkfehler ist, jede Rückkehr lande in Main und jedes t-Register nach jal sei verboten. Kontrollfrage: Welcher sp-Wert ist direkt nach einem korrekten Calc.ret richtig? Der Eintrittswert S.</p>
+<p>Dieselbe Mechanik trägt auch einen Aufruf derselben Funktion, also Rekursion.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2009,14 +2338,25 @@ graph LR
 <li>Rekursion = Funktion ruft sich selbst auf (Non-Leaf auf sich selbst)</li>
 <li>Jeder Aufruf braucht einen eigenen Stack Frame (frisches <code>ra</code>, frische Locals)</li>
 <li>Genau deshalb wächst der Stack dynamisch — feste Adresse <code>0x1000</code> würde kollabieren</li>
-<li>Gefahr: zu tiefe Rekursion → Stack Overflow (Stack trifft Heap)</li>
+<li>Zu tiefe Rekursion kann die Stack-Grenze überschreiten; das ist kein Synonym für eine Heap-Kollision</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb39-1"><a aria-label="1"></a><span class="dt">int</span> fakt<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb39-2"><a aria-label="2"></a>    <span class="cf">if</span> <span class="op">(</span>n <span class="op">&lt;=</span> <span class="dv">1</span><span class="op">)</span> <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
-<span id="cb39-3"><a aria-label="3"></a>    <span class="cf">return</span> n <span class="op">*</span> fakt<span class="op">(</span>n <span class="op">-</span> <span class="dv">1</span><span class="op">);</span>  <span class="co">// Nested Call auf sich selbst</span></span>
-<span id="cb39-4"><a aria-label="4"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb38-1"><a aria-label="1"></a><span class="dt">int</span> fakt<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb38-2"><a aria-label="2"></a>    <span class="cf">if</span> <span class="op">(</span>n <span class="op">&lt;=</span> <span class="dv">1</span><span class="op">)</span> <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb38-3"><a aria-label="3"></a>    <span class="cf">return</span> n <span class="op">*</span> fakt<span class="op">(</span>n <span class="op">-</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb38-4"><a aria-label="4"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="../assets/images/vl4-rekursion.svg"></p>
+<figcaption>Drei aktive fakt-Aufrufe</figcaption>
+</figure>
+</div>
 <aside class="notes">
-<p>Die Nested-Call-Mechanik ist die Grundlage der Rekursion: jedes <code>fakt(n)</code> rettet sein <code>ra</code> und seinen Parameter-Frame, bevor es <code>fakt(n-1)</code> aufruft. Vertiefung und Laborübung folgen im Praktikum — heute reicht das Konzept.</p>
+<p>Rekursion bedeutet, dass eine Funktion sich selbst aufruft. Ein Basisfall beendet die Kette. Mehrere Aktivierungen derselben Funktion sind gleichzeitig lebendig und brauchen getrennte Speicherplätze.</p>
+<p>fakt(3) ruft fakt(2), das fakt(1) ruft. Die Rückgaben sind 1, dann 2, dann 6. Pro normaler, nicht optimierter Aktivierung müssen die Rückkehradresse und das nach dem inneren Aufruf noch benötigte n erhalten werden. Gleiche Funktion bedeutet nicht gleiche Slots. Nicht jeder rekursive Code hat zwingend einen nichtleeren Frame; dieses Beispiel braucht den Erhalt von n und ra.</p>
+<p>n bleibt klein, damit das Fakultätsprodukt nicht überläuft. Die frühere Kollision bei einer festen Backup-Adresse beschreibt einen gemeinsamen Slot, nicht einen korrekt verwalteten Anfangs-sp. Stack Overflow ist das Überschreiten der Stack-Grenze.</p>
+<p>Beispiel: Drei Instanzen zeigt vl4-rekursion.svg.</p>
+<p>Ein typischer Denkfehler ist, Rekursion kollidiere zwangsläufig mit dem Heap. Kontrollfrage: Warum genügt ein einzelnes ra für fakt(3) und fakt(2) nicht gleichzeitig? Weil beide Aktivierungen ihre eigene Fortsetzungsadresse brauchen.</p>
+<p>Der Abschluss verbindet Navigation, Registervertrag und Speicher und grenzt die nächste Einheit ab.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2032,14 +2372,21 @@ graph LR
 <section id="zusammenfassung-und-ausblick" class="slide level2">
 <h2>Zusammenfassung und Ausblick</h2>
 <ul>
-<li>Funktionen: <code>jal</code> / <code>ret</code>, Argumente und Rückgabe über <code>a0</code>–<code>a7</code></li>
+<li>Funktionen: <code>jal</code> / <code>ret</code>; einfache Integer-Argumente in <code>a0</code>–<code>a7</code></li>
+<li>Ein einzelnes 32-Bit-Ergebnis in diesem Kurs in <code>a0</code></li>
+<li>Leaf darf ohne Frame auskommen; ein normal zurückkehrender Non-Leaf sichert <code>ra</code>, wenn er es noch braucht</li>
 <li>ABI: Caller-Saved vs.&nbsp;Callee-Saved; Non-Leafs retten <code>ra</code></li>
 <li>Stack: LIFO, <code>sp</code> nach unten, Prolog/Epilog im Gleichgewicht</li>
 <li>Venus: Stack-Traces steppen; Rekursion = Nested Calls auf sich selbst</li>
 <li>Als Nächstes: Datenpfad und Pipeline visuell in Ripes</li>
 </ul>
 <aside class="notes">
-<p>Damit schließt Einheit 4. Im Labor Nested Calls und Frames üben. Den visuellen Datenpfad und die Pipeline betrachten wir später in Ripes.</p>
+<p>Einfache Integer-Argumente gehen über a0 bis a7. Das hier gezeigte einzelne 32-Bit-Ergebnis geht über a0. a0 und a1 können je nach Rückgabetyp gemeinsam beteiligt sein; das ist kein Freibrief, jedes Ergebnis auf a0 bis a7 zu verteilen.</p>
+<p>Vier Regeln: die Rückkehradresse richtig bestimmen und bei Bedarf sichern; noch benötigte caller-saved Werte erhalten; geänderte callee-saved Werte restaurieren; sp und die 16-Byte-Ausrichtung bei der Rückkehr wiederherstellen. Leaf-Funktionen dürfen framefrei sein. Ein normal zurückkehrender Non-Leaf sichert ra, wenn er es nach dem inneren Aufruf noch braucht.</p>
+<p>Transfer: Sum hat keinen Frame, weil es keine s-Register ändert und niemanden aufruft. ra und s0 teilen sich einen 16-Byte-Frame, weil 8 Byte Nutzdaten auf 16 aufgerundet werden. Die ISA-Wirkung von jal und ret bleibt in der nächsten Einheit gleich; Datenpfad und Pipeline betrachten nur die interne Umsetzung.</p>
+<p>Beispiel: LIFO und sp werden hier noch einmal als Stapelregel und Stapelzeiger gelesen.</p>
+<p>Ein typischer Denkfehler ist, Argumente und Rückgabe laufen pauschal über a0 bis a7. Kontrollfrage: Warum hat Sum keinen Frame? Es braucht weder eine eigene Rückkehradresse zu sichern noch ein verändertes s-Register.</p>
+<p>Die Einheit ist hier abgeschlossen. Die nächste Betrachtung gilt dem Datenpfad, nicht einem weiteren Aufrufvertrag.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;

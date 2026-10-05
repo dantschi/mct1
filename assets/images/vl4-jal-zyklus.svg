@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="220" viewBox="0 0 920 220"><style>
+.b{fill:#fff;stroke:#E5E5EA;stroke-width:2}
+.h{fill:#fff;stroke:#E2001A;stroke-width:2}
+.t{fill:#1D1D1F;font-family:Inter,sans-serif;font-size:14px;font-weight:600}
+.s{fill:#86868B;font-family:Inter,sans-serif;font-size:12px}
+</style>
+<text class="t" x="16" y="28">jal und ret aus dem alten PC. Illustration.</text>
+<rect class="b" x="16" y="56" width="250" height="110"/>
+<text class="t" x="141" y="90" text-anchor="middle">alter PC 0x100</text>
+<text class="s" x="141" y="116" text-anchor="middle">jal ra, Ziel</text>
+<text class="s" x="141" y="140" text-anchor="middle">ra wird 0x104</text>
+<rect class="h" x="310" y="56" width="250" height="110"/>
+<text class="t" x="435" y="90" text-anchor="middle">neuer PC 0x180</text>
+<text class="s" x="435" y="116" text-anchor="middle">Offset +0x80</text>
+<text class="s" x="435" y="140" text-anchor="middle">Rumpf, dann ret</text>
+<rect class="b" x="604" y="56" width="290" height="110"/>
+<text class="t" x="749" y="90" text-anchor="middle">Fortsetzung 0x104</text>
+<text class="s" x="749" y="116" text-anchor="middle">nicht die jal-Zeile</text>
+<text class="s" x="749" y="140" text-anchor="middle">ra bleibt 0x104</text>
+</svg>

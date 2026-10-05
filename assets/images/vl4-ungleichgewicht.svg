@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="220" viewBox="0 0 920 220"><style>
+.b{fill:#fff;stroke:#E5E5EA;stroke-width:2}
+.h{fill:#fff;stroke:#E2001A;stroke-width:2}
+.t{fill:#1D1D1F;font-family:Inter,sans-serif;font-size:14px;font-weight:600}
+.s{fill:#86868B;font-family:Inter,sans-serif;font-size:12px}
+</style>
+<text class="t" x="16" y="28">Falsche Freigabe: -16 und dann nur +8.</text>
+<text class="s" x="16" y="64">0x1000 nach Reservierung 0x0FF0.</text>
+<text class="s" x="16" y="88">Nach +8 steht sp auf 0x0FF8, nicht auf 0x1000.</text>
+<text class="s" x="16" y="112">Es bleiben 8 Byte reserviert, also zwei RV32-Woerter.</text>
+<text class="s" x="16" y="136">Die 16-Byte-Ausrichtung ist verletzt. Ein Crash ist nicht garantiert.</text>
+<text class="s" x="16" y="170">Korrekt: +16 bringt sp auf 0x1000 zurueck.</text>
+</svg>

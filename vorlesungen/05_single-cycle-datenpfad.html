@@ -221,7 +221,24 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <section>
 <section id="der-single-cycle-datenpfad" class="title-slide slide level1 center">
 <h1>Der Single-Cycle-Datenpfad</h1>
-
+<aside class="notes">
+<p>Diese Einheit gehört zu Mikrocomputertechnik 1.</p>
+<p>Sie erklärt, wie die schon bekannten Befehle in einem einfachen Single-Cycle-Modell in einer Taktperiode umgesetzt werden.</p>
+<p>Single Cycle heißt hier: zwischen zwei aktiven Flanken wird genau eine Instruktion kombinatorisch vorbereitet und an der nächsten Flanke als neuer Zustand übernommen.</p>
+<p>Beispiel: add t0, t1, t2 ist der rote Faden, noch ohne Schaltbild.</p>
+<p>Als Nächstes geht es von der Programmierersicht zu den Bausteinen, die Register und Speicher ändern.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="von-der-instruktion-zur-hardware" class="slide level2">
 <h2>Von der Instruktion zur Hardware</h2>
@@ -230,7 +247,7 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <li>Bisher: Fokus auf die Software-Sicht (Assembler)</li>
 <li>Heute: Brückenschlag zurück zur Hardware</li>
 <li>Die Blackbox des RISC-V-Prozessors öffnen</li>
-<li>Ziel: verstehen, wie eine Textzeile physikalisch Strom durch Leitungen leitet</li>
+<li>Ziel: aus dem Maschinenwort werden Logikpegel, die Quellen und Schreibfreigaben wählen</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -250,7 +267,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Herzlich willkommen zu Einheit 5. Assembler, Schleifen und Stack beherrschen Sie. Heute: Wie leitet der Chip aus 32 Bits ab, welche Leitungen unter Strom stehen? Logikgatter aus Einheit 1 verschmelzen mit dem Assembler aus Einheit 4.</p>
+<p>Assemblertext, Maschinenwort und gespeicherter Zustand sind drei Ebenen.</p>
+<p>Der Assembler erzeugt ein 32-Bit-Wort. Die Hardware wertet dessen Bits aus und setzt damit Logikpegel für Operation, Quellen und Schreibfreigaben. Das ist kein Stromschalter je Textzeile.</p>
+<p>CPU heißt Central Processing Unit. RISC-V ist der Name der offenen Befehlssatzarchitektur.</p>
+<p>Beispiel: Bei add t0, t1, t2 liegen zwei Registerwerte an der ALU (Arithmetic Logic Unit); das Ergebnis wird erst mit der Flanke nach t0 übernommen, wenn die Freigabe stimmt.</p>
+<p>Die Agenda ordnet holen, lesen, rechnen, speichern und zurückschreiben.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -297,7 +319,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Bottom-up: erst die fünf Phasen, dann Bauteil für Bauteil von ADD über Speicher bis Branches. Am Ende setzen wir den Datenpfad in Ripes unter Strom.</p>
+<p>Jeder Agendapunkt beantwortet eine Frage: Woher kommt der Befehl, woher die Werte, wie wird gerechnet, wie werden Speicher und nächste Adresse gewählt?</p>
+<p>R-Type ist das Register-Register-Format. Ein Multiplexer wählt eine Datenquelle. Ripes zeigt eine simulierte Mikroarchitektur, kein analoges Messen an echten Gattern.</p>
+<p>Lernziele: einen add-, lw- und sw-Pfad erklären, die nächste PC-Adresse bei beq bestimmen und Drahtwert vor der Flanke vom Zustand danach trennen.</p>
+<p>Beispiel: Die kleine Grafik ist nur die Reihenfolge der Themen.</p>
+<p>Zuerst werden die bekannten Befehlsformate für den Hardwarepfad aktiviert.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -324,7 +351,12 @@ graph LR
 <span id="cb1-3"><a aria-label="3"></a></span>
 <span id="cb1-4"><a aria-label="4"></a># Aber WIE wird aus <span class="bn">0x007302B3</span> die ALU aktiviert<span class="op">?</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Bisher Magie: Wer öffnet das Register File? Wer konfiguriert die ALU? Die CPU war Blackbox — heute öffnen wir sie.</p>
+<p>ALU, CPU und PC (Program Counter, Adresse der aktuellen Instruktion) sind hier die Arbeitsbegriffe.</p>
+<p>Immer 32 Bit gilt für dieses unkomprimierte RV32I-Modell, nicht für RISC-V mit komprimierten Instruktionen. R, I, S und B sind die hier nötigen Formate, nicht alle Formate der ISA.</p>
+<p>0x007302B3 ist add t0, t1, t2: rd=x5, rs1=x6, rs2=x7, opcode=0x33, funct3=0, funct7=0. Die Hexzahl 0x kennzeichnet die Basis 16. Die Felder sind Nummern, nicht die Datenwerte.</p>
+<p>Beispiel: Der Assembler hat den Text schon verlassen; die Hardware sieht nur das Wort.</p>
+<p>Wir öffnen die Blackbox als Blockdiagramm, nicht als Milliarden Transistoren.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -346,7 +378,12 @@ graph LR
 <li>Fokus: Datenflüsse und Vernetzung der Komponenten</li>
 </ul>
 <aside class="notes">
-<p>Ingenieure abstrahieren zu Blöcken: Register File, ALU, Multiplexer — verbunden durch 32-Bit-Leitungsbündel.</p>
+<p>Ein Blockdiagramm abstrahiert Funktion und Ports. Reale Kerne haben sehr unterschiedliche Transistorzahlen; eine feste Milliardenzahl gilt nicht für jeden Mikrocontroller.</p>
+<p>Registerbank, ALU, Speicher und MUX sind funktionale Bausteine. Ein 32-Bit-Datenwort, eine 5-Bit-Registernummer und ein 1-Bit-Steuersignal sind verschiedene Leitungsbreiten.</p>
+<p>Die Ports genügen, um den Datenfluss zu begründen, ohne jedes Gatter zu zeichnen.</p>
+<p>Beispiel: A1=5 adressiert ein Register; der gelesene Wert kann 10 sein. Beides ist nicht dieselbe Leitung.</p>
+<p>Diese verbundenen Verarbeitungsbausteine heißen Datenpfad.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -389,7 +426,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Datenpfad = Nutzdaten-Fluss. Steuerwerk = Hebel an den Ventilen. Heute exklusiv das Rohrleitungssystem.</p>
+<p>Der Datenpfad verarbeitet Werte. Das Steuerwerk wählt Operation, Quelle und Schreibfreigabe.</p>
+<p>Eine MUX-Auswahl ist ein Steuersignal, das ausgewählte 32-Bit-Wort ist ein Datenwert. Beides gehört zum Prozessor; die folgenden Folien behandeln deshalb auch die nötigen Freigaben.</p>
+<p>Verzögerungen in Daten- und Steuerpfad begrenzen die Taktperiode, zusammen mit den Zustandsspeichern.</p>
+<p>Beispiel: ALUSrc=1 wählt ein Immediate, der Datenwert auf der Leitung kann trotzdem 12 sein.</p>
+<p>Zuerst wird festgelegt, welche Befehle das Modell überhaupt beherrscht.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -411,7 +453,11 @@ graph LR
 <li>ImmGen liefert für <code>beq</code> den Byteoffset einschließlich implizitem Bit 0</li>
 </ul>
 <aside class="notes">
-<p>Annahme unseres Lehrmodells. Ripes zeigt ein reicheres Modell; die Folien behaupten nur das genannte Subset. Die Zuordnung der Signalnamen steht in der Mapping-Tabelle weiter unten, nicht als Identität mit Ripes.</p>
+<p>Das Basissubset ist add, sub, and, or, lw, sw und beq. RV32I ohne C meint hier 32-Bit-Instruktionen und einen sequenziellen Schritt von vier Byte.</p>
+<p>addi kann den schon für lw vorhandenen Immediate- und Additionspfad nutzen, braucht aber passende Steuerung. bne braucht eine andere Branch-Entscheidung. jal braucht J-Immediate, unbedingte PC-Wahl und den Linkwert PC_alt+4. Alle drei bleiben außerhalb des Basissubsets, bis sie ergänzt sind.</p>
+<p>Ripes kann mehr Befehle. Die spätere Tabelle ordnet Funktionen zu, sie behauptet keine baugleiche Zeichnung.</p>
+<p>Beispiel: li und la in den Laboren sind Setup, keine nativen Basisbefehle.</p>
+<p>Dieses Subset wird nun in genau einer Taktperiode je Instruktion umgesetzt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -434,7 +480,12 @@ graph LR
 <li>Leicht verständlich, modern oft ineffizient (Vertiefung später)</li>
 </ul>
 <aside class="notes">
-<p>Ein Takt: Fetch bis Write-Back. Moderne Chips arbeiten anders — das Modell bleibt der Schlüssel zum Verständnis.</p>
+<p>Single Cycle, Multi Cycle und Pipelining sind drei Mikroarchitekturen. Hier liegt zwischen zwei Flanken genau eine Instruktion: Ausgangszustand, kombinatorische Rechnung, Übernahme des nächsten Zustands.</p>
+<p>Ein Takt je Instruktion ist eine Modellannahme, keine ISA-Garantie. Kurze und lange Befehle teilen sich dieselbe Periodendauer.</p>
+<p>Die fünf folgenden Namen sind Tätigkeiten in dieser einen Periode, nicht fünf Takte.</p>
+<p>Beispiel: Nach der Flanke ist der PC neu, und die Leitungen gehören schon zur nächsten Instruktion.</p>
+<p>Die Phasen beschreiben Inhalte, nicht fünf getrennte Clocks.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -479,7 +530,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Heiliger Gral der Rechnerarchitektur: Instruction Fetch, Decode, Execute, Memory, Write-Back — von Mikrocontroller bis Server.</p>
+<p>IF heißt Instruction Fetch, ID Instruction Decode, EX Execute, MEM Memory Access und WB Write-Back.</p>
+<p>Das ist eine didaktische Zerlegung, kein universeller Aufbau jeder CPU. Die Zeichnung von links nach rechts ist Orientierung; es gibt Rückführung und parallele Zweige.</p>
+<p>add nutzt IF, ID, EX und WB, aber keinen Datenspeicher. lw nutzt zusätzlich MEM. sw schreibt Speicher und kein rd. beq ändert vor allem den PC.</p>
+<p>Beispiel: Die fünf Kästen haben keine eigenen Taktflanken.</p>
+<p>IF beginnt mit der Adresse der aktuellen Instruktion.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -496,7 +552,7 @@ graph LR
 <h2>Phase 1: Instruction Fetch (IF)</h2>
 <ul>
 <li>32-Bit-Maschinencode aus dem Speicher holen</li>
-<li>PC liefert die physikalische Adresse</li>
+<li>PC liefert im Lehrmodell die Instruktionsadresse; Adressübersetzung ist hier nicht modelliert</li>
 <li>Instruction Memory liefert die Instruktion</li>
 <li>Parallel: Vorbereitung <span class="math inline">\(PC + 4\)</span> für den nächsten Befehl</li>
 </ul>
@@ -520,7 +576,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Noch „dumm“: Adresse lesen, Wort liefern. Ein kleiner Addierer hält bereits <span class="math inline">\(PC+4\)</span> bereit.</p>
+<p>IF holt das Instruktionswort. Der PC liefert im Modell die Adresse; Adressübersetzung ist nicht enthalten.</p>
+<p>Adressweg und Instruktionswort sind beide 32 Bit breit, aber verschiedene Rollen.</p>
+<p>Bei PC=0x100 wird das Wort an 0x100 gelesen. PC+4=0x104 ist ein Kandidat, noch nicht der gespeicherte neue PC. Ein Branch kann einen anderen Kandidaten wählen.</p>
+<p>Beispiel: Das Lesen ändert das Instruktionswort nicht.</p>
+<p>Das Maschinenwort wird als Nächstes in Felder und Steuerinformation zerlegt.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -564,7 +625,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Opcode analysieren, Registeradressen herausgreifen, Werte auf RD1/RD2 legen — kombinatorisch (reine Gatterlaufzeiten, ohne Taktzustand).</p>
+<p>ID wertet das Wort aus. opcode ist die Befehlsklasse. rs1 und rs2 sind 5-Bit-Nummern, RD1 und RD2 die zugehörigen 32-Bit-Werte.</p>
+<p>add und sub haben denselben opcode und denselben funct3, aber verschiedenes funct7. Opcode allein unterscheidet sie nicht.</p>
+<p>Decodierung und Registerlesen sind im Modell kombinatorisch, die Registerbank selbst speichert Zustand. Bereit heißt nach einer Verzögerung, nicht zeitlos.</p>
+<p>Beispiel: A1=6 und A2=7 liefern die Inhalte von x6 und x7, nicht die Zahlen 6 und 7.</p>
+<p>Mit den Operanden kann EX rechnen oder eine Adresse bilden.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -607,7 +673,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Die ALU rechnet nicht nur bei <code>add</code>: bei <code>lw</code>/<code>sw</code> berechnet sie die RAM-Adresse (Base + Offset).</p>
+<p>EX ist die Rechenstufe. Dieselbe ALU hat im Modell drei Rollen: Datenoperation, effektive Adresse oder Differenz für beq.</p>
+<p>10+15 ergibt 25, Basis plus 12 eine Adresse, 7−7 die Differenz 0. Die 32-Bit-Ausgabe ist je nach Befehl Ergebnis, Adresse oder ungenutzte Differenz. Zero ist ein zusätzliches Bit.</p>
+<p>Die ALU führt nicht bei jedem Befehl dieselbe Operation aus. Die Zieladdition des Branches läuft im Lehrmodell in einem eigenen Addierer.</p>
+<p>Beispiel: and und or sind bitweise Datenoperationen, nicht das einbitige Steuer-UND.</p>
+<p>Eine Adresse ermöglicht danach den Datenspeicherzugriff.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -650,7 +721,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Bei <code>add</code> bleibt der Datenspeicher abgeriegelt; das ALU-Ergebnis fließt parallel weiter zum Write-Back.</p>
+<p>MEM ist der Datenspeicherzugriff, getrennt vom Instruktionslesen in IF.</p>
+<p>lw liest das Wort an der ALU-Adresse. sw schreibt den Wert aus rs2 beziehungsweise RD2. add braucht keinen Datenspeicher; sein Ergebnis geht am Speicher vorbei. Nicht benutzt heißt nicht freigegeben, nicht dass jede Leitung null wäre.</p>
+<p>Im Modell wird kombinatorisch gelesen und bei MemWrite an der Flanke geschrieben. Ein synchroner RAM mit zusätzlicher Leselatenz wäre ein anderes Modell.</p>
+<p>Beispiel: Address, Write Data und Read Data sind drei Ports.</p>
+<p>Ein Rechen- oder Load-Ergebnis muss bei Bedarf nach rd zurück.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -689,7 +765,12 @@ graph RL
 </div>
 </div>
 <aside class="notes">
-<p>Mit dem Write-Back ist der Befehl vollständig abgearbeitet — bereit für den nächsten Takt.</p>
+<p>WB schreibt einen Wert in das Zielregister rd, wenn RegWrite aktiv ist.</p>
+<p>add schreibt das ALU-Ergebnis, lw das Speicherwort. sw und beq schreiben kein rd. Der Rückpfeil ist ein gerichteter Datenweg, keine Zeit rückwärts.</p>
+<p>Vor der Flanke liegt der Wert am Schreibport. Erst die Flanke macht Zustand daraus. x0 bleibt null, auch wenn ein Schreibversuch ihn adressiert.</p>
+<p>Beispiel: Bei add mit Ergebnis 25 und rd=t0 ist 25 vor der Flanke nur WD, danach der neue Inhalt.</p>
+<p>Daraus wird jetzt ein konkreter Fetch- und R-Type-Pfad.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -733,7 +814,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Vom PC links nach rechts zum reinen Rechenpfad — R-Type ohne Datenspeicher.</p>
+<p>Der nächste Abschnitt soll add, sub, and und or ausführen und den PC um vier Byte erhöhen.</p>
+<p>R-Type, PC und ALU werden dafür verschaltet: zwei Leseports, ALU, Schreibport und PC+4.</p>
+<p>Die kleine Kette auf der Folie ist nur die Übersicht. Sie ersetzt den Datenpfad mit zwei Leseports noch nicht.</p>
+<p>Beispiel: Die Ports kommen auf den folgenden Folien in fester Reihenfolge dazu.</p>
+<p>Zuerst der PC als Adress-Zustandsspeicher.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -755,7 +841,12 @@ graph LR
 <li>Während des Taktes: stabile Adresse am Ausgang</li>
 </ul>
 <aside class="notes">
-<p>Anker des Datenpfads. Flankengetriggert: neue Adresse einfrieren, bis zum nächsten Tick halten.</p>
+<p>Der PC speichert die aktuelle Instruktionsadresse, 32 Bit in diesem Modell. Er ist nicht der ganze Zustand: Register und beschreibbarer Speicher gehören dazu.</p>
+<p>Q ist der stabile Ausgang nach der Clock-to-Q-Verzögerung, D der vorbereitete Eingang. Eine positive Flanke übernimmt D nach Q. Stabiler Ausgang heißt nicht, dass D während der Periode unverändert bleiben muss.</p>
+<p>Reset des PC ist eine Umgebungsentscheidung, keine ISA-Adresse.</p>
+<p>Beispiel: PC_Q=0x100 kann bestehen, während PC_D schon 0x104 zeigt.</p>
+<p>PC_Q adressiert als Nächstes den Instruktionsspeicher.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -796,7 +887,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Adresse anlegen — nach kurzer Verzögerung liegt das 32-Bit-Wort am Ausgang. Fetch erledigt.</p>
+<p>Der Instruktionsspeicher hat einen Adressport und einen Instruktionsport. Das Lesen ist im Modell kombinatorisch und ändert das Wort nicht.</p>
+<p>Nur-Lesen während der Ausführung ist eine Lehrmodellannahme, kein Satz über jedes Flash oder RAM der Welt.</p>
+<p>Ein synchroner Speicher mit Extra-Takt wäre ein anderes Timing.</p>
+<p>Beispiel: PC=0x100 liefert genau das dort liegende 32-Bit-Wort an die Decodierung.</p>
+<p>Parallel dazu entsteht die sequenzielle Folgeadresse.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -835,7 +931,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Kabel splitten: ein Strang zum Instruction Memory, einer zum <span class="math inline">\(+4\)</span>-Addierer. Flip-Flops übernehmen erst beim Tick.</p>
+<p>Die Konstante 4 ist der Byteabstand unkomprimierter Instruktionen, nicht vier Takte.</p>
+<p>Ein eigener Addierer bildet PC_alt+4, während die Haupt-ALU später Operanden bearbeitet. Vor der Flanke bleibt PC_Q=0x100, der Kandidat ist 0x104. Nach der Flanke ist PC_Q=0x104, sofern kein Branch gewählt wurde.</p>
+<p>Das Rückkabel endet am D-Eingang des Flip-Flops. Es gibt keinen kombinatorischen Dauer-Inkrementierer.</p>
+<p>Beispiel: Im Gesamtmodell wählt ein MUX später zwischen PC+4 und Branch-Ziel.</p>
+<p>Die R-Type-Felder bestimmen jetzt die drei Registerports.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -890,7 +991,12 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p>32-Bit-Kabel aufspleißen: drei 5-Bit-Bündel für <code>rs1</code>, <code>rs2</code>, <code>rd</code> zum Register File.</p>
+<p>instr[31] ist das höchstwertige Bit. rs1, rs2 und rd sind je 5 Bit, also 32 mögliche Nummern.</p>
+<p>0x007302B3 ist add mit rd=5, rs1=6, rs2=7, opcode=0x33, funct3=0, funct7=0. sub behält opcode und funct3, setzt funct7 aber auf 0x20. Ohne funct7 sind add und sub nicht unterscheidbar.</p>
+<p>Die Feldverdrahtung ist keine zweite Assemblierung. Der Assembler ist fertig.</p>
+<p>Beispiel: and hat funct3=7, or funct3=6, beide mit funct7=0.</p>
+<p>Die zwei Quellnummern führen zu zwei Leseausgängen.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -933,7 +1039,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Asynchron in der ID-Phase: Spannung an den Ports — Werte auf den Datenausgängen.</p>
+<p>ID liest zwei Register gleichzeitig. A1 und A2 sind Adressports, RD1 und RD2 Datenports. Es sind keine zwei getrennten Registerbänke.</p>
+<p>A1=6 und A2=7 liefern die gespeicherten Werte, im Beispiel 10 und 15. Dieselbe Nummer an beiden Ports ist erlaubt und liefert denselben alten Wert zweimal.</p>
+<p>Die Bank speichert Zustand, die Leseausgabe des Modells ist kombinatorisch. Getrennte Ausgänge heißen nicht physikalisch isolierte Welten.</p>
+<p>Beispiel: 5 Bit Adresse und 32 Bit Daten müssen im Bild getrennt sein.</p>
+<p>Diese beiden Datenwörter gehen an die ALU.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -951,7 +1062,7 @@ graph LR
 <ul>
 <li>RD1 und RD2 in die ALU-Eingänge</li>
 <li>Sofortige Verknüpfung (kombinatorisch)</li>
-<li>Operation via ALU-Control (aus opcode/<code>funct3</code>)</li>
+<li>Operation über ALU-Control aus opcode, <code>funct3</code> und bei R-Typ auch <code>funct7</code></li>
 <li>Ergebnis am ALU-Ausgang</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
@@ -975,7 +1086,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Kein Zwischenspeicher in der ALU: Gatterlaufzeiten, dann steht das Resultat. Execute-Phase erreicht.</p>
+<p>Die ALU verknüpft RD1 und RD2 kombinatorisch. Die Operation kommt aus der Steuerung und braucht bei add/sub auch funct7, nicht nur opcode und funct3.</p>
+<p>Dieselben Operanden 10 und 15 ergeben bei ADD 25 und bei SUB −5 als 32-Bit-Zweierkomplement. and und or sind bitweise und nicht das Steuer-UND vor dem PC.</p>
+<p>Sofort heißt nach der Gatterverzögerung, nicht ohne Laufzeit. Das Ergebnis ist noch nicht gespeichert.</p>
+<p>Beispiel: 25 liegt am ALU-Ausgang, t0 enthält noch den alten Wert.</p>
+<p>Der Ausgang braucht einen Weg zum Schreibport.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1014,7 +1130,12 @@ graph RL
 </div>
 </div>
 <aside class="notes">
-<p>Bei R-Type wird MEM umgangen. Daten stehen an der Tür — noch nicht geschrieben.</p>
+<p>WB führt das ALU-Ergebnis zum WD-Port, Write Data. Die Registerbank braucht außerdem die Zielnummer und RegWrite.</p>
+<p>25 am WD-Port ist noch kein neuer Inhalt von x5. RD1 und RD2 sind Leseausgänge, WD ist der Schreibeingang.</p>
+<p>Die rückwärts gezeichnete Leitung ist ein normaler gerichteter Weg.</p>
+<p>Beispiel: Ohne RegWrite bleibt der alte Registerzustand, auch wenn WD schon 25 zeigt.</p>
+<p>Die Zielnummer legt fest, welches Register gemeint ist.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1051,7 +1172,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>A3 sagt: „Schreibe die anliegenden Daten in Fach Nummer <span class="math inline">\(rd\)</span>.“</p>
+<p>rd steht in instr[11:7] und geht an A3, fünf Bit. A3=5 und WD=25 bedeuten: Register x5 soll den Wert 25 erhalten, nicht dass die Adresse 25 wäre.</p>
+<p>Vollständig ist der Weg erst mit RegWrite und der Flanke. Ein Schreibversuch auf x0 ändert die gespeicherte Null nicht.</p>
+<p>Adresse und Datenwort sind im Bild getrennt zu beschriften.</p>
+<p>Beispiel: t0 ist x5, der Wert 25 ist nicht die Nummer 5.</p>
+<p>Eine Zieladresse allein darf noch nicht schreiben.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1072,7 +1198,12 @@ graph LR
 <li>RegWrite <span class="math inline">\(= 0\)</span>: Signale prallen ab (wichtig für <code>sw</code>/<code>beq</code>)</li>
 </ul>
 <aside class="notes">
-<p>Ohne RegWrite würde jedes Tick Register überschreiben. Nur bei erlaubtem Write-Back auf 1.</p>
+<p>RegWrite ist die einbitige Register-Schreibfreigabe. Bei 1 übernimmt das Ziel an der Flanke WD. Bei 0 bleiben die Register alt, obwohl WD und A3 konkrete Werte haben können.</p>
+<p>add setzt RegWrite=1, sw und beq setzen 0. Die CPU prüft keinen Algorithmus, sie decodiert Felder.</p>
+<p>x0 bleibt auch bei RegWrite=1 null.</p>
+<p>Beispiel: Vor der Flanke zeigt WD=25, nach der Flanke enthält t0 die 25.</p>
+<p>Datenweg, Ziel und Freigabe ergeben den R-Type-Pfad.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1111,7 +1242,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Synchronisierter Datenfluss ohne RAM. Als Nächstes: Timing — wann wird wirklich gespeichert?</p>
+<p>Der R-Type-Pfad verbindet PC, Instruktionsfelder, zwei Leseports, ALU, WD, A3, RegWrite und PC+4.</p>
+<p>Beispiel add t0, t1, t2 mit x6=10 und x7=15: vor der Flanke sind RD1=10, RD2=15, ALU=25, RegWrite=1, PC_D=PC+4. Nach der Flanke ist x5=25 und der PC um vier Byte weiter.</p>
+<p>Ohne RAM heißt ohne Datenspeicherzugriff, nicht ohne Instruktionsspeicher. Es ist kein Pipelinelauf durch fünf getaktete Kästen.</p>
+<p>Beispiel: Zuerst Zustand, dann kombinatorische Werte, zuletzt die Flanke.</p>
+<p>Als Nächstes: wann werden diese Werte wirklich Zustand?</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1154,7 +1290,12 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Während der Periode: Kombinatorik. Flanke: Zustände einfrieren. (Gantt-Darstellung bewusst als Phasen-Kette — handout-tauglich.)</p>
+<p>Ein Zeitbild braucht zwei Flanken, nicht fünf gleich lange Phasenkästen.</p>
+<p>Nach der Startflanke laufen die Verzögerungen. Vor der nächsten Flanke müssen die D-Eingänge die Setup-Zeit erfüllt haben. PC und Register können an derselben Flanke übernehmen. Danach gehören die Leitungen zur nächsten Instruktion.</p>
+<p>Zahlen in diesem Bild sind Lehrwerte. Die längere kritische-Pfad-Rechnung folgt später.</p>
+<p>Beispiel: PC_Q bleibt zwischen den Flanken der alte Wert, WD darf sich schon auf das neue Ergebnis setzen.</p>
+<p>Dieselbe Flanke erlaubt sogar Lesen und Schreiben desselben Registers.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1178,7 +1319,12 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb2-1"><a aria-label="1"></a>t0 <span class="op">=</span> t0 <span class="op">+</span> t1<span class="op">;</span></span>
 <span id="cb2-2"><a aria-label="2"></a><span class="co">// Lesen und Schreiben im selben Takt — Flankensteuerung rettet uns</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Klassische Klausurfrage: Lesen und Schreiben desselben Registers im Takt. Flankensteuerung hält den alten Wert stabil bis zum Tick.</p>
+<p>Besser als ein unmarkiertes addi ist add t0, t0, t1. Bei t0=10 und t1=15 lesen beide Ports den alten t0 beziehungsweise t1. WD wird 25. Die Flanke schreibt 25. Es entsteht kein kombinatorischer Selbstaddierer, weil der neue Wert erst im Flip-Flop ankommt.</p>
+<p>a=a+b meint hier den Registerzustand. Das ist keine Aussage über C-Überlauf. addi wäre eine Erweiterung über den vorhandenen I-Pfad, nicht der Basis-R-Typ.</p>
+<p>Alter Q-Wert und neuer D-Wert stehen gleichzeitig im Bild.</p>
+<p>Beispiel: Vor der Flanke liefert ein erneutes Lesen noch 10.</p>
+<p>Der R-Type nutzt keinen Datenspeicher; der kommt als Nächstes.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1219,7 +1365,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Ungenutzte Blöcke bleiben abgemeldet. Load/Store brauchen denselben Pfad — elegant erweitert, nicht neu erfunden.</p>
+<p>MEM kann für add unbenutzt bleiben. Das ALU-Ergebnis geht direkt zum Write-Back. Der Data-Memory-Block darf trotzdem im Prozessor vorhanden sein.</p>
+<p>Bypass heißt alternativer Datenweg, keine zusätzliche Taktphase. Nicht angeforderte Leitungen sind nicht automatisch null.</p>
+<p>add setzt MemRead und MemWrite auf 0.</p>
+<p>Beispiel: 25 geht an WD, nicht an den Speicher-Adressport.</p>
+<p>lw und sw brauchen einen Offset statt des zweiten Registeroperanden.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1263,7 +1414,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Neue Leitungen erzeugen Kollisionen an ALU-Eingängen und Write-Back. Multiplexer als elektrische Weichen — nächster Bauabschnitt.</p>
+<p>Load liest ein Wort, Store schreibt ein Wort. Der ALU-A-Eingang bleibt die Basis aus RD1. Der zweite Operand kann ein Offset sein. Bei lw und sw ist der ALU-Ausgang eine Adresse. lw holt danach ein anderes Datenwort aus dem Speicher.</p>
+<p>Zwei Auswahlstellen entstehen: ALU-B und Register-Write-Back. Ein Konflikt im Entwurf heißt, dass zwei Quellen nicht fest miteinander verbunden werden dürfen. Ein korrekt gebauter Prozessor hat diesen Konflikt nicht mehr.</p>
+<p>Beim add ist die zweite Quelle ein Registerwort, beim lw ein Offset.</p>
+<p>Beispiel: Die Quellen heißen RD2 und Immediate.</p>
+<p>Zuerst wird der Offset aus dem I-Format gewonnen.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1315,7 +1471,12 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p>Für <code>lw</code> braucht die ALU Base + Offset. 12 Drähte an einen 32-Bit-Eingang zu löten reicht nicht — 20 Leitungen fehlen. Sign-Extension in Hardware ist nötig.</p>
+<p>Am Beispiel lw t0, 12(s1) steht in den Bits 31:20 ein 12-Bit-Offset und kein rs2 für den zweiten Rechenoperanden. addi hat dasselbe Immediate-Feld, ist aber hier eine Erweiterung, kein Basisbefehl.</p>
+<p>Die ALU erwartet 32 Bit. Die oberen Bits dürfen nicht offen bleiben. Die richtige Ergänzung ist Vorzeichenerweiterung, kein offenes Lötfeld.</p>
+<p>+12 wird 0x0000000C. −4 hat zwölf Bit 0xFFC und wird 0xFFFFFFFC. Mit Basis 0x1000 entstehen 0x100C beziehungsweise 0x0FFC.</p>
+<p>Beispiel: Registerbits und Konstantenbits haben verschiedene Bedeutung.</p>
+<p>Ein Immediate Generator baut den 32-Bit-Wert.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1331,11 +1492,9 @@ graph LR
 <section id="immediate-generator-immgen" class="slide level2">
 <h2>Immediate Generator (ImmGen)</h2>
 <ul>
-<li>Vereinfacht für I-Type: Bits 31:20 als 12-Bit-Immediate</li>
-<li>S-/B-Formate nutzen andere Bitfelder — ImmGen kennt mehrere Layouts</li>
-<li>12-Bit-Eingang, 32-Bit-Ausgang</li>
-<li>Aufgabe: Vorzeichenerweiterung (Sign-Extension) in Hardware</li>
-<li>Beim I-Type: Bit 31 wird auf die oberen 20 Bits kopiert</li>
+<li>I-Teil: Bits 31:20, vorzeichenerweitert auf 32 Bit</li>
+<li>Der volle ImmGen liest die zum Format gehörenden Felder, nicht pauschal nur zwölf Eingänge</li>
+<li>S verkettet zwei Felder, B enthält das implizite Bit 0 bereits im Byteoffset</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -1357,7 +1516,11 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Einstieg am I-Type (<code>addi</code>, <code>lw</code>): ImmGen fächert das Vorzeichenbit auf. Bei Branches/Stores greifen andere Immediate-Layouts — dasselbe Bauteil, andere Verdrahtung der Instruktionsbits.</p>
+<p>ImmGen heißt Immediate Generator. Ein I-Teil liest zwölf zusammenhängende Bits und erweitert sie. Der volle Baustein für I, S und B erhält die passenden, teils verteilten Felder und die Formatauswahl. Er ist nicht generell ein Baustein mit nur zwölf Eingängen.</p>
+<p>I: Vorzeichenerweiterung von instr[31:20]. S: Vorzeichenerweiterung der Verkettung instr[31:25] mit instr[11:7]. B: Vorzeichenerweiterung von instr[31], instr[7], instr[30:25], instr[11:8] und einer angehängten Null. Die Klammern sind Verkettung, keine Addition.</p>
+<p>Nach dem fertigen B-Byteoffset gibt es kein zweites Shift-left-1. +12 bleibt +12, −4 bleibt −4.</p>
+<p>Beispiel: Bit 31 wird beim I-Typ in die oberen 20 Bits kopiert. Bei B ist das nicht dieselbe Regel.</p>
+<p>Immediate und RD2 konkurrieren nun um den ALU-B-Eingang.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1379,7 +1542,12 @@ graph LR
 <li>Beide Kabel auf einen Kontakt = Kurzschluss</li>
 </ul>
 <aside class="notes">
-<p>Klassischer Ressourcenkonflikt. Lösung: elektronische Weiche — Multiplexer.</p>
+<p>RD2 und der ImmGen-Ausgang sind zwei 32-Bit-Quellen für denselben ALU-B-Port.</p>
+<p>add braucht das zweite Registerwort, lw den Offset. Eine korrekte Schaltung verbindet die Ausgänge nicht fest miteinander. Zwei unabhängig getriebene Ausgänge an einem Knoten können einen Treiberkonflikt erzeugen. Immer Kurzschluss ist zu grob. Es ist auch kein Pipeline-Hazard.</p>
+<p>Beispielwerte: RD2=15 und Immediate=12. Nur einer darf den ALU-Port treiben.</p>
+<p>Beispiel: Der nicht gewählte Wert darf auf seiner eigenen Leitung bleiben.</p>
+<p>Ein Multiplexer wählt genau eine Quelle.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1421,7 +1589,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>MUX wie eine Bahnweiche: Control Unit stellt <code>ALUSrc</code>, Kurzschluss vermieden.</p>
+<p>Ein MUX, Multiplexer, hat zwei 32-Bit-Eingänge, einen 32-Bit-Ausgang und ein getrenntes Select-Bit. ALUSrc heißt ALU Source.</p>
+<p>Im Lehrmodell bedeutet 0 RD2 und 1 das Immediate. Das ist eine Entwurfswahl, keine ISA-Regel. Der nicht gewählte Eingang kann einen Wert führen. Der MUX speichert nichts; er ist kombinatorisch.</p>
+<p>add mit ALUSrc=0 gibt 15 weiter, lw mit ALUSrc=1 gibt 12 weiter.</p>
+<p>Beispiel: Select und Datenwort haben verschiedene Bitbreiten.</p>
+<p>Damit kann die ALU für lw die effektive Adresse rechnen.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1447,7 +1620,12 @@ graph LR
 <span id="cb3-3"><a aria-label="3"></a># 2. ALU<span class="op">:</span> s1 <span class="op">+</span> <span class="dv">12</span></span>
 <span id="cb3-4"><a aria-label="4"></a># 3. Adresse am ALU<span class="op">-</span>Ausgang</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Base am A-Eingang, Offset über ImmGen/MUX am B-Eingang — Adresse für den Data Memory.</p>
+<p>lw heißt load word. Die effektive Adresse ist Basis plus Byteoffset.</p>
+<p>Lehrwerte: s1=0x1000, Offset 12, ALUSrc=1, ALU-Operation ADD, Adresse 0x100C. t0 ist vor der Flanke noch unverändert. 12 Byte sind drei Wörter, nicht Wortindex 12.</p>
+<p>Der Speicherinhalt an 0x100C sei zur Illustration 88. Adresse und Daten sind verschieden. 0x1000 ist keine universelle Ripes-Adresse; das Labor nutzt ein Label.</p>
+<p>Beispiel: Wortzugriffe bleiben auf Vielfache von vier ausgerichtet.</p>
+<p>Die Adresse ist fertig, der Load-Wert kommt aus dem Datenspeicher.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1489,7 +1667,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Didaktisches Modell: getrennte Instruction- und Data-Memory-Blöcke. Adresse anlegen — Daten auf Read Data.</p>
+<p>Data Memory hat Address, Write Data und Read Data. Ein Load liest im Modell kombinatorisch. Ein Store schreibt an der Flanke, wenn MemWrite aktiv ist.</p>
+<p>Zwei Blöcke bedeuten zwei Zugriffspfade für Instruktion und Daten in derselben Periode. Das sind nicht zwingend zwei RAM-Chips und kein Beweis getrennter realer Adressräume.</p>
+<p>RAM heißt Random Access Memory. Ungültige oder unausgerichtete Adressen sind kein positiver Laborfall.</p>
+<p>Beispiel: Adresse 0x100C, Lesedaten 88, Schreibdaten beim Load unbenutzt.</p>
+<p>Der Lesewert muss als Write-Back-Quelle zur Registerbank.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1528,7 +1711,12 @@ graph RL
 </div>
 </div>
 <aside class="notes">
-<p>Zwei Kandidaten am WD-Port: ALU-Ergebnis (R-Type) vs.&nbsp;RAM-Daten (<code>lw</code>).</p>
+<p>Read Data ist das gelesene Wort, WD der Schreibwert der Registerbank, rd die Zielnummer.</p>
+<p>Fortsetzung: Adresse 0x100C, Speicherwort 88 oder 0x00000058. An der Flanke soll t0 den Wert 88 erhalten, nicht die Adresse. Der ALU-Ausgang liegt parallel schon an der anderen Write-Back-Quelle. Ohne Auswahl wäre unklar, welche Quelle lw braucht.</p>
+<p>Load braucht im Modell keine zweite Flanke für MEM und eine dritte für WB.</p>
+<p>Beispiel: Adressleitung und Datenleitung sind im Bild getrennt.</p>
+<p>Ein zweiter MUX wählt die Write-Back-Quelle.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1550,7 +1738,12 @@ graph RL
 <li>Steuersignal: <code>MemtoReg</code></li>
 </ul>
 <aside class="notes">
-<p><code>MemtoReg = 1</code>: RAM durchlassen; <code>= 0</code>: ALU durchlassen.</p>
+<p>MemtoReg heißt Memory to Register. Port 0 ist das ALU-Ergebnis, Port 1 der Speicherlesewert.</p>
+<p>add wählt 25, das Beispiel-lw wählt 88. RegWrite ist bei beiden 1. MemtoReg ersetzt weder die Zieladresse noch die Freigabe.</p>
+<p>Das Zwei-Wege-Schema ist das Basismodell. Ripes kann zusätzlich PC+4 zurückschreiben. sw braucht gerade kein Register-Write-Back.</p>
+<p>Beispiel: Tabelle: add Quelle ALU, lw Quelle Speicher, sw kein Registerschreiben.</p>
+<p>Beim Store ändern sich Richtung und Schreibziel.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1591,7 +1784,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Adresse wie bei <code>lw</code>; Datenpfad von RD2 direkt in den RAM-Schreibeingang.</p>
+<p>sw heißt store word, vier Byte, nicht ein Byte. s1 ist die Basis, t0 im Beispiel die Datenquelle, 12 der Byteoffset.</p>
+<p>Lehrwerte s1=0x1000 und t0=88: RD1=0x1000, RD2=88, ALUSrc wählt 12, die ALU bildet 0x100C. RD2 zweigt vor dem ALU-MUX zum Write-Data-Port ab. Gespeichert wird 88, nicht 12 und nicht die Adresse.</p>
+<p>Das S-Immediate ist die Vorzeichenerweiterung von instr[31:25] verkettet mit instr[11:7]. Mit der Flanke und MemWrite ändern sich vier Speicherbytes. RegWrite bleibt 0.</p>
+<p>Beispiel: Die beiden Pfade laufen gleichzeitig: Adresse über die ALU, Daten über RD2.</p>
+<p>Adresse und Daten allein dürfen noch nicht jeden Store auslösen.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1613,7 +1811,12 @@ graph LR
 <li>Bei <code>add</code>: beide 0 — RAM inaktiv</li>
 </ul>
 <aside class="notes">
-<p>RD2 wackelt oft am Speicher. Nur bei echtem Store öffnet <code>MemWrite</code> den Schreibpfad.</p>
+<p>MemWrite ist die Speicher-Schreibfreigabe, MemRead im Lehrmodell die Kennzeichnung eines Lesezugriffs.</p>
+<p>add: beide 0. lw: Read 1, Write 0. sw: Read 0, Write 1. beq: beide 0. Ein Wert am Write-Data-Port ohne MemWrite ändert den Speicher nicht. MemWrite ist kein Don’t Care. MemRead=0 heißt nicht, dass das RAM elektrisch aus und alle Ausgänge null sind.</p>
+<p>Ripes muss keinen Pin namens MemRead zeigen.</p>
+<p>Beispiel: Vor der Flanke ist die Freigabe sichtbar, der Speicherinhalt noch alt.</p>
+<p>Der Store muss außerdem das Registerschreiben unterbinden.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1637,7 +1840,12 @@ graph LR
 <span id="cb4-2"><a aria-label="2"></a>MUX MemtoReg leitet immer etwas weiter —</span>
 <span id="cb4-3"><a aria-label="3"></a>Store wuerde Register mit Muell beschreiben.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Zusammenspiel der Steuersignale: Store = RAM schreiben, Register File abgeriegelt.</p>
+<p>Im S-Format ist instr[11:7] imm[4:0], nicht rd. rs2 steht in instr[24:20]. Dieselben Bits sind also nicht Immediate und rs2.</p>
+<p>RegWrite bleibt 0. Am WD-Port darf ein konkreter, für den Store irrelevanter Wert liegen; er wird nicht übernommen. MemtoReg darf X sein, weil kein Registerschreiben erfolgt. X ist keine gleichzeitige 0 und 1 und kein offener Draht. RegWrite und MemWrite dürfen nicht X sein.</p>
+<p>Vorher: Speicherwort alt, Register unverändert. Nachher: vier Bytes neu, GPR gleich.</p>
+<p>Beispiel: Eine feste Verdrahtung von Bits 11:7 als A3 wäre für sw keine gültige Zielangabe.</p>
+<p>R-Type, Load und Store lassen sich nun zusammenfassen.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1678,7 +1886,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Lineare Programme sind machbar. Nächste Stufe: Kontrollfluss — Branch-Datenpfad.</p>
+<p>Der gemeinsame Pfad hat ALUSrc, MemtoReg und den RD2-Abzweig zum Speicher. Eine reine Kette ALU, Speicher, Register würde den ALU-Bypass und die Storedaten unterschlagen.</p>
+<p>add: ALUSrc=0, MemtoReg=0, RegWrite=1. lw: ALUSrc=1, MemtoReg=1, RegWrite=1. sw: ALUSrc=1, RegWrite=0, MemWrite=1, Daten aus RD2.</p>
+<p>Bis hier ist PC+4 der einzige ausgeführte nächste PC. Programme bleiben linear.</p>
+<p>Beispiel: Dieselben MUX-Codierungen wie zuvor gelten weiter.</p>
+<p>Ein bedingter Branch braucht Vergleich und PC-Auswahl.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1720,7 +1933,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Register vergleichen und PC dynamisch setzen — wenn die Bedingung wahr ist.</p>
+<p>beq stellt zwei Fragen: Sind die Registerwerte gleich, und welches Ziel hätte der Sprung?</p>
+<p>Im Lehrmodell vergleicht die Haupt-ALU per Subtraktion, ein eigener Addierer bildet PC_alt plus Byteoffset. Die Entscheidung ist Branch und Zero, nicht ein AND mit nur einem Eingang.</p>
+<p>RegWrite bleibt 0. Ripes darf dieselbe Semantik mit einem eigenen Vergleichsblock lösen. Das ist eine andere Verschaltung, keine andere ISA.</p>
+<p>Beispiel: 7 und 7 sind gleich, 7 und 9 nicht. Das Ziel kann in beiden Fällen schon berechnet sein.</p>
+<p>Vergleich und Navigation werden am konkreten beq getrennt.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1746,7 +1964,12 @@ graph LR
 <span id="cb5-3"><a aria-label="3"></a># 2. PC_neu <span class="op">=</span> PC <span class="op">+</span> Offset</span>
 <span id="cb5-4"><a aria-label="4"></a># wenn <span class="op">(</span><span class="dv">1</span><span class="op">):</span> PC <span class="op">=</span> PC_neu</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Ressourcenkonflikt: Vergleich und Target-Berechnung gleichzeitig — zweiter Addierer nötig.</p>
+<p>beq heißt branch if equal. Verglichen werden die Inhalte, nicht die Registernummern. Das Ziel ist PC_alt plus Byteoffset. Bei Ungleichheit folgt PC_alt+4.</p>
+<p>beq schreibt kein rd. Dass die Haupt-ALU hier nicht zugleich das Ziel addiert, ist eine Entwurfsentscheidung, kein ISA-Zwang.</p>
+<p>Bei 7 und 7 ist die Differenz 0, bei 7 und 9 nicht. Das illustrative Ziel sei in beiden Fällen dasselbe.</p>
+<p>Beispiel: Ein normales sub mit Differenz 0 darf nicht springen, solange Branch=0 ist.</p>
+<p>Zuerst wird Gleichheit als Differenz null erkannt.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1769,7 +1992,12 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb6-1"><a aria-label="1"></a>Wenn A == B, dann A - B == 0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Ungleich null <span class="math inline">\(\Rightarrow\)</span> ungleich. Hardware prüft, ob das ALU-Ergebnis nur Nullen enthält.</p>
+<p>7−7 ergibt das Wort 0, 7−9 ein Wort ungleich null. Zwei gleiche 32-Bit-Wörter haben die Differenz null, auch in der modularen Registerarithmetik.</p>
+<p>Das Differenzwort ist keine zu speichernde Variable. beq braucht nur die Aussage null oder nicht null. Erfolgreich im Sinne eines Sprungs ist das nur zusammen mit der Befehlsklasse beq.</p>
+<p>Die ALU-Operation ist SUB, RegWrite ist 0.</p>
+<p>Beispiel: Ein Daten-sub mit gleichen Operanden setzt Zero, aber nicht Branch.</p>
+<p>Ein Ein-Bit-Ausgang fasst diese Null-Eigenschaft zusammen.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1812,7 +2040,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Hinweis Terminologie: In RISC-V-Datenpfaden ist Zero ein ALU-Ausgangspin, kein separates Statusregister wie bei x86. Ein Draht = Wahrheitsbit für den Branch.</p>
+<p>Zero ist ein kombinatorischer ALU-Ausgang, kein RISC-V-Statusregister. Es ist das negierte ODER aller 32 Ergebnisbits: nur das Nullwort ergibt 1.</p>
+<p>0x00000000 ergibt 1, 0x00000001 und 0xFFFFFFFF ergeben 0. Zero ist nicht die Kopie des Datenworts.</p>
+<p>Die Darstellung gehört zum Lehrmodell. Ripes prüft Branches in einem eigenen Block; dort muss der ALU-Ausgang nicht null sein.</p>
+<p>Beispiel: Das Bit gilt für die aktuelle Operation, nicht als gespeichertes Flag.</p>
+<p>Parallel wird der Branch-Offset zum Byteabstand.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1868,7 +2101,12 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p>ImmGen kennt auch das B-Format. Zweierkomplement erlaubt rückwärts gerichtete Sprünge.</p>
+<p>Das B-Immediate setzt sich so zusammen: imm[12]=instr[31], imm[11]=instr[7], imm[10:5]=instr[30:25], imm[4:1]=instr[11:8], imm[0]=0. Das ist Verkettung, nicht Addition der Feldwerte.</p>
+<p>Ein positiver Offset +12 und ein negativer Offset −8 sind beide vorzeichenerweiterte Byteabstände. Negativ heißt kleinere Adresse, nicht eine feste Richtung im Editor.</p>
+<p>Der Bezug ist die Adresse der Branch-Instruktion, nicht PC+4.</p>
+<p>Beispiel: Zweierkomplement braucht kein extra Minus-Kabel.</p>
+<p>Der ImmGen-Ausgang muss diesen fertigen Offset liefern.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1892,7 +2130,12 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb7-1"><a aria-label="1"></a>Byteoffset = signextend(B-Immediate mit implizitem Bit 0)</span>
 <span id="cb7-2"><a aria-label="2"></a>Target     = oldPC + Byteoffset</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Vereinfachte Darstellung für RV32I: Wortausrichtung und B-Immediate-Skalierung. Details im Lehrbuchdiagramm (Patterson &amp; Hennessy) und in Ripes nachvollziehbar.</p>
+<p>Der B-Byteoffset enthält Bit 0 schon als Null. Ein zweites Schieben würde aus +12 die Zahl +24 machen und das Ziel verfehlen.</p>
+<p>PC_alt=0x100 plus 12 ergibt 0x10C. PC_alt=0x108 plus −8 ergibt 0x100. Die Codierung erlaubt Zwei-Byte-Schritte; gültige Ziele im unkomprimierten Modell bleiben vier Byte ausgerichtet.</p>
+<p>Wortausrichtung und die schon erledigte Skalierung dürfen nicht vermischt werden.</p>
+<p>Beispiel: Am Addierer kommt der 32-Bit-Wert +12 an, nicht ein Halbwortoffset.</p>
+<p>PC_alt und dieser Offset werden gleichzeitig zur Vergleichsrechnung addiert.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1922,7 +2165,7 @@ graph LR
 
 graph LR
   PC[Aktueller PC] --&gt; Adder[Branch-Addierer]
-  Imm[Shifted Immediate] --&gt; Adder
+  Imm[B-Byteoffset, Bit 0 enthalten] --&gt; Adder
   Adder --&gt; Target[Branch Target]
   style Adder fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
 </pre>
@@ -1932,7 +2175,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Silizium für Parallelität: Vergleich und Target-Berechnung im selben Takt.</p>
+<p>Der Branch-Addierer addiert den aktuellen PC_Q und den fertigen Byteoffset. Es gibt keinen Shift-Baustein davor.</p>
+<p>Neben der Haupt-ALU existieren der PC+4-Addierer und dieser Zieladdierer. Zweiter Addierer ist nur relativ zu einer benannten Teilmenge sinnvoll.</p>
+<p>Während die ALU 7−7 rechnet, kann 0x100+12 schon 0x10C ergeben. Ripes kann die Haupt-ALU für PC plus Immediate nutzen, weil der Vergleich woanders liegt.</p>
+<p>Beispiel: Das Ziel ist ein Kandidat, noch nicht der neue PC.</p>
+<p>Am PC-Eingang stehen jetzt zwei mögliche Adressen.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1954,7 +2202,12 @@ graph LR
 <li>Zwei Kabel am PC-Eingang — wieder MUX nötig</li>
 </ul>
 <aside class="notes">
-<p>Dritter Weichensteller: direkt vor dem PC-Register.</p>
+<p>PC-Update heißt: an der Abschlussflanke wird eine neue Adresse übernommen.</p>
+<p>Bei PC=0x100 können 0x104 und 0x10C beide bereitliegen. Genau eine Quelle bestimmt PC_D. Die andere verschwindet nicht, sie wird nur nicht übernommen.</p>
+<p>Gleich oder ungleich schaltet die Zieladdition nicht ab. Gebraucht wird ein MUX, keine zweite PC-Kopie.</p>
+<p>Beispiel: Beide Kandidaten sind 32-Bit-Adressen.</p>
+<p>PCSrc wird das Auswahlbit.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1994,7 +2247,12 @@ graph RL
 </div>
 </div>
 <aside class="notes">
-<p>Wer stellt <code>PCSrc</code>? Nur bei echtem, erfolgreichem Branch umschalten.</p>
+<p>PCSrc wählt Quelle 0 gleich PC_alt+4 oder Quelle 1 gleich Branch Target. Der Ausgang geht an PC_D. Der PC übernimmt an der Flanke.</p>
+<p>Die Zeichnung darf nach links zurückführen, die Pfeile müssen die Richtung zeigen. 0 ergibt im Beispiel 0x104, 1 ergibt 0x10C.</p>
+<p>PCSrc ist kein Adresswort und ändert keine GPR. Die Codierung 0 und 1 gilt für dieses Lehrmodell.</p>
+<p>Beispiel: Der MUX ist kombinatorisch, der PC ist der Zustandsspeicher.</p>
+<p>Als Nächstes: wer setzt dieses Bit bei beq?</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2037,7 +2295,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Zufällige ALU-Null bei <code>sub</code> darf nicht springen — nur Branch-Opcode plus Zero.</p>
+<p>Branch ist die Decoderaussage, dass der Befehl beq ist. Zero ist das aktuelle Vergleichsergebnis. PCSrc ist ihr UND, nur in diesem Basismodell.</p>
+<p>Die vier Zeilen: 0/0, 0/1 und 1/0 ergeben PCSrc=0, nur 1/1 ergibt 1. Ein sub mit Nullergebnis und Branch=0 bleibt sequenziell. jal und andere Branches brauchen eine andere Entscheidung.</p>
+<p>Das UND ist ein Ein-Bit-Gatter, nicht die ALU-Operation and. Der PC speichert den Kandidaten erst an der Flanke.</p>
+<p>Beispiel: Bei ungleichem Vergleich bleibt das schon berechnete Ziel ungewählt.</p>
+<p>Im Taken-Fall sind Branch und Zero beide eins.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2076,7 +2339,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Zero leuchtet, Branch leuchtet, AND feuert, Weiche klappt — PC übernimmt das Label.</p>
+<p>Taken heißt: der Sprung wird ausgeführt. Vor der Flanke: PC=0x100, Operanden 7 und 7, Differenz 0, Zero=1, Branch=1, PCSrc=1, Ziel 0x10C, RegWrite=0, MemWrite=0.</p>
+<p>An der Flanke wird der PC 0x10C. Register und Datenspeicher bleiben durch beq unverändert. Danach zeigen die Leitungen die Zielinstruktion und nicht mehr die Branch-Werte.</p>
+<p>Zwei Zeitpunkte gehören in die Notiz und in das Bild: vor der Flanke und nach der Flanke.</p>
+<p>Beispiel: Zero allein ohne Branch würde nicht springen.</p>
+<p>Bei ungleichen Werten wählt derselbe Offset die sequenzielle Adresse.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2116,7 +2384,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Fall-Through: lineare Fortsetzung. Eleganz reiner Kombinatorik plus einer Flanke.</p>
+<p>Not Taken heißt nicht genommener Sprung, Fall-through die lineare Fortsetzung. Das ist normale Semantik, kein Fehler.</p>
+<p>Bei PC=0x100 und Werten 7 und 9: Differenz ungleich null, Zero=0, Branch=1, PCSrc=0, PC_D=0x104. Das Ziel 0x10C darf parallel vorliegen.</p>
+<p>Vor und nach der Flanke ändern GPR und Datenspeicher sich durch dieses beq nicht. Taken und Not Taken sollen gleich aufgebaut nebeneinander stehen.</p>
+<p>Beispiel: Die Flanke übernimmt 0x104, nicht 0x10C.</p>
+<p>Ein unbedingter Aufruf braucht zusätzlich einen Linkwert.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2143,7 +2416,12 @@ graph LR
 <span id="cb8-3"><a aria-label="3"></a>  ra     = oldPC + 4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>jal</code> liegt außerhalb des Basismodells add/sub/and/or/lw/sw/beq, bis der Write-Back-Pfad für den Linkwert ergänzt ist. Die sequenzielle Schreibweise „erst PC = Target, dann ra = PC+4“ wäre falsch, weil der Linkwert den alten PC braucht.</p>
 <aside class="notes">
-<p>Vereinfachung: Wir blenden die <code>jal</code>-Write-Back-Kabel hier aus; Einheit 4 und Ripes zeigen den Link-Pfad.</p>
+<p>jal liegt außerhalb des Basissubsets. Beide Ergebnisse kommen aus dem alten PC: nextPC = PC_alt + Byteoffset und Linkwert = PC_alt+4.</p>
+<p>Beispiel: PC_alt=0x100, Ziel 0x180, ra wird 0x104. Nötig wären J-Immediate, unbedingte Zielwahl und ein Write-Back von PC+4. Branch AND Zero allein steuert jal nicht. Das Zwei-Wege-MemtoReg kann den Linkwert nicht liefern.</p>
+<p>ra ist der ABI-Name von x1. Der Pfad kann in Ripes sichtbar sein, gehört aber nicht unmarkiert zum Sieben-Befehle-Modell.</p>
+<p>Beispiel: Falsch wäre: erst PC setzen und danach PC+4 als Linkwert lesen.</p>
+<p>Die Basisbausteine werden jetzt zusammengefasst.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2165,7 +2443,12 @@ graph LR
 <li>Branch-Logik: Zero und AND</li>
 </ul>
 <aside class="notes">
-<p>Als Nächstes: Teilpfade zum Master-Diagramm und die Rolle der Control Unit.</p>
+<p>Zustand haben PC, Registerbank und beschreibbarer Datenspeicher. ALU, Addierer und MUX rechnen kombinatorisch.</p>
+<p>Zur Haupt-ALU kommen der PC+4-Addierer und der Branch-Zieladdierer. Drei MUX sind die Auswahlstellen dieses Basismodells, keine universelle Zahl jeder CPU. ImmGen, Branch, Zero und die Schreibfreigaben gehören in die Übersicht.</p>
+<p>Ein fehlender ImmGen würde Offsets unsichtbar machen.</p>
+<p>Beispiel: RegWrite und MemWrite entscheiden, was an der Flanke Zustand wird.</p>
+<p>Die Teilpfade werden in einer Gesamtdarstellung verbunden.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2205,7 +2488,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Finale Theorie: Steuerwerk und Datenpfad zusammen. Das vereinfachte Gesamtbild folgt nach der Ressourcen-/MUX-Zusammenfassung; danach Timing und Pipelining-Ausblick.</p>
+<p>Diese Folie leitet das Gesamtbild ein. Unterstützt sind die sieben Basisbefehle, wenn Datenwege und Steuerung zusammenpassen.</p>
+<p>Die Control Unit gehört zum Prozessor; ihr genauer Bau folgt in Einheit 6. Pipelining ist eine Strategie für höheren Durchsatz, keine ISA-Pflicht und nicht die einzige Alternative.</p>
+<p>Ein vollständiges Bild wird danach über einzelne Befehle lesbar gemacht, nicht auswendig gelernt.</p>
+<p>Beispiel: Ohne Steuerung wären die MUX unbestimmt.</p>
+<p>Warum können verschiedene Befehle dieselben Bausteine nutzen?</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2249,7 +2537,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Drei ALUs wären absurd teuer. Eine ALU dient nacheinander ganz unterschiedlichen Befehlen — das ist die Genialität der Architektur.</p>
+<p>Dieselbe Haupt-ALU rechnet beim add Daten, beim lw oder sw eine Adresse und beim beq im Lehrmodell eine Differenz. Das sind zeitlich verschiedene Instruktionen.</p>
+<p>Zwei unabhängige Rechnungen in derselben Instruktion brauchen einen weiteren Baustein. Drei ALUs wären nicht absurd, sondern eine andere Abwägung. Dieses Modell wählt gemeinsame Nutzung und Multiplexer. Konkrete Preise oder Energiemengen werden nicht behauptet.</p>
+<p>Der Vergleich und die Zieladdition laufen beim beq parallel, deshalb gibt es den Extra-Addierer.</p>
+<p>Beispiel: Ein MUX wählt, welche Rolle die ALU gerade hat.</p>
+<p>Gemeinsame Eingänge brauchen eine definierte Auswahl.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2289,7 +2582,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Zwei Quellen, ein Ziel: Kabel aufschneiden, MUX dazwischen, ein sauberes Ausgangskabel.</p>
+<p>Die drei Weichen: ALUSrc wählt RD2 oder Immediate, MemtoReg wählt ALU-Wert oder Speicherwort, PCSrc wählt PC+4 oder Branch-Ziel.</p>
+<p>Gleiche Breite bedeutet nicht gleiche Bedeutung. Ein MUX ist eine kombinatorische Auswahl. Der ungewählte Eingang muss nicht null sein. Die Stellung steht vor der Flanke fest.</p>
+<p>Kurzschlussmetaphern ersetzen die Auswahl nicht: genau eine Quelle wird weitergegeben.</p>
+<p>Beispiel: Für add gilt 0, 0 und 0 an den drei Select-Bits im Lehrmodell, mit Branch=0.</p>
+<p>Das Gesamtbild muss jede Auswahl an der richtigen Stelle zeigen.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2317,7 +2615,11 @@ graph LR
 </figure>
 </div>
 <aside class="notes">
-<p>Meisterdiagramm der Rechnerarchitektur — hier didaktisch verdichtet. Signalnamen folgen Patterson/Hennessy; in Ripes heißen einige Signale anders (Mapping-Folie).</p>
+<p>Das zentrale Diagramm ist das Lehrmodell für die sieben Befehle, angelehnt an übliche Lehrbuchzeichnungen und als eigene Darstellung zu lesen, nicht als identische Abbildung einer bestimmten Seitenzahl.</p>
+<p>Sichtbar sein müssen zwei Leseports, Write-Back mit rd, WD und RegWrite, I/S/B-ImmGen, ALUSrc, der Store-Abzweig, MemtoReg, PC+4, der Zieladdierer, Zero, das Branch-UND und der PC-MUX. PCSrc kommt aus Branch und Zero, nicht als bloßer Opcode-Draht.</p>
+<p>add, lw, sw und beq lassen sich auf diesem Bild verfolgen. Detailausschnitte sind besser als unlesbare Miniaturen.</p>
+<p>Beispiel: Datenleitungen und Steuerleitungen sind unterschiedlich gekennzeichnet.</p>
+<p>Ripes setzt dieselbe Semantik teilweise anders um; das Mapping kommt davor, nicht erst im Labor.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2369,7 +2671,11 @@ graph LR
 </table>
 <p>Don’t Care (<span class="math inline">\(X\)</span>) ist ein <strong>Entwurfskonzept</strong> der Wahrheitstabelle — der Simulator zeigt immer einen konkreten Bitwert.</p>
 <aside class="notes">
-<p>Labor: Paper-&amp;-Pencil nach P&amp;H, Verifikation in Ripes mit Mapping. Nicht erwarten, dass Zero+AND und Branch-Addierer 1:1 sichtbar sind.</p>
+<p>P&amp;H steht für Patterson und Hennessy, H&amp;H für Harris und Harris. Das sind Lehrbuchtraditionen, keine Bausteine. Das Ripes-Single-Cycle-Modell ist nicht baugleich.</p>
+<p>Im Lehrmodell vergleicht die Haupt-ALU, und ein Addierer bildet das Ziel. In Ripes prüft oft ein eigener Block die Bedingung, und die Haupt-ALU bildet PC plus Immediate. Op2 entspricht funktional ALUSrc, Op1 kann PC oder Register wählen. Der Write-Back-Mux kann ALU, Speicher und PC+4 haben. MemtoReg-Codes dürfen nicht ungeprüft übernommen werden. MemRead muss nicht als Pin erscheinen.</p>
+<p>Extended zeigt Steuerkomponenten. Ein grünes Ein-Bit-Signal ist high, ein grün aufleuchtendes Datenwort ist nicht die Zahl 1. X aus der Tabelle ist keine Farbe.</p>
+<p>Beispiel: Namen gelten für die konkret geprüfte Fassung; master-Links allein legen die Kursinstallation nicht fest.</p>
+<p>Die nächsten drei Folien wiederholen die Lehrmodellfunktion und ordnen Ripes daneben zu.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2393,7 +2699,12 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb9-1"><a aria-label="1"></a>add  t0, t1, t2  -&gt; ALUSrc = 0</span>
 <span id="cb9-2"><a aria-label="2"></a>addi t0, t1, 5   -&gt; ALUSrc = 1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>R-Type: Registerkabel. I-Type/<code>lw</code>: ImmGen-Pfad.</p>
+<p>ALUSrc=0 wählt im Lehrmodell RD2, ALUSrc=1 das Immediate. add und der Vergleich bei beq nutzen Register, lw und sw das Immediate.</p>
+<p>addi bleibt eine markierte Erweiterung. In Ripes kann beq die Haupt-ALU mit PC und Immediate speisen. Die beq-Zeile des Lehrmodells ist deshalb kein garantierter Ripes-Portwert.</p>
+<p>Für lw ist die Funktion sicher: der zweite Operand ist der Offset. Der sichtbare Name kann Op2 heißen.</p>
+<p>Beispiel: Beim add mit Werten 10 und 15 bleibt ALUSrc auf der Registerquelle.</p>
+<p>Die nächste Weiche wählt die Write-Back-Quelle, nicht den Rechenoperanden.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2418,7 +2729,12 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb10-1"><a aria-label="1"></a>add t0, t1, t2  -&gt; MemtoReg = 0</span>
 <span id="cb10-2"><a aria-label="2"></a>lw  t0, 0(s1)   -&gt; MemtoReg = 1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Ohne <code>RegWrite</code> prallt Müll am Register File ab — Don’t Care ist ungefährlich.</p>
+<p>MemtoReg=0 wählt den ALU-Wert, MemtoReg=1 das Speicherwort. add schreibt 25, lw schreibt 88. sw und beq schreiben nicht; dann ist MemtoReg X.</p>
+<p>X heißt: beide Stellungen lassen rd unverändert, solange RegWrite=0. Es ist nicht gleichzeitig 0 und 1. Für lw wäre die falsche Stellung folgenschwer: dann käme die Adresse statt 88 ins Register.</p>
+<p>Ripes hat oft eine dritte Quelle PC+4. Deren Codierung wird nur nach Versionsprüfung übernommen.</p>
+<p>Beispiel: Vor der Flanke liegt 88 am WD-Port, t0 ist noch alt.</p>
+<p>PCSrc bestimmt die nächste Adresse, nicht den Rückgabewert.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2442,7 +2758,12 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb11-1"><a aria-label="1"></a>add ...              -&gt; PCSrc = 0</span>
 <span id="cb11-2"><a aria-label="2"></a>beq ... (genommen)   -&gt; PCSrc = 1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Navigator des Prozessors: linear weiter oder Sprung — Control plus Live-Ergebnis der ALU.</p>
+<p>PCSrc=0 wählt PC_alt+4, PCSrc=1 das Branch-Ziel. Im Basismodell ist PCSrc = Branch UND Zero.</p>
+<p>add, lw und sw bleiben sequenziell. beq springt nur bei Gleichheit. Ein sub mit Zero=1 und Branch=0 springt nicht. Die Übernahme erfolgt an der Flanke.</p>
+<p>jal und weitere Brancharten brauchen mehr Entscheidungslogik. Nicht die einzige Weiche hängt an Zero; ALUSrc und MemtoReg sind unabhängig.</p>
+<p>Beispiel: Bei PC=0x100 und Gleichheit wird 0x10C übernommen, bei Ungleichheit 0x104.</p>
+<p>Diese Signale erzeugt die Decodierung der aktuellen Instruktion.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2463,6 +2784,112 @@ graph LR
 <li>Liest den Opcode und erzeugt die Weichen-/Speicher-Signale</li>
 <li>Detailbau der Control Unit: Einheit 6</li>
 </ul>
+<table class="caption-top">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 12%">
+<col style="width: 13%">
+<col style="width: 10%">
+<col style="width: 6%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Befehl</th>
+<th style="text-align: center;">ALUSrc</th>
+<th style="text-align: center;">MemtoReg</th>
+<th style="text-align: center;">RegWrite</th>
+<th style="text-align: center;">MemRead</th>
+<th style="text-align: center;">MemWrite</th>
+<th style="text-align: center;">Branch</th>
+<th style="text-align: center;">ALU</th>
+<th style="text-align: center;">PCSrc</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>add</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">ADD</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td>sub</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">SUB</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="odd">
+<td>and</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">AND</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td>or</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">OR</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="odd">
+<td>lw</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">ADD</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="even">
+<td>sw</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">X</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">ADD</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr class="odd">
+<td>beq</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">X</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">SUB</td>
+<td style="text-align: center;">Zero</td>
+</tr>
+</tbody>
+</table>
+<p>X ist eine für das Ergebnis unerhebliche Auswahl, kein unbekannter Draht. Bei <code>beq</code> ist PCSrc gleich Zero. Bei <code>sub</code> mit Ergebnis null bleibt PCSrc 0, weil Branch 0 ist.</p>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
 <div>
@@ -2483,7 +2910,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Dirigent von oben: Opcode analysieren, Multiplexer und Schreibfreigaben in Nanosekunden setzen.</p>
+<p>RegWrite, MemRead, MemWrite, ALUSrc, Branch und die ALU-Operation sind die Lehrmodell-Signale. ALUOp und ALUControl sind interne Codierungen, keine ISA-Leitungen. Die konkrete Bitcodierung folgt in Einheit 6.</p>
+<p>opcode gibt die Klasse, funct3 und funct7 die ALU-Funktion. PCSrc ist Branch und Zero, nicht der Opcode allein.</p>
+<p>Die Tabelle auf der Folie gilt für das Basissubset. Kombinatorische Verzögerung ist keine gemessene Nanosekunden-Zahl einer Technologie.</p>
+<p>Beispiel: Ripes-Namen stehen neben der Funktion, nicht statt ihrer.</p>
+<p>Der längste nötige Weg begrenzt den Abstand zur nächsten Flanke.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2502,7 +2934,7 @@ graph LR
 <li>Single-Cycle: alles in einem Takt</li>
 <li>Nächste Flanke erst, wenn das letzte Signal stabil ist</li>
 <li>Taktperiode <span class="math inline">\(\ge\)</span> kritischer Pfad (längste Verzögerungskette)</li>
-<li>Zu schneller Takt: nächster Fetch vor Write-Back — Absturz</li>
+<li>Zu kurzer Takt kann einen noch nicht stabilen Wert übernehmen; das ist kein garantierter Absturz durch „Fetch vor Write-Back“</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -2524,7 +2956,12 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Die Taktfrequenz muss zum langsamsten Befehl passen — Critical Path diktiert die MHz.</p>
+<p>Der kritische Pfad ist der zeitbestimmende Weg bis zur nächsten korrekten Zustandsübernahme.</p>
+<p>Eine vereinfachte Bedingung ist Taktperiode mindestens Clock-to-Q plus längste kombinatorische Verzögerung plus Setup-Zeit. Parallele Zweige werden mit dem späteren Eingang zusammengeführt, nicht addiert. Clock-Skew ist hier nicht erfunden.</p>
+<p>Ein zu kurzer Takt kann einen instabilen Wert übernehmen. Das ist nicht automatisch ein Absturz, weil Fetch vor Write-Back käme. Ripes-Clock misst keine Gatterzeiten.</p>
+<p>Beispiel: Die Zahlen der nächsten Folie sind synthetische Lehrwerte.</p>
+<p>Welche Instruktion braucht unter diesen Annahmen die längste Periode?</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2540,8 +2977,9 @@ graph TD
 <section id="welcher-befehl-ist-der-langsamste" class="slide level2">
 <h2>Welcher Befehl ist der langsamste?</h2>
 <ul>
-<li><code>add</code>: Fetch → Decode → ALU → Write-Back (RAM idle)</li>
-<li><code>beq</code>: Fetch → Decode → ALU/Branch-Addierer → PC</li>
+<li>Lehrwerte, keine Messung: add 5,5 ns, beq 5,7 ns, lw 7,3 ns</li>
+<li>Gemeinsame Periode mindestens 7,3 ns, idealisiert etwa 137 MHz</li>
+<li>Ripes misst diese Zeiten nicht</li>
 <li>Verlierer: <code>lw</code> — alle Stationen inkl. Data-Memory</li>
 <li>Gesamte CPU muss so langsam takten, dass <code>lw</code> in einen Zyklus passt</li>
 </ul>
@@ -2565,7 +3003,11 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Zwei Speicherzugriffe plus langes Write-Back-Kabel: <code>lw</code> bestimmt den kritischen Pfad.</p>
+<p>Unter den angegebenen Lehrverzögerungen braucht add 5,5 ns bis zur Registerübernahme, beq 5,7 ns bis zur PC-Übernahme und lw 7,3 ns. Die ideale Grenze 1/7,3 ns liegt bei etwa 137 MHz.</p>
+<p>Beim beq laufen Zieladdition und Vergleich parallel. Beim lw liegt der ALU-Mux im B-Zweig; die Basis auf A kann später ankommen als das Immediate. Die Zeiten sind keine Ripes-Messung und kein Datenblatt.</p>
+<p>Jede Instruktion braucht im Single-Cycle trotzdem einen Zyklus derselben Periode. CPI, cycles per instruction, ist hier 1, die Periode ist lang.</p>
+<p>Beispiel: Ein Store ohne Extra-Schreiblatenz bleibt in diesem Zahlenbeispiel unter 7,3 ns.</p>
+<p>Dieselbe lange Periode gilt auch für Befehle, die früher fertig wären.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2587,7 +3029,12 @@ graph LR
 <li>Für hohe GHz: Architektur umbauen</li>
 </ul>
 <aside class="notes">
-<p>Todesstoß des Single-Cycle in der Praxis: teures Silizium steht oft still.</p>
+<p>Die Grenze des Modells ist die gemeinsame Periode: ein add kann früher stabil sein und wird trotzdem erst an der lw-bestimmten Flanke übernommen.</p>
+<p>Daraus folgt eine begrenzte Instruktionsrate, nicht dass alle Transistoren stillstehen oder Single-Cycle unbrauchbar wäre. Das Modell ist einfach und didaktisch klar. Multi-Cycle und Pipeline sind Alternativen.</p>
+<p>Gigahertz ist kein automatisches Gütemaß. 137 MHz gehören nur zum Lehrbeispiel.</p>
+<p>Beispiel: Der add-Pfad ist kürzer, der Takt richtet sich nach lw.</p>
+<p>Eine Pipeline kann Tätigkeiten verschiedener Instruktionen überlappen.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2629,7 +3076,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Heute bleibt das übersichtliche Single-Cycle-Modell. Pipelining kommt in Einheit 7.</p>
+<p>Die fünf logischen Tätigkeiten können durch Pipeline-Register zu Stufen werden. Die Instruktion zerfällt dabei nicht in fünf Befehle.</p>
+<p>Während eine Instruktion in ID ist, kann die nächste in IF sein. Durchsatz und Latenz sind verschieden. Ein Faktor fünf ist kein automatischer Gewinn.</p>
+<p>Stufenverzögerung, Registeraufwand und Konflikte folgen in Einheit 7. Heute bleibt das Labor beim Single-Cycle.</p>
+<p>Beispiel: Ein kleines Zeitbild zeigt überlappende Instruktionen, keine fünf Takte der alten Periode.</p>
+<p>Im Labor wird der Single-Cycle-Prozessor gewählt und die Funktion geprüft.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2651,7 +3103,12 @@ graph LR
 <li>Step-/Clock-Debugging auf den Gattern</li>
 </ul>
 <aside class="notes">
-<p>Venus bleibt für Software. Ripes macht das Lehrbuchdiagramm interaktiv.</p>
+<p>Ripes ist ein funktionaler RISC-V-Simulator. Onboarding ist der Einstieg in die Bedienung. Clock schaltet den Zustand fort, Tracing protokolliert beobachtete Werte.</p>
+<p>Zu sehen sind digitale Portwerte, keine Ströme auf realen Gattern und keine Gatterlaufzeiten. Version und Installationsweg gelten für die im Kurs verwendete Fassung, nicht für jeden master-Stand.</p>
+<p>Das Bild ist nicht exakt die Lehrzeichnung. Die Labore liegen als Dateien mit erwarteten Werten vor.</p>
+<p>Beispiel: Ein Clock-Schritt ist eine Zustandsfortschaltung, kein Zeitmessgerät.</p>
+<p>Venus und Ripes werden nach der jeweiligen Frage eingeordnet.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2674,7 +3131,12 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb12-1"><a aria-label="1"></a>Venus = Blick des Programmierers</span>
 <span id="cb12-2"><a aria-label="2"></a>Ripes = Blick des Chip-Designers</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Tool nach Fragestellung wählen: Algorithmus → Venus; Datenpfad → Ripes.</p>
+<p>Venus eignet sich für die beobachtbare Instruktions-, Register- und Speicherseite. Ripes ergänzt eine konkrete simulierte Mikroarchitektur. Beide sind Software.</p>
+<p>Dieselbe Assembleridee kann übertragbar sein. Direktiven, Erweiterungen, Einstieg und ecall-Verträge können abweichen. Der Exit dieser Einheit nutzt in der Ripes-Konvention a7=10, nicht den Venus-Vertrag a0=10 aus Einheit 4.</p>
+<p>Unbelegte Urteile über Bedienung werden nicht benötigt.</p>
+<p>Beispiel: Die Übungsdateien nennen die Umgebung im Kopfkommentar.</p>
+<p>Für den Datenpfad müssen Prozessor und Layout passen.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2696,7 +3158,12 @@ graph LR
 <li>5-Stage Pipeline wäre für heute irreführend</li>
 </ul>
 <aside class="notes">
-<p>Chip-Icon oben links: Single-Cycle wählen. Das ist das Ripes-Modell der installierten Version, nicht bitgleich das Folien-Subset. Signalnamen von Patterson/Hennessy, Harris/Harris und Ripes nebeneinander lesen.</p>
+<p>Gewählt wird ein 32-Bit-Single-Cycle-Prozessor. Das Extended-Layout zeigt Steuerkomponenten und Bitbreiten; Standard genügt dafür nicht immer. Die Lage von Knöpfen kann sich zwischen Versionen ändern.</p>
+<p>Die C-Erweiterung bleibt aus, damit die betrachteten Instruktionen 4 Byte lang sind. Das Disassembly prüft das. Pipeline oder reiner ISA-Interpreter ersetzen die heutige Ansicht nicht.</p>
+<p>UI heißt User Interface. Ein Screenshot wird nur verwendet, wenn er aus der geprüften Version stammt. Hier ist die Anleitung schematisch, weil kein Lauf ausgeführt wurde.</p>
+<p>Beispiel: Reset setzt den Simulationszustand zurück.</p>
+<p>Danach wird ein kleines Programm geladen.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2721,7 +3188,12 @@ graph LR
 <span id="cb13-3"><a aria-label="3"></a>    li t1<span class="op">,</span> <span class="dv">15</span></span>
 <span id="cb13-4"><a aria-label="4"></a>    <span class="bu">add</span> t2<span class="op">,</span> t0<span class="op">,</span> t1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>.text</code>-Direktiven und Mnemonics wie gewohnt. Danach Processor-Tab öffnen.</p>
+<p>.text ist eine Direktive, keine Instruktion. li ist eine Pseudoinstruktion und bei kleinen Zahlen oft ein addi. Dieses Setup liegt außerhalb der sieben Basisbefehle, der gewählte Ripes-Prozessor unterstützt es.</p>
+<p>10 und 15 werden zu 25. Im Disassembly ist zu prüfen, welche echte Instruktion gerade aktiv ist. Ein Haltepunkt oder ein Exit verhindert unklaren Fall-through.</p>
+<p>Live ohne eigenen Compile-Klick ist eine mögliche Bedienung, keine Garantie jeder Version.</p>
+<p>Beispiel: Die Datei beispiele/mct1_vl5_rtype_trace.s enthält den vollständigen Ablauf bis add a0, t0, t1.</p>
+<p>Die aktuelle Instruktion wird im Processor-Reiter betrachtet.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2737,13 +3209,18 @@ graph LR
 <section id="die-ui-datenpfad-reiter" class="slide level2">
 <h2>Die UI: Datenpfad-Reiter</h2>
 <ul>
-<li>Herzstück: Lehrbuchdiagramm (Patterson &amp; Hennessy) live</li>
+<li>Herzstück: Ripes-Single-Cycle-Implementierung, zugeordnet zum Lehrmodell</li>
 <li>Dicke Linien: 32-Bit-Daten</li>
 <li>Tracing: Clock/Step — einen Takt nach dem anderen</li>
 <li>Run vermeiden, wenn Sie Signale verstehen wollen</li>
 </ul>
 <aside class="notes">
-<p>PC links, ALU Mitte, Data Memory rechts — Clock-Tick treibt exakt einen Zyklus.</p>
+<p>Der Reiter zeigt die Ripes-Implementierung, zugeordnet zur Lehrzeichnung, nicht das Lehrbuchdiagramm selbst.</p>
+<p>Dicke Linien sind nicht ungeprüft alle 32 Bit; Tooltip oder Beschriftung nennt die Breite. Vor Clock werden PC, Befehl und vorbereitete Werte notiert. Nach Clock werden Register, Speicher und PC geprüft. Die Grafik kann danach schon die nächste Instruktion zeigen.</p>
+<p>Clock ist für die erste Beobachtung geeigneter als ein freies Run. Es gibt kein analoges Echtzeitbild.</p>
+<p>Beispiel: PC und disassemblierter Befehl müssen zusammenpassen.</p>
+<p>Zuerst werden die Datenwerte und ihre Darstellung gelesen.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2782,7 +3259,12 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Maus über Werte: oft Dezimal-Tooltip. Theorie wird messbar.</p>
+<p>10 ist 0x0A, 15 ist 0x0F, die Summe 25 ist 0x19. Führende Nullen gehören zum 32-Bit-Wort.</p>
+<p>Ein Datenwort und ein Select-Bit sind verschieden. Der angezeigte Wert ist funktional simuliert, keine Messung auf einem Chip. Die Basis der Anzeige ist versionsabhängig und nicht immer dezimal.</p>
+<p>Beobachten, während add aktuell ist. Den neuen Registerwert erst nach Clock erwarten.</p>
+<p>Beispiel: 0x00000019 am ALU-Ausgang ist 25, nicht ein Ein-Bit-Signal.</p>
+<p>Zusätzlich müssen die ausgewählten MUX-Quellen identifiziert werden.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2798,12 +3280,17 @@ graph LR
 <section id="multiplexer-in-ripes-untersuchen" class="slide level2">
 <h2>Multiplexer in Ripes untersuchen</h2>
 <ul>
-<li>Bei <code>lw</code>: MUX vor der ALU (<code>ALUSrc</code>) suchen</li>
-<li>Steuersignal prüfen: steht es auf 1?</li>
-<li>Beobachtung: ImmGen-Pfad wird zur ALU durchgeschaltet</li>
+<li>Bei <code>lw</code>: die Auswahl des zweiten ALU-Operanden der Ripes-Version prüfen</li>
+<li>Erwartung der Funktion: Immediate, nicht das zweite Registerwort</li>
+<li>Der sichtbare Portname muss nicht <code>ALUSrc</code> heißen</li>
 </ul>
 <aside class="notes">
-<p>Visuelles Feedback: Control Unit zieht am Faden, Weiche klappt — Theorie greifbar.</p>
+<p>Gesucht wird die funktionale Op2-Auswahl der verwendeten Ripes-Version, nicht blind ein Draht namens ALUSrc mit dem Wert 1.</p>
+<p>Beim lw ist der zweite ALU-Operand das Immediate. Der erste bleibt für den Load die Registerbasis. Bei einem Branch kann Ripes den PC an die Haupt-ALU legen. Grün an einem mehrbitigen Wert bedeutet Änderung oder Hervorhebung, nicht die Zahl 1.</p>
+<p>Vor Clock: beide Operanden, gewählter Eingang, Adresse. Die Codierung des Select-Bits ist versionsabhängig.</p>
+<p>Beispiel: Für lw a0, 4(s1) ist der Offset 4, nicht der Speicherinhalt.</p>
+<p>Der Store zeigt danach eine Speicheränderung ohne Register-Write-Back.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2820,15 +3307,18 @@ graph LR
 <h2>Register und RAM inspizieren</h2>
 <ul>
 <li>Seitenleisten: Registers und Memory (wie Venus)</li>
-<li>Bei <code>sw</code>: MemWrite im Diagramm auf 1, Byte im Memory-Tab aktualisiert</li>
+<li>Bei <code>sw</code> vor Clock Adresse, Schreibdaten und Freigabe prüfen; nach Clock das Wort, vier Bytes</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb14-1"><a aria-label="1"></a>Kette fuer sw t0, 0(s1):</span>
-<span id="cb14-2"><a aria-label="2"></a>1. Code tippen</span>
-<span id="cb14-3"><a aria-label="3"></a>2. Clock</span>
-<span id="cb14-4"><a aria-label="4"></a>3. MemWrite = 1 im Datenpfad</span>
-<span id="cb14-5"><a aria-label="5"></a>4. Memory-Tab: Wert liegt im RAM</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb14-1"><a aria-label="1"></a>Beobachtung fuer sw a0, 0(s1), Basis B, Daten 88:</span>
+<span id="cb14-2"><a aria-label="2"></a>1. Vor Clock: aktuelle Instruktion, Adresse B, Write Data 88, Schreibfreigabe aktiv</span>
+<span id="cb14-3"><a aria-label="3"></a>2. Clock ausfuehren</span>
+<span id="cb14-4"><a aria-label="4"></a>3. Danach: Wort an B ist 88; das Diagramm kann schon die naechste Instruktion zeigen</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Diagramm und Tabellen zusammen lesen — Store wird physisch sichtbar.</p>
+<p>Vor Clock bereitet sw die Änderung vor. Nach Clock zeigt der Speicher den neuen Zustand.</p>
+<p>Im Labor hat lw zuvor 88 nach a0 geschrieben. s1 enthält die Basis B. Bei sw a0, 0(s1) sind Adresse B, Schreibdaten 88 und die Speicherfreigabe aktiv, die Registerfreigabe nicht. Die Portnamen können von MemWrite und RegWrite abweichen.</p>
+<p>Nach Clock steht an B das Wort 88 statt 99, an B+4 bleibt 88, a0 bleibt 88. Geschrieben werden vier Bytes. Danach kann die Grafik schon die nächste Instruktion zeigen, die Freigabe also wieder 0 sein.</p>
+<p>Beispiel: Little Endian: 88 erscheint byteweise als 58 00 00 00.</p>
+<p>Mit dieser Reihenfolge folgen die eigenen Traces.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2849,7 +3339,12 @@ graph LR
 <li>Fragen: Hex auf RD1? Wert von <code>ALUSrc</code>? Wert von <code>RegWrite</code>?</li>
 </ul>
 <aside class="notes">
-<p>Reine Analyse, kein schweres Programmieren. Stimmen die Leitungen mit der Theorie?</p>
+<p>Die Datei beispiele/mct1_vl5_rtype_trace.s hält vor add a0, t0, t1 an, mit t0=50 und t1=100.</p>
+<p>Vor Clock: x5=0x32, x6=0x64, rd=x10, ALUSrc=0, MemtoReg=0, RegWrite=1, MemWrite=0, Branch=0, Ergebnis 0x96. Nach Clock: a0=150 und PC bei after_add. Die Codierung des add ist 0x00628533.</p>
+<p>li kann zu addi werden. Die Schrittzahl wird am Disassembly geprüft, nicht an Textzeilen. Der Exit nutzt a7=10 und gehört nicht zum Basissubset.</p>
+<p>Beispiel: Lehrmodellspalte und Ripes-Entsprechung bleiben getrennt. Diese Erwartung ist statisch geprüft.</p>
+<p>Die Load-Aufgabe wechselt die Write-Back-Quelle.</p>
+<p>Die Werte auf den Leitungen sind vor der Flanke kombinatorische Ergebnisse des alten Zustands. Register, Speicher und PC übernehmen nur an der Flanke und nur mit der passenden Freigabe. Ein Select-Bit wählt eine Quelle, es ist selbst kein Datenwort. Kontrollfrage: Darf ein am Schreibport anliegender Wert schon als neuer Registerinhalt gelten? Nein, erst nach der Flanke und nur bei aktiver Freigabe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2877,7 +3372,11 @@ graph LR
 <span id="cb15-4"><a aria-label="4"></a>    la s1<span class="op">,</span> werte</span>
 <span id="cb15-5"><a aria-label="5"></a>    lw a0<span class="op">,</span> <span class="dv">4</span><span class="op">(</span>s1<span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Kritischer Pfad live: ImmGen, Adress-ALU, RAM, MemtoReg — langsamster Befehl.</p>
+<p>.data und .word legen 99 an B und 88 an B+4. la lädt die Adresse B, nicht den Inhalt, und kann mehrere Instruktionen brauchen. B kommt aus der Symbolansicht und muss durch vier teilbar sein.</p>
+<p>Vor Clock bei lw a0, 4(s1): Immediate 4, Adresse B+4, Lesedaten 88, ALUSrc=1, MemtoReg=1, RegWrite=1, MemRead=1, MemWrite=0. Nach Clock ist a0=88. Die Codierung ist 0x0044A503. Danach schreibt sw a0, 0(s1) das Wort 88 an B. MemtoReg heißt im Tool nicht zwingend so.</p>
+<p>Der Load-Pfad wird funktional beobachtet. Die 7,3 ns sind das separate Lehrtiming, keine Messung an der Leitung.</p>
+<p>Beispiel: Datei: beispiele/mct1_vl5_load_store_trace.s.</p>
+<p>Zum Abschluss sichern Fragen das Verständnis.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2918,7 +3417,11 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Damit endet Einheit 5: Assembler trifft Silizium. Im Labor Single-Cycle checken und den Datenpfad auseinandernehmen.</p>
+<p>Q&amp;A heißt Questions and Answers. Fünf Kernaussagen: Felder wählen Register und Operation, die Datenpfade werden kombiniert, Freigaben bestimmen die Zustandsänderung, beq wählt den nächsten PC, und Clock trennt vorbereitete Werte vom neuen Zustand.</p>
+<p>Adresse und Load-Wert sind verschieden: B+4 ist die Adresse, 88 der Inhalt. Beim Store kommt das Datum aus RD2, obwohl ALUSrc das Immediate für die Adresse wählt. Ein sub mit Zero=1 springt nicht, wenn Branch=0 ist. Ripes liefert keine reale maximale Taktfrequenz.</p>
+<p>Die Dateien mct1_vl5_rtype_trace.s, mct1_vl5_load_store_trace.s und mct1_vl5_branch_trace.s enthalten die Haltepunkte. Einheit 6 erzeugt die Steuersignale systematisch. Diese Vorlesung endet hier.</p>
+<p>Beispiel: Bei gleichen Registerwerten 5 und 5 wird der beq-Zielpfad gewählt, bei 5 und 6 der Fall-through.</p>
+<p>Offen bleibt nur die konkrete Ripes-Version im Labor, nicht die Rechnung des Lehrmodells.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;

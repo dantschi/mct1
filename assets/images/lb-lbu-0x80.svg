@@ -8,11 +8,11 @@
     .s { fill: #86868B; font-family: Inter, sans-serif; font-size: 13px; }
   </style>
   <text class="h" x="20" y="28">Dasselbe Speicherbyte 0x80, zwei 32-Bit-Registerwerte</text>
-  <rect class="hot" x="20" y="50" width="120" height="56"/>
-  <text class="c" x="80" y="84" text-anchor="middle">RAM 0x80</text>
-  <text class="s" x="170" y="84">Bit 7 = 1</text>
-  <text class="h" x="20" y="150">lb ’ 0xFFFFFF80</text>
-  <text class="s" x="20" y="172">Vorzeichenerweiterung: Bit 7 in die oberen 24 Bits kopiert. Als Zweierkomplement 128.</text>
-  <text class="h" x="20" y="210">lbu ’ 0x00000080</text>
-  <text class="s" x="20" y="232">Nullerweiterung. Als vorzeichenlose Zahl 128. ASCII ist nur 7 Bit; 0x80 ist kein ASCII-Zeichen.</text>
+  <rect class="hot" x="20" y="50" width="140" height="56"/>
+  <text class="c" x="90" y="84" text-anchor="middle">RAM 0x80</text>
+  <text class="s" x="200" y="84">Bit 7 = 1</text>
+  <text class="h" x="20" y="150">lb ergibt 0xFFFFFF80</text>
+  <text class="s" x="20" y="172">Vorzeichenerweiterung. Als Zweierkomplement -128, nicht 128.</text>
+  <text class="h" x="20" y="210">lbu ergibt 0x00000080</text>
+  <text class="s" x="20" y="232">Nullerweiterung. Als vorzeichenlose Zahl 128. ASCII endet bei 127.</text>
 </svg>
