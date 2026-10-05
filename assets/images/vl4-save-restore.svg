@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="220" viewBox="0 0 920 220"><style>
+.b{fill:#fff;stroke:#E5E5EA;stroke-width:2}
+.h{fill:#fff;stroke:#E2001A;stroke-width:2}
+.t{fill:#1D1D1F;font-family:Inter,sans-serif;font-size:14px;font-weight:600}
+.s{fill:#86868B;font-family:Inter,sans-serif;font-size:12px}
+</style>
+<text class="t" x="16" y="28">s0 vor, waehrend und nach dem Aufruf.</text>
+<rect class="b" x="16" y="56" width="270" height="110"/>
+<text class="t" x="151" y="100" text-anchor="middle">Eintritt 99</text>
+<text class="s" x="151" y="128" text-anchor="middle">Kopie im Frame</text>
+<rect class="h" x="320" y="56" width="270" height="110"/>
+<text class="t" x="455" y="100" text-anchor="middle">Rumpf 42</text>
+<text class="s" x="455" y="128" text-anchor="middle">Backup bleibt 99</text>
+<rect class="b" x="624" y="56" width="270" height="110"/>
+<text class="t" x="759" y="100" text-anchor="middle">Rueckkehr 99</text>
+<text class="s" x="759" y="128" text-anchor="middle">a0 darf Ergebnis sein</text>
+</svg>

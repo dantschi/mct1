@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="220" viewBox="0 0 920 220"><style>
+.b{fill:#fff;stroke:#E5E5EA;stroke-width:2}
+.h{fill:#fff;stroke:#E2001A;stroke-width:2}
+.t{fill:#1D1D1F;font-family:Inter,sans-serif;font-size:14px;font-weight:600}
+.s{fill:#86868B;font-family:Inter,sans-serif;font-size:12px}
+</style>
+<text class="t" x="16" y="24">Drei Woerter plus Padding. Layout dieses Beispiels.</text>
+<rect class="b" x="40" y="48" width="420" height="28"/>
+<text class="s" x="250" y="67" text-anchor="middle">0x1000 ausserhalb, alter sp</text>
+<rect class="h" x="40" y="76" width="420" height="28"/>
+<text class="t" x="250" y="95" text-anchor="middle">12(sp) ra bei 0x0FFC</text>
+<rect class="b" x="40" y="104" width="420" height="28"/>
+<text class="t" x="250" y="123" text-anchor="middle">8(sp) s1 bei 0x0FF8</text>
+<rect class="b" x="40" y="132" width="420" height="28"/>
+<text class="t" x="250" y="151" text-anchor="middle">4(sp) s0 bei 0x0FF4</text>
+<rect class="b" x="40" y="160" width="420" height="28"/>
+<text class="s" x="250" y="179" text-anchor="middle">0(sp) Padding bei 0x0FF0</text>
+</svg>

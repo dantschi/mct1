@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="220" viewBox="0 0 920 220"><style>
+.b{fill:#fff;stroke:#E5E5EA;stroke-width:2}
+.h{fill:#fff;stroke:#E2001A;stroke-width:2}
+.t{fill:#1D1D1F;font-family:Inter,sans-serif;font-size:14px;font-weight:600}
+.s{fill:#86868B;font-family:Inter,sans-serif;font-size:12px}
+</style>
+<text class="t" x="16" y="24">Vier Zustaende, ein Register, 16 Byte.</text>
+<text class="s" x="16" y="46">Lehrwert: Eintritt 0x1000, danach sp 0x0FF0, Slot ab 0x0FFC.</text>
+<text class="t" x="16" y="90">1 addi -16</text>
+<text class="s" x="16" y="110">RAM noch ohne s0-Kopie</text>
+<text class="t" x="230" y="90">2 sw s0, 12(sp)</text>
+<text class="s" x="230" y="110">vier Bytes ab 0x0FFC</text>
+<text class="t" x="470" y="90">3 lw s0, 12(sp)</text>
+<text class="s" x="470" y="110">s0 wieder 99, sp bleibt</text>
+<text class="t" x="700" y="90">4 addi +16</text>
+<text class="s" x="700" y="110">sp wieder 0x1000</text>
+<text class="s" x="16" y="170">Padding 0x0FF0 bis 0x0FFB ist reserviert, nicht automatisch null.</text>
+<text class="s" x="16" y="194">0x1000 liegt ausserhalb des neuen Frames.</text>
+</svg>
