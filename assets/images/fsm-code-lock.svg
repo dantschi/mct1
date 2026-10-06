@@ -27,9 +27,9 @@
   <text class="s" x="210" y="92" text-anchor="middle">UP</text>
   <text class="s" x="420" y="92" text-anchor="middle">DOWN</text>
   <text class="s" x="630" y="92" text-anchor="middle">RIGHT</text>
-  <text class="s" x="16" y="180">Trace: UP, Release, DOWN, Release, RIGHT, Release ’ S0, S1, S2, S3.</text>
-  <text class="s" x="16" y="204">Halten löst kein zweites Ereignis aus. Falsche Taste und Reset führen nach S0.</text>
-  <text class="s" x="16" y="228">Keine Taste: Zustand bleibt. Mehrere Tasten gleichzeitig: kein gültiges Ereignis, Zustand bleibt.</text>
-  <text class="s" x="16" y="252">Offener Zustand S3 bleibt, bis Reset. Entprellung erzeugt das Ereignis, die FSM sieht es nur einmal.</text>
+  <text class="s" x="16" y="180">Erfolg: UP, Release, DOWN, Release, RIGHT: S0, S1, S2, S3.</text>
+  <text class="s" x="16" y="204">S0-S2: falsche einzelne Code-Taste nach S0. S3 bleibt bei UP, DOWN, RIGHT offen.</text>
+  <text class="s" x="16" y="228">LEFT ist der Reset dieser Lehrvariante und fuehrt aus jedem Zustand nach S0.</text>
+  <text class="s" x="16" y="252">Halten und mehrere Tasten erzeugen kein neues gueltiges Ereignis.</text>
   <text class="s" x="16" y="290">Selbst gezeichnetes Lehrdiagramm. LED-Farbe gehört zum Zustand, das Ereignis zur Kante.</text>
 </svg>
