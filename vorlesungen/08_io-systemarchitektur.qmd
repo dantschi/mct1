@@ -8,9 +8,14 @@ author: "Prof. Dr.-Ing. Daniel Klünder"
 #           → _handout/vorlesungen/08_io-systemarchitektur.pdf
 format: revealjs
 ---
-
 # I/O & Systemarchitektur
 
+
+::: notes
+Mikrocomputertechnik 1 verbindet das bekannte Rechenwerk mit Ein- und Ausgabe, kurz I/O für Input/Output. Heute geht es darum, Geräte über Adressen anzusprechen und Dienste einer Ausführungsumgebung zu nutzen. Vorausgesetzt sind Register, Loads und Stores sowie das vereinfachte Pipeline-Modell. Ein Betriebssystemkern wird nicht vorausgesetzt.
+
+Kontrollfrage: Liegt der Schwerpunkt auf schnellerer Arithmetik? Nein, auf der Verbindung zur Umgebung. Die nächste Folie nennt die fehlende Fähigkeit.
+:::
 ## Die Brücke zur Außenwelt
 
 - Herzlich willkommen zur achten Vorlesung in Mikrocomputertechnik 1
@@ -30,7 +35,9 @@ graph LR
 ```
 
 ::: notes
-Willkommen zu Einheit 8. Datenpfad, Control Unit und Pipelining stehen. Der Chip rechnet isoliert: Ergebnisse bleiben im Silizium. Heute: Kommunikation mit Sensoren, Aktoren und dem Betriebssystem.
+Datenpfad, Steuerwerk und Pipeline erklären, wie Befehle rechnen. Hoher Durchsatz beantwortet noch nicht, wie ein Schalter das Programm beeinflusst oder eine LED, eine Leuchtdiode, ein Ergebnis zeigt. Das bisherige Modell ist ein Lehrchip, nicht ein vollständiges System. CPU bedeutet Central Processing Unit. RISC-V ist die Befehlssatzarchitektur, kurz ISA für Instruction Set Architecture.
+
+Kontrollfrage: Bedeutet logisch korrekt schon ein fertiges Gerät? Nein. Die Agenda zerlegt die Brücke in Teilfragen.
 :::
 
 ## Agenda für den heutigen Tag
@@ -59,7 +66,9 @@ graph LR
 ```
 
 ::: notes
-Von der untersten Hardware bis zur OS-Abstraktion: LEDs, Polling vs. Interrupt, CSRs und `ecall`.
+Sechs Fragen: Wo liegt das Gerät? Wie lesen wir seine Bits? Wie warten wir? Welchen Zustand braucht eine Unterbrechung? Wie fordert Software einen Dienst an? Wie prüfen wir das im Labor? MMIO bedeutet Memory-Mapped I/O, Gerätezugriff über Adressen. CSR bedeutet Control and Status Register. OS bedeutet Operating System. ecall ist der Environment Call. Ripes zeigt Geräte, Venus die Konsole. Das sind Kursaufgaben, keine Ausschlüsse.
+
+Kontrollfrage: Sind Ripes und Venus dasselbe Modell? Nein. Zuerst der bekannte Prozessor.
 :::
 
 ## Rückblick: Der isolierte High-Speed-Chip
@@ -75,7 +84,9 @@ ohne Display und ohne Tasten: physikalisch nutzlos.
 ```
 
 ::: notes
-Die schnellste Pi-Berechnung hilft nicht, wenn das Ergebnis für immer in `s0` liegt.
+Die ALU, Arithmetic Logic Unit, rechnet. Der PC, Program Counter, hält die Befehlsadresse. RAM, Random Access Memory, ist der Arbeitsspeicher im Modell. Ein Ergebnis in s0 bleibt unsichtbar, solange kein Ausgabegerät angeschlossen ist. Daten müssen nicht ausschließlich auf einem Die liegen. Die Aussage gilt für das bisherige Modell ohne Eingabe, nicht für jeden realen Chip.
+
+Kontrollfrage: Beeinflusst ein Knopf das bisherige Programm? In diesem Modell nein. Die Metapher macht die Grenze anschaulich.
 :::
 
 ## Das Brain-in-a-Jar-Problem
@@ -87,7 +98,9 @@ Die schnellste Pi-Berechnung hilft nicht, wenn das Ergebnis für immer in `s0` l
 - Reize empfangen, Aktionen in der Welt auslösen
 
 ::: notes
-I/O = Kamera, Mikrofon und Greifarme für das isolierte Gehirn.
+Ein Sensor liefert ein elektrisches Signal, ein Aktor eine Wirkung. Das Interface übersetzt den Zustand in ein lesbares Register. Die CPU denkt nicht und besitzt keine zusätzlichen Sinnesorgane. Die Metapher motiviert nur diese fehlende Verbindung.
+
+Kontrollfrage: Liefert ein Schalter eine fertige Dezimalzahl? Nein, ein Signal, das ein Register abbildet. Als Nächstes heißt das Peripherie.
 :::
 
 ## Peripherie (Die Außenwelt)
@@ -110,11 +123,19 @@ graph LR
 ```
 
 ::: notes
-Peripherie verbindet Bits mit Physik. Ziel: ein einheitliches Ansteuerungsmodell für RISC-V.
+Peripherie meint hier Geräte für Kommunikation, Messung oder Steuerung. Speicher und interne Prozessorstrukturen sind nicht automatisch Peripherie. Ein Sensor misst, ein Aktor wirkt, ein Netzinterface kann beides. Ein Motor wird über Treiber und Leistungselektronik angesteuert, nicht direkt durch einen Registerwert an den Wicklungen.
+
+Kontrollfrage: Ist RAM Peripherie im selben Sinn wie eine LED? Nein. Eine gemeinsame Zugriffsmethode führt zu MMIO.
 :::
 
 # Memory-Mapped I/O
 
+
+::: notes
+Memory-Mapped I/O ordnet Geräteregister Adressen zu. Der Prozessor nutzt passende Speicherbefehle. Die Leitfrage lautet, woran das System RAM und Gerät unterscheidet. Decoder und Zugriff folgen.
+
+Kontrollfrage: Braucht MMIO einen eigenen Portbefehl? In diesem Modell nein. Zuerst die beiden Zugriffsarten.
+:::
 ## Wie spricht die CPU mit Peripherie?
 
 - Zwei historische Philosophien:
@@ -124,7 +145,9 @@ Peripherie verbindet Bits mit Physik. Ziel: ein einheitliches Ansteuerungsmodell
 - ARM und RISC-V: konsequent Memory-Mapped I/O
 
 ::: notes
-Spezielle I/O-Befehle vs. Illusion „Hardware ist Speicher“ — diese Wege spalten die Architekturen bis heute.
+Port-Mapped I/O nutzt einen eigenen logischen Port-Adressraum und eigene Befehle. Memory-Mapped I/O nutzt Adressen wie Speicher. x86 kann beides. RISC-V-Geräte liegen auf plattformspezifischen Adressen. Die ISA allein legt weder Gerät noch Adresse fest.
+
+Kontrollfrage: Ist MMIO die einzige mögliche Einteilung? Nein. Das x86-Beispiel zeigt den Port-Raum.
 :::
 
 ## Port-Mapped I/O (x86)
@@ -140,7 +163,9 @@ OUT DX, AL        # Byte aus AL an den Port
 ```
 
 ::: notes
-Extra-Leitungen und Sonderbefehle: normale ALU-Befehle greifen auf Ports nicht zu.
+IN und OUT adressieren einen logischen Port, nicht zwingend einen eigenen physischen Bus. DX kann die Portnummer halten, AL das Byte. COM1 und der Tastaturport 0x60 sind verschiedene historische Zuordnungen. Ein normales lw trifft diesen Port-Raum nicht. Siliziumkosten ohne Beleg bleiben weg.
+
+Kontrollfrage: Erreicht lw automatisch Port 0x60? Nein. MMIO nutzt den adressierten Pfad.
 :::
 
 ## Memory-Mapped I/O (MMIO)
@@ -151,7 +176,9 @@ Extra-Leitungen und Sonderbefehle: normale ALU-Befehle greifen auf Ports nicht z
 - Bekannte Befehle: `lw` und `sw`
 
 ::: notes
-Load/Store reichen: Thermometer und LED erscheinen als 32-Bit-Zellen im Adressraum.
+Gleiche Adressierung bedeutet nicht gleiche Zelle. Ein Geräteregister ist kein frei nutzbarer RAM. Für die hier gewählten 32-Bit-Register passen lw und sw. Andere Geräte können andere Breiten und Nebenwirkungen haben. Keine eigenen Portbefehle heißt nicht, dass keine Bridges existieren.
+
+Kontrollfrage: Darf man ein Geräteregister wie ein Arrayelement cachen? Nicht ohne Vertrag. Die Adresse wählt das Ziel.
 :::
 
 ## Die Illusion des Speichers
@@ -176,7 +203,9 @@ graph LR
 ```
 
 ::: notes
-Betrug auf dem Mainboard: gleiche Pins, andere Chip-Select-Ziele.
+Schritte: Adresse bilden, Zugriff übertragen, dekodieren, Ziel wählen, Daten liefern. Der Prozessor wird nicht betrogen. 0xF0000000 ist hier illustrativ, solange der Export sie nicht bestätigt. RV32 bedeutet nicht 32 Adresspins an jedem Chip.
+
+Kontrollfrage: Ist jede hohe Adresse ein Gerät? Nein, das legt die Karte fest. Der Decoder braucht diese Karte.
 :::
 
 ## Der Adressraum (Address Map)
@@ -194,7 +223,9 @@ lw aus 0xF0000000 -> z.B. Pixel/Sensor-Wert
 ```
 
 ::: notes
-Reviere abstecken: niedrige Adressen RAM, hoher Bereich Peripherie.
+2 hoch 32 Byte sind 4 GiB, nicht automatisch 4 dezimale GB und nicht der eingebaute RAM. Die gezeigte Aufteilung ist ein Lehrbeispiel. Der Bereich zwischen RAM und MMIO kann reserviert sein. RAM liegt nicht allgemein unten und Geräte nicht allgemein oben.
+
+Kontrollfrage: Sind 4 GiB eingebauter Speicher? Nein. Die Karte wählt einen Baustein.
 :::
 
 ## Der Adress-Decoder (Hardware)
@@ -205,7 +236,9 @@ Reviere abstecken: niedrige Adressen RAM, hoher Bereich Peripherie.
 - Decoder: AND-Netzwerk auf oberen Adressbits (z. B. `0xF...`)
 
 ::: notes
-Nur das adressierte Gerät wacht auf und bedient den Datenbus.
+SoC bedeutet System on Chip. Ein Chip Select, kurz CS, lässt den gewählten Baustein am Zugriff teilnehmen. In diesem vereinfachten Bild ist CS aktiv-high. Andere Interfaces sind aktiv-low. Obere Adressbits sind ein Lehrdecoder, keine universelle Schaltung. Zwei gleichzeitig antwortende Ziele sind zu vermeiden. Unzugeordnete Adressen sind eine Plattformfrage.
+
+Kontrollfrage: Weckt CS den Baustein aus dem Schlaf? Es wählt ihn für den Zugriff. Danach gelten Load und Store.
 :::
 
 ## Load/Store für I/O
@@ -227,11 +260,19 @@ Safe:
 ```
 
 ::: notes
-Keine neuen Opcodes: Temperatur schwellenbasiert auf LED abbilden.
+Die Adressen im Thermometerbeispiel sind fiktiv. Der Wert 100 ist ohne Einheit keine Temperatur. lw liest das Register, der Vergleich entscheidet, sw schreibt die Warn-LED. Ein Pfad, der den Alarm nur setzt, löscht ihn nicht. Für eine Schwellwertanzeige muss auch der inaktive Zustand geschrieben werden.
+
+Kontrollfrage: Schaltet der bisherige Safe-Pfad einen Alarm aus? Nicht, wenn nur der aktive Zweig schreibt. Ripes-Geräte haben eigene Verträge.
 :::
 
 # Praxis der MMIO (Schalter und LEDs)
 
+
+::: notes
+Ziel ist lauffähiger I/O-Code aus einer Registerkarte. Switches, D-Pad und LED-Matrix sind verschiedene Modelle. Eine Bitmaske isoliert Eingabebits. Ein RGB-Wort, Rot Grün Blau, ist nicht dieselbe Bitmaske.
+
+Kontrollfrage: Darf man das Schalterwort unverändert in ein Farbregister schreiben? Für die Matrix hier nein. Zuerst die Formate.
+:::
 ## Von der Theorie zur Laborpraxis
 
 - Input: D-Pad / Schalter
@@ -254,7 +295,9 @@ graph TD
 ```
 
 ::: notes
-Bit-Maskierung aus früheren Einheiten wird wieder gebraucht.
+Schritte: Gerät anlegen, Export lesen, Eingabe lesen, Bit isolieren, Farbe bilden, schreiben. volatile in C kennzeichnet extern veränderliche Zugriffe. Das ist keine Hardware-Cache-Abschaltung. Registerhaltung durch den Compiler ist eine andere Ebene als ein Daten-Cache.
+
+Kontrollfrage: Ist volatile ein Cache-Attribut? Nein. Zuerst das gepackte Schalterregister.
 :::
 
 ## Input: Switches (Bitmaske)
@@ -268,7 +311,9 @@ Bit-Maskierung aus früheren Einheiten wird wieder gebraucht.
 | 0… | SW3 | SW2 | SW1 | SW0 |
 
 ::: notes
-Nur die Switches-Komponente ist eine Bitmaske. Das D-Pad ist anders aufgebaut (nächste Folie).
+Im konkreten Aufbau mit mindestens vier Schaltern ist SW0 Bit 0. SWITCHES_0_BASE kommt aus dem Export. 0b0101 bedeutet SW0 und SW2 aktiv. Die Anzahl und die elektrische Polarität hängen vom Gerät ab. Eins muss nicht gedrückt bedeuten.
+
+Kontrollfrage: Ist 0b0101 die Farbe Rot? Nein, eine Eingabemaske. Das D-Pad trennt die Richtungen.
 :::
 
 ## Input: D-Pad (eigene Register)
@@ -279,7 +324,9 @@ Nur die Switches-Komponente ist eine Bitmaske. Das D-Pad ist anders aufgebaut (n
 - Ripes-Symbole: `D_PAD_0_UP`, `D_PAD_0_DOWN`, …
 
 ::: notes
-Nicht mit Switches verwechseln: Beim D-Pad gibt es keine Bitmaske an einer Adresse. Jede Richtung wird separat per `lw` gelesen.
+Vier Richtungen können vier Register mit Offsets 0, 4, 8 und 12 sein. Das ist am Export zu prüfen, nicht als universelle Hardware. Der Tastenzustand wird maskiert, reservierte Bits nicht als null angenommen. Basis plus Offset ist die Registeradresse.
+
+Kontrollfrage: Liegt oben im selben Wort wie die Schalter? In diesem Modell nein. Bei den Schaltern isoliert die Maske ein Bit.
 :::
 
 ## Switches auslesen und maskieren
@@ -298,7 +345,9 @@ bne t1, zero, Jump
 ```
 
 ::: notes
-Wert 5 bedeutet SW0 und SW2 an. AND filtert auf eine saubere 4 oder 0.
+0b0101 und 0b0100 ergeben 0b0100, also 4. Die Maske 4 trifft Bit 2, SW2, nicht den vierten Schalter. bne gegen zero erkennt Aktivität, obwohl das Ergebnis 4 und nicht 1 ist. Ein Vergleich des ganzen Wortes mit 4 scheitert, wenn zusätzlich SW0 aktiv ist. s1 hält die Basis, t0 den Rohwert, t1 das Maskenergebnis.
+
+Kontrollfrage: Ist das Ergebnis nach andi immer 0 oder 1? Hier 0 oder 4. Das D-Pad wählt zuerst das Register.
 :::
 
 ## D-Pad auslesen (eine Richtung)
@@ -313,7 +362,9 @@ bne t0, zero, UpPressed
 ```
 
 ::: notes
-Prüfen Sie den LSB bzw. den ganzen Wortwert auf $\neq 0$. Nach dem Erkennen: warten, bis die Taste wieder losgelassen ist (Release), sonst rauscht ein Klick durch mehrere Zustände.
+Jede Richtung ist ein eigener lw. Wenn nur das niederwertige Bit, das LSB, den Zustand trägt, reicht ein Vergleich des ganzen Wortes mit ungleich null nicht. andi mit 1 isoliert es. Langes Halten ist ein Pegel. Ein Zähler braucht die Freigabe, sonst zählt er bei jeder Schleife erneut. Warten auf Loslassen ist noch keine mechanische Entprellung.
+
+Kontrollfrage: Zählt ein gehaltener Pegel mehrfach? In einer naiven Schleife ja. Die Matrix braucht ein Farbwort.
 :::
 
 ## Output: Die LED-Matrix
@@ -336,7 +387,9 @@ graph LR
 ```
 
 ::: notes
-Hex-Farbe per Store Word: Computergrafik auf unterster Ebene.
+Ein Pixel ist hier ein 32-Bit-Farbregister. 0x00RRGGBB bedeutet je ein Byte Rot, Grün und Blau. 0x00FF0000 ist Rot, 0x0000FF00 Grün. Ein Store schaltet die Anzeige im Modell, er brennt nichts dauerhaft ein. Die Adresse ist Basis plus 4 mal Index, wenn der Index gültig ist.
+
+Kontrollfrage: Ist die Maske 8 schon Rot? Nein. Eingaben können sich ohne Store ändern.
 :::
 
 ## Flüchtigkeit von I/O-Registern (Volatile)
@@ -351,7 +404,9 @@ I/O: Fenster — die Welt draußen ändert sich ständig.
 ```
 
 ::: notes
-Zwei aufeinanderfolgende `lw` können verschiedene Werte liefern.
+Ein MMIO-Register kann zwischen zwei Lesungen einen anderen Wert liefern, weil das Gerät den Zustand ändert. Das ist keine Datenverlust-Flüchtigkeit ohne Strom. Auch RAM kann sich durch DMA, Direct Memory Access, oder andere Kerne ändern. Manche Zugriffe haben Nebenwirkungen. volatile ist der C-Qualifizierer für wiederholte Zugriffe, nicht die elektrische Eigenschaft selbst.
+
+Kontrollfrage: Bleibt ein Tasterregister zwischen zwei lw garantiert gleich? Nein. Der Compiler darf die Wiederholung nicht wegoptimieren.
 :::
 
 ## Caching-Gefahren bei I/O
@@ -372,7 +427,9 @@ volatile int *button = (volatile int *)0xF0000000;
 ```
 
 ::: notes
-`volatile` hindert den Compiler daran, wiederholte Zugriffe zu streichen. Es macht den Zugriff nicht automatisch uncached und ersetzt weder `FENCE` noch Synchronisation mit DMA oder anderen Kernen. „Jedes `lw` ist ein Buszugriff“ gilt nur im uncached-MMIO-Modell dieser Folie.
+Ohne volatile kann der Compiler eine wiederholte Abfrage in ein Register ziehen. Das ist nicht nur ein -O3-Thema. volatile ist keine Speicherbarriere und keine Thread-Sperre. Die Aussage, jedes lw sei ein Buszugriff, gilt hier nur für das uncached-MMIO-Lehrmodell. Cacheattribute und Speicherordnung sind weitere Ebenen.
+
+Kontrollfrage: Schaltet volatile den Cache aus? Nein. Im Labor wird der Zugriff sichtbar.
 :::
 
 ## I/O-Module in Ripes (Vorschau)
@@ -383,7 +440,9 @@ volatile int *button = (volatile int *)0xF0000000;
 - Mausklick auf Schalter → Bit im gespiegelten Adressraum
 
 ::: notes
-Graue Registerzahlen verlassen: Hardware-Komponenten visuell verdrahten.
+Der I/O-Tab modelliert Register und sichtbare Wirkungen. Er simuliert nicht automatisch mechanisches Prellen oder eine Interrupt-Leitung. Eine Schalteränderung erscheint beim nächsten passenden Read. Ohne Screenshot dieser Version bleibt die Oberfläche schematisch. Ripes wurde hier nicht ausgeführt.
+
+Kontrollfrage: Beweist ein Klick im Tab einen IRQ? Nein. Der Adressvertrag folgt.
 :::
 
 ## Das Memory-Map-Setup
@@ -398,7 +457,9 @@ Graue Registerzahlen verlassen: Hardware-Komponenten visuell verdrahten.
 ```
 
 ::: notes
-In Ripes die Basisadresse der Komponente prüfen — sonst Heap statt LED.
+Base Address, Offset und ein Board Support Package, kurz BSP, verbinden Karte und Code. Feste typische Adressen sind illustrative Snapshots. Eine falsche Adresse kann RAM, ein anderes Gerät, eine Lücke oder eine Fehlerreaktion treffen. Sie landet nicht zwingend im Heap. Nach einer neuen Geräteanlage müssen die Exports erneut gelesen werden.
+
+Kontrollfrage: Ist 0xF0000000 immer die Schalterbasis? Nein. Damit kann das erste Programm geschrieben werden.
 :::
 
 ## Feedback-Loop (Das Echo)
@@ -407,17 +468,26 @@ In Ripes die Basisadresse der Komponente prüfen — sonst Heap statt LED.
 - Endlosschleife: `lw` Schalter, `sw` LED, Jump
 
 ```asm
-li s1, 0xF0000000   # Schalter
-li s2, 0xF0000020   # LED
-
+# Illustrative Adressen nur, wenn der Export sie bestätigt
+li s1, SWITCHES_0_BASE
+li s2, LED_MATRIX_0_BASE
 Loop:
     lw t0, 0(s1)
-    sw t0, 0(s2)
+    andi t1, t0, 8
+    beq t1, zero, Off
+    li t2, 0x00FF0000
+    j Store
+Off:
+    li t2, 0
+Store:
+    sw t2, 0(s2)
     j Loop
 ```
 
 ::: notes
-CPU als intelligentes Übertragungskabel: Load, Store, Jump.
+Das Echo schreibt nicht den Rohwert in die Matrix. SW3, Maske 8, wählt Rot 0x00FF0000, sonst Schwarz 0. Andere Schalter ändern diese eine Zelle nicht. Das Programm zeigt einen Pegel. Ein gehaltener Schalter bleibt sichtbar, ohne zu zählen. Die Endlosschleife ist für diese Anzeige beabsichtigt. Das vollständige Programm steht in beispiele/vl8_sw3_rot.s.
+
+Kontrollfrage: Was schreibt 0b1101? Rot, weil Bit 3 gesetzt ist. Zählen macht Prellen relevant.
 :::
 
 ## Entprellung (Debouncing)
@@ -428,7 +498,9 @@ CPU als intelligentes Übertragungskabel: Load, Store, Jump.
 - Ein menschlicher Klick wird als Dutzende Klicks gezählt
 
 ::: notes
-Counter-Variablen explodieren ohne Entprellung.
+Mechanisches Prellen ist ein mehrfaches Öffnen und Schließen des Kontakts. Rohsignal, stabiler Zustand und gezähltes Ereignis sind verschieden. Ein Echo ohne Zähler erzeugt nicht von selbst Dutzende Klicks. Eine Maus im Simulator muss nicht prellen. Zeitwerte ohne gemessenen Takt bleiben illustrativ. Die Pipeline fragt nicht allgemein milliardenfach pro Sekunde ab.
+
+Kontrollfrage: Ist jede Flanke ein Klick? Nur wenn die Erkennung sie so zählt. Simulator und reale Kontakte werden getrennt.
 :::
 
 ## Software-Debouncing
@@ -448,11 +520,19 @@ Delay:
 ```
 
 ::: notes
-Software-Debouncing: nach der ersten Flanke warten, dann sauber weiterlesen.
+10000 Schleifeniterationen sind ohne Takt und CPI, Cycles per Instruction, keine belegte Wartezeit von 20 ms. Für stabile Simulatorpegel genügt Warten auf Druck und danach auf Freigabe. Die Folge 0,0,1,1,1,0,0,1,0 ergibt zwei Ereignisse. Eine Prellfolge 0,1,0,1 kann mehrfach zählen. Eine zeitbasierte Entprellung braucht eine definierte Zeitquelle und eine Stabilitätsdauer. Die wird hier nicht mit einer erfundenen Timeradresse implementiert.
+
+Kontrollfrage: Ist Druck-und-Freigabe schon Entprellung? Nein. Als Nächstes die Frage, wie oft die CPU prüft.
 :::
 
 # Polling vs. Interrupts
 
+
+::: notes
+Polling ist die programmgesteuerte Abfrage. Ein Interrupt ist ein gemeldetes Ereignis, das unter erfüllten Bedingungen den Ablauf unterbricht. Die Wahl hängt von Häufigkeit, Reaktionszeit, Hardware und Aufwand ab. Die Leitfrage ist, ob zwischen Ereignissen andere Arbeit möglich ist.
+
+Kontrollfrage: Ist Interrupt immer besser? Nein. Zuerst die zwei Wartebilder.
+:::
 ## Aktives Warten vs. Aufwecken
 
 - Ineffizienz im Echo-Design: Busy Waiting
@@ -474,7 +554,9 @@ graph LR
 ```
 
 ::: notes
-Phase 3 beginnt: Polling verschwendet Energie. Als Nächstes das Interrupt-System moderner Computer.
+Busy Waiting wiederholt die Abfrage ohne andere Arbeit. Polling kann auch periodisch zwischen Aufgaben stattfinden. Ein Interrupt kann Arbeit unterbrechen. Schlafen ist keine Voraussetzung. Energie wird nicht automatisch gespart, wenn danach weitergerechnet wird. Exceptions nutzen denselben Trap-Rahmen und folgen später.
+
+Kontrollfrage: Ist jedes Polling Busy Waiting? Nein. Die Größenordnung der Wartezeit folgt.
 :::
 
 ## Das Problem des Wartens
@@ -490,7 +572,9 @@ Wartet die CPU auf uns, vergehen für sie "Jahrzehnte".
 ```
 
 ::: notes
-Hardwarewelt blitzschnell, physische Welt im Vergleich im Koma. Ein Tastendruck ist für die CPU ein Ereignis alle paar "Jahrhunderte". Was macht der Prozessor in den Milliarden Zyklen dazwischen?
+4 GHz mal 2 Sekunden sind 8 Milliarden Takte. Das ist ein hypothetisches Beispiel, kein Ripes-Takt. Takte sind nicht automatisch Befehle. Dafür brauchte man CPI und den Schleifenaufbau. In dieser Zeit kann gerechnet, periodisch geprüft oder in einem geeigneten System gewartet werden.
+
+Kontrollfrage: Sind 8 Milliarden Takte 8 Milliarden Abfragen? Nein. Die einfachste Implementierung prüft ununterbrochen.
 :::
 
 ## Polling (Busy Waiting)
@@ -501,7 +585,9 @@ Hardwarewelt blitzschnell, physische Welt im Vergleich im Koma. Ein Tastendruck 
 - CPU fragt in einer Endlosschleife das MMIO-Register ab, bis Bit = 1
 
 ::: notes
-Geschäftiges Warten: ununterbrochen Load, Prüfen, Branch. Das klassische "Sind wir schon da?"-Syndrom.
+Die Schleife liest, prüft und springt zurück. Eine Abfrage ist nicht nutzlos. Eine sehr hohe Frequenz kann im Verhältnis zum Gerät unnötig sein. Für kurze Wartezeiten kann Busy Waiting vertretbar sein. Für lange Pausen blockiert es diesen Programmfluss.
+
+Kontrollfrage: Ist die Rückschleife ein Fehler? Nicht grundsätzlich. Der Assembler macht sie konkret.
 :::
 
 ## Polling in Assembler
@@ -520,7 +606,9 @@ Wait:
 ```
 
 ::: notes
-Load und Branch milliardenfach: sinnlose Abfragen, während der Mensch überlegt.
+Die Adresse kommt aus dem Export. Geprüft wird ein gewähltes Bit, nicht irgendein Rohwert ungleich null. Bitposition 1 ist der Wert 2, nicht dasselbe wie der Zahlenwert 1. Kommt nie ein Ereignis, bleibt die Schleife. Eine gehaltene Taste löst nach dem Verlassen ohne Freigabeprüfung erneut aus.
+
+Kontrollfrage: Was passiert ohne Ereignis? Die Schleife läuft weiter. Die Kosten werden gegen Alternativen gestellt.
 :::
 
 ## Die Nachteile von Polling
@@ -542,7 +630,9 @@ graph TD
 ```
 
 ::: notes
-Busy Waiting hält einen Kern beschäftigt. Polling in Embedded-Systemen bleibt eine normale Methode, wenn die Periode und die übrige Arbeit festliegen.
+Periodisches Polling ist legitim. Die Grafik darf nicht jedes Polling als Blockade zeichnen. Busy Waiting, periodische Abfrage und Interrupt unterscheiden sich in Aufwand, Reaktionszeit und nötiger Hardware. Bei periodischer Abfrage kann die zusätzliche Wartezeit etwa eine Periode betragen, plus Bearbeitung.
+
+Kontrollfrage: Verhindert Polling Multitasking? Nicht grundsätzlich. Eine Gerätemeldung kann die Nachfrage ersetzen.
 :::
 
 ## Die Hardware-Lösung: Die Türklingel
@@ -553,7 +643,9 @@ Busy Waiting hält einen Kern beschäftigt. Polling in Embedded-Systemen bleibt 
 - Rolle umkehren: Peripherie meldet sich, wenn Daten da sind
 
 ::: notes
-Aktiv warten vs. Ereignis-getrieben: CPU widmet sich nützlicher Arbeit, bis das Gerät signalisiert.
+Die Klingel ist nur die Meldung. Die Bearbeitung ist die Routine. Eine IRQ, Interrupt Request, braucht Aktivierung, Entscheidung und einen Handler. Nicht jede Peripherie und nicht die Ripes-Schalter besitzen automatisch eine Interrupt-Leitung.
+
+Kontrollfrage: Verarbeitet die Klingel das Paket? Nein. Der Begriff Interrupt folgt.
 :::
 
 ## Einführung von Interrupts
@@ -575,7 +667,9 @@ graph LR
 ```
 
 ::: notes
-Rückgrat moderner Betriebssysteme: asynchrones Aufwecken statt Busy Waiting.
+Ein Interrupt kann eine Flanke, ein Pegel, ein Controller oder ein interner Timer sein, nicht nur ein Stromimpuls. Im vereinfachten M-Mode-Modell zählen Pending, Quellenfreigabe und das globale MIE, Machine Interrupt Enable. Die Hardware rettet nicht alle x-Register. Ein Taster-IRQ wird nur versprochen, wenn das Gerät ihn nachweislich hat. Das ist hier nicht belegt.
+
+Kontrollfrage: Sichert der Trap t0? Nein. Der Zeitablauf folgt.
 :::
 
 ## Der Ablauf eines Interrupts
@@ -599,7 +693,9 @@ graph LR
 ```
 
 ::: notes
-Zeitstrahl: Spiel läuft, Leertaste feuert Interrupt, ISR puffert den Event, `mret` setzt unsichtbar fort.
+Der Ablauf ist Nutzprogramm, angenommene Anforderung, Hardwareeintritt, Kontextrettung, Behandlung, Wiederherstellung und Rückkehr. Zwischen Ereignis und Handler kann Latenz liegen. mret gilt für den M-Mode-Handler dieses Modells. Die Quittierung hängt vom Gerät ab. Bei einem Interrupt wird mepc nicht pauschal um 4 erhöht.
+
+Kontrollfrage: Beginnt die ISR im selben Moment wie der Tastendruck? Nicht zwingend. Nicht jede Unterbrechung ist asynchron.
 :::
 
 ## Exceptions vs. Interrupts
@@ -612,7 +708,9 @@ Zeitstrahl: Spiel läuft, Leertaste feuert Interrupt, ISR puffert den Event, `mr
 | Beispiel | Illegal Instr., Access Fault | Timer, Tastendruck |
 
 ::: notes
-Interrupts von außen und asynchron; Exceptions von innen und synchron am fehlerhaften Befehl. Beide unterbrechen — Ursachen verschieden.
+Eine Exception ist einem Befehl zugeordnet. Ein Interrupt ist gegenüber diesem Befehlsstrom asynchron. Intern und extern als einzige Einteilung ist falsch, etwa bei einem Timer oder einem Speicherfehler. ecall ist eine absichtliche Exception, kein Fehler.
+
+Kontrollfrage: Ist jeder Trap ein Fehler? Nein. Typische Exceptions folgen.
 :::
 
 ## Exceptions im Detail
@@ -629,7 +727,9 @@ int crash = *ptr;   /* typisch: Access Fault */
 ```
 
 ::: notes
-Nullpointer: Memory-Unit alarmiert. Bei RISC-V Integer-Division durch 0 entsteht kein Trap (Quotient = all-1s).
+Illegal Instruction kann auch ein unerlaubter CSR-Zugriff sein, nicht nur ein unbekannter Opcode. Ein Access Fault ist nicht nur ein System ohne MMU. MMU bedeutet Memory Management Unit. Ein Page Fault betrifft Übersetzung oder Rechte. Ein Nullzeiger in C hat undefiniertes Verhalten und ist kein garantierter Access Fault. Adresse 0 kann im Simulator gültig sein. Eine Integerdivision durch null in der M-Erweiterung erzeugt keinen Trap. Der Quotient ist definiert, nicht eine Exception.
+
+Kontrollfrage: Stürzt Division durch null in RV32M ab? Nein. Beide Klassen heißen Traps.
 :::
 
 ## Der Regenschirm-Begriff: Traps
@@ -656,7 +756,9 @@ graph TD
 ```
 
 ::: notes
-In der RISC-V-Spezifikation: Trap = jedes erzwungene Verlassen des normalen Programmflusses Richtung OS/Handler.
+Ein Trap übergibt den Kontrollfluss wegen Exception oder Interrupt. Ein Syscall ist eine reguläre Anfrage, kein Notfall. Auch Firmware ohne OS kann Traps behandeln. Ein Branch ist gewöhnlicher Programmfluss. Der Trap-Eintritt wird durch das Ereignis bestimmt.
+
+Kontrollfrage: Braucht jeder Trap Linux? Nein. Der Hardwarezustand folgt.
 :::
 
 ## Was passiert bei einem Trap?
@@ -671,7 +773,9 @@ an eine vom Betriebssystem vorbereitete Adresse.
 ```
 
 ::: notes
-Drei Hardware-Schritte: PC sichern, Pipeline säubern, PC auf Rettungscode setzen.
+Im benannten M-Mode-Modell werden Rückkehradresse, Ursache und Status festgehalten. Der Handler liegt am konfigurierten Ziel. Ein Pipeline-Flush kann jüngere Wirkungen unterdrücken, ist aber nicht die Definition des Traps. Nur IF und ID zu löschen genügt nicht allgemein. IF und ID bedeuten Instruction Fetch und Decode. Das Ziel hängt vom Vector-Modus ab.
+
+Kontrollfrage: Löscht der Trap nur IF/ID? Nicht als allgemeine Regel. Die Registerrettung bleibt Software.
 :::
 
 ## Die Gefahr des Clobberings
@@ -682,11 +786,19 @@ Drei Hardware-Schritte: PC sichern, Pipeline säubern, PC auf Rettungscode setze
 - Deshalb: Handler muss jedes genutzte Register selbst sichern
 
 ::: notes
-Kein Caller bei asynchronen Interrupts: ungesicherte Temporaries zerstören den Kontext. Lösung: Kontextsicherung und CSRs.
+Clobbering heißt, einen noch benötigten Registerwert zu überschreiben. Hat das Hauptprogramm t0 gleich 7 und der Handler setzt t0 auf 99, rechnet das Programm falsch weiter. Die Funktions-ABI, Application Binary Interface, gilt für normale Aufrufe. Ein asynchron unterbrochenes Programm konnte seine temporären Register nicht vorher sichern. Ein CSR ist kein Backup der Registerbank.
+
+Kontrollfrage: Rettet die Hardware t0? Nein. Die CSRs liefern Ursache und Rückkehradresse.
 :::
 
 # Das CSR-System
 
+
+::: notes
+Ein CSR ist ein Kontroll- oder Statusregister, kein gewöhnliches x-Register. Wir brauchen Ursache, Rückkehrstelle, Einsprungziel und Freigabestatus. Schattenregister darf nur Metapher sein, keine zweite Kopie der Registerbank. Zicsr ist die Erweiterung für die Zugriffsbefehle, ohne erfundene Langform des Kürzels.
+
+Kontrollfrage: Liegt mcause in x31? Nein. Der Bedarf an diesem Zustand folgt.
+:::
 ## Schattenregister für die Notaufnahme
 
 - Zustand retten, ohne User-Register zu zerstören
@@ -709,7 +821,9 @@ graph LR
 ```
 
 ::: notes
-Phase 4: Geheim-Tresor in der CPU, den der User nicht sieht — Fundament sicherer OS-Handler.
+CSRs halten Ursache, Rückkehradresse und Statusregeln. Anwendercode kann einzelne freigegebene CSRs lesen. M-Mode ist kein x86-Ring. Die Hardware sichert keine Anwendungsdaten automatisch. Der Handler muss Register selbst erhalten.
+
+Kontrollfrage: Sind CSRs unsichtbar für jeden User-Zugriff? Nicht pauschal. Der Stackunterschied folgt.
 :::
 
 ## Die Beschränkung von RV32I
@@ -723,7 +837,9 @@ Schatten-Register: vertrauenswürdig und nicht manipulierbar.
 ```
 
 ::: notes
-Handler darf User-Registern nicht vertrauen. Deshalb separate, sichere Hardware-Register.
+RV32I hat 32 Architekturregister. x0 bleibt null. Nicht jeder Compiler nutzt alle. Timer und Puffer liegen gewöhnlich nicht als Daten in der CSR-Bank. Ein Handler darf einen vom User kontrollierten Stackzeiger sp nicht ungeprüft als privilegierten Stack verwenden. CSR-Zugriffe folgen Rechten, nicht einer absoluten Unmanipulierbarkeit.
+
+Kontrollfrage: Darf der Handler den User-sp blind nutzen? In diesem U-nach-M-Modell nein. Der Adressraum der CSRs folgt.
 :::
 
 ## Die CSRs (Control & Status Registers)
@@ -734,14 +850,16 @@ Handler darf User-Registern nicht vertrauen. Deshalb separate, sichere Hardware-
 - Normale Befehle (`add`, `lw`) greifen nicht zu
 
 ::: notes
-CSRs sind für User-Code unsichtbar und abgekapselt.
+Ein 12-Bit-Spezifikator erlaubt bis zu 4096 Adressen, nicht 4096 vorhandene Register. CSRs sind weder RAM noch MMIO. Lesen, Schreiben und zulässige Werte hängen vom einzelnen Register ab. Nicht alle sind für User-Code unsichtbar. Geeignete Zähler können lesbar sein.
+
+Kontrollfrage: Ist 4096 die Zahl der Flip-Flops? Nein. Der Modus entscheidet den Zugriff.
 :::
 
 ## Privilegienstufen (Privilege Levels)
 
 - Machine Mode (M): höchste Rechte, Boot; voller CSR-Zugriff (Firmware)
 - Supervisor Mode (S): großes OS (Linux); viele CSRs (z. B. Paging)
-- User Mode (U): Apps im Käfig; CSR-Zugriff $\rightarrow$ Trap
+- User Mode (U): Anwendungen; unerlaubte privilegierte CSR-Zugriffe erzeugen einen Trap
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -756,7 +874,9 @@ graph TD
 ```
 
 ::: notes
-Boot mit höchsten Privilegien, dann Herabstufung. Hardware verriegelt CSR-Türen im User Mode.
+M-Mode ist die fundamentale privilegierte Stufe. Supervisor und User müssen nicht auf jedem kleinen System existieren. Voller M-Zugriff erlaubt trotzdem kein beliebiges Schreiben in nur lesbare oder fehlende CSRs. Ein unerlaubter Zugriff erzeugt Illegal Instruction. Speicherschutz gegen MMIO entsteht durch Rechte oder Übersetzung, nicht allein durch den Namen User Mode.
+
+Kontrollfrage: Darf User-Code nie einen CSR lesen? Doch, wenn er freigegeben ist. Die Zugriffsbefehle folgen.
 :::
 
 ## CSR-Befehle (Zicsr)
@@ -771,7 +891,9 @@ csrrs x0, mstatus, t1  # nur Bits setzen (OR)
 ```
 
 ::: notes
-Brücke zwischen Schattenwelt und Integer-Registerbank. `csrw` überschreibt das ganze Register — Bits setzen mit `csrrs`.
+csrr ist die Kurzform von csrrs mit Quelle x0. csrw ist csrrw mit Ziel x0. MIE ist Bit 3, die Maske ist 8, nicht 1. csrrs setzt die maskierten schreibbaren Bits und erhält die anderen. Ein csrw kann das ganze Register ersetzen. Vor dem Einschalten müssen Handler und Quellen konfiguriert sein.
+
+Kontrollfrage: Setzt die Maske 1 das Bit MIE? Nein, Maske 8. Der kombinierte Zugriff vermeidet Zwischenzustände.
 :::
 
 ## Atomare CSR-Befehle
@@ -781,19 +903,22 @@ Brücke zwischen Schattenwelt und Integer-Registerbank. `csrw` überschreibt das
 - Software-seitig ununterbrechbar (eine Instruktion)
 
 ```asm
-li t1, 0x1
-csrrw t0, mstatus, t1  # t0 = alt; mstatus = t1
+# Lehrbeispiel: nur MIE (Bit 3, Maske 8) setzen, übrige Bits erhalten
+li t1, 8
+csrrs x0, mstatus, t1
 ```
 
 ::: notes
-Atomarer Austausch verhindert verlorene Bits zwischen Read und Write.
+csrrw tauscht den ganzen Wert. csrrs setzt Bits, csrrc löscht Bits. mstatus mit 1 zu überschreiben wäre falsch, weil andere Statusbits verloren gingen. Für MIE ist csrrs mit Maske 8 passend. Die Atomarität einer CSR-Instruktion ist keine Mehrkernsperre und keine Speicherbarriere.
+
+Kontrollfrage: Erhält csrrw automatisch alle übrigen Bits? Nein. Die Trap-Register folgen.
 :::
 
 ## CSR: mtvec (Trap-Vector)
 
 - Vier Kern-CSRs für Trap-Handling
-- `mtvec`: Basisadresse der ISR
-- Bei Trap: Hardware kopiert `mtvec` in den PC
+- `mtvec`: BASE und MODE
+- Direct: Trapziel ist BASE, nicht eine blinde Kopie des ganzen Registers
 
 ```text
 Boot des OS:
@@ -802,7 +927,9 @@ Boot des OS:
 ```
 
 ::: notes
-Zentrale Notaufnahme-Adresse: Hardware springt blind dorthin.
+mtvec enthält BASE und MODE. Im Direct-Modus gehen alle Traps nach BASE. Im Vectored-Modus gehen Interrupts nach BASE plus 4 mal Ursache, Exceptions weiterhin nach BASE. Die Hardware kopiert nicht blind das ganze Register in den PC. Das Label muss ausgerichtet sein. Ob Venus diesen CSR-Zugriff ausführt, ist nicht belegt.
+
+Kontrollfrage: Ist das Ziel immer exakt der Registerinhalt? Nein, es hängt vom Modus ab. Die Fortsetzungsstelle folgt.
 :::
 
 ## CSR: mepc (Exception PC)
@@ -814,7 +941,9 @@ Zentrale Notaufnahme-Adresse: Hardware springt blind dorthin.
 - Bei einem Interrupt die Fortsetzungsadresse in `mepc` nicht pauschal erhöhen
 
 ::: notes
-`mepc` = Rückflugticket. Ohne +4 kehrt `mret` zum selben `ecall` zurück. Simulatoren wie Venus erledigen das intern.
+Bei einem Interrupt bleibt die gespeicherte Fortsetzungsadresse. Ein bewusst konsumierter 32-Bit-ecall wird um 4 erhöht, weil der Befehl selbst nicht wiederholt werden soll. Ein zu wiederholender Fehler behält die Fehleradresse. ecall bleibt auch mit C-Erweiterung 32 Bit lang. Venus verbirgt diese Fortsetzung und beweist damit kein sichtbares mepc.
+
+Kontrollfrage: Darf jeder Handler mepc um 4 erhöhen? Nein. Die Ursache entscheidet die Strategie.
 :::
 
 ## CSR: mcause (Cause)
@@ -831,13 +960,16 @@ beq t0, t1, Syscall   # nach Interrupt-Bit-Check
 ```
 
 ::: notes
-Erste Handlung der ISR: Interrupt-Bit und Exception-Code lesen, dann abzweigen.
+Bei RV32 ist Bit 31 das Interrupt-Bit. Der übrige Code ist die Ursache. 0x00000008 ist U-ecall, Ursache 8. 0x0000000B ist M-ecall, Ursache 11. 0x8000000B ist ein External Interrupt mit gesetztem Interrupt-Bit und demselben niedrigen Code 11. Der Code ersetzt nicht die Dienstnummer des Syscalls.
+
+Kontrollfrage: Bedeutet Code 11 immer denselben Trap? Nein, das Interrupt-Bit unterscheidet. mstatus begleitet Eintritt und Rückkehr.
 :::
 
 ## CSR: mstatus (Status)
 
 - Herz der Kontrolle; u. a. Bit MIE (Machine Interrupt Enable)
-- MIE = 1: Interrupts wahrnehmen; MIE = 0: taub
+- MIE = 1: maskierbare M-Interrupts können angenommen werden
+- MIE = 0: diese Interrupts sind global gesperrt; synchrone Exceptions bleiben möglich
 - Beim Trap: Hardware setzt MIE automatisch auf 0 (kein Nesting)
 
 ```{mermaid}
@@ -845,7 +977,7 @@ Erste Handlung der ISR: Interrupt-Bit und Exception-Code lesen, dann abzweigen.
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 
 graph TD
-  ON[MIE = 1 an] -->|Trap| OFF[MIE = 0 taub]
+  ON[MIE = 1] -->|Trap| OFF[MIE = 0, Exceptions bleiben]
   OFF -->|mret| ON2[MIE <- MPIE]
   style OFF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style ON fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
@@ -853,7 +985,9 @@ graph TD
 ```
 
 ::: notes
-Hauptschalter der Ohren: Notaufnahme darf nicht durch einen zweiten Interrupt zerrissen werden.
+MIE sperrt oder erlaubt maskierbare M-Interrupts im aktuellen M-Mode. Quellenfreigabe und Pending bleiben nötig. MIE gleich 0 verhindert keine synchronen Exceptions. Beim Eintritt gilt MPIE gleich bisheriges MIE, MIE gleich 0 und MPP gleich vorheriger Modus. MPIE ist Machine Previous Interrupt Enable, MPP Machine Previous Privilege. Previous ist der gespeicherte Zustand für die Rückkehr. Dieses Lehrmodell schaltet im Handler nicht erneut frei.
+
+Kontrollfrage: Macht MIE gleich 0 die CPU für ecall taub? Nein. Der Handler-Prolog folgt.
 :::
 
 ## Der Trap-Handler (ISR)
@@ -883,7 +1017,9 @@ Trap_Handler:
 Ein Handler mit Unteraufruf muss `ra` und alle möglicherweise veränderten Caller-Saved-Register sichern. Für `ra`, `t0`–`t6` und `a0`–`a7` sind das 16 Wörter, also 64 Byte. `mepc` wird nur bei einem bewusst konsumierten 4-Byte-`ecall` um 4 erhöht. Ein Interrupt setzt bei `mepc` bereits die Fortsetzungsadresse; dort nicht pauschal addieren.
 
 ::: notes
-Produktionssysteme tauschen auf den Kernel-Stack. Die Kurzform dient nur der Lesbarkeit.
+Annahmen: Direct-Modus, gültiger 16-Byte-ausgerichteter Stack, kein verschachteltes Trap, Leaf ohne call. Der Frame von 16 Byte sichert t0. csrr liest die Ursache. Danach wird t0 zurückgeladen und mret ausgeführt. Eine Quittierung ohne Gerätevertrag ist nur ein Gerüst. Ein U-nach-M-Handler kann sp mit mscratch tauschen. Das ist eine mögliche Konvention, kein universelles OS-Rezept.
+
+Kontrollfrage: Darf dieser Leaf-Handler call ausführen? Nein, ra wäre ungesichert. Ein Unteraufruf vergrößert den Frame.
 :::
 
 ## Kontext-Sicherung und Arbeit
@@ -898,7 +1034,9 @@ Produktionssysteme tauschen auf den Kernel-Stack. Die Kurzform dient nur der Les
 ```
 
 ::: notes
-Nach Sicherung nur Register benutzen, die der Frame enthält. Ein `call` ohne gesichertes `ra` kehrt nicht zuverlässig zurück.
+call verändert ra und kann t- und a-Register verändern. Unter der üblichen RV32-Integerkonvention sind ra, t0 bis t6 und a0 bis a7 sechzehn Wörter, also 64 Byte. Die Ausrichtung bleibt 16 Byte. s-Register bleiben nur erhalten, wenn die Konvention eingehalten wird. Gleitkomma liegt außerhalb. mepc wird nur nach begründeter Policy geändert. Ein IRQ-Handler muss t0 erhalten, obwohl t0 bei normalen Funktionen caller-saved ist, weil der unterbrochene Code nicht sichern konnte.
+
+Kontrollfrage: Warum t0 sichern, wenn es caller-saved ist? Weil kein Aufruf voranging. Danach die Rückkehr.
 :::
 
 ## Die Rückkehr (mret)
@@ -915,7 +1053,9 @@ Nach Sicherung nur Register benutzen, die der Frame enthält. Ein `call` ohne ge
 ```
 
 ::: notes
-Bei Trap: MPIE <- MIE, MIE <- 0. Bei `mret`: MIE <- MPIE, plus Rücksprung und Ring-Herabstufung.
+ret springt über ra. mret stellt PC aus mepc her und den Modus aus MPP. In ra kann eine gültige Funktionsadresse liegen, nur nicht die Trap-Fortsetzung. Bei M nach M wird nicht nach User abgestuft. MIE wird aus MPIE wiederhergestellt. Danach setzt das Referenzmodell MPIE auf 1 und MPP auf den niedrigsten unterstützten Modus. Das ist der gespeicherte Wert, nicht der gerade wiederhergestellte aktuelle Modus. Ein S-Mode-Handler nutzt sret.
+
+Kontrollfrage: Setzt mret immer nach User zurück? Nein. Der Gesamtablauf folgt.
 :::
 
 ## Zusammenfassung Trap-Ablauf
@@ -944,11 +1084,19 @@ graph TD
 ```
 
 ::: notes
-Hardware fängt Signale und steuert CSRs; Kernel sichert Kontext und arbeitet. Timer-Interrupts verteilen Rechenzeit.
+Ein vollständiger Durchlauf ist Ereignis, Hardwareeintritt, Rettung, Behandlung, Wiederherstellung und mret. Das ist nicht automatisch ein Prozesswechsel. Timer können Scheduling auslösen, müssen es aber nicht. Die Kontrollfrage lautet: Warum t0 sichern, obwohl Funktionen es nicht erhalten? Weil der Interrupt asynchron kommt. Die Antwort steht in der vorherigen Notiz.
+
+Kontrollfrage: Wechselt jeder Trap den Prozess? Nein. Dieselbe Idee dient absichtlichen Diensten.
 :::
 
 # Syscalls & Das Betriebssystem
 
+
+::: notes
+Ein System Call ist eine Dienstanforderung. ecall löst sie aus. Das Laborziel ist Textausgabe. Venus erhält dafür keinen vollständigen privilegierten Kernel. Der bisherige Trap erklärt den Rahmen, der Dienst den Zweck.
+
+Kontrollfrage: Ist die Konsolenausgabe schon ein Kernel? Nein. Die Schnittstelle folgt.
+:::
 ## Absichtliche Traps und der Pförtner
 
 - Software kann absichtlich einen Trap auslösen
@@ -970,7 +1118,9 @@ graph TD
 ```
 
 ::: notes
-Phase 5 beginnt: System Calls als Brücke vom User Mode in den privilegierten Kernel.
+Die Anwendung fordert einen Dienst an. Die Umgebung prüft Argumente und Rechte, führt die Operation aus und kann ein Ergebnis liefern. Das ist kein Notfall. Die ABI ist der binäre Vertrag über Register und Parameter. Ein API, Application Programming Interface, benennt die angebotenen Operationen. Venus simuliert den Dienst, ein echter User-nach-Kernel-Übergang ist ein anderes Modell.
+
+Kontrollfrage: Ist der Pförtner ein Notarzt? Nein. Als Nächstes der absichtliche Trap.
 :::
 
 ## Software-Traps
@@ -986,7 +1136,9 @@ Das Programm drückt ihn, friert sich ein und ruft das OS zu Hilfe.
 ```
 
 ::: notes
-Hardware-Interrupts sind nur die halbe Miete. User-Mode-Programme dürfen Monitor oder SSD nicht direkt anfassen — sie bitten das OS über Software-Traps um Hilfe.
+ecall fordert einen Dienst an. ebreak dient eher dem Debugging. Nicht jeder absichtliche Trap ist ein Syscall. Die Ausführung geht kontrolliert über, das Programm friert nicht ein. Ein Dienst kann später blockieren, muss es aber nicht. Direkter Gerätezugriff ist in Bare Metal üblich.
+
+Kontrollfrage: Ist ebreak ein Print? Nein. Geschützte Anwendungen überlassen Geräte oft der Umgebung.
 :::
 
 ## Warum wir das OS brauchen
@@ -996,7 +1148,9 @@ Hardware-Interrupts sind nur die halbe Miete. User-Mode-Programme dürfen Monito
 - Abstraktion: tausende Monitore/Treiber — das OS kapselt Hardware in einer universellen Schnittstelle
 
 ::: notes
-Betriebssysteme existieren wegen Sicherheit und Bequemlichkeit: `print` statt Grafikkarten-Handbuch.
+Schutz, Verwaltung und Abstraktion erklären eine Konsole. User Mode sperrt MMIO nicht automatisch. Dafür braucht es Rechte oder Übersetzung. Ein OS ist für viele Systeme typisch, für jeden eingebetteten Rechner aber nicht nötig. printf formatiert meist in einer Bibliothek und nutzt dann einen Ausgabedienst.
+
+Kontrollfrage: Ist jeder printf ein direkter Gerätestore? Nein. Der Kern stellt den Zugang bereit.
 :::
 
 ## Der Pförtner (Das Betriebssystem)
@@ -1020,7 +1174,9 @@ graph LR
 ```
 
 ::: notes
-Türsteher vor der Hardware: Zettel (Syscall) prüfen, Treiber anstoßen, Kontrolle zurückgeben.
+Ein Kernel und seine Treiber arbeiten privilegiert. RISC-V nutzt Modi, keine x86-Ringe. Der Vertrag prüft Nummer, Zeiger und Rechte. Der Kernel muss nicht jedes Gerät allein bedienen. Für den Einstieg genügt ein vereinfachtes geschütztes Modell.
+
+Kontrollfrage: Ist M-Mode Ring 0? Die Rollen ähneln sich, die Namen nicht. Der Auslösebefehl folgt.
 :::
 
 ## Der Befehl ecall
@@ -1035,7 +1191,9 @@ ecall    # aus U-Mode in den Kernel
 ```
 
 ::: notes
-Instruction Decoder erkennt `ecall`, löst absichtlich einen Trap aus: PC nach `mtvec`, Kernel erwacht.
+ecall hat keine Operanden. Die Parameter stehen vorher in Registern. Die ISA kennt Print Integer nicht. Die Umgebung definiert den Dienst. Ein Trap ist kein automatischer Prozesswechsel. Ein Simulator kann die Anfrage im Host behandeln.
+
+Kontrollfrage: Steht die Dienstnummer im Befehlswort von ecall? Nein, in einem Register. Die Liste der Dienste folgt.
 :::
 
 ## System Calls (Die API des OS)
@@ -1046,7 +1204,9 @@ Instruction Decoder erkennt `ecall`, löst absichtlich einen Trap aus: PC nach `
 - Antwort: Vertrag erfüllen — die Syscall-ABI
 
 ::: notes
-Restaurant mit Speisekarte: Klingel (`ecall`) reicht nicht — Gericht muss vorher kommuniziert sein.
+Die API nennt die Operation, die ABI Nummer, Register und Fehlerregel. Hunderte Dienste sind eine mögliche OS-Eigenschaft, nicht die drei Venus-Dienste dieses Labors. Die Speisekarte braucht diese Zuordnung, sonst bleibt sie eine Metapher.
+
+Kontrollfrage: Ist Print Integer Teil der RISC-V-ISA? Nein. Die Register unterscheiden sich je Umgebung.
 :::
 
 ## Die Syscall-ABI (Venus vs. Linux)
@@ -1062,7 +1222,9 @@ Linux:  a7 = Service-ID,  a0 = Argument
 ```
 
 ::: notes
-Venus folgt der SPIM/MARS-Tradition (ID in a0). Echte RISC-V-Linux-Systeme und RARS nutzen a7. Verwechslung ist die häufigste Laborfalle.
+Venus: Nummer in a0, erstes Argument in a1. Ripes und RARS: Nummer in a7, erstes Argument in a0. Linux auf RISC-V: Nummer in a7, Argumente in a0 bis a5. Gleiche Register sind nicht gleiche Dienste. Print Integer 1 ist ein Simulatordienst, kein Linux-Dienst. MIPS-Konventionen mit v0 bleiben außen vor.
+
+Kontrollfrage: Darf Venus-Code a7 gleich 1 für die Ausgabe nutzen? Nicht in dieser Konvention. Der Venus-Vertrag folgt im Code.
 :::
 
 ## Code-Beispiel: Print Integer (Venus)
@@ -1077,7 +1239,9 @@ ecall
 ```
 
 ::: notes
-Drei Zeilen unter Venus-ABI. Bare-Metal-Handler müssten zuvor `mepc += 4` setzen.
+li a0, 1 setzt die Dienstnummer. li a1, 42 setzt den Wert, keine Adresse. ecall fordert die Ausgabe 42 an. li ist ein Pseudobefehl. Kleine Konstanten passen in eine Immediate-Operation. Die Fortsetzung stellt Venus bereit. Nicht jeder Bare-Metal-Handler muss mepc erhöhen. Das gilt nur für einen bewusst konsumierten ecall im passenden Trap-Modell.
+
+Kontrollfrage: Ist 42 eine Stringadresse? Nein. Danach das Programmende.
 :::
 
 ## Code-Beispiel: Exit Program (Venus)
@@ -1091,7 +1255,9 @@ ecall
 ```
 
 ::: notes
-Professioneller Stil: nach dem Algorithmus Exit statt Endlosschleife.
+Dienst 10 beendet ohne Rückkehr. Eine Anweisung dahinter ist kein sicherer Programmschritt. Eine Endlosschleife ist für dauerhafte Firmware legitim. Für diese Konsole ist Exit der klare Abschluss. Das minimale Programm gibt aus und beendet.
+
+Kontrollfrage: Läuft Code nach Exit zuverlässig weiter? Nein. Simulator und privilegierte Architektur werden getrennt.
 :::
 
 ## Was macht ecall unter der Haube?
@@ -1117,7 +1283,9 @@ graph LR
 ```
 
 ::: notes
-Dieselbe Notaufnahme wie beim Hardware-Interrupt; Code 8 = absichtlicher User-Anruf. Venus verbirgt `mepc+4` und die Service-Auswertung.
+Im U-nach-M-Modell ohne Delegation, Direct-Modus, gilt mepc gleich ecall-Adresse, mcause gleich 8 und das Ziel BASE. Ein M-ecall hätte Ursache 11. Ein konsumierter ecall wird um 4 erhöht. Linux mit Supervisor nutzt stvec, sepc und sret. Venus erklärt den Dienst, ohne diese CSRs als nachgewiesene Simulation zu behaupten.
+
+Kontrollfrage: Ist mcause bei jedem ecall 8? Nur aus User Mode in diesem Modell. Das Schichtenbild greift das auf.
 :::
 
 ## Das Betriebssystem-Modell
@@ -1139,11 +1307,19 @@ graph TD
 ```
 
 ::: notes
-App → Syscall-Vertrag → Kernel → nackte Hardware. Im Berufsleben trifft man oft alle Schichten.
+Ein Ausgabewert geht durch Anwendung, Bibliothek, Dienst und Gerät. Ergebnisse und Fehler können zurückkommen. Abstraktion und Schutz sind verschieden. Venus abstrahiert den Konsolendienst. Die sichtbare Ausgabe beweist keinen Kernel und kein MMIO-Register.
+
+Kontrollfrage: Folgt aus der Konsole ein mtvec? Nein. Beide Modelle gehen ins Labor.
 :::
 
 # Praxis: Ripes & Venus
 
+
+::: notes
+Zwei Ziele: in Ripes eine Maske in eine Farbe übersetzen, in Venus einen String und einen berechneten Wert ausgeben. mret ist keine Voraussetzung. Ripes prüft Adressen und Farbwort, Venus die Register vor ecall.
+
+Kontrollfrage: Braucht Hello World einen Trap-Handler? In Venus nein. Die Werkzeugwahl folgt.
+:::
 ## Dualer Laboreinsatz
 
 - Wechsel von Theorie zum Labor
@@ -1153,22 +1329,26 @@ App → Syscall-Vertrag → Kernel → nackte Hardware. Im Berufsleben trifft ma
 - Typische I/O-Bugs und Clobbering-Warnung
 
 ::: notes
-Theorie von Einheit 8 abgeschlossen: Bare-Metal und OS-Aufrufe mit beiden Werkzeugen.
+Ripes zeigt hier die Matrix, Venus die Konsole. Beide Werkzeuge können mehr. Ripes muss nicht geschlossen werden. Erfolg in Ripes ist die erwartete Farbe, in Venus die erwartete Ausgabe.
+
+Kontrollfrage: Schließt das eine Werkzeug das andere aus? Nein. Die Grenzen werden benannt.
 :::
 
 ## Tool-Zweck im Labor
 
 - Zwei Welten: nackte Hardware (MMIO) vs. Abstraktion (Syscalls)
-- Ripes: Hardware-Simulator, Bare-Metal mit `lw`/`sw` auf MMIO
-- Venus: OS-Simulator, fängt `ecall` ab und simuliert Konsole
+- Ripes: MMIO-Labor mit Switches und LED-Matrix; Environment Calls existieren zusätzlich
+- Venus: Instruktionssimulator mit Konsolendiensten über ecall, kein nachgewiesener Kernel
 
 ```text
-Ripes  → Schalter-LED-Labor (Bare-Metal)
-Venus  → Print-/EVA-Labor mit `.data` (Syscalls)
+Ripes  → Schalter-LED-Labor
+Venus  → Konsolenausgabe mit ecall
 ```
 
 ::: notes
-Ripes = Physik ohne Linux; Venus = Kernel-Simulation mit Konsole.
+Ripes ist für dieses Labor das MMIO-Werkzeug und besitzt zusätzlich Environment Calls. Venus ist ein Instruktionssimulator mit Konsolendiensten, kein nachgewiesener OS-Kernel. Version und Prozessormodell wurden hier nicht live geprüft. CSR-Zugriffe und mret werden nicht als in beiden Werkzeugen lauffähig behauptet.
+
+Kontrollfrage: Simuliert Venus mtvec? Das ist nicht belegt. Die Geräte werden angelegt.
 :::
 
 ## Ripes I/O-Tab Setup
@@ -1178,23 +1358,27 @@ Ripes = Physik ohne Linux; Venus = Kernel-Simulation mit Konsole.
 - Ripes verdrahtet virtuell und vergibt MMIO-Adressen
 
 ::: notes
-Steckbrett-Simulation inkl. Adress-Decoder.
+Switches mit mindestens vier Eingängen und eine LED-Matrix, für das Lauflicht eine Zeile und acht Spalten, werden im I/O-Tab angelegt. Registerkarte und Exports müssen abgelesen werden. Interaktives Run ist keine Messung realer Latenz. Ein geänderter Aufbau kann die Adressen ändern. Ein UI-Test dieser Fassung liegt nicht vor.
+
+Kontrollfrage: Bleiben die Adressen nach dem Umbau gleich? Nicht garantiert. Der Code muss sie verwenden.
 :::
 
 ## Ripes: MMIO-Adressen prüfen
 
 - Bauteil anklicken $\rightarrow$ Konfiguration unten links
 - Base Address zwingend ablesen
-- Typisch: Switches `0xF0000000`, LEDs `0xF0000020`
-- Diese Adressen in Register laden für `lw`/`sw`
+- Base Address aus der Registerkarte bzw. den Exports ablesen
+- Die Zahlen unten sind ein illustrativer Snapshot, keine universelle Hardwarekonstante
 
-| Gerät | Typ | Typische Adresse |
+| Gerät | Typ | Illustrativer Snapshot |
 |---|---|---|
-| Switches | Input (Bit-Map) | `0xF0000000` |
-| LED Matrix | Output (Wort-Array) | `0xF0000020` |
+| Switches | Input (Bit-Map) | Export `SWITCHES_0_BASE` |
+| LED Matrix | Output (Wort-Array) | Export `LED_MATRIX_0_BASE` |
 
 ::: notes
-Ohne Hausnummer ist der Code blind; Basisadresse oft in `s`-Register.
+SWITCHES_0_BASE und LED_MATRIX_0_BASE sind die Namen, sofern der Export sie so liefert. Eine Größe in Byte ist nicht automatisch die Pixelzahl. Ein Wort je Pixel bedeutet Teilung durch 4. Ein fester Snapshot wie 0xF0000000 bleibt illustrativ. Zugriffstyp und Breite werden in der Karte geprüft.
+
+Kontrollfrage: Ist LED_MATRIX_0_SIZE immer die Pixelzahl? Nein. Der erste Pixel folgt.
 :::
 
 ## Labor-Aufgabe 1 (Ripes)
@@ -1205,8 +1389,9 @@ Ohne Hausnummer ist der Code blind; Basisadresse oft in `s`-Register.
 - Offset der ersten LED: `0(Base)`
 
 ```asm
-li s1, 0xF0000000      # Switches
-li s2, 0xF0000020      # LED-Matrix
+# Adressen nur, wenn der Export sie bestaetigt
+li s1, SWITCHES_0_BASE
+li s2, LED_MATRIX_0_BASE
 Loop:
   lw t0, 0(s1)
   andi t1, t0, 8       # Maske Bit 3
@@ -1221,12 +1406,14 @@ Store:
 ```
 
 ::: notes
-Einheit 3 (Bits) + Einheit 8 (I/O): nicht nur „ungleich 0“, sondern exakt Schalter 3 maskieren.
+beispiele/vl8_sw3_rot.s maskiert mit 8. 0b0000 und 0b0101 schreiben Schwarz. 0b1000 und 0b1101 schreiben Rot 0x00FF0000. Andere Schalter stören diese Zelle nicht. Das ist eine Pegelanzeige, keine Entprellung. s1 und s2 halten Adressen, t0 bis t2 die aktuellen Werte. Die Endlosschleife ist beabsichtigt. Ripes wurde nicht ausgeführt.
+
+Kontrollfrage: Welches Farbwort schreibt 0b0101? Null. Das Lauflicht nutzt mehrere Wörter.
 :::
 
 ## Labor-Aufgabe 2 (Ripes)
 
-- Lauflicht (Knight-Rider): grüne LED wandert links $\rightarrow$ rechts
+- Umlaufendes Lauflicht: ein grüner Pixel wandert und der vorige wird gelöscht
 - Offset-Pointer startet bei 0; Delay-Loop für Sichtbarkeit
 - Pointer += 4 für nächstes LED-Wort; am Ende zurücksetzen
 
@@ -1235,17 +1422,21 @@ Einheit 3 (Bits) + Einheit 8 (I/O): nicht nur „ungleich 0“, sondern exakt Sc
 ```
 
 ::: notes
-Jede LED = 32 Bit; Pointer um 4 Bytes erhöhen, sonst unsichtbar schnell.
+beispiele/vl8_lauflich.s setzt eine Zeile mit acht grünen Schritten. Der Offset läuft 0, 4 bis 28. Die Bytegrenze ist 32 und wird nicht beschrieben. Der alte Pixel wird gelöscht. Der Zähler 10000 wird je Pixel neu geladen und belegt keine Millisekunden. Ein Hin-und-her-Muster wäre ein anderes Programm.
+
+Kontrollfrage: Bleibt der vorige Pixel an? Nein, er wird genullt. Danach ersetzt ein Dienstvertrag den Pixel.
 :::
 
-## Wechsel zu Venus (OS-Simulation)
+## Wechsel zu Venus: Konsolendienste
 
 - Ripes schließen, Venus öffnen; Konsole unten
 - Venus fängt `ecall` ab, wertet Service-ID in `a0` aus, schreibt in die Konsole
 - Keine harten MMIO-Adressen — Arbeit an das OS delegieren
 
 ::: notes
-Paradigmenwechsel: vom Bare-Metal-Bus zur Syscall-API (Venus-ABI!).
+Geöffnet wird die Kursvariante von Venus. Assembliert und ausgeführt wird dort. a0 ist die Dienstnummer, a1 das Argument. Die Konsole ist die Wirkung. Das ist kein nachgewiesener Kernel. Ripes darf offen bleiben. Ein Screenshot liegt nicht vor.
+
+Kontrollfrage: Steht die Nummer in a7? In dieser Venus-Konvention nein. Die drei Dienste folgen.
 :::
 
 ## Die Venus Syscall-Tabelle
@@ -1263,7 +1454,9 @@ Hinweis: Venus hat keinen interaktiven Read-Int (anders als RARS).
 ```
 
 ::: notes
-Labor nutzt Print und Exit. Interaktive Eingabe gehört nicht zum Standard-Venus.
+Dienst 1 druckt eine ganze Zahl aus a1. Dienst 4 druckt einen nullterminierten String, dessen Adresse in a1 steht. Dienst 10 beendet ohne Rückkehr. Ein Read-Int ist in dieser Standardtabelle nicht enthalten. Registererhaltung ist ein eigener Vertrag und hier nicht als universelle Venus-Garantie belegt.
+
+Kontrollfrage: Ist a1 bei Dienst 4 der Text selbst? Nein, die Adresse. Der String wird angelegt.
 :::
 
 ## Labor-Aufgabe 3 (Venus)
@@ -1281,7 +1474,9 @@ ecall
 ```
 
 ::: notes
-String-Adresse in a1, Service-ID 4 in a0 — Venus-ABI.
+beispiele/vl8_hello.s legt msg mit .asciiz an. .data und .text trennen Daten und Code. la lädt die Adresse, nicht das erste Zeichen. Das Nullbyte beendet den String. Die Ausgabe ist Hello World mit Zeilenumbruch, danach Exit. Eine konkrete Datenadresse wird nicht erfunden. .globl main passt nur, wenn der Simulator main startet.
+
+Kontrollfrage: Druckt das Nullbyte? Nein. Als Nächstes ein Zahlenwert aus dem Speicher.
 :::
 
 ## Labor-Aufgabe 4 (Venus)
@@ -1299,25 +1494,26 @@ ecall
 ```
 
 ::: notes
-EVA-Prinzip über Syscalls; Input kommt aus `.data`, nicht von der Konsole.
+EVA bedeutet Eingabe, Verarbeitung, Ausgabe. n ist das Wort 21. la und lw 0(Register) laden es. slli um 1 ergibt 42. Dienst 1 druckt 42, Dienst 4 den Zeilenumbruch, Dienst 10 beendet. Das Wort steht vor dem String, damit die Ausrichtung erhalten bleibt. lw t0, n ist keine garantierte Basisinstruktion. Es gibt keine interaktive Eingabe. Das Programm ist beispiele/vl8_eva.s und wurde nicht ausgeführt.
+
+Kontrollfrage: Warum nicht zuerst der String? Damit das Wort ausgerichtet bleibt. Fehler liegen oft im Vertrag.
 :::
 
 ## Debugging I/O (Best Practices)
 
 - Ripes LED schwarz?
-  - Basisadresse korrekt?
-  - Memory-Tab bei `0xF0…`: Farbmuster sichtbar?
-  - Im RAM, aber dunkel: Refresh; nicht im RAM: `sw`/Adresse prüfen
-- Venus stürzt bei `ecall`?
-  - ID in `a0`, Argument in `a1` (nicht a7/a0 wie bei Linux/RARS)
-  - String: Adresse mit `la` in `a1`; Integer: Wert in `a1`
+  - Gerät, Export, effektive Adresse, Maske und Farbwort prüfen
+  - Ein Speicherbild allein beweist nicht die sichtbare Diodenwirkung
+- Venus: Dienstnummer in `a0`, Argument in `a1`
 
 ```text
 Simulator als Spion: Register vor ecall prüfen.
 ```
 
 ::: notes
-Memory-Tab verrät, ob `sw` traf; Venus: ID in `a0`, Payload in `a1`.
+Bei Ripes werden Gerät, Export, effektive Adresse, Breite, Alignment, Maske, Farbwort und Store geprüft. Die Memory-Ansicht allein beweist weder RAM noch die Diodenwirkung. Bei Venus werden a0, a1, Wert gegen Zeiger, Terminator und Exit geprüft. Ein Refresh ist keine belegte allgemeine Heilung.
+
+Kontrollfrage: Liegt eine falsche LED-Adresse immer im Heap? Nein. Der Registererhalt über ecall folgt.
 :::
 
 ## Clobbering bei ecall (Warnung)
@@ -1331,7 +1527,9 @@ Memory-Tab verrät, ob `sw` traf; Venus: ID in `a0`, Payload in `a1`.
 - Lösung: vor `ecall` auf Stack sichern oder `s0`–`s11` nutzen
 
 ::: notes
-Klassische Falle: Venus wirkt „nett“ zu `t`-Registern, die ABI erlaubt aber Clobbering. Portabler Code hält Zähler in `s`-Registern bzw. sichert vor dem Syscall.
+Der Clobber-Vertrag kommt aus der konkreten Umgebung. ecall ist kein normaler Funktionsaufruf. Daraus folgt nicht, dass alle caller-saved Register zerstört werden. RARS dokumentiert Erhaltung außer Ergebnisregistern. Für die gewählte Venus-Variante ist die Erhaltung ohne Prüfung offen. Ein s-Register ist nur sicher, wenn der Vertrag es sagt. Portabilität braucht außerdem passende Dienste.
+
+Kontrollfrage: Ist s0 über jeden ecall portabel sicher? Nein. Die Zusammenfassung ordnet die Verträge.
 :::
 
 ## Zusammenfassung Einheit 8
@@ -1348,7 +1546,9 @@ das Ökosystem der Computerarchitektur ist durchdrungen.
 ```
 
 ::: notes
-Isolation durchbrochen: Bare-Metal-I/O und der Tanz CPU ↔ OS.
+MMIO ordnet Geräten Adressen zu. Masken isolieren Bits. RGB-Wörter kodieren Pixel. volatile und Cacheattribute sind verschiedene Ebenen. Polling und Interrupts organisieren Reaktionen. CSRs halten den Trap-Zustand. Syscalls folgen dem Vertrag der Umgebung. Das ist keine Beherrschung der gesamten Systemarchitektur. Der direkte MMIO-Pfad und der Dienstpfad bleiben getrennt.
+
+Kontrollfrage: Ist Venus-Ausgabe ein Beweis für mtvec? Nein. Die Aufgaben prüfen das selbst.
 :::
 
 ## Q&A und Hands-On
@@ -1373,5 +1573,7 @@ graph LR
 ```
 
 ::: notes
-Letzte Hands-On-Phase: Lauflicht in Ripes, EVA-Syscalls in Venus. Viel Erfolg!
+Q&A bedeutet Questions and Answers. Ein 32-Bit-Wortarray schreitet um 4 Byte. Ein String ist eine Bytefolge mit Nullterminator, nicht generell plus 4. Ripes erwartet bei SW3 Rot und sonst Schwarz, das Lauflicht genau einen grünen Pixel. Venus erwartet Hello World und danach 42. 0b1101 und Maske 8 ergeben 8 und dann Rot. Druck und Freigabe zählen einen gehaltenen Pegel einmal, filtern Prellen aber nicht. MIE gleich 0 sperrt nicht ecall. 0x0000000B ist M-ecall, 0x8000000B ein External Interrupt. Die nächste Einheit wird hier nicht erfunden.
+
+Kontrollfrage: Was steht bei Venus Print Integer in a0 und a1? 1 und der Zahlenwert. Damit sind Adresse, Maske und Dienstvertrag unterscheidbar.
 :::
