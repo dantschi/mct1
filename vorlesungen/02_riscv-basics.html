@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="de"><head>
 <link href="../assets/dhbw_logo.svg" rel="icon" type="image/svg+xml">
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-html/tabby.min.js"></script>
@@ -484,7 +484,7 @@ graph LR
 <span id="cb1-5"><a aria-label="5"></a>// 2. an andere RAM-Adresse schreiben</span>
 <span id="cb1-6"><a aria-label="6"></a>// 3. zwei Adress-Pointer inkrementieren</span>
 <span id="cb1-7"><a aria-label="7"></a>// 4. Zähler dekrementieren</span>
-<span id="cb1-8"><a aria-label="8"></a>// 5. wiederholen, bis Zähler = 0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-8"><a aria-label="8"></a>// 5. wiederholen, bis Zähler = 0</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>CISC bedeutet Complex Instruction Set Computer. Die sichtbare x86-ISA von Intel und AMD erlaubt Befehle mit umfangreicher Semantik und variabler Länge, grob 1 bis 15 Byte. Das ist nicht dieselbe Aussage wie die interne Mikroarchitektur.</p>
 <p>REP MOVSB ist ein Vergleichsmotiv, keine x86-Prüfung. Repeat und Move String Byte kopieren Bytes. Bei Direction Flag DF gleich 0 werden die Zeiger erhöht. Ist der Zähler 0, wird nichts kopiert. Ein Befehl garantiert keine atomare Kopie des ganzen Blocks. Interne micro-operations, kurz µops, sind implementierungsabhängig. Sie sind nicht allgemein gleich lang und keine eigene RISC-ISA. Arm- und RISC-V-Befehle sind ebenfalls nicht pauschal alle gleich lang, sobald eine Komprimerweiterung existiert.</p>
@@ -563,7 +563,7 @@ graph LR
 <span id="cb2-5"><a aria-label="5"></a>    Addiere 1 zu Pointer 1</span>
 <span id="cb2-6"><a aria-label="6"></a>    Addiere 1 zu Pointer 2</span>
 <span id="cb2-7"><a aria-label="7"></a>    Subtrahiere 1 vom Zähler</span>
-<span id="cb2-8"><a aria-label="8"></a>    Springe zu LOOP, wenn Zähler &gt; 0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-8"><a aria-label="8"></a>    Springe zu LOOP, wenn Zähler &gt; 0</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>RISC bedeutet Reduced Instruction Set Computer. Load/Store trennt Rechnen in Registern vom Speichertransfer. Der Kasten ist Pseudocode, kein ausführbarer RV32I-Quelltext. Die Schleife setzt eine positive Anzahl voraus. Bei Anzahl 0 darf nichts kopiert werden, analog zum Zähler 0 bei REP.</p>
 <p>Atomar bedeutet hier eine Synchronisationsgarantie, nicht bloß ein Befehl. Die A-Erweiterung für atomare Speicheroperationen ist nur eine Einordnung, kein Stoff dieser Einheit. Energie, Taktzahl und Pipeline folgen nicht aus dem RISC-Etikett.</p>
@@ -827,7 +827,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb3-1"><a aria-label="1"></a>Word Size:     32 Bits (4 Bytes)</span>
 <span id="cb3-2"><a aria-label="2"></a>Registers:     32 Stück</span>
-<span id="cb3-3"><a aria-label="3"></a>Address Space: 2^32 Byte = 4 GiB</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-3"><a aria-label="3"></a>Address Space: 2^32 Byte = 4 GiB</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>RV steht für RISC-V, 32 für XLEN gleich 32, I für die Integerbasis. Registerbreite, Instruktionsbreite und Adressraum sind drei Größen. Ein RV32-Word ist 32 Bit, also vier Byte. Der Byteadressraum hat 2 hoch 32 Adressen, das sind 4 GiB, Gibibyte als 2 hoch 30 Byte. Das ist nicht der installierte RAM.</p>
 <p>Keine mul- oder Gleitkommabefehle im Basisumfang verbieten entsprechende Hardware in einer erweiterten CPU nicht. 5 mal 4 lässt sich als Shift um zwei bilden, nicht nur als Additionsschleife.</p>
@@ -897,7 +897,7 @@ graph LR
 <li>Nutzen: Operationen aus Standardbefehlen „basteln“ (Kopieren, Negieren, …)</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb4-1"><a aria-label="1"></a><span class="co">// Metapher:</span></span>
-<span id="cb4-2"><a aria-label="2"></a><span class="dt">const</span> <span class="dt">int</span> x0 <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-2"><a aria-label="2"></a><span class="dt">const</span> <span class="dt">int</span> x0 <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Hardwired Zero bedeutet: jedes Lesen von x0, Alias zero, liefert null. Das ist eine Architektureigenschaft, nicht zwingend eine bestimmte Drahtschaltung. addi x0, x0, 7 lässt x0 bei 0. Das geschriebene Ergebnis wird verworfen.</p>
 <p>Daraus folgt nicht, dass jede Instruktion mit Ziel x0 wirkungslos ist. Speicher- oder Systemeffekte können bestehen. Für die jetzigen Registerrechnungen genügt die Nullregel. Ein const int in C ist keine Hardwarebeschreibung dieses Registers.</p>
@@ -1017,7 +1017,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb5-1"><a aria-label="1"></a># Schnelles Zwischenergebnis</span>
 <span id="cb5-2"><a aria-label="2"></a><span class="bu">add</span> t0<span class="op">,</span> a1<span class="op">,</span> a2   <span class="op">#</span> t0 <span class="op">=</span> a1 <span class="op">+</span> a2</span>
 <span id="cb5-3"><a aria-label="3"></a><span class="bu">sub</span> a0<span class="op">,</span> t0<span class="op">,</span> a3   <span class="op">#</span> a0 <span class="op">=</span> t0 <span class="op">-</span> a3</span>
-<span id="cb5-4"><a aria-label="4"></a># t0 danach nicht mehr benötigt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-4"><a aria-label="4"></a># t0 danach nicht mehr benötigt</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>t bedeutet temporary. Caller ist die aufrufende Funktion. Caller-Saved bedeutet: wenn der Caller den Wert nach einem normalen Aufruf noch braucht, muss er selbst für die Erhaltung sorgen. Es gibt keine automatische Hardwaresicherung.</p>
 <p>t0 bis t2 sind x5 bis x7, t3 bis t6 sind x28 bis x31. Lehrwerte: a1 gleich 5, a2 gleich 10, a3 gleich 3. Dann kann t0 die Summe 15 halten und a0 das Ergebnis 12, wenn das Snippet diese Eingaben bereits gesetzt hat. Ein Venus-ecall ist ein anderer Vertrag und erhält t-Register nicht nach der Funktions-ABI.</p>
@@ -1046,7 +1046,7 @@ graph LR
 <span id="cb6-2"><a aria-label="2"></a>    <span class="dt">int</span> wichtig <span class="op">=</span> <span class="dv">42</span><span class="op">;</span> <span class="co">// typisch: s-Register</span></span>
 <span id="cb6-3"><a aria-label="3"></a>    fremde_funktion<span class="op">();</span></span>
 <span id="cb6-4"><a aria-label="4"></a>    <span class="co">// wichtig ist danach garantiert noch 42</span></span>
-<span id="cb6-5"><a aria-label="5"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-5"><a aria-label="5"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>s bedeutet saved, Callee ist die aufgerufene Funktion. Callee-Saved bedeutet: verändert die Funktion ein s-Register, muss sie bei Rückkehr den Eintrittswert wiederherstellen. Bloßes Lesen verlangt kein Sichern. Der Stack, Zeiger sp, ist der übliche Ort, nicht der einzig denkbare. Eine vollständige Stacksequenz folgt in Einheit 4.</p>
 <p>s0 und s1 sind x8 und x9, s2 bis s11 sind x18 bis x27. Ein C-Compiler muss eine Variable nicht in s0 legen. Ungenutztes kann entfallen. Die Zuordnung im Beispiel ist eine Lehrannahme. Nach dem Aufruf muss ein benutzter s-Wert noch lesbar sein, sonst sieht man die Zusage nicht.</p>
@@ -1077,7 +1077,7 @@ graph LR
 <span id="cb7-3"><a aria-label="3"></a><span class="co">// Unter der Haube (ABI):</span></span>
 <span id="cb7-4"><a aria-label="4"></a><span class="co">// a  → Register a0</span></span>
 <span id="cb7-5"><a aria-label="5"></a><span class="co">// b  → Register a1</span></span>
-<span id="cb7-6"><a aria-label="6"></a><span class="co">// Ergebnis → Register a0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-6"><a aria-label="6"></a><span class="co">// Ergebnis → Register a0</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>a bedeutet argument. a0 bis a7 sind x10 bis x17. Bei der einfachen Funktion int sum(int a, int b) stehen die Parameter in a0 und a1, der skalare Rückgabewert wieder in a0. ILP32 bedeutet: int, long und Pointer sind je 32 Bit.</p>
 <p>Lehrgang: sum(5, 10) findet a0 gleich 5 und a1 gleich 10 vor und liefert a0 gleich 15. t- und a-Register bleiben über den Aufruf nicht erhalten. s-Register schon, falls die Funktion sie verändert. Der Venus-Druckdienst nutzt a0 als Dienstnummer und a1 als Druckwert. Das ist nicht derselbe Vertrag. Größere Typen und mehr Argumente sparen wir aus.</p>
@@ -1248,7 +1248,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb8-1"><a aria-label="1"></a>C-Code:       a = b + c;</span>
 <span id="cb8-2"><a aria-label="2"></a>Assembler:    add x10, x11, x12</span>
-<span id="cb8-3"><a aria-label="3"></a>Maschine:     0000000 01100 01011 000 01010 0110011</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-3"><a aria-label="3"></a>Maschine:     0000000 01100 01011 000 01010 0110011</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Assemblersprache ist die Textform. Der Assembler ist das Programm, das sie übersetzt. Hochsprachen können portabel sein, ihre Ausführung braucht aber passende Übersetzer oder Laufzeiten.</p>
 <p>Ein nativer Befehl dieses Kurses wird ein 32-Bit-Instruktionswort. Eine Pseudoinstruktion kann mehrere native Instruktionen erzeugen. Label, Kommentar und Direktive erzeugen keine. Deshalb ist nicht jede Zeile ein Maschinenbefehl, und der Text kontrolliert nicht jeden Hardwaretakt.</p>
@@ -1279,7 +1279,7 @@ graph LR
 <span id="cb9-2"><a aria-label="2"></a>operation   <span class="dt">rd</span><span class="op">,</span> rs1<span class="op">,</span> rs2</span>
 <span id="cb9-3"><a aria-label="3"></a></span>
 <span id="cb9-4"><a aria-label="4"></a># gelesen als<span class="op">:</span></span>
-<span id="cb9-5"><a aria-label="5"></a># <span class="dt">rd</span> wird zu rs1 verknüpft mit rs2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-5"><a aria-label="5"></a># <span class="dt">rd</span> wird zu rs1 verknüpft mit rs2</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Der Mnemonic ist das Kürzel der Operation. Bei diesen Registerrechnungen steht das Ziel links: rd, dann rs1, dann rs2. Kommas gehören zum Quelltext. Der Assemblerparser braucht sie. Der CPU-Decoder sieht das Maschinenwort und keine Kommas. Die Ziel-links-Regel gilt nicht für jeden RISC-V-Befehl.</p>
 <p>Beispiel: t1 ist 5, t2 ist 10. add t0, t1, t2 schreibt 15 nach t0. Ein fehlendes Komma ist ein Fehler vor der Ausführung. Eine unbelegte Neunzig-Prozent-Regel bleibt weg.</p>
@@ -1305,7 +1305,7 @@ graph LR
 <li>Überlauf: die unteren 32 Bit bleiben; kein automatischer Trap</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb10-1"><a aria-label="1"></a><span class="bu">add</span> t0<span class="op">,</span> t1<span class="op">,</span> t2</span>
-<span id="cb10-2"><a aria-label="2"></a># t0 <span class="op">=</span> t1 <span class="op">+</span> t2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-2"><a aria-label="2"></a># t0 <span class="op">=</span> t1 <span class="op">+</span> t2</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>add addiert die unteren 32 Bit von rs1 und rs2 und schreibt rd. Die Quellen bleiben unverändert. Signed und unsigned sind Interpretationen desselben Bitmusters. Ein arithmetischer Überlauf erzeugt hier keinen Trap. Das ist modulare Maschinenarithmetik modulo 2 hoch 32, keine Erlaubnis für signed Overflow in C.</p>
 <p>Lehrrechnung: 5 plus 10 bleibt 15. Zusätzlich: 0xFFFFFFFF plus 1 wird 0. 0x7FFFFFFF plus 1 wird 0x80000000, unsigned 2147483648 und signed minus 2147483648. Eine Dauer in Takten folgt aus diesem Befehl nicht.</p>
@@ -1336,7 +1336,7 @@ graph LR
 <span id="cb11-3"><a aria-label="3"></a>a <span class="op">=</span> b <span class="op">+</span> c<span class="op">;</span></span>
 <span id="cb11-4"><a aria-label="4"></a></span>
 <span id="cb11-5"><a aria-label="5"></a><span class="co">// Generierter Assembler</span></span>
-<span id="cb11-6"><a aria-label="6"></a>add s0<span class="op">,</span> s1<span class="op">,</span> s2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb11-6"><a aria-label="6"></a>add s0<span class="op">,</span> s1<span class="op">,</span> s2</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>a gleich s0, b gleich s1 und c gleich s2 ist eine illustrative Zuordnung, keine Compilerzusage. Der Compiler darf andere Register, Speicher oder eine Optimierung wählen. Unter dieser Annahme wird a gleich b plus c zu add s0, s1, s2.</p>
 <p>ASCII, American Standard Code for Information Interchange, wäre nur eine Zeichencodierung, falls ein Vergleich Zeichen zeigt. C-Typen verschwinden nicht als Sprachregeln. Sie werden in Operationen und Layouts übersetzt. Die Registerbank speichert Bitmuster ohne C-Typetikett. Wir verwenden kleine sichere Werte, damit kein signed Overflow in C entsteht.</p>
@@ -1361,7 +1361,7 @@ graph LR
 <li>Kein eigener Befehl für „plus negative Konstante“ — später I-Type</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb12-1"><a aria-label="1"></a><span class="bu">sub</span> t0<span class="op">,</span> t1<span class="op">,</span> t2</span>
-<span id="cb12-2"><a aria-label="2"></a># t0 <span class="op">=</span> t1 <span class="op">-</span> t2   <span class="op">(</span>nicht t2 <span class="op">-</span> t1<span class="op">!)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb12-2"><a aria-label="2"></a># t0 <span class="op">=</span> t1 <span class="op">-</span> t2   <span class="op">(</span>nicht t2 <span class="op">-</span> t1<span class="op">!)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>sub rd, rs1, rs2 berechnet rs1 minus rs2. Der erste Quelloperand ist der Minuend, der zweite der Subtrahend. Mit t1 gleich 7 und t2 gleich 3 liefert sub t0, t1, t2 den Wert 4. Vertauschte Quellen liefern minus 4, also das Zweierkomplement von 4.</p>
 <p>Eine ALU kann das als A plus invertiertes B plus 1 umsetzen, mit einem MUX und Carry-In. Das ist ein Lehrmodell, keine vorgeschriebene ISA-Verdrahtung. rd darf eine Quelle sein: zuerst gelten die alten Werte, danach wird geschrieben.</p>
@@ -1388,7 +1388,7 @@ graph LR
 <li>Der Compiler zerlegt den Ausdruck in mehrere Instruktionen</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb13-1"><a aria-label="1"></a><span class="co">// a=s0, b=s1, c=s2, d=s3</span></span>
-<span id="cb13-2"><a aria-label="2"></a>a <span class="op">=</span> b <span class="op">+</span> c <span class="op">-</span> d<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb13-2"><a aria-label="2"></a>a <span class="op">=</span> b <span class="op">+</span> c <span class="op">-</span> d<span class="op">;</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Dieses R-Format hat zwei Quellfelder. 32 Bit verbieten nicht grundsätzlich andere Instruktionen mit mehr Quellen. Die Grenze gilt für dieses Format.</p>
 <p>Lehrbelegung: b, c und d sind 5, 10 und 3 in s1, s2 und s3. a gleich b plus c minus d braucht einen Zwischenwert, weil ein R-Befehl nur zwei Quellen liest. Eine C-Zeile ist damit nicht eine Maschinenoperation.</p>
@@ -1416,7 +1416,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb14-1"><a aria-label="1"></a># Ziel<span class="op">:</span> s0 <span class="op">=</span> s1 <span class="op">+</span> s2 <span class="op">-</span> s3</span>
 <span id="cb14-2"><a aria-label="2"></a><span class="bu">add</span> t0<span class="op">,</span> s1<span class="op">,</span> s2    <span class="op">#</span> t0 <span class="op">=</span> b <span class="op">+</span> c</span>
-<span id="cb14-3"><a aria-label="3"></a><span class="bu">sub</span> s0<span class="op">,</span> t0<span class="op">,</span> s3    <span class="op">#</span> a  <span class="op">=</span> t0 <span class="op">-</span> d</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb14-3"><a aria-label="3"></a><span class="bu">sub</span> s0<span class="op">,</span> t0<span class="op">,</span> s3    <span class="op">#</span> a  <span class="op">=</span> t0 <span class="op">-</span> d</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>t0 ist ein temporary-Register für den Zwischenwert. add t0, s1, s2 liest 5 und 10 und schreibt 15. sub s0, t0, s3 liest 15 und 3 und schreibt 12. s1, s2 und s3 bleiben unverändert. Das Snippet setzt die Eingaben voraus.</p>
 <p>Dieselben einfachen Operationen werden zweimal verwendet. Daraus folgt keine Laufzeit. Die Tabelle hat zwei Schritte: Zwischenwert 15, Endwert 12.</p>
@@ -1445,7 +1445,7 @@ graph LR
 <span id="cb15-2"><a aria-label="2"></a># t1 <span class="op">=</span> <span class="op">...</span><span class="dv">00001111</span>  <span class="op">(</span><span class="bn">0x0F</span><span class="op">)</span></span>
 <span id="cb15-3"><a aria-label="3"></a># t2 <span class="op">=</span> <span class="op">...</span><span class="dv">10100101</span>  <span class="op">(</span><span class="bn">0xA5</span><span class="op">)</span></span>
 <span id="cb15-4"><a aria-label="4"></a><span class="bu">and</span> t0<span class="op">,</span> t1<span class="op">,</span> t2</span>
-<span id="cb15-5"><a aria-label="5"></a># t0 <span class="op">=</span> <span class="op">...</span><span class="dv">00000101</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb15-5"><a aria-label="5"></a># t0 <span class="op">=</span> <span class="op">...</span><span class="dv">00000101</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>and, or und xor arbeiten bitweise auf 32 Bit. Jede Position wird mit derselben Position des anderen Operanden verknüpft. In C sind &amp;, | und ^ die bitweisen Operatoren. &amp;&amp; und || sind logische Verknüpfungen und hier nicht gemeint.</p>
 <p>Für die unteren acht Bit von 0xA5 und 0x0F gilt: AND liefert 0x05, OR 0xAF, XOR 0xAA. XOR gleicher Werte liefert 0. Bei Ungleichheit entstehen die unterschiedlichen Bits, nicht zwingend die Zahl 1. Maskieren behält gesetzte Bits, Setzen schreibt Einsen, Toggeln kippt eine Position.</p>
@@ -1512,7 +1512,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb16-1"><a aria-label="1"></a># t1 <span class="op">=</span> <span class="dv">5</span> <span class="op">(...</span><span class="dv">0101</span><span class="op">),</span> t2 <span class="op">=</span> <span class="dv">1</span></span>
 <span id="cb16-2"><a aria-label="2"></a>sll t0<span class="op">,</span> t1<span class="op">,</span> t2</span>
-<span id="cb16-3"><a aria-label="3"></a># t0 <span class="op">=</span> <span class="dv">10</span> <span class="op">(...</span><span class="dv">1010</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb16-3"><a aria-label="3"></a># t0 <span class="op">=</span> <span class="dv">10</span> <span class="op">(...</span><span class="dv">1010</span><span class="op">)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>sll bedeutet Shift Left Logical. Das LSB, Least Significant Bit, ist das niederwertige Bit. Die effektive Weite ist Inhalt von rs2 UND 0x1F, also die unteren fünf Bit.</p>
 <p>t1 gleich 5 und t2 gleich 1 ergeben 10. t2 gleich 32 ergibt effektive Weite 0, das Ergebnis bleibt 5. t2 gleich 33 ergibt Weite 1. Für t1 gleich 0x80000001 und Weite 1 fällt das hohe Bit heraus, das Ergebnis ist 0x00000002.</p>
@@ -1539,7 +1539,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb17-1"><a aria-label="1"></a># t1 <span class="op">=</span> <span class="dv">12</span> <span class="op">(...</span><span class="dv">1100</span><span class="op">),</span> t2 <span class="op">=</span> <span class="dv">2</span></span>
 <span id="cb17-2"><a aria-label="2"></a>srl t0<span class="op">,</span> t1<span class="op">,</span> t2</span>
-<span id="cb17-3"><a aria-label="3"></a># t0 <span class="op">=</span> <span class="dv">3</span> <span class="op">(...</span><span class="dv">0011</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb17-3"><a aria-label="3"></a># t0 <span class="op">=</span> <span class="dv">3</span> <span class="op">(...</span><span class="dv">0011</span><span class="op">)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>srl bedeutet Shift Right Logical. Das MSB, Most Significant Bit, wird durch Nullen ersetzt. Die Operation ist vorzeichenlos zu lesen. 12 um zwei Stellen wird 3. 0xFFFFFFFD um eine Stelle logisch wird 0x7FFFFFFE, unsigned 2147483646. Das ist nicht die signed Division von minus 3.</p>
 <p>Es gibt keine geheime Typkennung im Register. Nur die Zielzuweisung ändert ein Bitmuster. Die Quellen bleiben, wenn sie nicht zugleich Ziel sind.</p>
@@ -1567,7 +1567,7 @@ graph LR
 <span id="cb18-2"><a aria-label="2"></a>sra t0<span class="op">,</span> t1<span class="op">,</span> t2</span>
 <span id="cb18-3"><a aria-label="3"></a># t0 <span class="op">=</span> <span class="op">-</span><span class="dv">2</span> <span class="op">(</span><span class="fl">1111.</span><span class="op">..</span><span class="dv">1110</span><span class="op">)</span></span>
 <span id="cb18-4"><a aria-label="4"></a></span>
-<span id="cb18-5"><a aria-label="5"></a># srai von <span class="op">-</span><span class="dv">3</span> um <span class="dv">1</span> → <span class="op">-</span><span class="dv">2</span><span class="op">,</span> nicht <span class="op">-</span><span class="dv">1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb18-5"><a aria-label="5"></a># srai von <span class="op">-</span><span class="dv">3</span> um <span class="dv">1</span> → <span class="op">-</span><span class="dv">2</span><span class="op">,</span> nicht <span class="op">-</span><span class="dv">1</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-figure quarto-figure-center">
 <figure>
 <p><img data-src="../assets/images/shift-srai-neg3.svg"></p>
@@ -1599,7 +1599,7 @@ graph LR
 <li>Compiler „erfindet“ Move aus vorhandener Hardware</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb19-1"><a aria-label="1"></a><span class="bu">add</span> t2<span class="op">,</span> t1<span class="op">,</span> x0</span>
-<span id="cb19-2"><a aria-label="2"></a># t2 <span class="op">=</span> t1 <span class="op">+</span> <span class="dv">0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb19-2"><a aria-label="2"></a># t2 <span class="op">=</span> t1 <span class="op">+</span> <span class="dv">0</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>x0, Alias zero, liefert null. add t2, t1, x0 kopiert deshalb t1 nach t2. Steht in t1 der Lehrwert 42, steht danach auch in t2 die 42. t1 bleibt unverändert.</p>
 <p>mv t2, t1 ist eine Pseudoinstruktion. Ihre kanonische Entsprechung ist addi t2, t1, 0. Die gezeigte add-Variante ist gültig, aber nicht die zwingende Expansion jedes mv. Eine Ersparnis an Chipfläche ist eine Entwurfsüberlegung, keine gemessene Zahl.</p>
@@ -1623,7 +1623,7 @@ graph LR
 <li><span class="math inline">\(0 - X = -X\)</span> über <code>sub</code> und <code>x0</code></li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb20-1"><a aria-label="1"></a><span class="bu">sub</span> t1<span class="op">,</span> x0<span class="op">,</span> t1</span>
-<span id="cb20-2"><a aria-label="2"></a># t1 <span class="op">=</span> <span class="dv">0</span> <span class="op">-</span> t1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb20-2"><a aria-label="2"></a># t1 <span class="op">=</span> <span class="dv">0</span> <span class="op">-</span> t1</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>sub t1, x0, t1 berechnet 0 minus den alten Wert von t1. Bei Ausgangswert 5 entsteht minus 5. Dieselbe Registernummer darf Quelle und Ziel sein, weil zuerst gelesen und danach geschrieben wird. Die Negation gilt modulo 2 hoch 32.</p>
 <p>Der Grenzfall 0x80000000 bleibt als Bitmuster gleich, weil plus 2147483648 nicht als signed 32-Bit-Zahl darstellbar ist. neg ist ein Pseudoalias für sub rd, x0, rs, kein zusätzlicher RV32I-Befehl. not und xori invertieren bitweise und sind nicht diese arithmetische Negation.</p>
@@ -1783,7 +1783,7 @@ graph LR
 <li>Bitmuster muss starr und logisch aufgebaut sein</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb21-1"><a aria-label="1"></a>Adresse 0x00: 0x007102B3   # Zahl oder ADD?</span>
-<span id="cb21-2"><a aria-label="2"></a>Adresse 0x04: 0x40628333   # SUB?</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb21-2"><a aria-label="2"></a>Adresse 0x04: 0x40628333   # SUB?</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Im Instruktionsspeicher liegen nach dem Assemblieren Bitmuster, keine Befehlsnamen. Textdaten können natürlich an anderer Stelle im Speicher stehen. 0x007102B3 ist add x5, x2, x7. 0x40628333 ist sub x6, x5, x6. Diese Kontrollen ersetzen nicht das gemeinsame Beispiel add x9, x20, x21.</p>
 <p>Der Decoder entscheidet anhand der Felder, nicht anhand von Kommas und nicht in einer fest versprochenen Nanosekundenfolge.</p>
@@ -1903,7 +1903,7 @@ graph LR
 <span id="cb22-2"><a aria-label="2"></a>+-------+-----+-----+-------+-----+-------------+-------+</span>
 <span id="cb22-3"><a aria-label="3"></a>|       |     |     |       |     |             |OPCODE |</span>
 <span id="cb22-4"><a aria-label="4"></a>+-------+-----+-----+-------+-----+-------------+-------+</span>
-<span id="cb22-5"><a aria-label="5"></a>                                                 0110011</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb22-5"><a aria-label="5"></a>                                                 0110011</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Der opcode liegt in den Bits 6 bis 0. 0110011 ist hexadezimal 0x33 und die Klasse der hier behandelten Registerarithmetik und Registerlogik. add und sub teilen ihn. Erst die Funktionsfelder trennen die Operation. Das korrigiert die frühere Versuchung, den Opcode schon Addition zu nennen.</p>
 <p>Die Hardware kann die Felder parallel auswerten. Zuerst auf den Opcode schauen ist eine didaktische Reihenfolge, keine zwingende Zeitfolge.</p>
@@ -1932,7 +1932,7 @@ graph LR
 <span id="cb23-2"><a aria-label="2"></a>+-------+-----+-----+-------+-----+-------------+</span>
 <span id="cb23-3"><a aria-label="3"></a>|       | rs2 | rs1 |       |  rd |             |</span>
 <span id="cb23-4"><a aria-label="4"></a>+-------+-----+-----+-------+-----+-------------+</span>
-<span id="cb23-5"><a aria-label="5"></a>          =21   =20            =9</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb23-5"><a aria-label="5"></a>          =21   =20            =9</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>rd, rs1 und rs2 sind Nummern. A1, A2 und A3 sind Namen der Lese- und Schreibports im Lehrmodell, keine ISA-Latenz. x9 als Feld ist 01001, die Nummer neun, nicht der Datenwert neun.</p>
 <p>Im Beispiel add x9, x20, x21 stehen die Felder 9, 20 und 21. Die aktuellen Inhalte dürfen beliebig anders sein. Lesen und Schreiben ordnen wir dem Lehrmodell zu und leiten keine Taktzahl ab. Die Bitgrenzen bleiben dieselben wie in der Schablone: rd in 11 bis 7, rs1 in 19 bis 15, rs2 in 24 bis 20.</p>
@@ -2008,7 +2008,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb24-1"><a aria-label="1"></a>rd  (x9)  = 01001</span>
 <span id="cb24-2"><a aria-label="2"></a>rs1 (x20) = 10100</span>
-<span id="cb24-3"><a aria-label="3"></a>rs2 (x21) = 10101</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb24-3"><a aria-label="3"></a>rs2 (x21) = 10101</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Dieser Schritt ist manuelles Encodieren. Decodieren wäre die Gegenrichtung. Für add x9, x20, x21 gilt rd gleich 9 gleich 01001, rs1 gleich 20 gleich 10100, rs2 gleich 21 gleich 10101, funct3 gleich 000, funct7 gleich 0000000 und opcode gleich 0110011.</p>
 <p>Kein aktueller Registerinhalt fließt ein. Jede Nummer braucht fünf Bit, führende Nullen eingeschlossen.</p>
@@ -2033,7 +2033,7 @@ graph LR
 <span id="cb25-3"><a aria-label="3"></a>Binär: 0000 0001 0101 1010 0000 0100 1011 0011</span>
 <span id="cb25-4"><a aria-label="4"></a>Hex:     0    1    5    A    0    4    B    3</span>
 <span id="cb25-5"><a aria-label="5"></a></span>
-<span id="cb25-6"><a aria-label="6"></a>Maschinencode: 0x015A04B3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb25-6"><a aria-label="6"></a>Maschinencode: 0x015A04B3</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-figure quarto-figure-center">
 <figure>
 <p><img data-src="../assets/images/rtype-015A04B3.svg"></p>
@@ -2133,7 +2133,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb26-1"><a aria-label="1"></a><span class="dt">int</span> grenze <span class="op">=</span> <span class="dv">100</span><span class="op">;</span>              <span class="co">// Initialisierung</span></span>
 <span id="cb26-2"><a aria-label="2"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">10</span><span class="op">;</span> i<span class="op">++)</span>   <span class="co">// Schleifenzähler</span></span>
-<span id="cb26-3"><a aria-label="3"></a>array<span class="op">[</span>index <span class="op">+</span> <span class="dv">4</span><span class="op">];</span>              <span class="co">// vier Elemente weiter, bei ILP32-int 16 Byte</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb26-3"><a aria-label="3"></a>array<span class="op">[</span>index <span class="op">+</span> <span class="dv">4</span><span class="op">];</span>              <span class="co">// vier Elemente weiter, bei ILP32-int 16 Byte</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Drei C-Beispiele sind verschieden. Eine Grenze 100 oder 10 ist ein Zahlenwert. i plus plus aktualisiert um 1. array von index plus 4 verschiebt den Elementindex um vier Elemente. Bei ILP32-int sind das 16 Byte, nicht automatisch vier Byte. ILP32 bedeutet 32-Bit-int, long und Pointer.</p>
 <p>Immediate ist die direkte Konstante, RAM der Arbeitsspeicher. Eine einzige Quelltextzahl kann mehrere Instruktionen brauchen, wenn sie nicht in das Immediate passt.</p>
@@ -2204,7 +2204,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb27-1"><a aria-label="1"></a>addi t0<span class="op">,</span> t0<span class="op">,</span> <span class="dv">1</span></span>
 <span id="cb27-2"><a aria-label="2"></a>addi s1<span class="op">,</span> x0<span class="op">,</span> <span class="dv">42</span></span>
-<span id="cb27-3"><a aria-label="3"></a>addi a0<span class="op">,</span> a0<span class="op">,</span> <span class="op">-</span><span class="dv">4</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb27-3"><a aria-label="3"></a>addi a0<span class="op">,</span> a0<span class="op">,</span> <span class="op">-</span><span class="dv">4</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>addi bedeutet Add Immediate. rd ist das Ziel, rs1 die Quelle, das dritte Argument eine signed Zahl, kein drittes Register. Drei Lehrzeilen: aus t0 gleich 5 wird durch plus 1 der Wert 6. s1 erhält aus x0 plus 42 den Wert 42. Aus a0 gleich 20 wird durch minus 4 der Wert 16.</p>
 <p>Ist Quelle und Ziel dasselbe Register, wird zuerst der alte Wert gelesen. Pro native Instruktion gibt es diese Zustandsänderung. Eine Aussage über Hardwarezyklen folgt nicht.</p>
@@ -2265,7 +2265,7 @@ graph LR
 </tr>
 </tbody>
 </table>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb28-1"><a aria-label="1"></a>| imm[11:0] | rs1 | funct3 | rd | opcode |</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb28-1"><a aria-label="1"></a>| imm[11:0] | rs1 | funct3 | rd | opcode |</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Fünf Felder: Immediate 12 Bit, rs1 5, funct3 3, rd 5, opcode 7. Die Summe ist 32. Gegenüber dem R-Type ersetzt der 12-Bit-Bereich die Positionen von funct7 und rs2. Diese Feldnamen gelten dort nicht mehr. rs1, funct3, rd und opcode behalten ihre Positionen.</p>
 <p>Bei addi ist der opcode 0010011, hexadezimal 0x13, und funct3 gleich 000. Für Shift-Immediate-Befehle wird der obere Teil später spezialisiert. Nicht jedes I-Format ist nur ein frei nutzbares signed Zahlenfeld.</p>
@@ -2290,7 +2290,7 @@ graph LR
 <li>Größere Konstanten benötigen mehrere Instruktionen oder <code>li</code>.</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb29-1"><a aria-label="1"></a>1000 0000 0000 = -2048</span>
-<span id="cb29-2"><a aria-label="2"></a>0111 1111 1111 =  2047</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb29-2"><a aria-label="2"></a>0111 1111 1111 =  2047</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Zwölf Bit ergeben 2 hoch 12 gleich 4096 Muster. Signed reicht das von minus 2 hoch 11 bis 2 hoch 11 minus 1, also minus 2048 bis 2047. Im Zwölf-Bit-Feld ist 0x800 gleich minus 2048 und 0x7FF gleich 2047. 2048 passt nicht als positive addi-Konstante.</p>
 <p>li, Load Immediate, ist keine native Instruktion ohne Grenze. Der Assembler erzeugt passende Befehle. Die ausführliche lui-Rechnung steht bei der li-Folie. Für Lehrkonstanten nutzen wir t-Register und überschreiben nicht ohne Grund x1, das ra, die Rücksprungadresse.</p>
@@ -2358,7 +2358,7 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb30-1"><a aria-label="1"></a>andi t0<span class="op">,</span> t1<span class="op">,</span> <span class="bn">0x0F</span></span>
 <span id="cb30-2"><a aria-label="2"></a>ori  t0<span class="op">,</span> t0<span class="op">,</span> <span class="bn">0x80</span></span>
 <span id="cb30-3"><a aria-label="3"></a>xori t0<span class="op">,</span> t1<span class="op">,</span> <span class="op">-</span><span class="dv">1</span></span>
-<span id="cb30-4"><a aria-label="4"></a># -1 ist <span class="dv">12</span><span class="op">-</span>Bit<span class="op">-</span>Zweierkomplement und wird auf <span class="bn">0xFFFFFFFF</span> erweitert</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb30-4"><a aria-label="4"></a># -1 ist <span class="dv">12</span><span class="op">-</span>Bit<span class="op">-</span>Zweierkomplement und wird auf <span class="bn">0xFFFFFFFF</span> erweitert</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>andi, ori und xori verknüpfen bitweise mit einem Immediate statt mit rs2. Der Immediate wird trotzdem vorzeichenerweitert. Lehrfolge mit getrennten Zielen: t1 ist 0xA5. andi mit 0x0F schreibt 0x05. ori dieses Ergebnisses mit 0x80 schreibt 0x85. xori von t1, nicht vom Zwischenergebnis, mit minus 1 schreibt 0xFFFFFF5A.</p>
 <p>minus 1 ist zwölf Bit 0xFFF und wird 0xFFFFFFFF. Deshalb kippt xori alle 32 Bit. Die positive Maske 4095, also 0x00000FFF, ist als signed Immediate 0xFFF nicht darstellbar. Dafür braucht man li und and.</p>
@@ -2384,7 +2384,7 @@ graph TD
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb31-1"><a aria-label="1"></a>slli t0<span class="op">,</span> t1<span class="op">,</span> <span class="dv">2</span></span>
 <span id="cb31-2"><a aria-label="2"></a>srli t0<span class="op">,</span> t1<span class="op">,</span> <span class="dv">3</span></span>
-<span id="cb31-3"><a aria-label="3"></a>srai t0<span class="op">,</span> t1<span class="op">,</span> <span class="dv">1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb31-3"><a aria-label="3"></a>srai t0<span class="op">,</span> t1<span class="op">,</span> <span class="dv">1</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>slli, srli und srai sind die Immediate-Varianten von sll, srl und sra. shamt, shift amount, ist die Verschiebungsanzahl. In RV32I sind die unteren fünf Bit die Weite 0 bis 31. Darüber steht Funktionsinformation, kein normales signed Zahlenoperand. srli und srai unterscheiden sich unter anderem in Instruktionsbit 30.</p>
 <p>Getrennte Fälle: 5 slli 2 wird 20. 24 srli 3 wird 3. minus 3 srai 1 wird minus 2. Ein Immediate 32 ist kein normaler gültiger RV32I-Shift. Ein Registershift mit Inhalt 32 hat dagegen effektive Weite 0.</p>
@@ -2408,7 +2408,7 @@ graph TD
 <li>Deshalb genügt <code>addi</code> mit einem negativen Immediate.</li>
 <li>Die ISA vermeidet damit eine redundante Instruktion.</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb32-1"><a aria-label="1"></a>addi t0<span class="op">,</span> t0<span class="op">,</span> <span class="op">-</span><span class="dv">7</span>    <span class="op">#</span> t0 <span class="op">=</span> t0 <span class="op">-</span> <span class="dv">7</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb32-1"><a aria-label="1"></a>addi t0<span class="op">,</span> t0<span class="op">,</span> <span class="op">-</span><span class="dv">7</span>    <span class="op">#</span> t0 <span class="op">=</span> t0 <span class="op">-</span> <span class="dv">7</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>X minus K ist X plus minus K. Deshalb hat RV32I keinen nativen subi-Befehl. t0 gleich 20 und addi mit minus 7 ergeben 13. Ob ein Werkzeug einen Pseudobefehl anbietet, ist eine andere Frage als der native Befehlssatz.</p>
 <p>Der Grenzfall: minus 2048 als Subtrahend verlangt die Addition von plus 2048. plus 2048 passt nicht ins signed Zwölf-Bit-Feld. Eine Möglichkeit ist li t1, minus 2048 und sub t0, t0, t1. Nicht jede konstante Subtraktion ist deshalb ein einzelnes addi.</p>
@@ -2433,7 +2433,7 @@ graph TD
 <li>Große Werte erfordern eine vom Assembler gewählte Instruktionsfolge.</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb33-1"><a aria-label="1"></a>li t0<span class="op">,</span> <span class="dv">123</span></span>
-<span id="cb33-2"><a aria-label="2"></a>li t1<span class="op">,</span> <span class="dv">100000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb33-2"><a aria-label="2"></a>li t1<span class="op">,</span> <span class="dv">100000</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>li ist eine Assemblerhilfe, keine eigene ALU-Operation. Kleine Werte kann der Assembler als addi mit x0 umsetzen. 123 kann addi t0, x0, 123 werden.</p>
 <p>2048 braucht eine Korrektur, weil der untere Teil signed ist. lui t0, 0x1 schreibt 0x00001000. addi t0, t0, minus 2048 ergibt 0x00000800. lui ist Load Upper Immediate, ein U-Type, hier nur als Vorschau. 0x1000 ist der Zwischenwert, nicht das Ziel.</p>
@@ -2524,7 +2524,7 @@ graph TD
 <li>„Assemble &amp; Simulate“ prüft und übersetzt den Text.</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb34-1"><a aria-label="1"></a>.text</span>
-<span id="cb34-2"><a aria-label="2"></a>addi t0<span class="op">,</span> x0<span class="op">,</span> <span class="dv">5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb34-2"><a aria-label="2"></a>addi t0<span class="op">,</span> x0<span class="op">,</span> <span class="dv">5</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>UI bedeutet User Interface, die Bedienoberfläche. Ein Tab ist ein Reiter. Das Kommentarzeichen ist #. Der Assembler meldet Diagnose an der Quelltextstelle. t0 mit der Ziffer Null ist ein Registeralias. to mit dem Buchstaben O ist keiner.</p>
 <p>Ein zwei Zeilen langes Beispiel ist nur ein Einstieg. Ein vollständiger Lauf braucht den Rahmen mit Startlabel und Abschluss, damit die Ausführung nicht über den Code hinaus weiterläuft. Eine konkrete Fehlermeldung gilt nur, wenn sie aus dem verwendeten Tool stammt oder klar als Illustration gekennzeichnet ist.</p>
@@ -2550,7 +2550,7 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb35-1"><a aria-label="1"></a>.text</span>
 <span id="cb35-2"><a aria-label="2"></a><span class="fu">main:</span></span>
 <span id="cb35-3"><a aria-label="3"></a>    addi t0<span class="op">,</span> x0<span class="op">,</span> <span class="dv">5</span></span>
-<span id="cb35-4"><a aria-label="4"></a>    addi t1<span class="op">,</span> t0<span class="op">,</span> <span class="dv">10</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb35-4"><a aria-label="4"></a>    addi t1<span class="op">,</span> t0<span class="op">,</span> <span class="dv">10</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>.text ist eine Assemblerdirektive und markiert den Codebereich. main ist ein Label, kein Prozessorbefehl. .globl main macht das Symbol sichtbar, soweit der Rahmen es braucht. Ob main der Startpunkt ist, hängt vom Tool ab. Ein Label erzeugt keine 32-Bit-Instruktion.</p>
 <p>addi t0, x0, 5 schreibt 5. addi t1, t0, 10 schreibt 15. Ein abgeschlossener Lauf setzt danach den Venus-Abschluss. Ohne diesen Rahmen wäre der PC nach der letzten Zeile nicht definiert erklärt.</p>
@@ -2720,7 +2720,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb36-1"><a aria-label="1"></a>Vorher:  t0 = 5</span>
 <span id="cb36-2"><a aria-label="2"></a>Code:    addi t0, t0, 1</span>
-<span id="cb36-3"><a aria-label="3"></a>Nachher: t0 = 6</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb36-3"><a aria-label="3"></a>Nachher: t0 = 6</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Ein Trace notiert Vorher und Nachher. Das Beispiel dieser Folie bleibt beisammen: t0 ist 5, addi t0, t0, 1 schreibt 6. Es gibt keinen Wechsel zu einem unbegründeten t2 gleich 15. Quellen werden vor dem Step gelesen, das Ziel danach verglichen.</p>
 <p>Die Zeile enthält PC, Instruktion, Quellen, erwartetes Ziel und tatsächliches Ziel. Beim ersten abweichenden Schritt bleiben wir stehen. R- und I-Syntax sowie die Aliase erklären, welches Register gemeint ist.</p>
@@ -2745,7 +2745,7 @@ graph LR
 <li>Assemblerfehler entstehen vor der Simulation, Traps während der Ausführung.</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb37-1"><a aria-label="1"></a>addi t0<span class="op">,</span> t1<span class="op">,</span> <span class="dv">5</span>     <span class="op">#</span> korrekt</span>
-<span id="cb37-2"><a aria-label="2"></a>addi t0 t1<span class="op">,</span> <span class="dv">5</span>      <span class="op">#</span> Komma fehlt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb37-2"><a aria-label="2"></a>addi t0 t1<span class="op">,</span> <span class="dv">5</span>      <span class="op">#</span> Komma fehlt</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Ein Assemblerfehler ist keine Runtime-Trap. Die absichtlich falsche Zeile ohne Komma oder mit vertauschten Operanden bleibt ein Negativbeispiel und gehört nicht in ein Referenzprogramm. Der Decoder sieht die Kommas nicht. Der Parser schon.</p>
 <p>Der Weg ist: Diagnose lesen, die Quelltextstelle finden, korrigieren, erneut assemblieren. Danach kontrollieren wir mit gesetzten Quellwerten, ob das Ergebnis stimmt. Ein leeres Register wird nicht still als null angenommen, außer x0.</p>
@@ -2770,7 +2770,7 @@ graph LR
 <li>Nutzen Sie bei größeren Werten <code>li</code>.</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb38-1"><a aria-label="1"></a>addi t0<span class="op">,</span> x0<span class="op">,</span> <span class="dv">2047</span></span>
-<span id="cb38-2"><a aria-label="2"></a>li t0<span class="op">,</span> <span class="dv">2048</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb38-2"><a aria-label="2"></a>li t0<span class="op">,</span> <span class="dv">2048</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>2047 passt in den signed Zwölf-Bit-Bereich, 2048 nicht. Eine Testzeile addi t0, x0, 2048 soll ein strikter Assembler ablehnen. Die konkrete Ablehnung prüfen Sie in der geladenen Venus-Distribution. Eine große Zahl darf nicht still als anderes Bitmuster übernommen werden.</p>
 <p>li t0, 2048 ist die Quelltextform. Nach der vollständigen Expansion erwarten wir 0x00000800, nicht zwingend schon nach dem ersten nativen Teilbefehl. Der erste Teil kann 0x00001000 sein.</p>
@@ -2796,7 +2796,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb39-1"><a aria-label="1"></a>li a0<span class="op">,</span> <span class="dv">1</span></span>
 <span id="cb39-2"><a aria-label="2"></a>li a1<span class="op">,</span> <span class="dv">42</span></span>
-<span id="cb39-3"><a aria-label="3"></a>ecall</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb39-3"><a aria-label="3"></a>ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>ecall bedeutet Environment Call, den Aufruf einer Umgebungsdienstleistung. Die ISA definiert den Übergang, nicht die Drucknummern. In der klassischen Venus-Konvention steht die Dienstnummer in a0 und der Druckwert in a1. a0 gleich 1 und a1 gleich 42 drucken 42. Danach setzt a0 gleich 10 und ein weiteres ecall beendet den Lauf.</p>
 <p>Das ist kein Funktionsaufruf und kein C-printf. Ein bereits in a0 stehendes Ergebnis wird vor der Dienstbelegung nach a1 oder in ein Beobachtungsregister kopiert. Der Rahmen braucht Start und Ende, nicht nur die drei Druckzeilen.</p>
@@ -2825,7 +2825,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb40-1"><a aria-label="1"></a>.globl main</span>
 <span id="cb40-2"><a aria-label="2"></a>.text</span>
 <span id="cb40-3"><a aria-label="3"></a><span class="fu">main:</span></span>
-<span id="cb40-4"><a aria-label="4"></a>    # Ihr Code hier<span class="op">...</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb40-4"><a aria-label="4"></a>    # Ihr Code hier<span class="op">...</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Die Aufgabe Y gleich (A plus B) minus (C plus D) bleibt auf der Folie offen. Die Musterlösung steht getrennt in beispiele/vl2_gleichung.s. A, B, C und D sind 5, 10, 3 und 2 in t0 bis t3. t bedeutet temporary. li ist die Pseudoinstruktion für die Initialisierung. Für diese kleinen Werte ist typischerweise je ein addi die Expansion. Das ist nicht durch einen Venus-Lauf dieser Fassung bestätigt.</p>
 <p>add t4, t0, t1 schreibt 15. add t5, t2, t3 schreibt 5. sub t6, t4, t5 schreibt 10. Die Eingaben bleiben erhalten. Am Label Ergebnis_pruefen, vor der Kopie nach a1, gilt t6 gleich 10. Ein Label ist keine Instruktion. Danach hält a1 den Druckwert und a0 die Dienstnummer 1, später 10. Das Ergebnis der Aufgabe ist t6, nicht a0.</p>
@@ -3300,12 +3300,12 @@ graph LR
           // flash "checked"
           button.classList.add('code-copy-button-checked');
           var currentTitle = button.getAttribute("title");
-          button.setAttribute("title", "Copied!");
+          button.setAttribute("title", "Kopiert");
           let tooltip;
           if (window.bootstrap) {
             button.setAttribute("data-bs-toggle", "tooltip");
             button.setAttribute("data-bs-placement", "left");
-            button.setAttribute("data-bs-title", "Copied!");
+            button.setAttribute("data-bs-title", "Kopiert");
             tooltip = new bootstrap.Tooltip(button, 
               { trigger: "manual", 
                 customClass: "code-copy-button-tooltip",

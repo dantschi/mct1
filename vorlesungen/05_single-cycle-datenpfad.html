@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="de"><head>
 <link href="../assets/dhbw_logo.svg" rel="icon" type="image/svg+xml">
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-html/tabby.min.js"></script>
@@ -349,7 +349,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb1-1"><a aria-label="1"></a># Wir wissen<span class="op">,</span> WAS dieser Befehl tut<span class="op">:</span></span>
 <span id="cb1-2"><a aria-label="2"></a><span class="bu">add</span> t0<span class="op">,</span> t1<span class="op">,</span> t2</span>
 <span id="cb1-3"><a aria-label="3"></a></span>
-<span id="cb1-4"><a aria-label="4"></a># Aber WIE wird aus <span class="bn">0x007302B3</span> die ALU aktiviert<span class="op">?</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-4"><a aria-label="4"></a># Aber WIE wird aus <span class="bn">0x007302B3</span> die ALU aktiviert<span class="op">?</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>ALU, CPU und PC (Program Counter, Adresse der aktuellen Instruktion) sind hier die Arbeitsbegriffe.</p>
 <p>Immer 32 Bit gilt für dieses unkomprimierte RV32I-Modell, nicht für RISC-V mit komprimierten Instruktionen. R, I, S und B sind die hier nötigen Formate, nicht alle Formate der ISA.</p>
@@ -1317,7 +1317,7 @@ graph TD
 <li>Deshalb ist <span class="math inline">\(a = a + b\)</span> gefahrlos</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb2-1"><a aria-label="1"></a>t0 <span class="op">=</span> t0 <span class="op">+</span> t1<span class="op">;</span></span>
-<span id="cb2-2"><a aria-label="2"></a><span class="co">// Lesen und Schreiben im selben Takt — Flankensteuerung rettet uns</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-2"><a aria-label="2"></a><span class="co">// Lesen und Schreiben im selben Takt — Flankensteuerung rettet uns</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Besser als ein unmarkiertes addi ist add t0, t0, t1. Bei t0=10 und t1=15 lesen beide Ports den alten t0 beziehungsweise t1. WD wird 25. Die Flanke schreibt 25. Es entsteht kein kombinatorischer Selbstaddierer, weil der neue Wert erst im Flip-Flop ankommt.</p>
 <p>a=a+b meint hier den Registerzustand. Das ist keine Aussage über C-Überlauf. addi wäre eine Erweiterung über den vorhandenen I-Pfad, nicht der Basis-R-Typ.</p>
@@ -1618,7 +1618,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb3-1"><a aria-label="1"></a>lw t0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span>s1<span class="op">)</span></span>
 <span id="cb3-2"><a aria-label="2"></a># 1. ALUSrc <span class="op">=</span> Immediate <span class="op">(</span><span class="dv">12</span><span class="op">)</span></span>
 <span id="cb3-3"><a aria-label="3"></a># 2. ALU<span class="op">:</span> s1 <span class="op">+</span> <span class="dv">12</span></span>
-<span id="cb3-4"><a aria-label="4"></a># 3. Adresse am ALU<span class="op">-</span>Ausgang</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-4"><a aria-label="4"></a># 3. Adresse am ALU<span class="op">-</span>Ausgang</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>lw heißt load word. Die effektive Adresse ist Basis plus Byteoffset.</p>
 <p>Lehrwerte: s1=0x1000, Offset 12, ALUSrc=1, ALU-Operation ADD, Adresse 0x100C. t0 ist vor der Flanke noch unverändert. 12 Byte sind drei Wörter, nicht Wortindex 12.</p>
@@ -1838,7 +1838,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb4-1"><a aria-label="1"></a>Ohne RegWrite=0:</span>
 <span id="cb4-2"><a aria-label="2"></a>MUX MemtoReg leitet immer etwas weiter —</span>
-<span id="cb4-3"><a aria-label="3"></a>Store wuerde Register mit Muell beschreiben.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-3"><a aria-label="3"></a>Store wuerde Register mit Muell beschreiben.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Im S-Format ist instr[11:7] imm[4:0], nicht rd. rs2 steht in instr[24:20]. Dieselben Bits sind also nicht Immediate und rs2.</p>
 <p>RegWrite bleibt 0. Am WD-Port darf ein konkreter, für den Store irrelevanter Wert liegen; er wird nicht übernommen. MemtoReg darf X sein, weil kein Registerschreiben erfolgt. X ist keine gleichzeitige 0 und 1 und kein offener Draht. RegWrite und MemWrite dürfen nicht X sein.</p>
@@ -1962,7 +1962,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb5-1"><a aria-label="1"></a># Hardware<span class="op">-</span>Sicht<span class="op">:</span></span>
 <span id="cb5-2"><a aria-label="2"></a># 1. rs1 <span class="op">==</span> rs2 <span class="op">?</span></span>
 <span id="cb5-3"><a aria-label="3"></a># 2. PC_neu <span class="op">=</span> PC <span class="op">+</span> Offset</span>
-<span id="cb5-4"><a aria-label="4"></a># wenn <span class="op">(</span><span class="dv">1</span><span class="op">):</span> PC <span class="op">=</span> PC_neu</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-4"><a aria-label="4"></a># wenn <span class="op">(</span><span class="dv">1</span><span class="op">):</span> PC <span class="op">=</span> PC_neu</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>beq heißt branch if equal. Verglichen werden die Inhalte, nicht die Registernummern. Das Ziel ist PC_alt plus Byteoffset. Bei Ungleichheit folgt PC_alt+4.</p>
 <p>beq schreibt kein rd. Dass die Haupt-ALU hier nicht zugleich das Ziel addiert, ist eine Entwurfsentscheidung, kein ISA-Zwang.</p>
@@ -1990,7 +1990,7 @@ graph LR
 <li>Identisch <span class="math inline">\(\Rightarrow\)</span> Ergebnis <span class="math inline">\(= 0\)</span></li>
 <li>Dann war <code>beq</code> erfolgreich</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb6-1"><a aria-label="1"></a>Wenn A == B, dann A - B == 0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb6-1"><a aria-label="1"></a>Wenn A == B, dann A - B == 0</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>7−7 ergibt das Wort 0, 7−9 ein Wort ungleich null. Zwei gleiche 32-Bit-Wörter haben die Differenz null, auch in der modularen Registerarithmetik.</p>
 <p>Das Differenzwort ist keine zu speichernde Variable. beq braucht nur die Aussage null oder nicht null. Erfolgreich im Sinne eines Sprungs ist das nur zusammen mit der Befehlsklasse beq.</p>
@@ -2128,7 +2128,7 @@ graph LR
 <li>Der Branch-Addierer rechnet alten PC plus diesen Byteoffset</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb7-1"><a aria-label="1"></a>Byteoffset = signextend(B-Immediate mit implizitem Bit 0)</span>
-<span id="cb7-2"><a aria-label="2"></a>Target     = oldPC + Byteoffset</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-2"><a aria-label="2"></a>Target     = oldPC + Byteoffset</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Der B-Byteoffset enthält Bit 0 schon als Null. Ein zweites Schieben würde aus +12 die Zahl +24 machen und das Ziel verfehlen.</p>
 <p>PC_alt=0x100 plus 12 ergibt 0x10C. PC_alt=0x108 plus −8 ergibt 0x100. Die Codierung erlaubt Zwei-Byte-Schritte; gültige Ziele im unkomprimierten Modell bleiben vier Byte ausgerichtet.</p>
@@ -2413,7 +2413,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb8-1"><a aria-label="1"></a>jal ra, Label, beide Werte aus dem alten PC:</span>
 <span id="cb8-2"><a aria-label="2"></a>  nextPC = oldPC + Byteoffset</span>
-<span id="cb8-3"><a aria-label="3"></a>  ra     = oldPC + 4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-3"><a aria-label="3"></a>  ra     = oldPC + 4</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>jal</code> liegt außerhalb des Basismodells add/sub/and/or/lw/sw/beq, bis der Write-Back-Pfad für den Linkwert ergänzt ist. Die sequenzielle Schreibweise „erst PC = Target, dann ra = PC+4“ wäre falsch, weil der Linkwert den alten PC braucht.</p>
 <aside class="notes">
 <p>jal liegt außerhalb des Basissubsets. Beide Ergebnisse kommen aus dem alten PC: nextPC = PC_alt + Byteoffset und Linkwert = PC_alt+4.</p>
@@ -2697,7 +2697,7 @@ graph LR
 <li>1: Immediate aus ImmGen</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb9-1"><a aria-label="1"></a>add  t0, t1, t2  -&gt; ALUSrc = 0</span>
-<span id="cb9-2"><a aria-label="2"></a>addi t0, t1, 5   -&gt; ALUSrc = 1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-2"><a aria-label="2"></a>addi t0, t1, 5   -&gt; ALUSrc = 1</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>ALUSrc=0 wählt im Lehrmodell RD2, ALUSrc=1 das Immediate. add und der Vergleich bei beq nutzen Register, lw und sw das Immediate.</p>
 <p>addi bleibt eine markierte Erweiterung. In Ripes kann beq die Haupt-ALU mit PC und Immediate speisen. Die beq-Zeile des Lehrmodells ist deshalb kein garantierter Ripes-Portwert.</p>
@@ -2727,7 +2727,7 @@ graph LR
 <li>Bei <code>sw</code>/<code>beq</code>: Stellung oft Don’t Care (weil <code>RegWrite = 0</code>)</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb10-1"><a aria-label="1"></a>add t0, t1, t2  -&gt; MemtoReg = 0</span>
-<span id="cb10-2"><a aria-label="2"></a>lw  t0, 0(s1)   -&gt; MemtoReg = 1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-2"><a aria-label="2"></a>lw  t0, 0(s1)   -&gt; MemtoReg = 1</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>MemtoReg=0 wählt den ALU-Wert, MemtoReg=1 das Speicherwort. add schreibt 25, lw schreibt 88. sw und beq schreiben nicht; dann ist MemtoReg X.</p>
 <p>X heißt: beide Stellungen lassen rd unverändert, solange RegWrite=0. Es ist nicht gleichzeitig 0 und 1. Für lw wäre die falsche Stellung folgenschwer: dann käme die Adresse statt 88 ins Register.</p>
@@ -2756,7 +2756,7 @@ graph LR
 <li>Einzige Weiche, die auch vom ALU-Zero abhängt (AND mit Branch)</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb11-1"><a aria-label="1"></a>add ...              -&gt; PCSrc = 0</span>
-<span id="cb11-2"><a aria-label="2"></a>beq ... (genommen)   -&gt; PCSrc = 1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb11-2"><a aria-label="2"></a>beq ... (genommen)   -&gt; PCSrc = 1</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>PCSrc=0 wählt PC_alt+4, PCSrc=1 das Branch-Ziel. Im Basismodell ist PCSrc = Branch UND Zero.</p>
 <p>add, lw und sw bleiben sequenziell. beq springt nur bei Gleichheit. Ein sub mit Zero=1 und Branch=0 springt nicht. Die Übernahme erfolgt an der Flanke.</p>
@@ -3129,7 +3129,7 @@ graph LR
 <li>Code in Ripes etwas unbequemer — visuelles Feedback unschlagbar</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb12-1"><a aria-label="1"></a>Venus = Blick des Programmierers</span>
-<span id="cb12-2"><a aria-label="2"></a>Ripes = Blick des Chip-Designers</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb12-2"><a aria-label="2"></a>Ripes = Blick des Chip-Designers</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Venus eignet sich für die beobachtbare Instruktions-, Register- und Speicherseite. Ripes ergänzt eine konkrete simulierte Mikroarchitektur. Beide sind Software.</p>
 <p>Dieselbe Assembleridee kann übertragbar sein. Direktiven, Erweiterungen, Einstieg und ecall-Verträge können abweichen. Der Exit dieser Einheit nutzt in der Ripes-Konvention a7=10, nicht den Venus-Vertrag a0=10 aus Einheit 4.</p>
@@ -3186,7 +3186,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb13-1"><a aria-label="1"></a>.text</span>
 <span id="cb13-2"><a aria-label="2"></a>    li t0<span class="op">,</span> <span class="dv">10</span></span>
 <span id="cb13-3"><a aria-label="3"></a>    li t1<span class="op">,</span> <span class="dv">15</span></span>
-<span id="cb13-4"><a aria-label="4"></a>    <span class="bu">add</span> t2<span class="op">,</span> t0<span class="op">,</span> t1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb13-4"><a aria-label="4"></a>    <span class="bu">add</span> t2<span class="op">,</span> t0<span class="op">,</span> t1</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>.text ist eine Direktive, keine Instruktion. li ist eine Pseudoinstruktion und bei kleinen Zahlen oft ein addi. Dieses Setup liegt außerhalb der sieben Basisbefehle, der gewählte Ripes-Prozessor unterstützt es.</p>
 <p>10 und 15 werden zu 25. Im Disassembly ist zu prüfen, welche echte Instruktion gerade aktiv ist. Ein Haltepunkt oder ein Exit verhindert unklaren Fall-through.</p>
@@ -3312,7 +3312,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb14-1"><a aria-label="1"></a>Beobachtung fuer sw a0, 0(s1), Basis B, Daten 88:</span>
 <span id="cb14-2"><a aria-label="2"></a>1. Vor Clock: aktuelle Instruktion, Adresse B, Write Data 88, Schreibfreigabe aktiv</span>
 <span id="cb14-3"><a aria-label="3"></a>2. Clock ausfuehren</span>
-<span id="cb14-4"><a aria-label="4"></a>3. Danach: Wort an B ist 88; das Diagramm kann schon die naechste Instruktion zeigen</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb14-4"><a aria-label="4"></a>3. Danach: Wort an B ist 88; das Diagramm kann schon die naechste Instruktion zeigen</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Vor Clock bereitet sw die Änderung vor. Nach Clock zeigt der Speicher den neuen Zustand.</p>
 <p>Im Labor hat lw zuvor 88 nach a0 geschrieben. s1 enthält die Basis B. Bei sw a0, 0(s1) sind Adresse B, Schreibdaten 88 und die Speicherfreigabe aktiv, die Registerfreigabe nicht. Die Portnamen können von MemWrite und RegWrite abweichen.</p>
@@ -3370,7 +3370,7 @@ graph LR
 <span id="cb15-2"><a aria-label="2"></a><span class="fu">werte:</span> .<span class="dt">word</span> <span class="dv">99</span><span class="op">,</span> <span class="dv">88</span></span>
 <span id="cb15-3"><a aria-label="3"></a>.text</span>
 <span id="cb15-4"><a aria-label="4"></a>    la s1<span class="op">,</span> werte</span>
-<span id="cb15-5"><a aria-label="5"></a>    lw a0<span class="op">,</span> <span class="dv">4</span><span class="op">(</span>s1<span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb15-5"><a aria-label="5"></a>    lw a0<span class="op">,</span> <span class="dv">4</span><span class="op">(</span>s1<span class="op">)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>.data und .word legen 99 an B und 88 an B+4. la lädt die Adresse B, nicht den Inhalt, und kann mehrere Instruktionen brauchen. B kommt aus der Symbolansicht und muss durch vier teilbar sein.</p>
 <p>Vor Clock bei lw a0, 4(s1): Immediate 4, Adresse B+4, Lesedaten 88, ALUSrc=1, MemtoReg=1, RegWrite=1, MemRead=1, MemWrite=0. Nach Clock ist a0=88. Die Codierung ist 0x0044A503. Danach schreibt sw a0, 0(s1) das Wort 88 an B. MemtoReg heißt im Tool nicht zwingend so.</p>
@@ -3821,12 +3821,12 @@ graph LR
           // flash "checked"
           button.classList.add('code-copy-button-checked');
           var currentTitle = button.getAttribute("title");
-          button.setAttribute("title", "Copied!");
+          button.setAttribute("title", "Kopiert");
           let tooltip;
           if (window.bootstrap) {
             button.setAttribute("data-bs-toggle", "tooltip");
             button.setAttribute("data-bs-placement", "left");
-            button.setAttribute("data-bs-title", "Copied!");
+            button.setAttribute("data-bs-title", "Kopiert");
             tooltip = new bootstrap.Tooltip(button, 
               { trigger: "manual", 
                 customClass: "code-copy-button-tooltip",

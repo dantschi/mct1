@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="de"><head>
 <link href="../assets/dhbw_logo.svg" rel="icon" type="image/svg+xml">
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-html/tabby.min.js"></script>
@@ -323,7 +323,7 @@ graph LR
 <li>Einheit 8: I/O und Syscalls — Außenwelt und OS</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb1-1"><a aria-label="1"></a>Die Blackbox Computer ist entschlüsselt.</span>
-<span id="cb1-2"><a aria-label="2"></a>Auf Hardware-Ebene bleiben keine Geheimnisse.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-2"><a aria-label="2"></a>Auf Hardware-Ebene bleiben keine Geheimnisse.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Treppe der Abstraktion: Transistoren, ISA/ABI, Datenpfad, Pipeline, I/O.</p>
 <style type="text/css">
@@ -439,8 +439,8 @@ graph LR
 <li>Header-Text wird eingefügt; Makros expandiert</li>
 <li>Compiler: Syntax/Semantik, Optimierung; Ausgabe: RISC-V-Assembler (<code>.s</code>)</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb2-1"><a aria-label="1"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb3-1"><a aria-label="1"></a>li s0<span class="op">,</span> <span class="dv">5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb2-1"><a aria-label="1"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb3-1"><a aria-label="1"></a>li s0<span class="op">,</span> <span class="dv">5</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Preprocessor = Textersetzung. Compiler = Kern: C wird zu Assembler.</p>
 <style type="text/css">
@@ -464,7 +464,7 @@ graph LR
 <li>Noch nicht ausführbar: Adressen oft noch offen</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb4-1"><a aria-label="1"></a>Text:   add t0, t1, t2</span>
-<span id="cb4-2"><a aria-label="2"></a>Hex:    0x007302B3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-2"><a aria-label="2"></a>Hex:    0x007302B3</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Assembler packt Opcode/rs1/rs2/rd laut Handbuch. Object-Dateien fehlen oft noch finale Adressen.</p>
 <style type="text/css">
@@ -555,10 +555,10 @@ graph TD
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb5-1"><a aria-label="1"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></span>
 <span id="cb5-2"><a aria-label="2"></a><span class="dt">int</span> b <span class="op">=</span> <span class="dv">10</span><span class="op">;</span></span>
-<span id="cb5-3"><a aria-label="3"></a><span class="dt">int</span> c <span class="op">=</span> a <span class="op">+</span> b<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-3"><a aria-label="3"></a><span class="dt">int</span> c <span class="op">=</span> a <span class="op">+</span> b<span class="op">;</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb6-1"><a aria-label="1"></a>li s0<span class="op">,</span> <span class="dv">5</span></span>
 <span id="cb6-2"><a aria-label="2"></a>li s1<span class="op">,</span> <span class="dv">10</span></span>
-<span id="cb6-3"><a aria-label="3"></a><span class="bu">add</span> s2<span class="op">,</span> s0<span class="op">,</span> s1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-3"><a aria-label="3"></a><span class="bu">add</span> s2<span class="op">,</span> s0<span class="op">,</span> s1</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Solange Platz: Variablen in Registern. Spilling kostet Performance.</p>
 <style type="text/css">
@@ -588,7 +588,7 @@ graph TD
 <span id="cb7-6"><a aria-label="6"></a>    c <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
 <span id="cb7-7"><a aria-label="7"></a><span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
 <span id="cb7-8"><a aria-label="8"></a>    c <span class="op">=</span> <span class="dv">2</span><span class="op">;</span></span>
-<span id="cb7-9"><a aria-label="9"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-9"><a aria-label="9"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Bedingungs-Umkehrung aus Einheit 3: Assembler fragt oft das Gegenteil.</p>
 <style type="text/css">
@@ -621,7 +621,7 @@ graph TD
 <span id="cb8-9"><a aria-label="9"></a><span class="fu">Else_Block:</span></span>
 <span id="cb8-10"><a aria-label="10"></a>    li s2<span class="op">,</span> <span class="dv">2</span></span>
 <span id="cb8-11"><a aria-label="11"></a></span>
-<span id="cb8-12"><a aria-label="12"></a><span class="fu">End:</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-12"><a aria-label="12"></a><span class="fu">End:</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Klassischer Klausurfehler: fehlender Jump nach dem If-Block.</p>
 <style type="text/css">
@@ -646,7 +646,7 @@ graph TD
 <span id="cb9-2"><a aria-label="2"></a></span>
 <span id="cb9-3"><a aria-label="3"></a><span class="cf">while</span> <span class="op">(</span>i <span class="op">&lt;</span> <span class="dv">10</span><span class="op">)</span> <span class="op">{</span></span>
 <span id="cb9-4"><a aria-label="4"></a>    i<span class="op">++;</span></span>
-<span id="cb9-5"><a aria-label="5"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-5"><a aria-label="5"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Ist die Bedingung anfangs falsch, läuft der Körper kein Mal.</p>
 <style type="text/css">
@@ -676,7 +676,7 @@ graph TD
 <span id="cb10-6"><a aria-label="6"></a>    addi s0<span class="op">,</span> s0<span class="op">,</span> <span class="dv">1</span></span>
 <span id="cb10-7"><a aria-label="7"></a>    j While_Start</span>
 <span id="cb10-8"><a aria-label="8"></a></span>
-<span id="cb10-9"><a aria-label="9"></a><span class="fu">While_End:</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-9"><a aria-label="9"></a><span class="fu">While_End:</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Kreis: Prüfung, Body, Rücksprung.</p>
 <style type="text/css">
@@ -703,7 +703,7 @@ graph TD
 <span id="cb11-3"><a aria-label="3"></a></span>
 <span id="cb11-4"><a aria-label="4"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">10</span><span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
 <span id="cb11-5"><a aria-label="5"></a>    sum <span class="op">=</span> sum <span class="op">+</span> arr<span class="op">[</span>i<span class="op">];</span></span>
-<span id="cb11-6"><a aria-label="6"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb11-6"><a aria-label="6"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Standard zum Iterieren über Arrays.</p>
 <style type="text/css">
@@ -738,7 +738,7 @@ graph TD
 <span id="cb12-9"><a aria-label="9"></a>    addi s1<span class="op">,</span> s1<span class="op">,</span> <span class="dv">1</span></span>
 <span id="cb12-10"><a aria-label="10"></a>    j For_Loop</span>
 <span id="cb12-11"><a aria-label="11"></a></span>
-<span id="cb12-12"><a aria-label="12"></a><span class="fu">For_End:</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb12-12"><a aria-label="12"></a><span class="fu">For_End:</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Blaupause jeder For-Schleife in Assembler.</p>
 <style type="text/css">
@@ -763,7 +763,7 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb13-1"><a aria-label="1"></a>    slli t1<span class="op">,</span> s1<span class="op">,</span> <span class="dv">2</span>      <span class="op">#</span> i <span class="op">*</span> <span class="dv">4</span></span>
 <span id="cb13-2"><a aria-label="2"></a>    <span class="bu">add</span>  t2<span class="op">,</span> s2<span class="op">,</span> t1     <span class="op">#</span> Base <span class="op">+</span> Offset</span>
 <span id="cb13-3"><a aria-label="3"></a>    lw   t3<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>t2<span class="op">)</span></span>
-<span id="cb13-4"><a aria-label="4"></a>    <span class="bu">add</span>  s0<span class="op">,</span> s0<span class="op">,</span> t3     <span class="op">#</span> sum <span class="op">+=</span> arr<span class="op">[</span>i<span class="op">]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb13-4"><a aria-label="4"></a>    <span class="bu">add</span>  s0<span class="op">,</span> s0<span class="op">,</span> t3     <span class="op">#</span> sum <span class="op">+=</span> arr<span class="op">[</span>i<span class="op">]</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Klassischer Klausurfehler: Offset ohne Multiplikation mit 4.</p>
 <style type="text/css">
@@ -787,13 +787,13 @@ graph TD
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb14-1"><a aria-label="1"></a><span class="dt">int</span> calc<span class="op">(</span><span class="dt">int</span> a<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb14-2"><a aria-label="2"></a>    <span class="cf">return</span> a <span class="op">*</span> <span class="dv">2</span><span class="op">;</span></span>
-<span id="cb14-3"><a aria-label="3"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb14-3"><a aria-label="3"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb15-1"><a aria-label="1"></a># Fragment<span class="op">,</span> kein vollständiges Programm<span class="op">:</span></span>
 <span id="cb15-2"><a aria-label="2"></a><span class="fu">calc:</span></span>
 <span id="cb15-3"><a aria-label="3"></a>    slli a0<span class="op">,</span> a0<span class="op">,</span> <span class="dv">1</span></span>
 <span id="cb15-4"><a aria-label="4"></a>    <span class="cf">ret</span></span>
 <span id="cb15-5"><a aria-label="5"></a></span>
-<span id="cb15-6"><a aria-label="6"></a># Aufrufer separat<span class="op">,</span> mit Exit<span class="op">,</span> damit calc nicht per Fall<span class="op">-</span>through erneut läuft</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb15-6"><a aria-label="6"></a># Aufrufer separat<span class="op">,</span> mit Exit<span class="op">,</span> damit calc nicht per Fall<span class="op">-</span>through erneut läuft</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Leaf-Funktionen können ohne Frame auskommen. Ruft die Funktion weiter auf oder nutzt <code>s</code>-Register, greifen Prolog/Epilog aus Einheit 4.</p>
 <style type="text/css">
@@ -839,7 +839,7 @@ graph TD
 <li>Security / Reverse Engineering: oft nur Disassembly</li>
 </ol>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb16-1"><a aria-label="1"></a>Assembler ist selten für große Apps.</span>
-<span id="cb16-2"><a aria-label="2"></a>Assembler ist das Röntgengerät des Informatikers.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb16-2"><a aria-label="2"></a>Assembler ist das Röntgengerät des Informatikers.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Wer RISC-V versteht, schreibt besseres C und liest Maschinencode.</p>
 <style type="text/css">
@@ -973,7 +973,7 @@ graph LR
 <span id="cb17-11"><a aria-label="11"></a></span>
 <span id="cb17-12"><a aria-label="12"></a><span class="fu">State_1:</span></span>
 <span id="cb17-13"><a aria-label="13"></a>    # LED<span class="op">,</span> Taster<span class="op">,</span> ggf<span class="op">.</span> s0 <span class="op">=</span> <span class="dv">2</span></span>
-<span id="cb17-14"><a aria-label="14"></a>    j Loop</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb17-14"><a aria-label="14"></a>    j Loop</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Skizze: Verteilerkopf oben, je State ein Label. Unbekannte Zustände sicher auf State 0.</p>
 <style type="text/css">
@@ -998,7 +998,7 @@ graph LR
 <li>Falsche Taste: sofort zurück auf State 0 (rot)</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb18-1"><a aria-label="1"></a>Tipp: Entprellung (Debouncing) aus Einheit 8!</span>
-<span id="cb18-2"><a aria-label="2"></a>Sonst rauscht ein Klick durch alle States.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb18-2"><a aria-label="2"></a>Sonst rauscht ein Klick durch alle States.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Perfektes FSM-Labor: I/O + Kontrollfluss + Entprellung.</p>
 <style type="text/css">
@@ -1046,7 +1046,7 @@ graph LR
 <span id="cb19-2"><a aria-label="2"></a>    li t1<span class="op">,</span> <span class="dv">3</span></span>
 <span id="cb19-3"><a aria-label="3"></a>    <span class="bu">sub</span> t2<span class="op">,</span> t0<span class="op">,</span> t1   <span class="op">#</span> t2 <span class="op">=</span> <span class="dv">2</span></span>
 <span id="cb19-4"><a aria-label="4"></a>    slli t2<span class="op">,</span> t2<span class="op">,</span> <span class="dv">1</span>   <span class="op">#</span> <span class="op">*</span><span class="dv">2</span></span>
-<span id="cb19-5"><a aria-label="5"></a>    # Ergebnis<span class="op">:</span> t2 <span class="op">=</span> <span class="dv">4</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb19-5"><a aria-label="5"></a>    # Ergebnis<span class="op">:</span> t2 <span class="op">=</span> <span class="dv">4</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Wie Venus Step-by-Step - Registerzeilen auf dem Schmierblatt.</p>
 <style type="text/css">
@@ -1071,7 +1071,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb20-1"><a aria-label="1"></a><span class="dt">int</span> summe <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb20-2"><a aria-label="2"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">5</span><span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
 <span id="cb20-3"><a aria-label="3"></a>    summe <span class="op">+=</span> i<span class="op">;</span></span>
-<span id="cb20-4"><a aria-label="4"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb20-4"><a aria-label="4"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>For-Schablone + bei Funktionen Stack-Prolog/Epilog.</p>
 <style type="text/css">
@@ -1211,7 +1211,7 @@ graph LR
 <li>Lerngruppen: erklären, warum <code>MemtoReg</code> bei <code>sw</code> Don’t Care (<span class="math inline">\(X\)</span>) ist</li>
 </ol>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb21-1"><a aria-label="1"></a>Wie Mathematik: Durchlesen reicht nicht.</span>
-<span id="cb21-2"><a aria-label="2"></a>Sie müssen Code tippen.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb21-2"><a aria-label="2"></a>Sie müssen Code tippen.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Simulator-Fehlermeldungen sind der beste Nachhilfelehrer.</p>
 <style type="text/css">
@@ -1257,7 +1257,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb22-1"><a aria-label="1"></a># Offizieller Ausstieg <span class="op">(</span>Venus<span class="op">-</span>ABI<span class="op">,</span> nicht Ripes<span class="op">-</span>MMIO<span class="op">):</span></span>
 <span id="cb22-2"><a aria-label="2"></a>li a0<span class="op">,</span> <span class="dv">10</span></span>
-<span id="cb22-3"><a aria-label="3"></a>ecall</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb22-3"><a aria-label="3"></a>ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Venus: Service-ID in a0 (Einheit 8). Ripes-Labor nutzt MMIO, keinen Exit-Syscall.</p>
 <style type="text/css">
@@ -1704,12 +1704,12 @@ graph LR
           // flash "checked"
           button.classList.add('code-copy-button-checked');
           var currentTitle = button.getAttribute("title");
-          button.setAttribute("title", "Copied!");
+          button.setAttribute("title", "Kopiert");
           let tooltip;
           if (window.bootstrap) {
             button.setAttribute("data-bs-toggle", "tooltip");
             button.setAttribute("data-bs-placement", "left");
-            button.setAttribute("data-bs-title", "Copied!");
+            button.setAttribute("data-bs-title", "Kopiert");
             tooltip = new bootstrap.Tooltip(button, 
               { trigger: "manual", 
                 customClass: "code-copy-button-tooltip",

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="de"><head>
 <link href="../assets/dhbw_logo.svg" rel="icon" type="image/svg+xml">
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-html/tabby.min.js"></script>
@@ -319,7 +319,7 @@ graph LR
 <li>Kein Knopfdruck kann das laufende Programm beeinflussen</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb1-1"><a aria-label="1"></a>Ein Prozessor ohne I/O ist wie ein Taschenrechner</span>
-<span id="cb1-2"><a aria-label="2"></a>ohne Display und ohne Tasten: physikalisch nutzlos.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-2"><a aria-label="2"></a>ohne Display und ohne Tasten: physikalisch nutzlos.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Die schnellste Pi-Berechnung hilft nicht, wenn das Ergebnis für immer in <code>s0</code> liegt.</p>
 <style type="text/css">
@@ -435,7 +435,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb2-1"><a aria-label="1"></a># Alter x86<span class="op">-</span>Stil <span class="op">(</span>Port<span class="op">-</span>Mapped I<span class="op">/</span>O<span class="op">):</span></span>
 <span id="cb2-2"><a aria-label="2"></a><span class="bu">MOV</span> <span class="kw">DX</span><span class="op">,</span> <span class="bn">0x03F8</span>    <span class="op">#</span> COM1</span>
-<span id="cb2-3"><a aria-label="3"></a><span class="bu">OUT</span> <span class="kw">DX</span><span class="op">,</span> <span class="kw">AL</span>        <span class="op">#</span> <span class="dt">Byte</span> aus <span class="kw">AL</span> an den Port</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-3"><a aria-label="3"></a><span class="bu">OUT</span> <span class="kw">DX</span><span class="op">,</span> <span class="kw">AL</span>        <span class="op">#</span> <span class="dt">Byte</span> aus <span class="kw">AL</span> an den Port</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Extra-Leitungen und Sonderbefehle: normale ALU-Befehle greifen auf Ports nicht zu.</p>
 <style type="text/css">
@@ -526,7 +526,7 @@ graph LR
 <li><code>0xF0000000</code>–<code>0xFFFFFFFF</code>: MMIO (Sensoren, LEDs)</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb3-1"><a aria-label="1"></a>lw aus 0x10000000 -&gt; Array-Element im RAM</span>
-<span id="cb3-2"><a aria-label="2"></a>lw aus 0xF0000000 -&gt; z.B. Pixel/Sensor-Wert</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-2"><a aria-label="2"></a>lw aus 0xF0000000 -&gt; z.B. Pixel/Sensor-Wert</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Reviere abstecken: niedrige Adressen RAM, hoher Bereich Peripherie.</p>
 <style type="text/css">
@@ -578,7 +578,7 @@ graph LR
 <span id="cb4-7"><a aria-label="7"></a></span>
 <span id="cb4-8"><a aria-label="8"></a>li t2<span class="op">,</span> <span class="dv">1</span></span>
 <span id="cb4-9"><a aria-label="9"></a>sw t2<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s2<span class="op">)</span>        <span class="op">#</span> MMIO<span class="op">-</span>Write<span class="op">:</span> Alarm<span class="op">-</span>LED</span>
-<span id="cb4-10"><a aria-label="10"></a><span class="fu">Safe:</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-10"><a aria-label="10"></a><span class="fu">Safe:</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Keine neuen Opcodes: Temperatur schwellenbasiert auf LED abbilden.</p>
 <style type="text/css">
@@ -716,7 +716,7 @@ graph TD
 <span id="cb5-3"><a aria-label="3"></a></span>
 <span id="cb5-4"><a aria-label="4"></a># Bit <span class="dv">2</span> <span class="op">(</span>SW2<span class="op">):</span> Maske <span class="dv">4</span> <span class="op">=</span> <span class="bn">0b</span><span class="er">0100</span></span>
 <span id="cb5-5"><a aria-label="5"></a>andi t1<span class="op">,</span> t0<span class="op">,</span> <span class="dv">4</span></span>
-<span id="cb5-6"><a aria-label="6"></a>bne t1<span class="op">,</span> zero<span class="op">,</span> Jump</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-6"><a aria-label="6"></a>bne t1<span class="op">,</span> zero<span class="op">,</span> Jump</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Wert 5 bedeutet SW0 und SW2 an. AND filtert auf eine saubere 4 oder 0.</p>
 <style type="text/css">
@@ -738,7 +738,7 @@ graph TD
 <span id="cb6-3"><a aria-label="3"></a>lw t1<span class="op">,</span> <span class="dv">4</span><span class="op">(</span>s1<span class="op">)</span>           <span class="op">#</span> DOWN <span class="op">(+</span><span class="dv">4</span><span class="op">)</span></span>
 <span id="cb6-4"><a aria-label="4"></a>lw t2<span class="op">,</span> <span class="dv">8</span><span class="op">(</span>s1<span class="op">)</span>           <span class="op">#</span> LEFT <span class="op">(+</span><span class="dv">8</span><span class="op">)</span></span>
 <span id="cb6-5"><a aria-label="5"></a>lw t3<span class="op">,</span> <span class="dv">12</span><span class="op">(</span>s1<span class="op">)</span>          <span class="op">#</span> RIGHT <span class="op">(+</span><span class="dv">12</span><span class="op">)</span></span>
-<span id="cb6-6"><a aria-label="6"></a>bne t0<span class="op">,</span> zero<span class="op">,</span> UpPressed</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-6"><a aria-label="6"></a>bne t0<span class="op">,</span> zero<span class="op">,</span> UpPressed</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Prüfen Sie den LSB bzw. den ganzen Wortwert auf <span class="math inline">\(\neq 0\)</span>. Nach dem Erkennen: warten, bis die Taste wieder losgelassen ist (Release), sonst rauscht ein Klick durch mehrere Zustände.</p>
 <style type="text/css">
@@ -802,7 +802,7 @@ graph LR
 <li>Schalter-Register ändert sich durch externe Physik — ohne <code>sw</code> der CPU</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb7-1"><a aria-label="1"></a>RAM: Tresor — ändert sich nur, wenn ICH schreibe.</span>
-<span id="cb7-2"><a aria-label="2"></a>I/O: Fenster — die Welt draußen ändert sich ständig.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-2"><a aria-label="2"></a>I/O: Fenster — die Welt draußen ändert sich ständig.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Zwei aufeinanderfolgende <code>lw</code> können verschiedene Werte liefern.</p>
 <style type="text/css">
@@ -833,7 +833,7 @@ graph LR
 <span id="cb8-3"><a aria-label="3"></a><span class="cf">while</span> <span class="op">(*</span>button <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span> <span class="op">}</span></span>
 <span id="cb8-4"><a aria-label="4"></a></span>
 <span id="cb8-5"><a aria-label="5"></a><span class="co">/* Rettung (Compiler): */</span></span>
-<span id="cb8-6"><a aria-label="6"></a><span class="dt">volatile</span> <span class="dt">int</span> <span class="op">*</span>button <span class="op">=</span> <span class="op">(</span><span class="dt">volatile</span> <span class="dt">int</span> <span class="op">*)</span><span class="bn">0xF0000000</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-6"><a aria-label="6"></a><span class="dt">volatile</span> <span class="dt">int</span> <span class="op">*</span>button <span class="op">=</span> <span class="op">(</span><span class="dt">volatile</span> <span class="dt">int</span> <span class="op">*)</span><span class="bn">0xF0000000</span><span class="op">;</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p><code>volatile</code> hindert den Compiler daran, wiederholte Zugriffe zu streichen. Es macht den Zugriff nicht automatisch uncached und ersetzt weder <code>FENCE</code> noch Synchronisation mit DMA oder anderen Kernen. „Jedes <code>lw</code> ist ein Buszugriff“ gilt nur im uncached-MMIO-Modell dieser Folie.</p>
 <style type="text/css">
@@ -878,7 +878,7 @@ graph LR
 <li>Profi-Praxis: Konstanten / BSP-Header</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb9-1"><a aria-label="1"></a><span class="pp">#define LED_BASE    </span><span class="bn">0xF0000020</span></span>
-<span id="cb9-2"><a aria-label="2"></a><span class="pp">#define SWITCH_BASE </span><span class="bn">0xF0000000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-2"><a aria-label="2"></a><span class="pp">#define SWITCH_BASE </span><span class="bn">0xF0000000</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>In Ripes die Basisadresse der Komponente prüfen — sonst Heap statt LED.</p>
 <style type="text/css">
@@ -905,7 +905,7 @@ graph LR
 <span id="cb10-4"><a aria-label="4"></a><span class="fu">Loop:</span></span>
 <span id="cb10-5"><a aria-label="5"></a>    lw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
 <span id="cb10-6"><a aria-label="6"></a>    sw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s2<span class="op">)</span></span>
-<span id="cb10-7"><a aria-label="7"></a>    j Loop</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-7"><a aria-label="7"></a>    j Loop</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>CPU als intelligentes Übertragungskabel: Load, Store, Jump.</p>
 <style type="text/css">
@@ -955,7 +955,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb11-1"><a aria-label="1"></a>li t1<span class="op">,</span> <span class="dv">10000</span></span>
 <span id="cb11-2"><a aria-label="2"></a><span class="fu">Delay:</span></span>
 <span id="cb11-3"><a aria-label="3"></a>    addi t1<span class="op">,</span> t1<span class="op">,</span> <span class="op">-</span><span class="dv">1</span></span>
-<span id="cb11-4"><a aria-label="4"></a>    bne t1<span class="op">,</span> zero<span class="op">,</span> Delay</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb11-4"><a aria-label="4"></a>    bne t1<span class="op">,</span> zero<span class="op">,</span> Delay</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Software-Debouncing: nach der ersten Flanke warten, dann sauber weiterlesen.</p>
 <style type="text/css">
@@ -1026,7 +1026,7 @@ graph LR
 <li>Frage: Was tut das Programm in der Zwischenzeit?</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb12-1"><a aria-label="1"></a>Ein Mensch ist für einen Prozessor unvorstellbar langsam.</span>
-<span id="cb12-2"><a aria-label="2"></a>Wartet die CPU auf uns, vergehen für sie "Jahrzehnte".</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb12-2"><a aria-label="2"></a>Wartet die CPU auf uns, vergehen für sie "Jahrzehnte".</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Hardwarewelt blitzschnell, physische Welt im Vergleich im Koma. Ein Tastendruck ist für die CPU ein Ereignis alle paar “Jahrhunderte”. Was macht der Prozessor in den Milliarden Zyklen dazwischen?</p>
 <style type="text/css">
@@ -1075,7 +1075,7 @@ graph LR
 <span id="cb13-4"><a aria-label="4"></a>    lw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span>        <span class="op">#</span> MMIO<span class="op">-</span>Read</span>
 <span id="cb13-5"><a aria-label="5"></a>    beq t0<span class="op">,</span> zero<span class="op">,</span> Wait  <span class="op">#</span> noch <span class="dv">0</span><span class="op">?</span> sofort wieder</span>
 <span id="cb13-6"><a aria-label="6"></a></span>
-<span id="cb13-7"><a aria-label="7"></a>    # Knopf wurde gedrückt — weiter mit Nutzcode</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb13-7"><a aria-label="7"></a>    # Knopf wurde gedrückt — weiter mit Nutzcode</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Load und Branch milliardenfach: sinnlose Abfragen, während der Mensch überlegt.</p>
 <style type="text/css">
@@ -1291,7 +1291,7 @@ graph LR
 <li>OS beendet oft mit Segmentation Fault</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb14-1"><a aria-label="1"></a><span class="dt">int</span> <span class="op">*</span>ptr <span class="op">=</span> NULL<span class="op">;</span></span>
-<span id="cb14-2"><a aria-label="2"></a><span class="dt">int</span> crash <span class="op">=</span> <span class="op">*</span>ptr<span class="op">;</span>   <span class="co">/* typisch: Access Fault */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb14-2"><a aria-label="2"></a><span class="dt">int</span> crash <span class="op">=</span> <span class="op">*</span>ptr<span class="op">;</span>   <span class="co">/* typisch: Access Fault */</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Nullpointer: Memory-Unit alarmiert. Bei RISC-V Integer-Division durch 0 entsteht kein Trap (Quotient = all-1s).</p>
 <style type="text/css">
@@ -1359,7 +1359,7 @@ graph TD
 <li>Sprung: PC auf feste Handler-Adresse setzen (ISR)</li>
 </ol>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb15-1"><a aria-label="1"></a>Ein Trap ist ein erzwungener Hardware-Sprung</span>
-<span id="cb15-2"><a aria-label="2"></a>an eine vom Betriebssystem vorbereitete Adresse.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb15-2"><a aria-label="2"></a>an eine vom Betriebssystem vorbereitete Adresse.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Drei Hardware-Schritte: PC sichern, Pipeline säubern, PC auf Rettungscode setzen.</p>
 <style type="text/css">
@@ -1451,7 +1451,7 @@ graph LR
 <li>OS braucht Platz für Timer, Trap-Ursache, Puffer — oft vor sicherem Stack-Zugriff</li>
 <li>Teufelskreis: Stack-Sicherung braucht <code>sp</code> — dem User-<code>sp</code> darf man nicht trauen</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb16-1"><a aria-label="1"></a>Schatten-Register: vertrauenswürdig und nicht manipulierbar.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb16-1"><a aria-label="1"></a>Schatten-Register: vertrauenswürdig und nicht manipulierbar.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Handler darf User-Registern nicht vertrauen. Deshalb separate, sichere Hardware-Register.</p>
 <style type="text/css">
@@ -1536,7 +1536,7 @@ graph TD
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb17-1"><a aria-label="1"></a>csrr t0<span class="op">,</span> mstatus     <span class="op">#</span> Status nach t0</span>
 <span id="cb17-2"><a aria-label="2"></a>li t1<span class="op">,</span> <span class="dv">8</span>             <span class="op">#</span> Maske<span class="op">:</span> Bit MIE</span>
-<span id="cb17-3"><a aria-label="3"></a>csrrs x0<span class="op">,</span> mstatus<span class="op">,</span> t1  <span class="op">#</span> nur Bits setzen <span class="op">(OR)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb17-3"><a aria-label="3"></a>csrrs x0<span class="op">,</span> mstatus<span class="op">,</span> t1  <span class="op">#</span> nur Bits setzen <span class="op">(OR)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Brücke zwischen Schattenwelt und Integer-Registerbank. <code>csrw</code> überschreibt das ganze Register — Bits setzen mit <code>csrrs</code>.</p>
 <style type="text/css">
@@ -1559,7 +1559,7 @@ graph TD
 <li>Software-seitig ununterbrechbar (eine Instruktion)</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb18-1"><a aria-label="1"></a>li t1<span class="op">,</span> <span class="bn">0x1</span></span>
-<span id="cb18-2"><a aria-label="2"></a>csrrw t0<span class="op">,</span> mstatus<span class="op">,</span> t1  <span class="op">#</span> t0 <span class="op">=</span> alt<span class="co">; mstatus = t1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb18-2"><a aria-label="2"></a>csrrw t0<span class="op">,</span> mstatus<span class="op">,</span> t1  <span class="op">#</span> t0 <span class="op">=</span> alt<span class="co">; mstatus = t1</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Atomarer Austausch verhindert verlorene Bits zwischen Read und Write.</p>
 <style type="text/css">
@@ -1583,7 +1583,7 @@ graph TD
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb19-1"><a aria-label="1"></a>Boot des OS:</span>
 <span id="cb19-2"><a aria-label="2"></a>  la t0, MeineRettungsRoutine</span>
-<span id="cb19-3"><a aria-label="3"></a>  csrw mtvec, t0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb19-3"><a aria-label="3"></a>  csrw mtvec, t0</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Zentrale Notaufnahme-Adresse: Hardware springt blind dorthin.</p>
 <style type="text/css">
@@ -1631,7 +1631,7 @@ graph TD
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb20-1"><a aria-label="1"></a>csrr t0<span class="op">,</span> mcause</span>
 <span id="cb20-2"><a aria-label="2"></a>li t1<span class="op">,</span> <span class="dv">8</span></span>
-<span id="cb20-3"><a aria-label="3"></a>beq t0<span class="op">,</span> t1<span class="op">,</span> Syscall   <span class="op">#</span> nach Interrupt<span class="op">-</span>Bit<span class="op">-</span>Check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb20-3"><a aria-label="3"></a>beq t0<span class="op">,</span> t1<span class="op">,</span> Syscall   <span class="op">#</span> nach Interrupt<span class="op">-</span>Bit<span class="op">-</span>Check</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Erste Handlung der ISR: Interrupt-Bit und Exception-Code lesen, dann abzweigen.</p>
 <style type="text/css">
@@ -1706,7 +1706,7 @@ graph TD
 <span id="cb21-7"><a aria-label="7"></a>    # Quelle quittieren<span class="op">,</span> ohne weiteren Call</span>
 <span id="cb21-8"><a aria-label="8"></a>    lw   t0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
 <span id="cb21-9"><a aria-label="9"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span>
-<span id="cb21-10"><a aria-label="10"></a>    mret</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb21-10"><a aria-label="10"></a>    mret</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Ein Handler mit Unteraufruf muss <code>ra</code> und alle möglicherweise veränderten Caller-Saved-Register sichern. Für <code>ra</code>, <code>t0</code>–<code>t6</code> und <code>a0</code>–<code>a7</code> sind das 16 Wörter, also 64 Byte. <code>mepc</code> wird nur bei einem bewusst konsumierten 4-Byte-<code>ecall</code> um 4 erhöht. Ein Interrupt setzt bei <code>mepc</code> bereits die Fortsetzungsadresse; dort nicht pauschal addieren.</p>
 <aside class="notes">
 <p>Produktionssysteme tauschen auf den Kernel-Stack. Die Kurzform dient nur der Lesbarkeit.</p>
@@ -1730,7 +1730,7 @@ graph TD
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb22-1"><a aria-label="1"></a># Nicht so<span class="op">:</span> call zerstört ra und weitere Caller<span class="op">-</span>Saved<span class="op">-</span>Register<span class="op">,</span></span>
 <span id="cb22-2"><a aria-label="2"></a># die der <span class="dv">16</span><span class="op">-</span><span class="dt">Byte</span><span class="op">-</span>Leaf<span class="op">-</span>Frame oben nicht gesichert hat<span class="op">.</span></span>
-<span id="cb22-3"><a aria-label="3"></a># Entweder Leaf ohne Call<span class="op">,</span> oder <span class="dv">64</span><span class="op">-</span><span class="dt">Byte</span><span class="op">-</span>Frame für ra<span class="op">,</span> t0–t6<span class="op">,</span> a0–a7<span class="op">.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb22-3"><a aria-label="3"></a># Entweder Leaf ohne Call<span class="op">,</span> oder <span class="dv">64</span><span class="op">-</span><span class="dt">Byte</span><span class="op">-</span>Frame für ra<span class="op">,</span> t0–t6<span class="op">,</span> a0–a7<span class="op">.</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Nach Sicherung nur Register benutzen, die der Frame enthält. Ein <code>call</code> ohne gesichertes <code>ra</code> kehrt nicht zuverlässig zurück.</p>
 <style type="text/css">
@@ -1757,7 +1757,7 @@ graph TD
 <li>Privilegien zurück (oft U-Mode)</li>
 </ul></li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb23-1"><a aria-label="1"></a>    mret    <span class="op">#</span> zurück ins User<span class="op">-</span>Programm</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb23-1"><a aria-label="1"></a>    mret    <span class="op">#</span> zurück ins User<span class="op">-</span>Programm</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Bei Trap: MPIE &lt;- MIE, MIE &lt;- 0. Bei <code>mret</code>: MIE &lt;- MPIE, plus Rücksprung und Ring-Herabstufung.</p>
 <style type="text/css">
@@ -1875,7 +1875,7 @@ graph TD
 <li>Absichtliche Software-Traps = System Calls (Syscalls)</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb24-1"><a aria-label="1"></a>Ein Syscall ist wie ein roter Notfallknopf.</span>
-<span id="cb24-2"><a aria-label="2"></a>Das Programm drückt ihn, friert sich ein und ruft das OS zu Hilfe.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb24-2"><a aria-label="2"></a>Das Programm drückt ihn, friert sich ein und ruft das OS zu Hilfe.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Hardware-Interrupts sind nur die halbe Miete. User-Mode-Programme dürfen Monitor oder SSD nicht direkt anfassen — sie bitten das OS über Software-Traps um Hilfe.</p>
 <style type="text/css">
@@ -1961,7 +1961,7 @@ graph LR
 <li>Decoder liest <code>ecall</code> <span class="math inline">\(\rightarrow\)</span> sofort Trap-Handler</li>
 <li>Hardware-erzwungener Kontextwechsel</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb25-1"><a aria-label="1"></a>ecall    <span class="op">#</span> aus U<span class="op">-</span>Mode in den Kernel</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb25-1"><a aria-label="1"></a>ecall    <span class="op">#</span> aus U<span class="op">-</span>Mode in den Kernel</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Instruction Decoder erkennt <code>ecall</code>, löst absichtlich einen Trap aus: PC nach <code>mtvec</code>, Kernel erwacht.</p>
 <style type="text/css">
@@ -2007,7 +2007,7 @@ graph LR
 <li>Im Praktikum: Venus-Konvention verwenden</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb26-1"><a aria-label="1"></a>Venus:  a0 = Service-ID,  a1 = Argument</span>
-<span id="cb26-2"><a aria-label="2"></a>Linux:  a7 = Service-ID,  a0 = Argument</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb26-2"><a aria-label="2"></a>Linux:  a7 = Service-ID,  a0 = Argument</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Venus folgt der SPIM/MARS-Tradition (ID in a0). Echte RISC-V-Linux-Systeme und RARS nutzen a7. Verwechslung ist die häufigste Laborfalle.</p>
 <style type="text/css">
@@ -2030,7 +2030,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb27-1"><a aria-label="1"></a>li a0<span class="op">,</span> <span class="dv">1</span>        <span class="op">#</span> Venus<span class="op">:</span> Service Print Integer</span>
 <span id="cb27-2"><a aria-label="2"></a>li a1<span class="op">,</span> <span class="dv">42</span>       <span class="op">#</span> Argument</span>
-<span id="cb27-3"><a aria-label="3"></a>ecall</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb27-3"><a aria-label="3"></a>ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Drei Zeilen unter Venus-ABI. Bare-Metal-Handler müssten zuvor <code>mepc += 4</code> setzen.</p>
 <style type="text/css">
@@ -2052,7 +2052,7 @@ graph LR
 <li>Service 10 = Exit; keine Argumente; keine Rückkehr</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb28-1"><a aria-label="1"></a>li a0<span class="op">,</span> <span class="dv">10</span>       <span class="op">#</span> Venus<span class="op">:</span> Exit</span>
-<span id="cb28-2"><a aria-label="2"></a>ecall</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb28-2"><a aria-label="2"></a>ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Professioneller Stil: nach dem Algorithmus Exit statt Endlosschleife.</p>
 <style type="text/css">
@@ -2189,7 +2189,7 @@ graph TD
 <li>Venus: OS-Simulator, fängt <code>ecall</code> ab und simuliert Konsole</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb29-1"><a aria-label="1"></a>Ripes  → Schalter-LED-Labor (Bare-Metal)</span>
-<span id="cb29-2"><a aria-label="2"></a>Venus  → Print-/EVA-Labor mit `.data` (Syscalls)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb29-2"><a aria-label="2"></a>Venus  → Print-/EVA-Labor mit `.data` (Syscalls)</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Ripes = Physik ohne Linux; Venus = Kernel-Simulation mit Konsole.</p>
 <style type="text/css">
@@ -2288,7 +2288,7 @@ graph TD
 <span id="cb30-10"><a aria-label="10"></a>  li t2<span class="op">,</span> <span class="dv">0</span></span>
 <span id="cb30-11"><a aria-label="11"></a><span class="fu">Store:</span></span>
 <span id="cb30-12"><a aria-label="12"></a>  sw t2<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s2<span class="op">)</span></span>
-<span id="cb30-13"><a aria-label="13"></a>  j Loop</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb30-13"><a aria-label="13"></a>  j Loop</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Einheit 3 (Bits) + Einheit 8 (I/O): nicht nur „ungleich 0“, sondern exakt Schalter 3 maskieren.</p>
 <style type="text/css">
@@ -2310,7 +2310,7 @@ graph TD
 <li>Offset-Pointer startet bei 0; Delay-Loop für Sichtbarkeit</li>
 <li>Pointer += 4 für nächstes LED-Wort; am Ende zurücksetzen</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb31-1"><a aria-label="1"></a># Lauflicht im I<span class="op">/</span>O<span class="op">-</span>Tab beobachten</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb31-1"><a aria-label="1"></a># Lauflicht im I<span class="op">/</span>O<span class="op">-</span>Tab beobachten</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Jede LED = 32 Bit; Pointer um 4 Bytes erhöhen, sonst unsichtbar schnell.</p>
 <style type="text/css">
@@ -2381,7 +2381,7 @@ graph TD
 </tr>
 </tbody>
 </table>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb32-1"><a aria-label="1"></a>Hinweis: Venus hat keinen interaktiven Read-Int (anders als RARS).</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb32-1"><a aria-label="1"></a>Hinweis: Venus hat keinen interaktiven Read-Int (anders als RARS).</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Labor nutzt Print und Exit. Interaktive Eingabe gehört nicht zum Standard-Venus.</p>
 <style type="text/css">
@@ -2407,7 +2407,7 @@ graph TD
 <span id="cb33-2"><a aria-label="2"></a>li a0<span class="op">,</span> <span class="dv">4</span></span>
 <span id="cb33-3"><a aria-label="3"></a>ecall</span>
 <span id="cb33-4"><a aria-label="4"></a>li a0<span class="op">,</span> <span class="dv">10</span></span>
-<span id="cb33-5"><a aria-label="5"></a>ecall</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb33-5"><a aria-label="5"></a>ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>String-Adresse in a1, Service-ID 4 in a0 — Venus-ABI.</p>
 <style type="text/css">
@@ -2433,7 +2433,7 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb34-1"><a aria-label="1"></a>lw t0<span class="op">,</span> n</span>
 <span id="cb34-2"><a aria-label="2"></a>slli a1<span class="op">,</span> t0<span class="op">,</span> <span class="dv">1</span>   <span class="op">#</span> <span class="op">*</span><span class="dv">2</span></span>
 <span id="cb34-3"><a aria-label="3"></a>li a0<span class="op">,</span> <span class="dv">1</span></span>
-<span id="cb34-4"><a aria-label="4"></a>ecall</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb34-4"><a aria-label="4"></a>ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>EVA-Prinzip über Syscalls; Input kommt aus <code>.data</code>, nicht von der Konsole.</p>
 <style type="text/css">
@@ -2463,7 +2463,7 @@ graph TD
 <li>String: Adresse mit <code>la</code> in <code>a1</code>; Integer: Wert in <code>a1</code></li>
 </ul></li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb35-1"><a aria-label="1"></a>Simulator als Spion: Register vor ecall prüfen.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb35-1"><a aria-label="1"></a>Simulator als Spion: Register vor ecall prüfen.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Memory-Tab verrät, ob <code>sw</code> traf; Venus: ID in <code>a0</code>, Payload in <code>a1</code>.</p>
 <style type="text/css">
@@ -2513,7 +2513,7 @@ graph TD
 <li>Syscalls (<code>ecall</code>): Brücke vom User-Mode zum Kernel</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb36-1"><a aria-label="1"></a>Von Transistoren bis zum Betriebssystem:</span>
-<span id="cb36-2"><a aria-label="2"></a>das Ökosystem der Computerarchitektur ist durchdrungen.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb36-2"><a aria-label="2"></a>das Ökosystem der Computerarchitektur ist durchdrungen.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Isolation durchbrochen: Bare-Metal-I/O und der Tanz CPU ↔︎ OS.</p>
 <style type="text/css">
@@ -2958,12 +2958,12 @@ graph LR
           // flash "checked"
           button.classList.add('code-copy-button-checked');
           var currentTitle = button.getAttribute("title");
-          button.setAttribute("title", "Copied!");
+          button.setAttribute("title", "Kopiert");
           let tooltip;
           if (window.bootstrap) {
             button.setAttribute("data-bs-toggle", "tooltip");
             button.setAttribute("data-bs-placement", "left");
-            button.setAttribute("data-bs-title", "Copied!");
+            button.setAttribute("data-bs-title", "Kopiert");
             tooltip = new bootstrap.Tooltip(button, 
               { trigger: "manual", 
                 customClass: "code-copy-button-tooltip",

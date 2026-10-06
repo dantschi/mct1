@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="de"><head>
 <link href="../assets/dhbw_logo.svg" rel="icon" type="image/svg+xml">
 <script src="../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../site_libs/quarto-html/tabby.min.js"></script>
@@ -353,7 +353,7 @@ graph LR
 <span id="cb1-4"><a aria-label="4"></a>    # ... toter Code <span class="op">...</span></span>
 <span id="cb1-5"><a aria-label="5"></a></span>
 <span id="cb1-6"><a aria-label="6"></a><span class="fu">Ueberspringen:</span></span>
-<span id="cb1-7"><a aria-label="7"></a>    # hier geht <span class="kw">es</span> weiter</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-7"><a aria-label="7"></a>    # hier geht <span class="kw">es</span> weiter</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Der Program Counter, kurz PC, hält die Adresse der gerade betrachteten Instruktion. Ein Label ist eine symbolische Adresse und keine ausgeführte Anweisung. Ein Offset ist ein Abstand in Byte.</p>
 <p>j heisst jump und ist ein unbedingter Sprung. beq heisst branch if equal, blt heisst branch if less than und vergleicht hier vorzeichenbehaftet. lw heisst load word, sw heisst store word.</p>
@@ -385,7 +385,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb2-1"><a aria-label="1"></a><span class="dt">int</span> a <span class="op">=</span> quadriere<span class="op">(</span><span class="dv">5</span><span class="op">);</span></span>
 <span id="cb2-2"><a aria-label="2"></a><span class="co">// ... anderer Code ...</span></span>
 <span id="cb2-3"><a aria-label="3"></a><span class="dt">int</span> b <span class="op">=</span> quadriere<span class="op">(</span><span class="dv">10</span><span class="op">);</span></span>
-<span id="cb2-4"><a aria-label="4"></a><span class="dt">int</span> c <span class="op">=</span> quadriere<span class="op">(</span>x<span class="op">);</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-4"><a aria-label="4"></a><span class="dt">int</span> c <span class="op">=</span> quadriere<span class="op">(</span>x<span class="op">);</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Dreimal kopierter Assembler und eine Funktion mit drei Aufrufstellen unterscheiden sich in der Pflege.</p>
 <p>Das gezeigte C mit quadriere ist der gewünschte Zielzustand, nicht der duplizierte Ausgang. Ein Bugfix in einer Kopie erreicht die anderen Kopien nicht.</p>
@@ -420,7 +420,7 @@ graph LR
 <span id="cb3-4"><a aria-label="4"></a></span>
 <span id="cb3-5"><a aria-label="5"></a><span class="fu">Quadriere:</span></span>
 <span id="cb3-6"><a aria-label="6"></a>    <span class="bu">add</span> t0<span class="op">,</span> a0<span class="op">,</span> a0      <span class="op">#</span> RV32I<span class="op">-</span>Lehrskizze<span class="op">,</span> kein lauffaehiges Programm</span>
-<span id="cb3-7"><a aria-label="7"></a>    # Zurueckspringen<span class="op">!</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-7"><a aria-label="7"></a>    # Zurueckspringen<span class="op">!</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Eine Assemblerfunktion ist zunächst ein Bereich mit Label und vereinbartem Verhalten. Der Prozessor legt am Label keinen neuen Registersatz an.</p>
 <p>Das Fragment ist eine Skizze, kein lauffähiges Programm. Sichtbar sein müssen Eintritt, Rumpf und Rückkehrstelle. add bleibt im RV32I-Basisbefehlssatz. mul würde die M-Erweiterung verlangen und wird hier nicht vorausgesetzt.</p>
@@ -459,7 +459,7 @@ graph LR
 <span id="cb4-9"><a aria-label="9"></a></span>
 <span id="cb4-10"><a aria-label="10"></a><span class="fu">Quadriere:</span></span>
 <span id="cb4-11"><a aria-label="11"></a>    j Main_Zeile_2</span>
-<span id="cb4-12"><a aria-label="12"></a><span class="fu">Fertig:</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-12"><a aria-label="12"></a><span class="fu">Fertig:</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-figure quarto-figure-center">
 <figure>
 <p><img data-src="../assets/images/vl4-zwei-aufrufe.svg"></p>
@@ -542,7 +542,7 @@ graph LR
 <li>Rettungsanker für den Rückweg aus dem Unterprogramm</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb5-1"><a aria-label="1"></a># PC = 0x00400000  (Aufruf-Befehl)</span>
-<span id="cb5-2"><a aria-label="2"></a># ra muss 0x00400004 werden  (Zeile darunter)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-2"><a aria-label="2"></a># ra muss 0x00400004 werden  (Zeile darunter)</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>x1 ist ein allgemeines Integer-Register, ein GPR (General Purpose Register). Die Standard-ABI nennt es ra. Der PC ist ein anderes Register und nicht x1.</p>
 <p>Die ISA (Instruction Set Architecture, Befehlssatzarchitektur) schreibt keinen Software-Stack vor. jal und ret reservieren keinen Frame.</p>
@@ -573,7 +573,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb6-1"><a aria-label="1"></a>jal ra<span class="op">,</span> Quadriere</span>
 <span id="cb6-2"><a aria-label="2"></a># ra  <span class="op">=</span> oldPC <span class="op">+</span> <span class="dv">4</span></span>
-<span id="cb6-3"><a aria-label="3"></a># PC   <span class="op">=</span> oldPC <span class="op">+</span> Byteoffset</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-3"><a aria-label="3"></a># PC   <span class="op">=</span> oldPC <span class="op">+</span> Byteoffset</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-figure quarto-figure-center">
 <figure>
 <p><img data-src="../assets/images/vl4-jal-zyklus.svg"></p>
@@ -611,7 +611,7 @@ graph LR
 <span id="cb7-2"><a aria-label="2"></a>jal ra<span class="op">,</span> MeineFunktion</span>
 <span id="cb7-3"><a aria-label="3"></a></span>
 <span id="cb7-4"><a aria-label="4"></a># Simpler Sprung ohne Rueckkehr <span class="op">(</span>If<span class="op">/</span>Else<span class="op">):</span></span>
-<span id="cb7-5"><a aria-label="5"></a>j ElseBlock      <span class="op">#</span> intern<span class="op">:</span> jal x0<span class="op">,</span> ElseBlock</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-5"><a aria-label="5"></a>j ElseBlock      <span class="op">#</span> intern<span class="op">:</span> jal x0<span class="op">,</span> ElseBlock</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>jal ra, Label speichert die Folgeadresse in ra und springt. j Label ist die Pseudoinstruktion für jal x0, Label.</p>
 <p>x0 bleibt null. Der berechnete Schreibwert PC+4 wird verworfen, ra bleibt bei diesem j unverändert. j beendet nicht jede spätere Rückkehrmöglichkeit; es erzeugt nur selbst keine neue Rückkehradresse.</p>
@@ -643,7 +643,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb8-1"><a aria-label="1"></a>jalr x0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>ra<span class="op">)</span></span>
 <span id="cb8-2"><a aria-label="2"></a></span>
 <span id="cb8-3"><a aria-label="3"></a># PC <span class="op">=</span> ra <span class="op">+</span> <span class="dv">0</span></span>
-<span id="cb8-4"><a aria-label="4"></a># Link<span class="op">-</span>Ziel x0<span class="op">:</span> keine zweite Brotkrumenspur</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-4"><a aria-label="4"></a># Link<span class="op">-</span>Ziel x0<span class="op">:</span> keine zweite Brotkrumenspur</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>jalr heisst jump and link register. rs1 ist das Basisregister, imm das Immediate, vorzeichenerweitert. Danach wird Bit 0 des Ziels gelöscht.</p>
 <p>Bei jalr x0, 0(ra) verwirft x0 den Linkwert PC_alt+4, ra liefert die Basis, 0 ist der Byteoffset. In einem normalen, ausgerichteten Beispiel ändert das Löschen von Bit 0 das Ziel nicht. Es garantiert aber keine beliebige gültige Adresse.</p>
@@ -673,7 +673,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb9-1"><a aria-label="1"></a><span class="fu">Quadriere:</span></span>
 <span id="cb9-2"><a aria-label="2"></a>    # ... Funktionsrumpf <span class="op">...</span></span>
-<span id="cb9-3"><a aria-label="3"></a>    <span class="cf">ret</span>                 <span class="op">#</span> <span class="op">=</span> jalr x0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>ra<span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-3"><a aria-label="3"></a>    <span class="cf">ret</span>                 <span class="op">#</span> <span class="op">=</span> jalr x0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>ra<span class="op">)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>ret ist eine Pseudoinstruktion für jalr x0, 0(ra), kein zusätzlicher Hardwarebefehl.</p>
 <p>x0 verwirft den neuen Linkwert, ra liefert das Ziel. Ein C-return kann ausserdem das Ergebnis berechnen und aufräumen. ret allein setzt a0 nicht und stellt s-Register oder sp nicht wieder her.</p>
@@ -799,7 +799,7 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb10-1"><a aria-label="1"></a>li a0<span class="op">,</span> <span class="dv">5</span></span>
 <span id="cb10-2"><a aria-label="2"></a>li a1<span class="op">,</span> <span class="dv">10</span></span>
-<span id="cb10-3"><a aria-label="3"></a>jal ra<span class="op">,</span> Calc</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-3"><a aria-label="3"></a>jal ra<span class="op">,</span> Calc</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Ein Argument steht am Aufruf, ein Parameter in der Definition.</p>
 <p>li heisst load immediate und ist eine Pseudoinstruktion. Sie lädt eine Konstante in ein Register und liest nicht aus dem RAM. jal springt danach.</p>
@@ -829,7 +829,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb11-1"><a aria-label="1"></a><span class="fu">Calc:</span></span>
 <span id="cb11-2"><a aria-label="2"></a>    <span class="bu">add</span> t0<span class="op">,</span> a0<span class="op">,</span> a1</span>
 <span id="cb11-3"><a aria-label="3"></a>    mv a0<span class="op">,</span> t0           <span class="op">#</span> ABI<span class="op">:</span> Ergebnis in a0</span>
-<span id="cb11-4"><a aria-label="4"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb11-4"><a aria-label="4"></a>    <span class="cf">ret</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Ein einzelnes 32-Bit-Integer-Ergebnis dieses Beispiels steht in a0. a0 ist zugleich Argument- und Ergebnisregister, deshalb darf der alte Argumentwert nach der Rückkehr fehlen.</p>
 <p>mv ist regulär addi mit Immediate 0. add mit x0 ist wirkungsgleich, aber nicht pauschal dieselbe Assembler-Expansion. t markiert ein temporary-Register, rd das Ziel, rs die Quelle.</p>
@@ -865,7 +865,7 @@ graph LR
 <span id="cb12-8"><a aria-label="8"></a></span>
 <span id="cb12-9"><a aria-label="9"></a><span class="fu">Addiere:</span></span>
 <span id="cb12-10"><a aria-label="10"></a>    <span class="bu">add</span> a0<span class="op">,</span> a0<span class="op">,</span> a1      <span class="op">#</span> Summe direkt in a0</span>
-<span id="cb12-11"><a aria-label="11"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb12-11"><a aria-label="11"></a>    <span class="cf">ret</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Jede Zeile hat eine beobachtbare Wirkung. li und mv laden Werte, jal ruft auf, ret springt zurück, ecall ist der environment call der Umgebung.</p>
 <p>Nach der Vorbereitung: a0=5, a1=10. Nach add: a0=15. Nach ret am Fortsetzungslabel: a0=15. Nach mv s0, a0: s0=15. Nach der Exit-Vorbereitung: a0=10. Die 10 ist die Dienstnummer des Venus-Exit dieser Kurskonvention, nicht das Rechenergebnis und nicht die allgemeine RISC-V-ABI.</p>
@@ -928,7 +928,7 @@ graph LR
 <span id="cb13-7"><a aria-label="7"></a></span>
 <span id="cb13-8"><a aria-label="8"></a><span class="fu">BoeseFunc:</span></span>
 <span id="cb13-9"><a aria-label="9"></a>    li s0<span class="op">,</span> <span class="dv">0</span></span>
-<span id="cb13-10"><a aria-label="10"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb13-10"><a aria-label="10"></a>    <span class="cf">ret</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>Main</code> endet mit dem Venus-Exit. Es gibt keinen Fall-through in <code>BoeseFunc</code>. Der isolierte Fehler ist das ungesicherte <code>s0</code>.</p>
 <aside class="notes">
 <p>Der Exit bleibt, damit kein Fall-through den Fehler verursacht.</p>
@@ -1011,7 +1011,7 @@ graph TD
 <span id="cb14-2"><a aria-label="2"></a>    jal ra, Print</span>
 <span id="cb14-3"><a aria-label="3"></a></span>
 <span id="cb14-4"><a aria-label="4"></a>Print:              &lt;--- CALLEE</span>
-<span id="cb14-5"><a aria-label="5"></a>    ret</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb14-5"><a aria-label="5"></a>    ret</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Caller heisst Aufrufer, Callee heisst aufgerufene Funktion.</p>
 <p>Main ruft Print auf: Main ist Caller, Print ist Callee. Ruft Print danach DrawPixel auf, ist Print gegenüber DrawPixel selbst Caller. Die Rolle hängt am Aufruf, nicht am Namen.</p>
@@ -1042,7 +1042,7 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb15-1"><a aria-label="1"></a># Caller schuetzt sich selbst<span class="op">:</span></span>
 <span id="cb15-2"><a aria-label="2"></a>    # ... t0 in den RAM retten <span class="op">...</span></span>
 <span id="cb15-3"><a aria-label="3"></a>    jal ra<span class="op">,</span> Funktion</span>
-<span id="cb15-4"><a aria-label="4"></a>    # ... t0 wiederherstellen <span class="op">...</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb15-4"><a aria-label="4"></a>    # ... t0 wiederherstellen <span class="op">...</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>t0 bis t6, a0 bis a7 und ra sind caller-saved: ein normaler Aufruf sichert ihren alten Inhalt nicht zu. Not preserved heisst genau das.</p>
 <p>jal ra ändert ra selbst. Die anderen Register kann der Callee ändern, muss es aber nicht. Gelöscht wird nichts automatisch.</p>
@@ -1069,11 +1069,11 @@ graph TD
 <li>Nach <code>jal</code> ist ein alter <code>t</code>-Wert nur verlässlich, wenn er eigens erhalten wurde</li>
 <li>Vorteil: kleine Hilfsfunktionen ohne teure RAM-Backups</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb16-1"><a aria-label="1"></a><span class="co">/* Kein C-Beispiel: der Compiler erhält die Lebensdauer. */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb16-1"><a aria-label="1"></a><span class="co">/* Kein C-Beispiel: der Compiler erhält die Lebensdauer. */</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb17-1"><a aria-label="1"></a># Isolierter ABI<span class="op">-</span>Fehler<span class="op">,</span> kein C<span class="op">:</span></span>
 <span id="cb17-2"><a aria-label="2"></a>    li   t0<span class="op">,</span> <span class="dv">5</span></span>
 <span id="cb17-3"><a aria-label="3"></a>    jal  ra<span class="op">,</span> Print      <span class="op">#</span> Print darf t0 überschreiben</span>
-<span id="cb17-4"><a aria-label="4"></a>    # t0 ist danach nicht mehr verlässlich <span class="dv">5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb17-4"><a aria-label="4"></a>    # t0 ist danach nicht mehr verlässlich <span class="dv">5</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Das Fragment ist Assembler, kein C-Programm. t0 wird auf 5 gesetzt, danach folgt ein Aufruf. Danach darf man nicht voraussetzen, dass t0 noch 5 ist.</p>
 <p>Der Callee darf t0 unverändert lassen. Der Vertrag erlaubt die Änderung, also beweist ein einmal unveränderter Wert keinen Schutz. Ein korrekter C-Compiler erhält eine später noch benötigte Variable durch Registerwahl oder Sicherung.</p>
@@ -1105,7 +1105,7 @@ graph TD
 <span id="cb18-2"><a aria-label="2"></a>    # 1. fremdes s0 in den RAM</span>
 <span id="cb18-3"><a aria-label="3"></a>    # 2. eigene Rechnung mit s0</span>
 <span id="cb18-4"><a aria-label="4"></a>    # 3. altes s0 zurueck</span>
-<span id="cb18-5"><a aria-label="5"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb18-5"><a aria-label="5"></a>    <span class="cf">ret</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>saved und preserved bedeuten: der Eintrittswert ist nach korrekter Rückkehr wieder da. s0 bis s11 sind diese Register. Sicher heisst hier nicht gesperrt.</p>
 <p>Nur ein tatsächlich verändertes s-Register muss gesichert werden. Ein nur gelesenes s-Register braucht kein Backup. s0 kann zusätzlich die Rolle frame pointer haben; diese Einheit verlangt keinen Frame Pointer für jede Funktion.</p>
@@ -1166,7 +1166,7 @@ graph TD
 <li>Wir brauchen einen dynamisch wachsenden Bereich</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb19-1"><a aria-label="1"></a>Benötigt: Ein Ort im RAM, der für JEDEN Funktionsaufruf</span>
-<span id="cb19-2"><a aria-label="2"></a>frisch und exklusiv bereitsteht.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb19-2"><a aria-label="2"></a>frisch und exklusiv bereitsteht.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Zwei aktive Aufrufe dürfen nicht denselben festen Slot, etwa die Lehradresse 0x1000, beschreiben. Der zweite Store würde den älteren Wert überschreiben.</p>
 <p>Ein anderes freies Register kann in engen Fällen genügen, ist aber begrenzt und hat selbst eine Erhaltungspflicht. Ein dynamisch verwalteter Bereich trägt verschachtelte Lebensdauern systematisch.</p>
@@ -1306,7 +1306,7 @@ graph TD
 <li>Beim Boot: Betriebssystem setzt <code>sp</code> auf eine hohe RAM-Adresse</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb20-1"><a aria-label="1"></a># sp zeigt auf die untere Grenze des reservierten Frames</span>
-<span id="cb20-2"><a aria-label="2"></a># Der zuletzt gespeicherte Wert kann bei einem positiven Offset liegen</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb20-2"><a aria-label="2"></a># Der zuletzt gespeicherte Wert kann bei einem positiven Offset liegen</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>sp ist der stack pointer und der ABI-Name von x2. x2 und sp sind dasselbe Register.</p>
 <p>Bei den 16-Byte-Beispielen zeigt sp auf die untere reservierte Grenze. Der gespeicherte Wert kann bei 12(sp) liegen. sp zeigt also nicht allgemein auf den zuletzt beschriebenen Datenslot.</p>
@@ -1380,7 +1380,7 @@ graph TD
 <li><code>addi sp, sp, -16</code>, danach <code>sw</code> innerhalb des Frames</li>
 <li>Padding füllt den Rest; <code>sp</code> bleibt an der Aufrufgrenze ausgerichtet</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb21-1"><a aria-label="1"></a>addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span>    <span class="op">#</span> ein Wort plus Padding</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb21-1"><a aria-label="1"></a>addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span>    <span class="op">#</span> ein Wort plus Padding</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-figure quarto-figure-center">
 <figure>
 <p><img data-src="../assets/images/vl4-frame-zustaende.svg"></p>
@@ -1420,7 +1420,7 @@ graph TD
 <li>Befehl: <code>sw s0, 12(sp)</code></li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb22-1"><a aria-label="1"></a>addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
-<span id="cb22-2"><a aria-label="2"></a>sw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb22-2"><a aria-label="2"></a>sw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Auf der vorherigen Folie hat addi sp, sp, -16 nur die untere Grenze verschoben. Der alte Wert von s0 steht noch im Register.</p>
 <p>sw heisst store word. In RV32I schreibt es vier Byte. In sw s0, 12(sp) liefert s0 die Daten, sp die Basis, 12 den Byteoffset. Die Adresse ist sp+12. sp selbst ändert sich nicht.</p>
@@ -1448,7 +1448,7 @@ graph TD
 <li><code>lw s0, 12(sp)</code> holt das Wort zurück ins Register</li>
 <li>RAM-Platz ist noch als belegt markiert</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb23-1"><a aria-label="1"></a>lw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb23-1"><a aria-label="1"></a>lw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>lw heisst load word. lw s0, 12(sp) liest vier Byte ab sp+12 nach s0.</p>
 <p>sp zeigt weiter auf 0x0FF0, nicht auf den Slot. Nach einem Rumpf mit s0=42 stellt der Load den Eintrittswert 99 wieder her. sp und die RAM-Bytes bleiben durch den Load unverändert.</p>
@@ -1476,7 +1476,7 @@ graph TD
 <li><code>sp</code> steht wieder dort, wo er vor dem Push war</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb24-1"><a aria-label="1"></a>lw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb24-2"><a aria-label="2"></a>addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb24-2"><a aria-label="2"></a>addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>addi sp, sp, 16 stellt den Eintritts-sp wieder her. Aus 0x0FF0 wird 0x1000.</p>
 <p>Die nächste Reservierung verschiebt nur sp. Erst spätere sw-Befehle ändern ihre Slots. Padding kann unberührt bleiben. Nach der Freigabe sind die alten Bytes kein verlässliches eigenes Backup mehr. Für die ABI müssen sie nicht gelöscht werden.</p>
@@ -1555,7 +1555,7 @@ graph LR
 <span id="cb25-2"><a aria-label="2"></a># Kursrahmen<span class="op">:</span> ein gemeinsamer <span class="dv">16</span><span class="op">-</span><span class="dt">Byte</span><span class="op">-</span>Frame</span>
 <span id="cb25-3"><a aria-label="3"></a>addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
 <span id="cb25-4"><a aria-label="4"></a>sw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb25-5"><a aria-label="5"></a>sw s1<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb25-5"><a aria-label="5"></a>sw s1<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Das gezeigte Beispiel sichert zwei Register, nicht vier.</p>
 <p>Zwei getrennte 16-Byte-Reservierungen wären ABI-konform, aber grösser. Eine gemeinsame 16-Byte-Reservierung fasst s0 und s1. Einzelne 4-Byte-Reservierungen sind hier keine standardkonforme Zwischenlösung.</p>
@@ -1584,7 +1584,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb26-1"><a aria-label="1"></a>addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
 <span id="cb26-2"><a aria-label="2"></a>sw ra<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
 <span id="cb26-3"><a aria-label="3"></a>sw s1<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb26-4"><a aria-label="4"></a>sw s0<span class="op">,</span> <span class="dv">4</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb26-4"><a aria-label="4"></a>sw s0<span class="op">,</span> <span class="dv">4</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Der Code sichert Register. Er ist kein C-Array. Die Offsets unterscheiden Slots, nicht Array-Indizes.</p>
 <p>Drei Register: ra bei 12(sp), s1 bei 8(sp), s0 bei 4(sp), Padding bei 0(sp), zusammen 16 Byte. Jede Adresse ist neuer sp plus Offset. Die Zuordnung ist eine Wahl des Beispiels, kein universelles ABI-Layout. Die Slots liegen innerhalb der Reservierung und überlappen nicht.</p>
@@ -1745,7 +1745,7 @@ graph TD
 <li>Ein Frame gehört einer Aktivierung, die ihn benötigt</li>
 <li>Stack Overflow: die verfügbare Stack-Grenze ist überschritten</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb27-1"><a aria-label="1"></a>Eine Heap-Kollision ist nur eine moegliche Folge mancher Layouts.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb27-1"><a aria-label="1"></a>Eine Heap-Kollision ist nur eine moegliche Folge mancher Layouts.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Ein Activation Record gehört einer konkreten Aktivierung, die Speicher braucht. Manche Aufrufe haben keinen Speicher-Frame.</p>
 <p>Typische Inhalte sind erhaltene Registerwerte, bei Bedarf die eigene Rückkehradresse, lokale Objekte und Padding. Stack Overflow bedeutet, dass die verfügbare Stack-Grenze überschritten ist. Eine Heap-Kollision ist nur eine mögliche Folge mancher Layouts. Der Fehler kann erkannt werden oder still andere Daten beschädigen.</p>
@@ -1776,7 +1776,7 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb28-1"><a aria-label="1"></a><span class="fu">MeineFunktion:</span></span>
 <span id="cb28-2"><a aria-label="2"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
 <span id="cb28-3"><a aria-label="3"></a>    sw s1<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb28-4"><a aria-label="4"></a>    sw s0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb28-4"><a aria-label="4"></a>    sw s0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Nicht Registerzahl mal 4 von sp abziehen. Zuerst den Nutzbedarf B bestimmen, dann S = 16 * ceil(B/16).</p>
 <p>Zwei RV32-Registerkopien: B=8 Byte, S=16 Byte, Padding=8 Byte. Im Leaf-Beispiel liegt s1 bei 12(sp) und s0 bei 8(sp). Ein ra-Backup oder lokale Daten würden B erhöhen. Gesichert werden nur veränderte callee-saved Register.</p>
@@ -1807,7 +1807,7 @@ graph TD
 <span id="cb29-2"><a aria-label="2"></a>    li s0<span class="op">,</span> <span class="dv">42</span></span>
 <span id="cb29-3"><a aria-label="3"></a>    li s1<span class="op">,</span> <span class="dv">99</span></span>
 <span id="cb29-4"><a aria-label="4"></a>    <span class="bu">add</span> a0<span class="op">,</span> s0<span class="op">,</span> s1</span>
-<span id="cb29-5"><a aria-label="5"></a>    # --- BODY ENDE <span class="op">---</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb29-5"><a aria-label="5"></a>    # --- BODY ENDE <span class="op">---</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>li s0, 42 und li s1, 99 laden Arbeitswerte. add a0, s0, s1 schreibt 141 nach a0.</p>
 <p>Die Eintrittswerte von s0 und s1 liegen weiter in ihren Slots. li ändert nur die Register. Der Rückgabewert geht beim späteren Restore nicht verloren, weil er in a0 steht.</p>
@@ -1838,7 +1838,7 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb30-1"><a aria-label="1"></a>    lw s0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
 <span id="cb30-2"><a aria-label="2"></a>    lw s1<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
 <span id="cb30-3"><a aria-label="3"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span>
-<span id="cb30-4"><a aria-label="4"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb30-4"><a aria-label="4"></a>    <span class="cf">ret</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>lw s0, 8(sp) und lw s1, 12(sp) lesen die Slots der vorigen Prolog-Folie. addi sp, sp, 16 gibt den Frame frei. ret springt danach.</p>
 <p>Endzustand: s0 und s1 haben ihre Eintrittswerte, sp seinen Eintrittswert, a0 bleibt 141, der PC erreicht die Fortsetzungsadresse. Die gewählte Load-Reihenfolge ist passend, aber keine universelle Pflicht für unabhängige Loads. Zwingend sind die richtigen Slots und das Laden vor der Freigabe. ret restauriert die Register nicht selbst. Die Bytes im freigegebenen Frame dürfen bleiben.</p>
@@ -1904,7 +1904,7 @@ graph TD
 <span id="cb31-6"><a aria-label="6"></a></span>
 <span id="cb31-7"><a aria-label="7"></a>    lw s0<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
 <span id="cb31-8"><a aria-label="8"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span>
-<span id="cb31-9"><a aria-label="9"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb31-9"><a aria-label="9"></a>    <span class="cf">ret</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Das Muster ist ein Leaf-Template für ein verändertes s0. Es sichert kein ra und taugt nicht für Bodies mit inneren normalen Aufrufen.</p>
 <p>Voraussetzung ist ein gültiger, durch 16 teilbarer Eintritts-sp. Der Body soll eine kleine Integerrechnung mit Ergebnis in a0 sein. Das Non-Leaf-Muster folgt später; der Verweis ersetzt nicht die Warnung auf dieser Folie. Eine Leaf-Funktion ohne veränderte s-Register und ohne lokale Daten kann noch kürzer sein: nur die Rechnung und ret.</p>
@@ -1933,7 +1933,7 @@ graph TD
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb32-1"><a aria-label="1"></a><span class="dt">int</span> addiere<span class="op">(</span><span class="dt">int</span> a<span class="op">,</span> <span class="dt">int</span> b<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb32-2"><a aria-label="2"></a>    <span class="cf">return</span> a <span class="op">+</span> b<span class="op">;</span></span>
-<span id="cb32-3"><a aria-label="3"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb32-3"><a aria-label="3"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Leaf heisst: die Funktion ruft keine andere Funktion auf, sie ist ein Blatt im betrachteten Aufrufbaum.</p>
 <p>Ein nur bedingt ausgeführter innerer Aufruf macht die Funktion nicht allgemein zur Leaf-Funktion. Die gezeigte Leaf-Addition überschreibt ra nicht. Ein j ist jal mit rd=x0 und überschreibt ra ebenfalls nicht; entscheidend ist ein weiterer Aufruf, der die eigene Rückkehradresse noch braucht.</p>
@@ -1966,7 +1966,7 @@ graph TD
 <span id="cb33-3"><a aria-label="3"></a><span class="dt">int</span> calc<span class="op">(</span><span class="dt">int</span> a<span class="op">,</span> <span class="dt">int</span> b<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb33-4"><a aria-label="4"></a>    <span class="dt">int</span> zwischenwert <span class="op">=</span> sum<span class="op">(</span>a<span class="op">,</span> b<span class="op">);</span></span>
 <span id="cb33-5"><a aria-label="5"></a>    <span class="cf">return</span> zwischenwert <span class="op">+</span> a<span class="op">;</span>   <span class="co">/* nach dem Aufruf wird a noch gebraucht */</span></span>
-<span id="cb33-6"><a aria-label="6"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb33-6"><a aria-label="6"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Das Integerbeispiel ersetzt eine Gleitkomma-sqrt. calc ruft sum auf und addiert danach noch a. Mit 5 und 10 gilt sum=15 und calc=20.</p>
 <p>Non-Leaf heisst: die Funktion ruft weitere Funktionen auf und ist gegenüber dem Äusseren Callee, gegenüber der inneren Funktion Caller. jal mit Zielregister ra überschreibt ra. Die eingehende Rückkehradresse wird vor dem ersten inneren Aufruf gesichert, wenn die normale Rückkehr sie noch braucht.</p>
@@ -2048,7 +2048,7 @@ graph LR
 <span id="cb34-3"><a aria-label="3"></a><span class="op">}</span></span>
 <span id="cb34-4"><a aria-label="4"></a><span class="dt">void</span> calc<span class="op">()</span> <span class="op">{</span></span>
 <span id="cb34-5"><a aria-label="5"></a>    sum<span class="op">();</span>  <span class="co">// Aufruf 2</span></span>
-<span id="cb34-6"><a aria-label="6"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb34-6"><a aria-label="6"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Main ruft Calc, Calc ruft Sum, bevor eine Rückkehr erfolgt. Das ist der zeitliche Ablauf, nicht nur der Baum.</p>
 <p>Der C-Text ist eine Skizze des Kontrollflusses. void main ist keine allgemeingültige Form eines C-Programmeinstiegs. Das vollständige Labor steht in beispiele/mct1_vl4_nested_calls_ok.s und ist von diesem absichtlich unvollständigen Fehlerbild getrennt.</p>
@@ -2123,7 +2123,7 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb35-1"><a aria-label="1"></a><span class="fu">Calc_Zeile_X:</span></span>
 <span id="cb35-2"><a aria-label="2"></a>    jal ra<span class="op">,</span> Sum     <span class="op">#</span> ra wird Calc_Zeile_X<span class="op">+</span><span class="dv">4</span></span>
 <span id="cb35-3"><a aria-label="3"></a><span class="fu">Calc_Zeile_Y:</span></span>
-<span id="cb35-4"><a aria-label="4"></a>    <span class="cf">ret</span>             <span class="op">#</span> springt wieder zu Zeile_Y<span class="op">!</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb35-4"><a aria-label="4"></a>    <span class="cf">ret</span>             <span class="op">#</span> springt wieder zu Zeile_Y<span class="op">!</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>Im minimalen Fehlerlisting folgt auf jal ra, Sum unmittelbar ret. Sum.ret erreicht diese ret-Instruktion korrekt. Calc.ret liest dasselbe ra und springt wieder auf diese ret-Instruktion.</p>
 <p>Mindestens zwei Wiederholungen: PC bleibt auf calc_bad_return. Das ist eine Schleife, kein zwingender Crash. Liegen zwischen Aufruf und ret weitere Befehle, würden sie wiederholt; nicht jede ra-Verletzung erzeugt genau diese Schleife.</p>
@@ -2205,7 +2205,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb36-1"><a aria-label="1"></a><span class="fu">Calc:</span></span>
 <span id="cb36-2"><a aria-label="2"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
 <span id="cb36-3"><a aria-label="3"></a>    sw ra<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
-<span id="cb36-4"><a aria-label="4"></a>    sw s0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb36-4"><a aria-label="4"></a>    sw s0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>addi sp, sp, -16 reserviert. sw ra, 12(sp) sichert die Rückkehr zu Main. sw s0, 8(sp) sichert den Eintrittswert, weil Calc s0 als Arbeitsregister nutzen wird.</p>
 <p>Gegenüber dem Einregister-Beispiel steigt der Nutzbedarf, der Frame bleibt 16 Byte, das Padding sinkt auf 8 Byte. Minimal grösser wäre die falsche Beschreibung der Reservierung.</p>
@@ -2235,7 +2235,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb37-1"><a aria-label="1"></a>    lw s0<span class="op">,</span> <span class="dv">8</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
 <span id="cb37-2"><a aria-label="2"></a>    lw ra<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
 <span id="cb37-3"><a aria-label="3"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span>
-<span id="cb37-4"><a aria-label="4"></a>    <span class="cf">ret</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb37-4"><a aria-label="4"></a>    <span class="cf">ret</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
 <p>lw s0, 8(sp) stellt den Main-Eintrittswert wieder her. lw ra, 12(sp) stellt die Fortsetzung in Main wieder her. addi sp, sp, 16 gibt den Frame frei. ret nutzt danach ra.</p>
 <p>Vor dem Epilog enthält s0 im Body das Argument 5, a0 bereits 20, der Slot von s0 den Wert 99 und der Slot von ra die Main-Adresse. Nach dem Epilog: a0=20, s0=99, sp=S. ret erreicht main_after_calc.</p>
@@ -2343,7 +2343,7 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb38-1"><a aria-label="1"></a><span class="dt">int</span> fakt<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb38-2"><a aria-label="2"></a>    <span class="cf">if</span> <span class="op">(</span>n <span class="op">&lt;=</span> <span class="dv">1</span><span class="op">)</span> <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
 <span id="cb38-3"><a aria-label="3"></a>    <span class="cf">return</span> n <span class="op">*</span> fakt<span class="op">(</span>n <span class="op">-</span> <span class="dv">1</span><span class="op">);</span></span>
-<span id="cb38-4"><a aria-label="4"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb38-4"><a aria-label="4"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="quarto-figure quarto-figure-center">
 <figure>
 <p><img data-src="../assets/images/vl4-rekursion.svg"></p>
@@ -2786,12 +2786,12 @@ graph LR
           // flash "checked"
           button.classList.add('code-copy-button-checked');
           var currentTitle = button.getAttribute("title");
-          button.setAttribute("title", "Copied!");
+          button.setAttribute("title", "Kopiert");
           let tooltip;
           if (window.bootstrap) {
             button.setAttribute("data-bs-toggle", "tooltip");
             button.setAttribute("data-bs-placement", "left");
-            button.setAttribute("data-bs-title", "Copied!");
+            button.setAttribute("data-bs-title", "Kopiert");
             tooltip = new bootstrap.Tooltip(button, 
               { trigger: "manual", 
                 customClass: "code-copy-button-tooltip",
