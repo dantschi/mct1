@@ -7,8 +7,8 @@
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="../site_libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.10.18">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.10.19">
 
   <meta name="author" content="Prof.&nbsp;Dr.-Ing. Daniel Klünder">
   <title>Mikrocomputertechnik 1</title>
@@ -221,7 +221,21 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <section>
 <section id="risc-v-basics" class="title-slide slide level1 center">
 <h1>RISC-V Basics</h1>
-
+<aside class="notes">
+<p>Die zweite Einheit Mikrocomputertechnik 1 (MCT1) an der DHBW Stuttgart verbindet die bekannten Digitalbausteine mit ihrer programmierten Nutzung. Basics bedeutet Grundlagen. Die Leitfragen lauten: Welche Wirkung hat ein Befehl, und wie wird diese Wirkung in Bits codiert?</p>
+<p>CPU bedeutet Central Processing Unit, also der Prozessor. ISA bedeutet Instruction Set Architecture, die Befehlssatzarchitektur. Sie beschreibt beobachtbares Verhalten, nicht die konkrete Verdrahtung.</p>
+<p>Kontrollfrage: Welche zwei Fragen soll diese Einheit beantworten? Die Wirkung eines Befehls und seine Bitcodierung. Die Agenda zeigt den Weg von den Architekturbegriffen zu einem ersten ausgeführten Programm.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="agenda-für-block-2" class="slide level2">
 <h2>Agenda für Block 2</h2>
@@ -256,7 +270,9 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Herzlich willkommen zu Block 2 in Mikrocomputertechnik 1. Nach dem Hardware-Fundament — Multiplexer, ALU und Register — wechseln wir die Perspektive: von der Elektrotechnik zur Software. Ziel heute: die Sprache des Prozessors. Wir klären, warum RISC-V so designed ist, lernen Assembler-Grundlagen und schreiben in der zweiten Hälfte erste Programme im Venus-Simulator.</p>
+<p>Vor dem ersten Befehl brauchen wir eine Reihenfolge. CISC (Complex Instruction Set Computer) und RISC (Reduced Instruction Set Computer) sind historische Entwurfsrichtungen, keine Energiegarantie. RV32I ist die 32-Bit-Integerbasis: XLEN, die Registerbreite, ist 32. Das Register File ist die Registerbank. R-Type und I-Type sind Formate für Register- und Immediate-Operanden. Immediate bedeutet eine direkt codierte Konstante. Maschinencode ist das 32-Bit-Wort. Venus ist der Assembler und ISA-Simulator dieser Einheit.</p>
+<p>Lernziele: einen Registerwert vorhersagen, eine R-Type-Instruktion codieren, die Grenze kleiner Konstanten erklären und ein kleines Programm im Simulator prüfen. Die Themen hängen voneinander ab: erst die Schnittstelle, dann Register, dann Wirkung, dann Bits, dann die Prüfung im Tool.</p>
+<p>Kontrollfrage: Warum steht die Codierung nach der Befehlswirkung? Weil ein Bitfeld erst sinnvoll ist, wenn die Operation bekannt ist. Als Nächstes aktivieren wir die bisher betrachteten Hardwarebegriffe.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -279,7 +295,9 @@ graph LR
 <li>Globales Taktsignal (Clock) synchronisiert alles</li>
 </ul>
 <aside class="notes">
-<p>Kurz rekapituliert: ALU und Register File funktionieren elektronisch, die Clock tickt. Die Maschine ist aber noch „blind“ — niemand sagt, wann welcher Multiplexer umschaltet und ob die ALU addiert oder subtrahiert. Wir brauchen einen Mechanismus, um die Hardware ferngesteuert zu orchestrieren.</p>
+<p>Bisher haben wir ein Lehrmodell betrachtet, keine aufgebaute Platine. Die ALU (Arithmetic Logic Unit) verknüpft Operanden. Die Registerbank hält die 32-Bit-Werte. Ein MUX (Multiplexer) wählt eine Datenquelle. RAM (Random Access Memory) ist der Arbeitsspeicher. Clock, das Taktsignal, übernimmt Zustände in speichernde Bausteine. Kombinatorische Logik arbeitet nicht nur im Moment der Flanke.</p>
+<p>Beispiel: In zwei Registern stehen 5 und 10. Für eine Addition müssen beide Register gelesen, die ALU auf Addition gestellt und das Ergebnis in ein Zielregister geschrieben werden. Welches Steuerwerk diese Auswahlen für ein Programm erzeugt, leiten wir hier noch nicht her.</p>
+<p>Kontrollfrage: Rechnet die ALU nur während der Taktflanke? Nein. Die Flanke übernimmt das Ergebnis, die Verknüpfung ist kombinatorisch. Offen bleibt, wer diese Auswahlen für ein Programm vorgibt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -299,7 +317,7 @@ graph LR
 <li>ALU: z. B. 2-Bit-Code für die Operation</li>
 <li>Register-File-Decoder: 5-Bit-Adresse für das Fach</li>
 <li>Frage: Wie teilen wir der Hardware mit, welche Leitungen wann aktiv sind?</li>
-<li>Antwort: Instruktionen (Befehle) im RAM</li>
+<li>Antwort: Instruktionen im Speicher; im Kursmodell liegen sie im RAM</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -322,7 +340,10 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Die Orchestrierung: Eine 32-Bit-Zahl liegt im RAM. Die Control Unit analysiert sie. Bei Opcode <code>0110011</code> weiß sie: addieren — und setzt die Multiplexer. Welche Bit-Kombination was bedeutet, legt der zentrale Vertrag der Informatik fest: die ISA.</p>
+<p>Die vorige Folie hat die nötigen Auswahlen genannt. Diese Folie fragt, wer sie setzt. Ein opcode (operation code) ist die Befehlsklasse. 0110011 kennzeichnet Registerarithmetik und Registerlogik, nicht bereits Addition. add, sub, and und or brauchen zusätzlich funct3 und funct7. funct3 und funct7 sind die drei- und sieben-Bit-Funktionsfelder.</p>
+<p>Fünf Bit wählen eines von 32 Architekturregistern, denn 2 hoch 5 ist 32. Ein zwei-Bit-ALU-Code wäre nur die Codierung unseres kleinen Lehrmodells, keine ISA-Vorgabe. Instruktionen können im Kurs im RAM liegen; auf anderen Plattformen auch im Flash. RAM ist nicht der einzige mögliche Instruktionsspeicher.</p>
+<p>Beispiel: dieselben Registerfelder und derselbe Opcode können add oder sub sein. Erst Bit 30 im funct7, 0000000 gegen 0100000, trennt diese Gruppe.</p>
+<p>Kontrollfrage: Reicht 0110011, um add von sub zu unterscheiden? Nein. Die nächste Folie legt fest, dass die ISA die zulässigen Befehle als gemeinsame Schnittstelle beschreibt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -338,7 +359,21 @@ graph LR
 <section>
 <section id="die-architektur-philosophie" class="title-slide slide level1 center">
 <h1>1. Die Architektur-Philosophie</h1>
-
+<aside class="notes">
+<p>Der Steuerungsfrage folgt jetzt der Vergleich von Entwurfsentscheidungen. Die nächsten Folien betrachten die sichtbare Befehlsschnittstelle. Sie bewerten nicht pauschal jeden realen Prozessor.</p>
+<p>CISC und RISC bleiben historische Etiketten. Ein komplexer interner Ablauf macht eine ISA nicht automatisch zur anderen. Energie, Takt und Chipfläche folgen aus der Mikroarchitektur, also der konkreten Umsetzung.</p>
+<p>Kontrollfrage: Bewerten die folgenden Folien Chips oder Schnittstellenmerkmale? Schnittstellenmerkmale. Ein konkreter Übersetzungsweg führt von der Software zum ausführenden Prozessor.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="von-software-zu-transistoren" class="slide level2">
 <h2>Von Software zu Transistoren</h2>
@@ -346,8 +381,8 @@ graph LR
 <li>Weg von abstrakter Software zu schaltenden Transistoren</li>
 <li>Hardware und Software brauchen einen festen Vertrag</li>
 <li>Historischer Einfluss teurer Hardware auf Prozessor-Design</li>
-<li>CISC (Intel/AMD): enorme Komplexität in der Hardware</li>
-<li>RISC (ARM/RISC-V): schlanker Gegenentwurf</li>
+<li>CISC, etwa x86: variable Länge und Befehle mit Speicheroperanden</li>
+<li>RISC, etwa Arm und RISC-V: wenige Formate und Load/Store</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -356,8 +391,8 @@ graph LR
 <div>
 <pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
-  CISC[CISC] --- VS((vs))
-  VS --- RISC[RISC]
+  CISC["variable Laenge"] --- VS((ISA))
+  VS --- RISC["Load/Store"]
   style RISC fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style CISC fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style VS fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
@@ -368,7 +403,9 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Es gibt nicht „den einen“ Weg, einen Computer zu bauen. Zwei Denkschulen prägen die Schnittstelle Software↔︎Hardware. Bevor wir RISC-V-Code schreiben, müssen wir verstehen, in welcher Welt wir uns bewegen und warum unser Befehlssatz anders aussieht als bei einem typischen x86-Laptop.</p>
+<p>Quelltext wird vom Compiler in Assembler und dann in Maschinencode übersetzt. Der Prozessor führt die Wirkung der ISA aus. Dieselbe Schnittstelle kann mehrere Mikroarchitekturen haben. Arm und RISC-V sind ISA-Familien. Hersteller und konkrete Chips sind eine andere Ebene.</p>
+<p>CISC steht hier für variable Instruktionslänge und Speicheroperanden, RISC für wenige Formate und die Load/Store-Trennung. Diese Merkmale garantieren keine Energie- oder Geschwindigkeitswerte. Intel und AMD sind Hersteller; x86 und AMD64 sind Befehlssatzfamilien.</p>
+<p>Kontrollfrage: Liegt die ISA oberhalb oder unterhalb der Transistoren? Sie ist die Grenze zwischen Softwaredarstellung und möglicher Hardwareumsetzung. Diese Grenze wird nun definiert.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -392,7 +429,9 @@ graph LR
 <li>Verbindlicher Vertrag: Compiler-Autor → Chip-Designer</li>
 </ul>
 <aside class="notes">
-<p>Die ISA ist ein Regelwerk: „Sieht der Prozessor ADD, muss er zwei Register addieren.“ Der Compiler (GCC, Clang) darf sich darauf verlassen; der Chip-Designer muss die Transistoren so verdrahten, dass genau das passiert. ISA und Mikroarchitektur sauber trennen — zentral für dieses Modul.</p>
+<p>Die Instruction Set Architecture ist der Vertrag zwischen Compiler und Chip. Die CPU muss die vereinbarten Befehle mit der vereinbarten Wirkung ausführen. gcc aus der GNU Compiler Collection und Clang sind Beispiele für Compiler, keine Vorschrift der ISA. GNU ist das Projekt hinter dieser Compiler-Sammlung.</p>
+<p>add liest zwei Quellregister, liefert die unteren 32 Ergebnisbits und schreibt das Ziel. Eine Single-Cycle-Umsetzung und eine Pipeline könnten denselben Vertrag erfüllen. Die ISA schreibt die konkrete ALU-Verdrahtung nicht vor. Pipeline meint hier nur eine mögliche überlappende Ausführung, kein Thema dieser Einheit.</p>
+<p>Kontrollfrage: Dürfen zwei Chips add unterschiedlich verdrahten, solange das Ergebnisbitmuster stimmt? Ja. Historische Randbedingungen erklären, warum verschiedene Schnittstellen entstanden.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -408,14 +447,15 @@ graph LR
 <section id="der-historische-kontext-1970er" class="slide level2">
 <h2>Der historische Kontext (1970er)</h2>
 <ul>
-<li>Arbeitsspeicher (RAM) extrem teuer und klein</li>
-<li>Magnetkernspeicher oft nur wenige Kilobyte</li>
-<li>Ziel: Programme so klein wie möglich</li>
-<li>Strategie: Ein Befehl soll extrem viel Arbeit leisten</li>
-<li>Folge: Dominanz der CISC-Architekturen</li>
+<li>In vielen Systemen der 1970er war Arbeitsspeicher teuer und klein</li>
+<li>Codegröße meint codierte Bytes, nicht nur die Instruktionsanzahl</li>
+<li>Ein komplexerer Befehl kann mehrere Schritte bündeln</li>
+<li>Das ist ein Entwurfsdruck, nicht die Beschreibung jeder Maschine</li>
 </ul>
 <aside class="notes">
-<p>In den 1970ern war RAM sündhaft teuer — oft nur wenige Kilobyte. Ingenieure wollten große Programme vermeiden: Je mehr Arbeit ein einzelner Befehl leistet, desto weniger Bytes braucht das Programm. Das war die Geburtsstunde von CISC.</p>
+<p>In vielen, nicht in allen Systemen der 1970er war Arbeitsspeicher teuer und klein. RAM bedeutet Random Access Memory. Codegröße ist die Anzahl codierter Bytes, nicht bloß die Instruktionsanzahl. Ein komplexerer Befehl kann mehrere Arbeitsschritte zusammenfassen und muss trotzdem nicht in jedem Programm Speicher sparen.</p>
+<p>Die Entstehung von CISC lässt sich nicht auf einen einzigen Grund oder Zeitpunkt reduzieren. Die Folie nutzt diesen Druck nur als Motiv für das folgende x86-Beispiel.</p>
+<p>Kontrollfrage: Sparen zehn komplexe Befehle automatisch mehr Bytes als dreißig einfache? Nein, das hängt von der Codierung ab. Das x86-Beispiel macht zusammengefasste Abläufe anschaulich.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -433,7 +473,7 @@ graph LR
 <ul>
 <li>Vertreter: Intel x86, AMD64 (viele PCs)</li>
 <li>Philosophie: Programmierer/Compiler entlasten</li>
-<li>Tausende spezialisierte, hochkomplexe Instruktionen</li>
+<li>Viele spezialisierte Instruktionen mit umfangreicher Semantik</li>
 <li>Ein Befehl kann lesen, rechnen und in den RAM schreiben</li>
 <li>Variable Befehlslänge (z. B. 1 bis 15 Bytes)</li>
 </ul>
@@ -446,17 +486,9 @@ graph LR
 <span id="cb1-7"><a aria-label="7"></a>// 4. Zähler dekrementieren</span>
 <span id="cb1-8"><a aria-label="8"></a>// 5. wiederholen, bis Zähler = 0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>CISC packt maximale Komplexität in die Hardware. <code>REP MOVSB</code> kopiert Datenblöcke, führt Zähler und baut faktisch eine while-Schleife — komfortabel für Software, teuer für Silizium.</p>
-<p>Die x86-Befehlssatzarchitektur (ISA) ist formal gesehen eine CISC-Architektur. Die Realität moderner x86-Prozessoren ist heute jedoch vielschichtiger: Sie sind ein CISC-RISC-Hybrid.</p>
-<p>Um das zu verstehen, muss man streng zwischen der ISA (der Sprache, die der Prozessor versteht) und der Mikroarchitektur (wie der Prozessor intern arbeitet) unterscheiden.</p>
-<p>Die “CISC-Fassade” (Die ISA) Aus Sicht des Compilers, des Betriebssystems und des Programmierers ist x86 ein klassisches CISC-Design. Das zeigt sich an folgenden Merkmalen:</p>
-<p>Variable Befehlslänge: x86-Befehle können zwischen 1 und 15 Bytes lang sein. (RISC-Architekturen wie ARM haben in der Regel feste Befehlslängen, z.B. immer 4 Bytes).</p>
-<p>Komplexe Speicheroperationen: x86 erlaubt Befehle, die Daten direkt aus dem Speicher lesen, mit einem Register addieren und das Ergebnis direkt wieder in den Speicher schreiben. (RISC erfordert dafür separate Load-, Add- und Store-Befehle).</p>
-<p>Historischer Ballast: Die Architektur ist seit dem Intel 8086 aus dem Jahr 1978 rückwärtskompatibel. Es gibt Tausende von Befehlen und komplexe Adressierungsmodi.</p>
-<p>Der “RISC-Maschinenraum” (Die Mikroarchitektur) Das direkte Ausführen dieser hochkomplexen x86-Befehle in Hardware wurde in den 1990er Jahren zu einem massiven Flaschenhals, der die Taktraten bremste.</p>
-<p>Mit dem Intel Pentium Pro (1995) und dem AMD K5 (1996) gab es daher einen radikalen Paradigmenwechsel, der bis heute in Prozessoren wie Intel Core und AMD Ryzen genutzt wird:</p>
-<p>Dekodierung: Wenn ein x86-Befehl in den Prozessor geladen wird, führt die CPU diesen nicht direkt aus. Ein Hardware-Decoder zerlegt den komplexen x86-Befehl in kleinere, einfache und gleich lange Teilbefehle. Diese nennt man Micro-Operations (µops).</p>
-<p>Ausführung: Diese µops werden an den eigentlichen Rechenkern der CPU weitergeleitet. Dieser Kern ist eine superskalare, stark optimierte RISC-Engine. Er nutzt typische RISC-Techniken wie Out-of-Order Execution (Befehle werden in der effizientesten Reihenfolge abgearbeitet, nicht zwingend in der programmierten) und Register Renaming.</p>
+<p>CISC bedeutet Complex Instruction Set Computer. Die sichtbare x86-ISA von Intel und AMD erlaubt Befehle mit umfangreicher Semantik und variabler Länge, grob 1 bis 15 Byte. Das ist nicht dieselbe Aussage wie die interne Mikroarchitektur.</p>
+<p>REP MOVSB ist ein Vergleichsmotiv, keine x86-Prüfung. Repeat und Move String Byte kopieren Bytes. Bei Direction Flag DF gleich 0 werden die Zeiger erhöht. Ist der Zähler 0, wird nichts kopiert. Ein Befehl garantiert keine atomare Kopie des ganzen Blocks. Interne micro-operations, kurz µops, sind implementierungsabhängig. Sie sind nicht allgemein gleich lang und keine eigene RISC-ISA. Arm- und RISC-V-Befehle sind ebenfalls nicht pauschal alle gleich lang, sobald eine Komprimerweiterung existiert.</p>
+<p>Kontrollfrage: Wird bei Zähler 0 einmal kopiert? Nein. Komplexere Codierungen können die Decodierung beeinflussen, ohne einen universellen Leistungsvergleich zu erlauben.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -472,11 +504,10 @@ graph LR
 <section id="die-nachteile-von-cisc" class="slide level2">
 <h2>Die Nachteile von CISC</h2>
 <ul>
-<li>Gigantische Decoder: lange Befehle — flächen-/stromhungrig</li>
-<li>Unterschiedliche Taktzyklen: Befehl A braucht 1 Takt, Befehl B 120</li>
-<li>Pipelining-Albtraum: unvorhersehbare Arbeitszeiten</li>
-<li>Historischer Ballast: Rückwärtskompatibilität seit den 1970ern</li>
-<li>Ineffiziente Nutzung der Chipfläche</li>
+<li>Variable Länge und komplexe Semantik können den Decoderaufwand erhöhen</li>
+<li>Latenzen hängen von der Implementierung ab, nicht fest von der ISA</li>
+<li>Eine Pipeline bleibt eine Mikroarchitekturfrage</li>
+<li>Rückwärtskompatibilität bindet spätere Chips an ältere Befehle</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -501,7 +532,9 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Die ALU kann keine Arrays kopieren — nur addieren. CISC-Decoder zerlegen Monster-Befehle in Mikro-Operationen. Pipelines brauchen gleichmäßige Schritte; 1 vs.&nbsp;120 Takte erzeugen Staus. Die Industrie brauchte einen Neustart.</p>
+<p>Variable Instruktionslänge und komplexe Semantik können den Decoderaufwand erhöhen. Decoder bedeutet die Schaltung oder das Verfahren, das Felder eines Befehls auswertet. Eine Pipeline verarbeitet mehrere Befehle überlappend. µop bedeutet eine interne Mikrooperation. Die Bildkette CISC, Decoder, µops beschreibt eine mögliche Implementierung, keinen allgemeingültigen Chipaufbau.</p>
+<p>Feste Beispiele wie 1 Takt gegen 120 Takte bleiben hier weg, weil sie ohne benanntes Modell irreführen. Auch RISC-Befehle haben nicht zwingend identische Latenzen. Rückwärtskompatibilität ist ein Entwurfskostenpunkt, keine Siliziummessung.</p>
+<p>Kontrollfrage: Folgt aus einem langen Befehl automatisch ein Pipelining-Verbot? Nein. Das Lehrsubset von RISC-V bietet einfache Formate und eine klare Load/Store-Trennung.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -532,7 +565,9 @@ graph LR
 <span id="cb2-7"><a aria-label="7"></a>    Subtrahiere 1 vom Zähler</span>
 <span id="cb2-8"><a aria-label="8"></a>    Springe zu LOOP, wenn Zähler &gt; 0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>In den 1980ern (Berkeley/Stanford) wurde Komplexität aus dem Befehlssatz in den Compiler verlagert. Energie oder Takt sind keine automatische Folge des Etiketts RISC. Die Load/Store-Regel dieses Befehlssatzes hält Rechnen und Speicherzugriff auseinander.</p>
+<p>RISC bedeutet Reduced Instruction Set Computer. Load/Store trennt Rechnen in Registern vom Speichertransfer. Der Kasten ist Pseudocode, kein ausführbarer RV32I-Quelltext. Die Schleife setzt eine positive Anzahl voraus. Bei Anzahl 0 darf nichts kopiert werden, analog zum Zähler 0 bei REP.</p>
+<p>Atomar bedeutet hier eine Synchronisationsgarantie, nicht bloß ein Befehl. Die A-Erweiterung für atomare Speicheroperationen ist nur eine Einordnung, kein Stoff dieser Einheit. Energie, Taktzahl und Pipeline folgen nicht aus dem RISC-Etikett.</p>
+<p>Kontrollfrage: Ist der Pseudocode bereits ein Venus-Programm? Nein. Die für unsere Programme nötige Trennung betrifft Rechnen und Speicherzugriff.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -548,8 +583,8 @@ graph LR
 <section id="die-eiserne-risc-regel-loadstore" class="slide level2">
 <h2>Die eiserne RISC-Regel: Load/Store</h2>
 <ul>
-<li>Die ALU kommuniziert <strong>nicht</strong> direkt mit dem RAM</li>
-<li>Berechnungen nur zwischen Registern</li>
+<li>Registerarithmetik verarbeitet Registeroperanden, nicht RAM-Inhalte</li>
+<li>Die ALU darf trotzdem eine effektive Adresse berechnen</li>
 <li>RAM-Zugriff nur über zwei Befehlstypen:
 <ul>
 <li>Load: RAM → Register</li>
@@ -576,7 +611,9 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Load/Store-Architektur: In CISC dürfen Register und RAM in einem Befehl gemischt werden. In RISC-V ist das verboten — die ALU spricht nur mit dem Register File. Wert aus dem RAM? Erst laden, dann rechnen, dann speichern. Rechen- und Speicherlatenzen bleiben getrennt. Merken Sie sich das für das gesamte Semester.</p>
+<p>Registerarithmetik verarbeitet Registeroperanden. Loads und Stores veranlassen die Speichertransfers. Die ALU kann dennoch eine effektive Adresse berechnen. ALU ist die arithmetisch-logische Einheit, RAM der Arbeitsspeicher.</p>
+<p>Als Ausblick, noch ohne vollständige Syntax: zwei Loads holen Werte, add verrechnet sie, ein Store kann das Ergebnis zurückschreiben. Adressweg und Datenweg sind verschieden. Getrennte Latenzklassen sind keine Garantie einer konkreten Ausführungsdauer.</p>
+<p>Kontrollfrage: Darf die ALU eine Adresse berechnen, obwohl sie keine RAM-Daten verknüpft? Ja. Die Trennung strukturiert Software und Hardware, ist aber kein quantitatives Nullsummengesetz.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -592,14 +629,16 @@ graph LR
 <section id="die-waage-der-komplexität" class="slide level2">
 <h2>Die Waage der Komplexität</h2>
 <ul>
-<li>Architektur-Design: Nullsummenspiel der Komplexität</li>
-<li>Das Anwendungsproblem bleibt gleich komplex</li>
-<li>CISC: Last auf der Hardware (Transistoren, Strom)</li>
-<li>RISC: Last auf dem Compiler (Software muss clever sein)</li>
-<li>Heute: Mobile/Cloud (Apple, AWS) — RISC gewinnt oft durch Energieeffizienz</li>
+<li>Architektur-Design: Aufwand verteilt sich auf Compiler, Decoder und Ausführung, ohne festes Nullsummengesetz</li>
+<li>Codeumfang, Compileraufwand und Decoderdesign sind verschiedene Größen</li>
+<li>CISC verlagert oft Semantik in einzelne Befehle</li>
+<li>RISC verlagert oft die Zerlegung in den Compiler</li>
+<li>Energie folgt aus Workload, Fertigung und Mikroarchitektur, nicht aus dem Etikett</li>
 </ul>
 <aside class="notes">
-<p>Die Waage: 100 % Problemkomplexität. CISC drückt auf die Hardware-Seite, RISC auf die Software-Seite. Moderne RISC-Compiler sind Meisterwerke. Weniger Silizium-Komplexität bedeutet bessere Akkulaufzeit und Kühlung — deshalb RISC in praktisch jedem Smartphone.</p>
+<p>Eine Waage ist hier nur ein qualitatives Bild. Codeumfang, Compileraufwand, Decoderdesign, Ausführungseinheiten und Speicherverhalten sind verschiedene Größen. Es gibt kein festes Nullsummenspiel und keine hundert Prozent Problemkomplexität, die nur die Seite wechseln.</p>
+<p>AWS bedeutet Amazon Web Services. Weder Akkulaufzeit noch ein Cloudanbieter folgt automatisch aus CISC oder RISC. Konkrete Workloads, Fertigung und Mikroarchitektur entscheiden. Die Folie zeigt deshalb keine Energiebalken.</p>
+<p>Kontrollfrage: Gewinnt RISC-V deshalb jede Energiemessung? Nein. Im Kurs wählen wir RISC-V wegen der transparenten Schnittstelle und der Lehrbarkeit.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -615,14 +654,15 @@ graph LR
 <section id="warum-risc-v" class="slide level2">
 <h2>Warum RISC-V?</h2>
 <ul>
-<li>Quelloffener Befehlssatz (UC Berkeley)</li>
-<li>Chip-Bau ohne ISA-Lizenzgebühren</li>
-<li>„Grüne Wiese“ — wenig historischer Ballast</li>
-<li>Modular, klar, didaktisch stark</li>
-<li>Wachsende Relevanz in Embedded Systems und IoT</li>
+<li>Offene, gebührenfreie ISA; die Coreimplementierung kann kommerziell sein</li>
+<li>Dokumentierte Formate und eine überschaubare Integerbasis</li>
+<li>Erweiterungen bleiben vom Kurskern RV32I getrennt</li>
+<li>Embedded Systems und IoT sind Anwendungsfelder, kein Energieversprechen</li>
 </ul>
 <aside class="notes">
-<p>Warum RISC-V an der DHBW — nicht ARM oder x86? Open-Source-ISA: Linux-Ideologie für Hardware. Keine Millionen-Lizenz wie bei ARM. Elegant und logisch, ohne Design-Sünden der 1980er — ideal für die Lehre.</p>
+<p>RISC-V ist der Name der offenen Befehlssatzarchitektur. Offen und gebührenfrei betrifft die ISA. Eine Coreimplementierung, Core-IP oder ein Werkzeug darf kommerziell und geschlossen sein. IoT bedeutet Internet of Things, Embedded Systems sind eingebettete Systeme.</p>
+<p>Für diese Einheit zählen dokumentierte Formate, die überschaubare Integerbasis und die Erweiterbarkeit. Eine neue ISA enthält weiterhin schwierige Entwurfsentscheidungen. Lizenzpreisvergleiche ohne Beleg bleiben weg.</p>
+<p>Kontrollfrage: Muss ein RISC-V-Chip quelloffen sein? Nein. Ein bis zwei belegte Einsatzmuster können die Anwendung illustrieren, ohne Stückzahlen zu erfinden.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -638,14 +678,15 @@ graph LR
 <section id="risc-v-in-der-industrie" class="slide level2">
 <h2>RISC-V in der Industrie</h2>
 <ul>
-<li>Keine reine Akademiker-Spielerei mehr</li>
-<li>Western Digital &amp; Seagate: Milliarden Cores in Controllern</li>
-<li>Google: u. a. Steuerlogik in KI-Beschleunigern</li>
-<li>NVIDIA: RISC-V als Steuer-Cores in GPUs</li>
-<li>Relevanz für den Arbeitsmarkt steigt</li>
+<li>Ankündigung, ausgelieferter Kern und konkretes Produkt sind zu trennen</li>
+<li>Steuerkerne in Controllern sind ein belegbares Einsatzmuster</li>
+<li>KI-Beschleuniger und GPUs können einen RISC-V-Kern als Steuerung nutzen</li>
+<li>Daraus folgt keine Stückzahl und keine Marktprognose</li>
 </ul>
 <aside class="notes">
-<p>Western Digital, Google, NVIDIA und viele Embedded-Hersteller setzen RISC-V ein. Wer die Architektur beherrscht, versteht einen Chip-Standard der kommenden Jahrzehnte.</p>
+<p>Industriebeispiele trennen Ankündigung, ausgelieferten Kern und konkretes Produkt. KI bedeutet Künstliche Intelligenz, GPU bedeutet Graphics Processing Unit. Ein RISC-V-Kern kann in einem Controller oder als Steuerkern neben einer GPU arbeiten. Ohne datierte Primärquelle nennen wir keine Milliarden Stück und keine Marktprognose.</p>
+<p>Die Abbildung, soweit sie bleibt, soll Einsatz und Aufgabe des Kerns zeigen, keine Logos. Arbeitsmarktrelevanz und ein Standard der kommenden Jahrzehnte sind keine gesicherten Aussagen.</p>
+<p>Kontrollfrage: Ist eine Pressemeldung bereits eine ausgelieferte Stückzahl? Nein. Für unsere Programme genügt zunächst die konkrete RV32I-Basis.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -661,7 +702,21 @@ graph LR
 <section>
 <section id="die-rv32i-basis-architektur" class="title-slide slide level1 center">
 <h1>2. Die RV32I Basis-Architektur</h1>
-
+<aside class="notes">
+<p>Der Vergleich der Herstellerfragen endet hier. Jetzt werden die softwareseitig sichtbaren Register und ihre Benennung eingeführt. RV32I bedeutet RISC-V, Registerbreite XLEN gleich 32, Integerbasis I.</p>
+<p>Der Modulkasten beschreibt den Befehlssatz, nicht den Markt. Architekturregister und Softwarekonventionen sind zwei Ebenen.</p>
+<p>Kontrollfrage: Gehört eine Verkaufszahl zur RV32I-Definition? Nein. Als Nächstes trennen wir diese beiden Ebenen genauer.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="überblick-rv32i" class="slide level2">
 <h2>Überblick RV32I</h2>
@@ -693,9 +748,9 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Wir kennen die RISC-Welt — jetzt den konkreten Vertrag: die ISA von RV32I. Spezifikation, Register-Namen und ABI, damit wir Register im Code korrekt ansprechen.</p>
-<p>Die ABI ist der Grund dafür, warum ein Programm, das du für Linux auf ARM (z.B. einen Raspberry Pi) kompilierst, nicht einfach unter Windows auf ARM läuft. Die zugrundeliegende ISA (der ARM-Prozessor) ist exakt dieselbe. Die Hardware würde die Befehle verstehen. Aber die Betriebssysteme haben völlig unterschiedliche ABIs (unterschiedliche Systemaufrufe, unterschiedliche Dateiformate, etc.).</p>
-<p>Außerdem ermöglicht eine standardisierte ABI, dass Programme, die in C geschrieben wurden, problemlos Bibliotheken nutzen können, die in C++, Rust oder Go geschrieben wurden. Solange sich die Compiler aller Sprachen an dieselbe ABI halten, passt der Maschinencode am Ende wie Lego zusammen.</p>
+<p>RV32I legt 32 Architekturregister und die Integerbefehle fest. Das Register File ist die Registerbank. Die ABI, das Application Binary Interface, ist eine Softwarevereinbarung über Namen und Erhaltung, keine zweite Hardware.</p>
+<p>Das Beispiel Linux und Windows on Arm ist vorsichtig zu lesen: selbst bei ähnlicher ISA können Binärformat, Systemdienste, Laufzeit und ABI inkompatibel sein. Nicht jede Arm-Konfiguration ist dieselbe ISA. C, C++, Rust und Go lassen sich nur über eine passende gemeinsame Schnittstelle verbinden. Typen, Namenskonventionen und Laufzeitregeln zählen mit. Der Kursumfang sind einfache Integerfunktionen.</p>
+<p>Kontrollfrage: Erzeugt das Etikett gleiche ABI automatisch eine Rust-Bibliothek für C? Nein. Der Modulkasten beschreibt zuerst den Befehlssatz.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -745,38 +800,10 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p>Mikrowellen-Controller braucht keine Float-Hardware — Modul weglassen. Unser Kurs und die Klausur bleiben bei RV32I ohne <code>C</code>. <code>G</code> ist IMAFD plus Zicsr und Zifencei; <code>RV64GC</code> ist deshalb nicht dasselbe wie <code>RV64IMAFDC</code>.</p>
-<p>Interrupts und Ausnahmen gehören zu <code>Zicsr</code>. Ein Beispiel für einen Trap ist ein illegaler Befehl oder ein privilegiertes Ereignis. Die Integer-Division der Erweiterung M liefert bei Divisor 0 ein definiertes Ergebnis und löst keinen RISC-V-Trap aus. RV32I selbst enthält keinen <code>div</code>-Befehl.</p>
-<p>Hier ist die genaue Aufschlüsselung von RV64IMAFDC:</p>
-<p>RV: Steht schlicht für RISC-V.</p>
-<p>64: Gibt die Registerbreite an (hier also ein 64-Bit-Prozessor). Es gibt auch RV32 (für kleine Mikrocontroller) oder sogar RV128.</p>
-<p>I (Base Integer): Ganzzahlbefehle, Laden, Speichern, Sprünge. Das ist die Basis, die wir wählen. Die Spezifikation erlaubt weitere Basen; „I ist immer Pflicht“ gilt so nicht.</p>
-<p>M (Multiply/Divide): Fügt Befehle für die Hardware-Multiplikation und -Division von Ganzzahlen hinzu (ohne dieses Modul müsste die CPU das mühsam in Software simulieren).</p>
-<p>A (Atomic): “Atomare” Befehle. Diese sind zwingend nötig, wenn man Betriebssysteme wie Linux und Multi-Core-Prozessoren nutzen will, damit mehrere Kerne sicher auf denselben Speicherbereich zugreifen können, ohne sich in die Quere zu kommen.</p>
-<p>F (Single-Precision Floating-Point): Erlaubt das Rechnen mit einfachen Kommazahlen (32-Bit Gleitkomma).</p>
-<p>D (Double-Precision Floating-Point): Erlaubt das Rechnen mit präziseren, großen Kommazahlen (64-Bit Gleitkomma).</p>
-<p>C (Compressed Instructions): Ein sehr wichtiges Modul für die Effizienz. Normalerweise sind alle RISC-V-Befehle genau 32 Bit lang. Das “C”-Modul erlaubt es der CPU, die häufigsten Befehle in einem stark komprimierten 16-Bit-Format zu lesen. Das spart massiv Speicherplatz (Code-Größe) und reduziert die Ladezeiten aus dem RAM.</p>
-<p>Und was bedeutet nun das “G”? Da die Kombination aus IMAFD (Ganzzahlen, Multiplikation, Atomics, Kommazahlen) der absolute Standard für jeden normalen Allzweck-Computer ist (z.B. für einen Desktop-PC, ein Smartphone oder einen Server, auf dem Linux laufen soll), hat man diese fünf Buchstaben zu einem einzigen Alias zusammengefasst: G (für General-Purpose).</p>
-<p>Daher gilt für den allgemeinen Alias: G umfasst IMAFD sowie Zicsr und Zifencei. C kommt separat dazu. RV64GC ist nicht die Abkürzung für RV64IMAFDC allein.</p>
-<p>RV64GC ist heute der absolute Goldstandard für 64-Bit RISC-V Hardware. Wenn du heute einen RISC-V-fähigen Linux-Rechner kaufst, wird das Betriebssystem voraussetzen, dass die CPU genau diesen “RV64GC”-Befehlssatz beherrscht.</p>
-<p>Das “Z” am Anfang der Namen hat eine besondere Bedeutung: Während die großen, grundlegenden Module (wie I, M, A, F, D, C) nur einen einzigen Buchstaben bekommen, steht das “Z” in der RISC-V-Nomenklatur für spezifischere Standard-Erweiterungen, deren Namen aus mehreren Buchstaben bestehen.</p>
-<p>Interessant an Zicsr und Zifencei ist ihre Geschichte: Ursprünglich (in älteren Versionen des RISC-V-Standards) waren diese Befehle fest im Basis-Modul “I” (Base Integer) eingebaut. Man hat sie später jedoch herausgelöst, um das Basis-Modul für extrem simple und winzige Mikrocontroller noch kleiner zu machen.</p>
-<p>Hier ist, was die beiden Module genau tun:</p>
-<ol type="1">
-<li>Zicsr (Control and Status Registers) Diese Erweiterung stellt Befehle zur Verfügung, um die internen Verwaltungsregister (CSRs) des Prozessors zu lesen und zu beschreiben.</li>
-</ol>
-<p>Was sind CSRs? Neben den normalen Registern (in denen die CPU rechnet, z.B. 5 + 3), hat eine CPU interne Systemregister. Diese speichern den “Zustand” der Maschine.</p>
-<p>Wofür braucht man sie? Über diese CSRs werden grundlegende Systemfunktionen gesteuert:</p>
-<p>Interrupts und Ausnahmen: externe Anforderungen oder synchrone Ausnahmen, etwa ein illegaler Befehl. Division durch Null ist dafür kein RISC-V-Beispiel: die M-Erweiterung definiert das Ergebnis, und RV32I hat keinen Divisionsbefehl.</p>
-<p>Privilegienstufen: Um festzulegen, ob der Prozessor gerade im sicheren “Machine Mode” (für die Firmware), “Supervisor Mode” (für das Betriebssystem, z.B. Linux) oder “User Mode” (für deine Apps) läuft.</p>
-<p>Timer und Leistungszähler: Um die Uhrzeit des Systems abzufragen oder zu messen, wie viele Taktzyklen vergangen sind.</p>
-<p>Fazit: Ein winziger Controller für eine Kaffeemaschine braucht diese Register vielleicht nicht zwingend. Aber jedes System, auf dem ein echtes Betriebssystem laufen soll, muss die Zicsr-Erweiterung haben.</p>
-<ol start="2" type="1">
-<li>Zifencei (Instruction-Fetch Fence) Diese Erweiterung fügt dem Prozessor exakt einen einzigen, aber extrem wichtigen Befehl hinzu: fence.i.</li>
-</ol>
-<p>Das Problem: Moderne Prozessoren haben Caches (sehr schnellen Zwischenspeicher). Ein Teil davon (der Instruction Cache) speichert die nächsten Programm-Befehle, die ausgeführt werden sollen. Wenn ein Programm nun aber neuen Code in den Arbeitsspeicher (RAM) schreibt und diesen danach direkt ausführen will, weiß der Instruction Cache der CPU davon nichts. Er würde im schlimmsten Fall veralteten “Müll” ausführen.</p>
-<p>Die Lösung: Der fence.i-Befehl ist eine Art Stoppschild und Reset-Knopf für die CPU. Er sagt dem Prozessor im Grunde: “Wirf alle zwischengespeicherten Befehle in deinem Cache weg und lade sie komplett neu aus dem RAM, bevor du weiterarbeitest.”</p>
-<p>Wofür braucht man das? Das ist absolut essenziell für JIT-Compiler (Just-in-Time). Wenn dein Browser JavaScript ausführt oder dein Rechner Java-Programme laufen lässt, übersetzt das System den Code während der Laufzeit in Maschinencode, schreibt ihn in den RAM und führt ihn sofort aus. Ohne Zifencei würde das nicht sicher funktionieren. Auch Betriebssysteme brauchen den Befehl, wenn sie ein neues Programm in den RAM laden, um es zu starten.</p>
+<p>I ist die Integerbasis, M Multiply/Divide, A Atomic, F und D Single- und Double-Precision Floating-Point. Float und Double sind Gleitkommaformate, keine Registerbreite. C, Compressed, ergänzt 16-Bit-Instruktionen und macht nicht jeden Befehl 16 Bit lang. G ist der Alias für IMAFD plus Zicsr und Zifencei.</p>
+<p>Zicsr definiert Zugriffsbefehle für CSR, Control and Status Registers. Privilegien, Interrupts und konkrete Zähler gehören zu weiteren Spezifikationsteilen. Zifencei und fence.i stellen auf demselben Hart, einem Hardware-Ausführungskontext, vorherige Stores für spätere Instruktionsfetches sichtbar. Ein Cache-Reset ist eine mögliche Umsetzung, keine Vorschrift, und gilt nicht allein für alle anderen Harts.</p>
+<p>Die M-Division durch null hat ein definiertes Ergebnis und keine verpflichtende Exception. RV32I enthält div nicht. G ist nicht automatisch die vollständige Anforderung jedes Linux-Systems. Der Kurs verwendet RV32I ohne C. Alles andere ist Einordnung.</p>
+<p>Kontrollfrage: Gehören Interruptregeln zu Zicsr? Nein, Zicsr sind die Zugriffsbefehle. Als Nächstes grenzt die Definition den Kursvertrag ein.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -794,15 +821,17 @@ graph LR
 <ul>
 <li>RV: Architektur-Familie RISC-V</li>
 <li>32: Datenpfad- und Adressbreite 32 Bit</li>
-<li>I: Integer (Zweierkomplement), keine Float-Hardware</li>
-<li>Keine Hardware-Multiplikation/Division in der Basis</li>
-<li>Jede Instruktion exakt 32 Bit (4 Bytes)</li>
+<li>I: Integer-Basis; Gleitkommabefehle gehören zu F und D</li>
+<li>mul und div gehören zur Erweiterung M, nicht zu RV32I</li>
+<li>Im Kurs sind die nativen Instruktionen unkomprimiert 32 Bit lang</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb3-1"><a aria-label="1"></a>Word Size:     32 Bits (4 Bytes)</span>
 <span id="cb3-2"><a aria-label="2"></a>Registers:     32 Stück</span>
-<span id="cb3-3"><a aria-label="3"></a>Address Space: 2^32 = 4 Gigabyte</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-3"><a aria-label="3"></a>Address Space: 2^32 Byte = 4 GiB</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Spielregeln fürs Semester: 32-Bit-Register, feste 32-Bit-Befehlslänge (kein x86-Längenchaos). „5 × 4“ ohne <code>M</code>-Extension: Schleife aus Additionen — das ist die absolute Basis-Hardware.</p>
+<p>RV steht für RISC-V, 32 für XLEN gleich 32, I für die Integerbasis. Registerbreite, Instruktionsbreite und Adressraum sind drei Größen. Ein RV32-Word ist 32 Bit, also vier Byte. Der Byteadressraum hat 2 hoch 32 Adressen, das sind 4 GiB, Gibibyte als 2 hoch 30 Byte. Das ist nicht der installierte RAM.</p>
+<p>Keine mul- oder Gleitkommabefehle im Basisumfang verbieten entsprechende Hardware in einer erweiterten CPU nicht. 5 mal 4 lässt sich als Shift um zwei bilden, nicht nur als Additionsschleife.</p>
+<p>Kontrollfrage: Sind 4 GiB der eingebaute Speicher? Nein, es ist die Größe des Adressraums. Die allgemeinen Register tragen Operanden und Ergebnisse.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -822,7 +851,7 @@ graph LR
 <li>Nicht dasselbe wie physische Register einer Mikroarchitektur</li>
 <li>Adressierung im Befehlswort: <span class="math inline">\(5\)</span> Bits (<span class="math inline">\(2^5 = 32\)</span>)</li>
 <li><code>x0</code> ist fest 0; die übrigen 31 sind beschreibbar</li>
-<li>Ohne Versorgung verlieren die Flip-Flops ihren Zustand</li>
+<li>Die ISA schreibt keine bestimmte Flip-Flop-Bank vor</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -843,7 +872,10 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>32 Register sind Ihr Arbeitsgedächtnis. Mehr Register → größere Schaltung, oft niedrigere Taktfrequenz. 32 ist der historische Kompromiss; im Befehlswort reichen 5 Bits für die Registerwahl.</p>
+<p>x0 bis x31 sind Architekturbezeichner. Das Register File ist die Bank dieser Register, keine Datei. Fünf Bits wählen eines von 32 Registern. x0 ist fest null, 31 Register sind beschreibbar. 31 mal 4 Byte sind 124 Byte Architekturzustand, nicht die Speicherkapazität der CPU.</p>
+<p>Physische Register einer Mikroarchitektur dürfen zahlreicher sein, etwa durch Umbenennung. Flip-Flops sind ein mögliches Lehrmodell, keine ISA-Vorschrift. Mehr Architekturregister garantieren keine niedrigere Taktfrequenz.</p>
+<p>Die Tabelle trennt Nummer, ABI-Alias und aktuellen Wert. Der Alias ist kein zweites Register.</p>
+<p>Kontrollfrage: Wie viele Register wählt ein 5-Bit-Feld? 32. x0 hat eine besondere Semantik, die einfache Idiome ermöglicht.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -867,7 +899,9 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb4-1"><a aria-label="1"></a><span class="co">// Metapher:</span></span>
 <span id="cb4-2"><a aria-label="2"></a><span class="dt">const</span> <span class="dt">int</span> x0 <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><span class="math inline">\(x0\)</span> ist die Konstante Null. Schreiben in <span class="math inline">\(x0\)</span> stürzt nicht ab — der Wert bleibt 0. Damit lassen sich Software-Befehle aus bestehenden Gattern ableiten, ohne neue Hardware.</p>
+<p>Hardwired Zero bedeutet: jedes Lesen von x0, Alias zero, liefert null. Das ist eine Architektureigenschaft, nicht zwingend eine bestimmte Drahtschaltung. addi x0, x0, 7 lässt x0 bei 0. Das geschriebene Ergebnis wird verworfen.</p>
+<p>Daraus folgt nicht, dass jede Instruktion mit Ziel x0 wirkungslos ist. Speicher- oder Systemeffekte können bestehen. Für die jetzigen Registerrechnungen genügt die Nullregel. Ein const int in C ist keine Hardwarebeschreibung dieses Registers.</p>
+<p>Kontrollfrage: Welchen Wert hat x0 nach einem Schreibversuch? 0. Der PC ist ein eigener Adresszustand und gehört nicht zu x0 bis x31.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -907,7 +941,9 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Der PC zeigt auf die aktuell auszuführende Instruktion (Venus markiert genau diese). Bei RV32I ist jeder Befehl 4 Bytes — die Folgeinstruktion liegt bei <span class="math inline">\(PC+4\)</span>. Der PC ist der Dirigent des Programmablaufs.</p>
+<p>Der PC, Program Counter, ist im ISA- und Venus-Modell die Adresse der aktuellen Instruktion. Formulierungen wie als Nächstes geholt gehören in einen Mikroarchitekturkontext und werden hier nicht vermischt.</p>
+<p>Bei nativen unkomprimierten Instruktionen steigt die sequenzielle Adresse um vier Byte. Eine kleine Adressliste 0, 4, 8 zeigt zwei solche Schritte. Die konkreten Startadressen eines Tools sind nicht erfunden. Labels, Kommentare und Pseudozeilen haben keine eigene einheitliche PC-Schrittweite. Sprünge kommen in Einheit 3.</p>
+<p>Kontrollfrage: Um wie viele Byte steigt der PC bei einem normalen RV32I-Rechenbefehl? Um 4. Die allgemeinen Register bekommen nun softwareseitige Aliasnamen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -954,7 +990,10 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p>ABI ist ein sozialer Vertrag zwischen Compilern und Programmierern. Die Hardware kennt nur <span class="math inline">\(x5\)</span>; die ABI sagt: „<span class="math inline">\(x5\)</span> heißt <code>t0</code> und ist Schmierzettel.“ So arbeiten Code-Stücke und Bibliotheken zusammen.</p>
+<p>ABI bedeutet Application Binary Interface, die binäre Schnittstellenvereinbarung. x5, x8 und x10 sind Architekturbezeichner, keine physikalischen Hardware-Namen. t0, s0 und a0 sind Aliase derselben Register: t0 ist x5, s0 ist x8, a0 ist x10.</p>
+<p>Die Namen erzeugen keine zusätzlichen Register und keine automatische Sicherung. Saved bedeutet: bei Rückkehr einer ABI-konformen Funktion ist der Eintrittswert wiederhergestellt, nicht dass der Wert immer im RAM liegt.</p>
+<p>Kurzorientierung: x0 zero bleibt null. x1 ra ist die Rücksprungadresse, x2 sp der Stackzeiger, x3 gp und x4 tp sind reservierte Rollen und hier nur Vorschau. Der PC ist kein General Purpose Register.</p>
+<p>Kontrollfrage: Ist t0 ein 33. Register neben x5? Nein. Die temporären Register erlauben Zwischenwerte mit klarer Zuständigkeit.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -980,7 +1019,9 @@ graph LR
 <span id="cb5-3"><a aria-label="3"></a><span class="bu">sub</span> a0<span class="op">,</span> t0<span class="op">,</span> a3   <span class="op">#</span> a0 <span class="op">=</span> t0 <span class="op">-</span> a3</span>
 <span id="cb5-4"><a aria-label="4"></a># t0 danach nicht mehr benötigt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>t</code> = temporary. Ideal für Zwischensummen. Goldene Regel: nach einem Aufruf (z. B. <code>print</code>) dürfen <code>t</code>-Register verloren sein — die Funktion darf sie überschreiben.</p>
+<p>t bedeutet temporary. Caller ist die aufrufende Funktion. Caller-Saved bedeutet: wenn der Caller den Wert nach einem normalen Aufruf noch braucht, muss er selbst für die Erhaltung sorgen. Es gibt keine automatische Hardwaresicherung.</p>
+<p>t0 bis t2 sind x5 bis x7, t3 bis t6 sind x28 bis x31. Lehrwerte: a1 gleich 5, a2 gleich 10, a3 gleich 3. Dann kann t0 die Summe 15 halten und a0 das Ergebnis 12, wenn das Snippet diese Eingaben bereits gesetzt hat. Ein Venus-ecall ist ein anderer Vertrag und erhält t-Register nicht nach der Funktions-ABI.</p>
+<p>Kontrollfrage: Darf eine aufgerufene Funktion t0 überschreiben? Ja, bei einem normalen Aufruf. Die s-Gruppe gibt eine andere Zusage.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1007,7 +1048,9 @@ graph LR
 <span id="cb6-4"><a aria-label="4"></a>    <span class="co">// wichtig ist danach garantiert noch 42</span></span>
 <span id="cb6-5"><a aria-label="5"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>s</code> = saved. Tresor für wichtige Werte. Die aufgerufene Funktion muss Ihren <code>s</code>-Wert sichern, wenn sie das Register braucht — kostet Zeit, gibt Sicherheit. Vertiefung: später im Stack-/Calling-Convention-Block.</p>
+<p>s bedeutet saved, Callee ist die aufgerufene Funktion. Callee-Saved bedeutet: verändert die Funktion ein s-Register, muss sie bei Rückkehr den Eintrittswert wiederherstellen. Bloßes Lesen verlangt kein Sichern. Der Stack, Zeiger sp, ist der übliche Ort, nicht der einzig denkbare. Eine vollständige Stacksequenz folgt in Einheit 4.</p>
+<p>s0 und s1 sind x8 und x9, s2 bis s11 sind x18 bis x27. Ein C-Compiler muss eine Variable nicht in s0 legen. Ungenutztes kann entfallen. Die Zuordnung im Beispiel ist eine Lehrannahme. Nach dem Aufruf muss ein benutzter s-Wert noch lesbar sein, sonst sieht man die Zusage nicht.</p>
+<p>Kontrollfrage: Muss eine Funktion s0 sichern, wenn sie es nur liest? Nein. Die a-Gruppe überträgt einfache Parameter und Ergebnisse.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1036,7 +1079,9 @@ graph LR
 <span id="cb7-5"><a aria-label="5"></a><span class="co">// b  → Register a1</span></span>
 <span id="cb7-6"><a aria-label="6"></a><span class="co">// Ergebnis → Register a0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Parameter und Rückgabewerte laufen über <code>a0</code>–<code>a7</code>. <code>sum(5, 10)</code>: Compiler legt 5 in <code>a0</code>, 10 in <code>a1</code>; Ergebnis kommt in <code>a0</code> zurück. Halten wir uns daran, bleibt Assembler professionell und kompatibel.</p>
+<p>a bedeutet argument. a0 bis a7 sind x10 bis x17. Bei der einfachen Funktion int sum(int a, int b) stehen die Parameter in a0 und a1, der skalare Rückgabewert wieder in a0. ILP32 bedeutet: int, long und Pointer sind je 32 Bit.</p>
+<p>Lehrgang: sum(5, 10) findet a0 gleich 5 und a1 gleich 10 vor und liefert a0 gleich 15. t- und a-Register bleiben über den Aufruf nicht erhalten. s-Register schon, falls die Funktion sie verändert. Der Venus-Druckdienst nutzt a0 als Dienstnummer und a1 als Druckwert. Das ist nicht derselbe Vertrag. Größere Typen und mehr Argumente sparen wir aus.</p>
+<p>Kontrollfrage: Wo steht das Integerergebnis von sum? In a0. Ein Vertragsvergleich verhindert die Verwechslung mit dem Simulatordienst.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1112,7 +1157,9 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Der Prozessor kennt nur die Architekturregister <span class="math inline">\(x0\)</span>–<span class="math inline">\(x31\)</span>. Eine C-Funktion sucht ihr skalares Ergebnis in <code>a0</code>. Ein Venus-<code>ecall</code> sucht die Dienstnummer ebenfalls in <code>a0</code> und den Druckwert in <code>a1</code>. Wer beides vertauscht, sieht nicht die Zahl, die die Funktion zurückgegeben hat.</p>
+<p>Eine normale Funktion und ein Simulatordienst sind verschiedene Schnittstellen. In der Funktion sum steht das Ergebnis 15 in a0. Für die klassische Venus-Ausgabe wird 15 zuerst nach a1 kopiert, danach a0 auf 1 gesetzt. Dienst 1 druckt die ganze Zahl, Dienst 10 beendet. Einen Verweis auf eine externe Datei braucht diese Folie nicht.</p>
+<p>Die Grafik darf nicht suggerieren, Venus starte eine C-Bibliothek oder einen Betriebssystemkern. OS bedeutet Operating System. Ripes ist ein späteres Werkzeug mit anderer Dienstkonvention und wird hier nicht gemischt. ecall ist kein normaler Funktionsaufruf nach der psABI.</p>
+<p>Kontrollfrage: Darf a0 gleichzeitig Ergebnis 15 und Dienstnummer 1 sein? Nicht im selben Schritt. Die ABI-Namen sind nun bekannt und werden zu Operanden der Rechenbefehle.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1128,7 +1175,21 @@ graph LR
 <section>
 <section id="r-type-befehle-register" class="title-slide slide level1 center">
 <h1>3. R-Type Befehle (Register)</h1>
-
+<aside class="notes">
+<p>R-Type bezeichnet das Format der Register-Register-Rechnungen. Bisher kennen wir Registerrollen. Jetzt kommt die Wirkung einer Instruktion, danach ihre Bits.</p>
+<p>rd ist das Zielregister, rs1 und rs2 sind die Quellregister. Die Namen sind Nummernfelder, nicht die Daten.</p>
+<p>Kontrollfrage: Steht die Konstante dieser Befehle im Instruktionswort? Nein, beide Operanden kommen aus Registern. Zwei Quellen und ein Ziel bilden das Grundmuster.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="einstieg-r-type" class="slide level2">
 <h2>Einstieg: R-Type</h2>
@@ -1160,7 +1221,10 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>R-Type: „R“ für Register. Zwei Quellregister → ALU → Zielregister. Das ist der Kern der Integer-Arithmetik und -Logik in RV32I — nächster Schritt: konkrete Mnemonics und Encoding.</p>
+<p>Ein R-Type-Befehl liest zwei Registerwerte, verknüpft sie in der ALU und schreibt ein Ziel. Die Felder rs1, rs2 und rd enthalten Nummern. Die Register enthalten die Daten. Eine Registernummer ist keine RAM-Adresse.</p>
+<p>Drei verwandte Aufgaben nutzen dasselbe Muster: Arithmetik, bitweise Logik und Shifts. Ein Diagramm muss Quellen, ALU und Ziel getrennt beschriften.</p>
+<p>Lehrwert: rs1 hält 5, rs2 hält 10, die Operation ist Addition, rd erhält 15. Die Quellen bleiben 5 und 10.</p>
+<p>Kontrollfrage: Steht in rs1 die Zahl 5 oder die Registernummer? Im Feld die Nummer, im Register der Wert. Die lesbare Schreibweise ist Assemblersprache.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1186,7 +1250,10 @@ graph LR
 <span id="cb8-2"><a aria-label="2"></a>Assembler:    add x10, x11, x12</span>
 <span id="cb8-3"><a aria-label="3"></a>Maschine:     0000000 01100 01011 000 01010 0110011</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Assembler ist ein Wörterbuch: einer 32-Bit-Zahl wird ein lesbares Mnemonic zugeordnet (<code>add</code> = addieren). Der Assembler (z. B. in Venus) übersetzt Text in Bits. Da jede Zeile exakt einem Maschinenbefehl entspricht, haben Sie Kontrolle über jeden Taktzyklus.</p>
+<p>Assemblersprache ist die Textform. Der Assembler ist das Programm, das sie übersetzt. Hochsprachen können portabel sein, ihre Ausführung braucht aber passende Übersetzer oder Laufzeiten.</p>
+<p>Ein nativer Befehl dieses Kurses wird ein 32-Bit-Instruktionswort. Eine Pseudoinstruktion kann mehrere native Instruktionen erzeugen. Label, Kommentar und Direktive erzeugen keine. Deshalb ist nicht jede Zeile ein Maschinenbefehl, und der Text kontrolliert nicht jeden Hardwaretakt.</p>
+<p>add x10, x11, x12 beschreibt Registerarithmetik. Die Codierung 0x00C58533 hängt nur von den Nummern ab, nicht von den aktuellen Werten. Sie ist nicht automatisch eine ABI-konforme Funktion.</p>
+<p>Kontrollfrage: Erzeugt eine Kommentarzeile einen PC-Schritt? Nein. Für die nativen Registerrechnungen gilt ein einfaches Operandenmuster.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1214,7 +1281,9 @@ graph LR
 <span id="cb9-4"><a aria-label="4"></a># gelesen als<span class="op">:</span></span>
 <span id="cb9-5"><a aria-label="5"></a># <span class="dt">rd</span> wird zu rs1 verknüpft mit rs2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Bei Register-Rechnungen beginnt die Zeile mit der Operation, dann sofort <code>rd</code> (Destination). Das Ziel steht links! Danach die Quellen. Wer dieses Muster kennt, liest 90 % der RISC-V-Befehle blind.</p>
+<p>Der Mnemonic ist das Kürzel der Operation. Bei diesen Registerrechnungen steht das Ziel links: rd, dann rs1, dann rs2. Kommas gehören zum Quelltext. Der Assemblerparser braucht sie. Der CPU-Decoder sieht das Maschinenwort und keine Kommas. Die Ziel-links-Regel gilt nicht für jeden RISC-V-Befehl.</p>
+<p>Beispiel: t1 ist 5, t2 ist 10. add t0, t1, t2 schreibt 15 nach t0. Ein fehlendes Komma ist ein Fehler vor der Ausführung. Eine unbelegte Neunzig-Prozent-Regel bleibt weg.</p>
+<p>Kontrollfrage: Sieht die ALU das Komma? Nein. add ist das erste konkrete Rechenbeispiel.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1233,12 +1302,14 @@ graph LR
 <li>Fundamentalster Rechenbefehl der ALU</li>
 <li><span class="math inline">\(rd = rs1 + rs2\)</span> (32-Bit-Integer, Zweierkomplement)</li>
 <li>Überlauf (Overflow): Hardware schneidet stumm ab — kein Trap</li>
-<li>Dauer: typisch 1 Taktzyklus</li>
+<li>Überlauf: die unteren 32 Bit bleiben; kein automatischer Trap</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb10-1"><a aria-label="1"></a><span class="bu">add</span> t0<span class="op">,</span> t1<span class="op">,</span> t2</span>
 <span id="cb10-2"><a aria-label="2"></a># t0 <span class="op">=</span> t1 <span class="op">+</span> t2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>add t0, t1, t2</code>: Control Unit liest <code>t1</code>/<code>t2</code>, ALU auf Addition, Ergebnis nach <code>t0</code>. Sprengt die Summe 32 Bit, wird das 33. Bit verworfen. Overflow-Prüfung ist Software-Sache.</p>
+<p>add addiert die unteren 32 Bit von rs1 und rs2 und schreibt rd. Die Quellen bleiben unverändert. Signed und unsigned sind Interpretationen desselben Bitmusters. Ein arithmetischer Überlauf erzeugt hier keinen Trap. Das ist modulare Maschinenarithmetik modulo 2 hoch 32, keine Erlaubnis für signed Overflow in C.</p>
+<p>Lehrrechnung: 5 plus 10 bleibt 15. Zusätzlich: 0xFFFFFFFF plus 1 wird 0. 0x7FFFFFFF plus 1 wird 0x80000000, unsigned 2147483648 und signed minus 2147483648. Eine Dauer in Takten folgt aus diesem Befehl nicht.</p>
+<p>Kontrollfrage: Bleibt t1 nach add t0, t1, t2 gleich? Ja. Ein Compiler kann solche Operationen für C-Ausdrücke verwenden.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1267,7 +1338,9 @@ graph LR
 <span id="cb11-5"><a aria-label="5"></a><span class="co">// Generierter Assembler</span></span>
 <span id="cb11-6"><a aria-label="6"></a>add s0<span class="op">,</span> s1<span class="op">,</span> s2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Der Compiler führt Buch: Variable <code>a</code> liegt in <code>s0</code>. Aus <code>a = b + c</code> wird <code>add s0, s1, s2</code>. Die ALU addiert Bitmuster — Datentypen existieren auf dieser Ebene praktisch nicht.</p>
+<p>a gleich s0, b gleich s1 und c gleich s2 ist eine illustrative Zuordnung, keine Compilerzusage. Der Compiler darf andere Register, Speicher oder eine Optimierung wählen. Unter dieser Annahme wird a gleich b plus c zu add s0, s1, s2.</p>
+<p>ASCII, American Standard Code for Information Interchange, wäre nur eine Zeichencodierung, falls ein Vergleich Zeichen zeigt. C-Typen verschwinden nicht als Sprachregeln. Sie werden in Operationen und Layouts übersetzt. Die Registerbank speichert Bitmuster ohne C-Typetikett. Wir verwenden kleine sichere Werte, damit kein signed Overflow in C entsteht.</p>
+<p>Kontrollfrage: Muss der Compiler b in s1 legen? Nein. Bei der Subtraktion kommt die Reihenfolge der Quellen dazu.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1290,7 +1363,9 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb12-1"><a aria-label="1"></a><span class="bu">sub</span> t0<span class="op">,</span> t1<span class="op">,</span> t2</span>
 <span id="cb12-2"><a aria-label="2"></a># t0 <span class="op">=</span> t1 <span class="op">-</span> t2   <span class="op">(</span>nicht t2 <span class="op">-</span> t1<span class="op">!)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>sub</code>: erstes Quellregister = Minuend, zweites = Subtrahend. Decoder schaltet den B-MUX auf <span class="math inline">\(\overline{B}\)</span> und Carry-In auf 1 — dieselbe ALU-Hardware wie bei der Addition.</p>
+<p>sub rd, rs1, rs2 berechnet rs1 minus rs2. Der erste Quelloperand ist der Minuend, der zweite der Subtrahend. Mit t1 gleich 7 und t2 gleich 3 liefert sub t0, t1, t2 den Wert 4. Vertauschte Quellen liefern minus 4, also das Zweierkomplement von 4.</p>
+<p>Eine ALU kann das als A plus invertiertes B plus 1 umsetzen, mit einem MUX und Carry-In. Das ist ein Lehrmodell, keine vorgeschriebene ISA-Verdrahtung. rd darf eine Quelle sein: zuerst gelten die alten Werte, danach wird geschrieben.</p>
+<p>Kontrollfrage: Was liefert sub t0, t2, t1 bei 7 und 3? minus 4. Längere Ausdrücke brauchen mehrere solche Schritte.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1315,7 +1390,9 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb13-1"><a aria-label="1"></a><span class="co">// a=s0, b=s1, c=s2, d=s3</span></span>
 <span id="cb13-2"><a aria-label="2"></a>a <span class="op">=</span> b <span class="op">+</span> c <span class="op">-</span> d<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>In C sind lange Formeln üblich. In RISC: zwei ALU-Eingänge, zwei Quellfelder. <code>a = b + c - d</code> geht nicht in einem Befehl — der Prozessor braucht Zerlegung.</p>
+<p>Dieses R-Format hat zwei Quellfelder. 32 Bit verbieten nicht grundsätzlich andere Instruktionen mit mehr Quellen. Die Grenze gilt für dieses Format.</p>
+<p>Lehrbelegung: b, c und d sind 5, 10 und 3 in s1, s2 und s3. a gleich b plus c minus d braucht einen Zwischenwert, weil ein R-Befehl nur zwei Quellen liest. Eine C-Zeile ist damit nicht eine Maschinenoperation.</p>
+<p>Kontrollfrage: Kann add drei Registerwerte in einem Befehl lesen? In diesem Format nein. Ein temporäres Register hält den Zwischenwert.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1341,7 +1418,9 @@ graph LR
 <span id="cb14-2"><a aria-label="2"></a><span class="bu">add</span> t0<span class="op">,</span> s1<span class="op">,</span> s2    <span class="op">#</span> t0 <span class="op">=</span> b <span class="op">+</span> c</span>
 <span id="cb14-3"><a aria-label="3"></a><span class="bu">sub</span> s0<span class="op">,</span> t0<span class="op">,</span> s3    <span class="op">#</span> a  <span class="op">=</span> t0 <span class="op">-</span> d</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Erst <span class="math inline">\(b+c\)</span> nach <code>t0</code>, dann <span class="math inline">\(t0-d\)</span> nach <code>s0</code>. Eine C-Zeile → zwei Assemblerzeilen. Genau die RISC-Waage: mehr Code, einfachere Hardware.</p>
+<p>t0 ist ein temporary-Register für den Zwischenwert. add t0, s1, s2 liest 5 und 10 und schreibt 15. sub s0, t0, s3 liest 15 und 3 und schreibt 12. s1, s2 und s3 bleiben unverändert. Das Snippet setzt die Eingaben voraus.</p>
+<p>Dieselben einfachen Operationen werden zweimal verwendet. Daraus folgt keine Laufzeit. Die Tabelle hat zwei Schritte: Zwischenwert 15, Endwert 12.</p>
+<p>Kontrollfrage: Welcher Wert stünde in s0, wenn die Subtraktion die Quellen vertauscht? 3 minus 15, also minus 12. Außer Arithmetik können dieselben Register bitweise verarbeitet werden.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1368,7 +1447,9 @@ graph LR
 <span id="cb15-4"><a aria-label="4"></a><span class="bu">and</span> t0<span class="op">,</span> t1<span class="op">,</span> t2</span>
 <span id="cb15-5"><a aria-label="5"></a># t0 <span class="op">=</span> <span class="op">...</span><span class="dv">00000101</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>and</code>/<code>or</code>/<code>xor</code> arbeiten bitweise: Bit <span class="math inline">\(i\)</span> mit Bit <span class="math inline">\(i\)</span>. Typisch für Masken (z. B. Farbkanal extrahieren). <code>xor</code> toggelt Bits oder prüft Ungleichheit effizient.</p>
+<p>and, or und xor arbeiten bitweise auf 32 Bit. Jede Position wird mit derselben Position des anderen Operanden verknüpft. In C sind &amp;, | und ^ die bitweisen Operatoren. &amp;&amp; und || sind logische Verknüpfungen und hier nicht gemeint.</p>
+<p>Für die unteren acht Bit von 0xA5 und 0x0F gilt: AND liefert 0x05, OR 0xAF, XOR 0xAA. XOR gleicher Werte liefert 0. Bei Ungleichheit entstehen die unterschiedlichen Bits, nicht zwingend die Zahl 1. Maskieren behält gesetzte Bits, Setzen schreibt Einsen, Toggeln kippt eine Position.</p>
+<p>Kontrollfrage: Liefert xor t0, t1, t1 den Wert 1 oder 0? 0. Shifts verändern die Positionen statt sie paarweise zu verknüpfen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1387,7 +1468,7 @@ graph LR
 <li>Bits um <span class="math inline">\(N\)</span> Positionen nach links oder rechts</li>
 <li>Eine Seite: Bits fallen „über die Klippe“</li>
 <li>Andere Seite: Lücken müssen aufgefüllt werden</li>
-<li>In Hardware oft drastisch schneller als Multiplikation</li>
+<li>In Hardware nicht pauschal schneller als eine Multiplikation; das hängt von der Implementierung ab</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -1396,7 +1477,7 @@ graph LR
 <div>
 <pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
-  A["1 0 1 1 0"] --&gt;|"Shift Left 1"| B["0 1 1 0 ?"]
+  A["1 0 1 1 0"] --&gt;|"Shift Left 1"| B["0 1 1 0 0"]
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 </pre>
@@ -1406,7 +1487,9 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Stellen Sie sich 32 Bits wie Perlen auf einer Schnur vor: gemeinsames Verschieben, Randbits gehen verloren, Lücken werden aufgefüllt. Shifts entsprechen oft Multiplikation/Division mit Potenzen von 2 — extrem schnell.</p>
+<p>Ein Shift verschiebt Bits. Herausfallende Bits gehen verloren, neu entstehende Positionen werden aufgefüllt. Eine Shiftweite ist die Anzahl der Stellen. Ein Vergleich, Shifts seien generell schneller als eine Multiplikation, bleibt weg.</p>
+<p>Die Fünf-Bit-Skizze 10110, also 22, wird um eine Stelle nach links zu 01100, also 12 im Fünf-Bit-Ausschnitt. Das Fragezeichen ist damit aufgelöst: die neue Stelle rechts ist 0. Ein begrenzter Ausschnitt ist nicht das volle Register. Als RV32-Wert wird 22 um eins links zu 44, hexadezimal 0x2C.</p>
+<p>Kontrollfrage: Welches Bit wird in der Fünf-Bit-Skizze rechts eingefügt? Eine Null. sll legt denselben Vorgang für 32-Bit-Register fest.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1431,7 +1514,10 @@ graph LR
 <span id="cb16-2"><a aria-label="2"></a>sll t0<span class="op">,</span> t1<span class="op">,</span> t2</span>
 <span id="cb16-3"><a aria-label="3"></a># t0 <span class="op">=</span> <span class="dv">10</span> <span class="op">(...</span><span class="dv">1010</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>sll</code>: rechts Nullen nachschieben. Ohne <code>M</code>-Extension sind Shifts Ihr Multiplikations-Werkzeug: <span class="math inline">\(\times 4\)</span> = Shift um 2.</p>
+<p>sll bedeutet Shift Left Logical. Das LSB, Least Significant Bit, ist das niederwertige Bit. Die effektive Weite ist Inhalt von rs2 UND 0x1F, also die unteren fünf Bit.</p>
+<p>t1 gleich 5 und t2 gleich 1 ergeben 10. t2 gleich 32 ergibt effektive Weite 0, das Ergebnis bleibt 5. t2 gleich 33 ergibt Weite 1. Für t1 gleich 0x80000001 und Weite 1 fällt das hohe Bit heraus, das Ergebnis ist 0x00000002.</p>
+<p>Multiplikation mit 2 hoch k stimmt als unbeschränkte Zahl nur ohne relevanten Verlust. C-Shiftregeln sind ein anderer Vertrag. Eine übergroße Weite ist in C undefiniert, nicht automatisch die RISC-V-Maske.</p>
+<p>Kontrollfrage: Welche effektive Weite hat ein Registerinhalt 32? 0. Beim Rechtsshift entscheidet, was oben eingefüllt wird.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1455,7 +1541,9 @@ graph LR
 <span id="cb17-2"><a aria-label="2"></a>srl t0<span class="op">,</span> t1<span class="op">,</span> t2</span>
 <span id="cb17-3"><a aria-label="3"></a># t0 <span class="op">=</span> <span class="dv">3</span> <span class="op">(...</span><span class="dv">0011</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>srl</code> füllt links mit Nullen. Bei Zweierkomplement-Negativen beginnt links eine 1 — Null-Fill macht die Zahl positiv. Falle!</p>
+<p>srl bedeutet Shift Right Logical. Das MSB, Most Significant Bit, wird durch Nullen ersetzt. Die Operation ist vorzeichenlos zu lesen. 12 um zwei Stellen wird 3. 0xFFFFFFFD um eine Stelle logisch wird 0x7FFFFFFE, unsigned 2147483646. Das ist nicht die signed Division von minus 3.</p>
+<p>Es gibt keine geheime Typkennung im Register. Nur die Zielzuweisung ändert ein Bitmuster. Die Quellen bleiben, wenn sie nicht zugleich Ziel sind.</p>
+<p>Kontrollfrage: Welches Bit steht nach srl um 1 an Position 31? Eine Null. sra bietet den Rechtsshift mit Fortführung des Vorzeichenbits.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1487,7 +1575,10 @@ graph LR
 </figure>
 </div>
 <aside class="notes">
-<p><code>sra</code> zieht das Vorzeichenbit nach. Aus <span class="math inline">\(-4\)</span> wird <span class="math inline">\(-2\)</span>. Aus <span class="math inline">\(-3\)</span> wird nach einem arithmetischen Rechtsshift <span class="math inline">\(-2\)</span>. Die C-Division <span class="math inline">\(-3/2\)</span> ergibt in ILP32 dagegen <span class="math inline">\(-1\)</span>, weil sie gegen null rundet.</p>
+<p>sra bedeutet Shift Right Arithmetic. Der Befehl kopiert das ursprüngliche MSB in die neuen oberen Stellen. minus 3 ist im RV32-Modell 0xFFFFFFFD. sra um 1 schreibt 0xFFFFFFFE, signed minus 2. Der Acht-Bit-Ausschnitt zeigt 11111101 nach 11111110. Die Grafik schreibt minus 3, minus 2, minus 1 und minus unendlich aus.</p>
+<p>Der arithmetische Shift rundet nach minus unendlich. Die C-Integerdivision minus 3 durch 2 ergibt seit C99 minus 1, weil gegen null gerundet wird. Diese Rundung folgt nicht aus ILP32. Bei minus 4 durch 2 stimmen beide Ergebnisse mit minus 2 überein. Das erlaubt keine allgemeine Gleichsetzung. Der C-Operator für Rechtsshift negativer signed Werte ist im C11-Entwurf N1570 implementationsdefiniert.</p>
+<p>srl derselben Zahl ergibt 0x7FFFFFFE. Für das signed Verhalten brauchen wir sra oder später srai.</p>
+<p>Kontrollfrage: Welches Ergebnis hat die C-Division minus 3 durch 2? minus 1. Die nächste Folie nutzt x0, um einen Registerwert zu kopieren.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1510,7 +1601,9 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb19-1"><a aria-label="1"></a><span class="bu">add</span> t2<span class="op">,</span> t1<span class="op">,</span> x0</span>
 <span id="cb19-2"><a aria-label="2"></a># t2 <span class="op">=</span> t1 <span class="op">+</span> <span class="dv">0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Kein Copy-Befehl nötig: <code>add</code> mit <code>x0</code> kopiert. Typisch RISC — weniger Mnemonics, gleiche ALU.</p>
+<p>x0, Alias zero, liefert null. add t2, t1, x0 kopiert deshalb t1 nach t2. Steht in t1 der Lehrwert 42, steht danach auch in t2 die 42. t1 bleibt unverändert.</p>
+<p>mv t2, t1 ist eine Pseudoinstruktion. Ihre kanonische Entsprechung ist addi t2, t1, 0. Die gezeigte add-Variante ist gültig, aber nicht die zwingende Expansion jedes mv. Eine Ersparnis an Chipfläche ist eine Entwurfsüberlegung, keine gemessene Zahl.</p>
+<p>Kontrollfrage: Ändert die Kopie den Quellwert? Nein. Subtraktion von null bildet die Negation des 32-Bit-Werts.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1532,7 +1625,9 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb20-1"><a aria-label="1"></a><span class="bu">sub</span> t1<span class="op">,</span> x0<span class="op">,</span> t1</span>
 <span id="cb20-2"><a aria-label="2"></a># t1 <span class="op">=</span> <span class="dv">0</span> <span class="op">-</span> t1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>sub t1, x0, t1</code> liefert das Zweierkomplement von <code>t1</code>. Wieder: Reduced Instruction Set durch geschickte Nutzung von <code>x0</code>.</p>
+<p>sub t1, x0, t1 berechnet 0 minus den alten Wert von t1. Bei Ausgangswert 5 entsteht minus 5. Dieselbe Registernummer darf Quelle und Ziel sein, weil zuerst gelesen und danach geschrieben wird. Die Negation gilt modulo 2 hoch 32.</p>
+<p>Der Grenzfall 0x80000000 bleibt als Bitmuster gleich, weil plus 2147483648 nicht als signed 32-Bit-Zahl darstellbar ist. neg ist ein Pseudoalias für sub rd, x0, rs, kein zusätzlicher RV32I-Befehl. not und xori invertieren bitweise und sind nicht diese arithmetische Negation.</p>
+<p>Kontrollfrage: Was liefert die Negation von 0? 0. Die Übersicht fasst die behandelten Register-Register-Befehle zusammen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1600,7 +1695,9 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p>Werkzeugkiste fürs Labor: ALU liest zwei Register, rechnet, schreibt zurück. Nächster Schritt: Wie wird dieser Text zu Bits auf dem Chip?</p>
+<p>Die Tabelle zeigt den behandelten R-Type-Ausschnitt, nicht sämtliche RV32I-Instruktionen. add und sub rechnen modulo 2 hoch 32. and, or und xor verknüpfen bitweise. sll, srl und sra schieben. Die effektive Weite ist der Inhalt von rs2 UND 31, nicht der gesamte unbegrenzte Registerinhalt. sll und srl füllen mit Nullen. sra kopiert das Vorzeichenbit.</p>
+<p>Auswahl: Welcher Rechtsshift erhält das Vorzeichen? sra.</p>
+<p>Kontrollfrage: Welche effektive Weite hat der Registerwert 32? 0. Jetzt wird die lesbare Syntax in ein 32-Bit-Wort umgesetzt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1616,7 +1713,21 @@ graph LR
 <section>
 <section id="maschinencode-decodierung" class="title-slide slide level1 center">
 <h1>4. Maschinencode &amp; Decodierung</h1>
-
+<aside class="notes">
+<p>Die Wirkung der Befehle ist bekannt. Jetzt werden die Bitpositionen bestimmt. Encodieren oder Assemblieren schreibt Felder in ein Wort. Decodieren liest sie zurück. Das Beispiel wird zuerst codiert und danach zur Kontrolle gelesen.</p>
+<p>Mnemonic und Registerbezeichner müssen in feste Felder. Ein Datenwert fließt in diese Codierung nicht ein.</p>
+<p>Kontrollfrage: Ist Decodieren dasselbe wie Assemblieren? Nein, es ist die Gegenrichtung. Als Nächstes übertragen wir die Bezeichner in Felder.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="von-text-zu-bits" class="slide level2">
 <h2>Von Text zu Bits</h2>
@@ -1648,7 +1759,9 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Silizium liest keine Mnemonics — nur Spannungspegel. Der Assembler übersetzt <code>add t0, t1, t2</code> in 32 Bits. Das Format zu verstehen ist Grundlage für den Steuerpfad später in Ripes.</p>
+<p>Der Assembler wandelt den Mnemonic in ein Instruktionsformat. Der Decoder wertet die Felder aus. Das gemeinsame Beispiel der Codierfolien ist add x9, x20, x21. x9 wird zur Nummer 9, nicht zum Datenwert 9.</p>
+<p>Der Simulator führt später die Bedeutung aus. Elektrische Pegel sind nur der Physikbezug, kein Ersatz für die Feldaufteilung. Das Maschinenwort dieser Zeile ist 0x015A04B3.</p>
+<p>Kontrollfrage: Ändert ein anderer Inhalt von x20 die Codierung? Nein. Eine gespeicherte Hexzahl bleibt ohne Feldaufteilung unlesbar.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1672,7 +1785,9 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb21-1"><a aria-label="1"></a>Adresse 0x00: 0x007102B3   # Zahl oder ADD?</span>
 <span id="cb21-2"><a aria-label="2"></a>Adresse 0x04: 0x40628333   # SUB?</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Nach dem Kompilieren: Kolonnen von 32-Bit-Zahlen. Der Decoder muss in Nanosekunden entscheiden: ADD? Welche Register? Dafür braucht es eine feste Schablone — das Instruction Format.</p>
+<p>Im Instruktionsspeicher liegen nach dem Assemblieren Bitmuster, keine Befehlsnamen. Textdaten können natürlich an anderer Stelle im Speicher stehen. 0x007102B3 ist add x5, x2, x7. 0x40628333 ist sub x6, x5, x6. Diese Kontrollen ersetzen nicht das gemeinsame Beispiel add x9, x20, x21.</p>
+<p>Der Decoder entscheidet anhand der Felder, nicht anhand von Kommas und nicht in einer fest versprochenen Nanosekundenfolge.</p>
+<p>Kontrollfrage: Liegt der Text add als Zeichenkette im Instruktionswort? Nein. Ein Format ordnet die 32 Bits den benötigten Informationen zu.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1694,7 +1809,9 @@ graph LR
 <li>Lösung: feste Instruction Formats (Schablonen)</li>
 </ul>
 <aside class="notes">
-<p>Formular mit 32 Kästchen: <span class="math inline">\(3 \times 5 = 15\)</span> Bits allein für Register. Rest für Opcode und Function-Codes. RISC-V definiert mehrere Formate; wir starten mit R-Type.</p>
+<p>Ein R-Befehl braucht die Operation und drei Registernummern. Drei Felder zu je fünf Bit sind 15 Bit. Es bleiben 17 Bit: sieben für funct7, drei für funct3 und sieben für den opcode. Die Summe ist 32.</p>
+<p>Registerwahl und Operationswahl sind getrennte Informationen. Andere Formate brauchen andere Operanden. Dieses Formular ist kein Universalmuster.</p>
+<p>Kontrollfrage: Wie viele Bits bleiben nach drei Registerfeldern? 17. Die konkrete Schablone legt alle sechs Felder fest.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1759,7 +1876,9 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p>Schlüssel fürs Steuerwerk: rechts Opcode, dann <code>rd</code>, <code>funct3</code>, <code>rs1</code>, <code>rs2</code>, links <code>funct7</code>. Die Reihenfolge vereinfacht die Verdrahtung auf dem Die.</p>
+<p>Von links nach rechts, Bit 31 bis Bit 0: funct7 ist 31 bis 25, rs2 ist 24 bis 20, rs1 ist 19 bis 15, funct3 ist 14 bis 12, rd ist 11 bis 7, opcode ist 6 bis 0. Die Breiten 7, 5, 5, 3, 5 und 7 ergeben 32. funct7 ist eine zusätzliche Funktionskennung, kein beliebiges Untermerkmal.</p>
+<p>Acht Hexziffern sind 32 Bit. Die Vierergruppen überqueren teilweise die Feldgrenzen. Registerfeldbits sind Nummern, keine Registerdaten. Die Abbildung soll die Felder proportional zeigen.</p>
+<p>Kontrollfrage: Welche Breite hat funct3? Drei Bit. Der Opcode bestimmt zunächst die Befehlsklasse.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1786,7 +1905,9 @@ graph LR
 <span id="cb22-4"><a aria-label="4"></a>+-------+-----+-----+-------+-----+-------------+-------+</span>
 <span id="cb22-5"><a aria-label="5"></a>                                                 0110011</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Opcode <code>0110011</code> → Register-Arithmetik/Logik. Allein reicht das nicht: ADD und SUB brauchen <code>funct3</code>/<code>funct7</code> zur Unterscheidung.</p>
+<p>Der opcode liegt in den Bits 6 bis 0. 0110011 ist hexadezimal 0x33 und die Klasse der hier behandelten Registerarithmetik und Registerlogik. add und sub teilen ihn. Erst die Funktionsfelder trennen die Operation. Das korrigiert die frühere Versuchung, den Opcode schon Addition zu nennen.</p>
+<p>Die Hardware kann die Felder parallel auswerten. Zuerst auf den Opcode schauen ist eine didaktische Reihenfolge, keine zwingende Zeitfolge.</p>
+<p>Kontrollfrage: Unterscheidet der Opcode add von sub? Nein. Die Registerfelder wählen Operandenspeicher und Ziel.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1813,7 +1934,9 @@ graph LR
 <span id="cb23-4"><a aria-label="4"></a>+-------+-----+-----+-------+-----+-------------+</span>
 <span id="cb23-5"><a aria-label="5"></a>          =21   =20            =9</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Reine Adressen: <code>x9</code> → <code>01001</code>. Bits gehen als Kabelbaum an die Ports aus Block 1 — Lesen sofort, Schreiben des ALU-Ergebnisses nach <code>rd</code>.</p>
+<p>rd, rs1 und rs2 sind Nummern. A1, A2 und A3 sind Namen der Lese- und Schreibports im Lehrmodell, keine ISA-Latenz. x9 als Feld ist 01001, die Nummer neun, nicht der Datenwert neun.</p>
+<p>Im Beispiel add x9, x20, x21 stehen die Felder 9, 20 und 21. Die aktuellen Inhalte dürfen beliebig anders sein. Lesen und Schreiben ordnen wir dem Lehrmodell zu und leiten keine Taktzahl ab. Die Bitgrenzen bleiben dieselben wie in der Schablone: rd in 11 bis 7, rs1 in 19 bis 15, rs2 in 24 bis 20.</p>
+<p>Kontrollfrage: Ist 01001 der Inhalt von x9? Nein, es ist seine Nummer. Funktionsfelder unterscheiden Operationen innerhalb derselben Klasse.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1860,7 +1983,9 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p>Bit 30 der Instruktion unterscheidet ADD und SUB — der Hebel in der ALU. Parallel-Decode ohne teuren Mikrocode-Pfad.</p>
+<p>funct3 und funct7 unterscheiden die Operation. add und sub haben beide funct3 gleich 000 und den Opcode 0110011. funct7 ist 0000000 bei add und 0100000 bei sub. Bei gleichen Registern ist Bit 30 der sichtbare Unterschied. Opcode und die übrigen benötigten Bits bleiben trotzdem zu prüfen.</p>
+<p>Ein Decoderausschnitt darf diese Felder zeigen. Ein vollständiges Steuerwerk und ein Mikrocodepfad werden hier nicht behauptet.</p>
+<p>Kontrollfrage: Welches funct7 hat sub? 0100000. Jetzt setzen wir Register- und Funktionswerte zusammen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1885,7 +2010,9 @@ graph LR
 <span id="cb24-2"><a aria-label="2"></a>rs1 (x20) = 10100</span>
 <span id="cb24-3"><a aria-label="3"></a>rs2 (x21) = 10101</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Wir spielen Compiler: Registeradressen und Funct-Werte sammeln — Zutaten für die Schablone.</p>
+<p>Dieser Schritt ist manuelles Encodieren. Decodieren wäre die Gegenrichtung. Für add x9, x20, x21 gilt rd gleich 9 gleich 01001, rs1 gleich 20 gleich 10100, rs2 gleich 21 gleich 10101, funct3 gleich 000, funct7 gleich 0000000 und opcode gleich 0110011.</p>
+<p>Kein aktueller Registerinhalt fließt ein. Jede Nummer braucht fünf Bit, führende Nullen eingeschlossen.</p>
+<p>Kontrollfrage: Welche fünf Bit hat die Nummer 20? 10100. Die Felder werden anschließend zusammengesetzt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1914,7 +2041,9 @@ graph LR
 </figure>
 </div>
 <aside class="notes">
-<p>Puzzleteile in die Schablone, Nibbles → Hex. Venus schreibt genau diesen Wert bei <code>add x9, x20, x21</code> in den Speicher. Ihr erster manuell assemblierter Befehl.</p>
+<p>Die Bitfolge ist 0000000 10101 10100 000 01001 0110011. In Vierergruppen, die nicht den Feldgrenzen folgen: 0000 0001 0101 1010 0000 0100 1011 0011. Das Hexwort ist 0x015A04B3.</p>
+<p>sub mit denselben Registern ändert funct7 auf 0100000 und wird 0x415A04B3. Eine Rückprüfung kann mit Masken und Schieben die Felder aus dem Wort holen. Dafür ist kein Python nötig. Ein Venus-Abgleich wird hier nicht behauptet, solange das Tool nicht gelaufen ist.</p>
+<p>Kontrollfrage: Welche Hexziffer ändert sich zwischen add und sub an der hohen Stelle? 0 wird zu 4, weil Bit 30 gesetzt ist. Konstanten brauchen statt eines zweiten Registerfelds ein Immediate.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1930,7 +2059,21 @@ graph LR
 <section>
 <section id="i-type-befehle-konstanten" class="title-slide slide level1 center">
 <h1>5. I-Type Befehle (Konstanten)</h1>
-
+<aside class="notes">
+<p>Ein Operand kommt weiterhin aus einem Register. Der andere kann direkt im Befehl stehen. I-Type bedeutet dieses Immediate-Format im jetzt behandelten Rechenzusammenhang.</p>
+<p>Das Beispiel a gleich a plus 5 führt zur addi-Syntax und zur Grenze der codierbaren Konstante. Loads und Sprünge derselben Formatfamilie haben andere Wirkungen und werden hier nicht mitgemeint.</p>
+<p>Kontrollfrage: Steht die 5 in einem zweiten Quellregister? Nein, im Befehl. Zuerst begründen wir, warum das nützlich ist.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="warum-i-type" class="slide level2">
 <h2>Warum I-Type?</h2>
@@ -1964,7 +2107,9 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p><code>a = a + 5</code>: die 5 liegt nicht im RAM, sondern im Befehlswort. Dafür brauchen wir ein Format mit Immediate — den I-Type.</p>
+<p>Immediate bedeutet unmittelbarer Wert, eine im Instruktionswort codierte Konstante. a gleich a plus 5 braucht den vorhandenen Registerwert und die Konstante 5. Für diese kleine Zahl ist kein zusätzlicher Datenload nötig. Das Instruktionswort selbst wird weiterhin aus dem Instruktionsspeicher geholt.</p>
+<p>Die ALU-Zeichnung gilt für addi und verwandte Register-Immediate-Rechenbefehle, nicht für jede I-Type-Instruktion. Registerquelle und Immediate bleiben zwei verschiedene Operanden.</p>
+<p>Kontrollfrage: Liegt die Konstante 5 deshalb nicht im Speicher? Sie liegt im geholten Instruktionswort, nicht als separates Datenwort. Zähler und Initialisierungen zeigen typische direkte Konstanten.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1988,9 +2133,11 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb26-1"><a aria-label="1"></a><span class="dt">int</span> grenze <span class="op">=</span> <span class="dv">100</span><span class="op">;</span>              <span class="co">// Initialisierung</span></span>
 <span id="cb26-2"><a aria-label="2"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">10</span><span class="op">;</span> i<span class="op">++)</span>   <span class="co">// Schleifenzähler</span></span>
-<span id="cb26-3"><a aria-label="3"></a>array<span class="op">[</span>index <span class="op">+</span> <span class="dv">4</span><span class="op">];</span>              <span class="co">// fester Adress-Offset</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb26-3"><a aria-label="3"></a>array<span class="op">[</span>index <span class="op">+</span> <span class="dv">4</span><span class="op">];</span>              <span class="co">// vier Elemente weiter, bei ILP32-int 16 Byte</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>In For-Schleifen ist die <code>10</code> eine Konstante. Würde die Hardware jede Konstante erst per Load aus dem RAM holen, wäre das Programm ausgebremst. RISC-V schreibt kleine Konstanten direkt in das 32-Bit-Befehlswort.</p>
+<p>Drei C-Beispiele sind verschieden. Eine Grenze 100 oder 10 ist ein Zahlenwert. i plus plus aktualisiert um 1. array von index plus 4 verschiebt den Elementindex um vier Elemente. Bei ILP32-int sind das 16 Byte, nicht automatisch vier Byte. ILP32 bedeutet 32-Bit-int, long und Pointer.</p>
+<p>Immediate ist die direkte Konstante, RAM der Arbeitsspeicher. Eine einzige Quelltextzahl kann mehrere Instruktionen brauchen, wenn sie nicht in das Immediate passt.</p>
+<p>Kontrollfrage: Wie viele Byte sind vier int-Elemente im ILP32-Modell? 16. Das Immediate erhält im Wort einen festen Feldbereich.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2033,7 +2180,9 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Das Immediate ist weder Register noch Speicheradresse, sondern Bestandteil des Maschinenbefehls.</p>
+<p>Für addi liegen zwölf Immediate-Bits in den Instruktionsbits 31 bis 20. rs1 und rd bleiben Registerfelder. Die ALU sieht danach zwei 32-Bit-Operanden. Der Immediate ist kein Registername und nicht automatisch eine Adresse. In anderen Befehlen kann ein Immediate ein Adressoffset sein. Die Zeichnung bleibt auf diesen Rechenfall begrenzt.</p>
+<p>Lehrwerte: der Immediate ist 5, das Quellregister hält 10, addi schreibt 15.</p>
+<p>Kontrollfrage: Ist die 5 die Registernummer? Nein, der direkte Operand. addi macht diese Verwendung syntaktisch konkret.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2057,7 +2206,9 @@ graph LR
 <span id="cb27-2"><a aria-label="2"></a>addi s1<span class="op">,</span> x0<span class="op">,</span> <span class="dv">42</span></span>
 <span id="cb27-3"><a aria-label="3"></a>addi a0<span class="op">,</span> a0<span class="op">,</span> <span class="op">-</span><span class="dv">4</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Das Zielregister steht links; das Immediate ist der dritte Operand.</p>
+<p>addi bedeutet Add Immediate. rd ist das Ziel, rs1 die Quelle, das dritte Argument eine signed Zahl, kein drittes Register. Drei Lehrzeilen: aus t0 gleich 5 wird durch plus 1 der Wert 6. s1 erhält aus x0 plus 42 den Wert 42. Aus a0 gleich 20 wird durch minus 4 der Wert 16.</p>
+<p>Ist Quelle und Ziel dasselbe Register, wird zuerst der alte Wert gelesen. Pro native Instruktion gibt es diese Zustandsänderung. Eine Aussage über Hardwarezyklen folgt nicht.</p>
+<p>Kontrollfrage: Welchen Wert hat s1 nach addi s1, x0, 42? 42. Die Feldtabelle zeigt die Anordnung im I-Type.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2116,7 +2267,9 @@ graph LR
 </table>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb28-1"><a aria-label="1"></a>| imm[11:0] | rs1 | funct3 | rd | opcode |</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Das I-Type-Immediate ersetzt beim R-Type die Felder für das zweite Quellregister und die obere Funktionskennung.</p>
+<p>Fünf Felder: Immediate 12 Bit, rs1 5, funct3 3, rd 5, opcode 7. Die Summe ist 32. Gegenüber dem R-Type ersetzt der 12-Bit-Bereich die Positionen von funct7 und rs2. Diese Feldnamen gelten dort nicht mehr. rs1, funct3, rd und opcode behalten ihre Positionen.</p>
+<p>Bei addi ist der opcode 0010011, hexadezimal 0x13, und funct3 gleich 000. Für Shift-Immediate-Befehle wird der obere Teil später spezialisiert. Nicht jedes I-Format ist nur ein frei nutzbares signed Zahlenfeld.</p>
+<p>Kontrollfrage: Welcher opcode kennzeichnet addi? 0010011. Zwölf Bit begrenzen den Zahlenbereich.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2139,18 +2292,9 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb29-1"><a aria-label="1"></a>1000 0000 0000 = -2048</span>
 <span id="cb29-2"><a aria-label="2"></a>0111 1111 1111 =  2047</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Das oberste der zwölf Bits ist das Vorzeichenbit. Daher ist 2048 nicht direkt darstellbar.</p>
-<p>Das li steht bei RISC-V für “Load Immediate” (zu Deutsch etwa: “Lade einen direkten/unmittelbaren Wert”). Es handelt sich dabei um einen sogenannten Pseudobefehl (Pseudo-Instruction). Das bedeutet: Diesen Befehl gibt es in der eigentlichen Hardware (der ISA) gar nicht. Er ist eine reine Hilfsfunktion des Assemblers (dem Programm, das deinen Text-Code in Maschinencode übersetzt), um dem Programmierer das Leben leichter zu machen.</p>
-<p>Das Platzproblem in RISC-Architekturen Das I-Format codiert ein 12-Bit-Immediate. U-, B- und J-Formate nutzen andere Immediate-Felder; nicht jede Instruktion hat nur 12 Immediate-Bits. Eine kleine Konstante, etwa <code>li t0, 5</code>, wird in diesem Assembler typischerweise zu einem <code>addi</code>. Eine große Konstante, etwa <code>li t0, 50000</code>, braucht <code>lui</code> und ein folgendes Immediate. Die konkrete Expansion steht in der Disassembly der verwendeten Venus-Version.</p>
-<p>Was passiert, wenn du eine größere Zahl brauchst? Wenn du in deinem Code beispielsweise die Zahl 50.000 in ein Register laden möchtest, passt diese unmöglich in diese 12 Bit. In der Hardware müsstest du das manuell mit zwei echten Befehlen lösen:</p>
-<p>lui (Load Upper Immediate): Lädt die oberen Bits der Zahl in das Register.</p>
-<p>addi (Add Immediate): Addiert die restlichen unteren Bits dazu.</p>
-<p>Weil es für einen Programmierer extrem nervig und fehleranfällig ist, jede größere Zahl manuell in obere und untere Bits zu zerschneiden, gibt es den Pseudobefehl li.</p>
-<p>Die Aufgabe von li Als Programmierer schreibst du einfach völlig entspannt: li x1, 50000 (Lade die Zahl 50.000 in das Register x1)</p>
-<p>Der Assembler liest das und entscheidet automatisch:</p>
-<p>Ist die Zahl zwischen -2048 und 2047? Dann übersetzt er li einfach in einen einzigen, schnellen addi-Befehl.</p>
-<p>Ist die Zahl größer? Dann zerlegt er deinen li-Befehl automatisch in eine Kombination aus lui und addi (oder nutzt andere nötige Befehle), um die große Zahl korrekt zusammenzubauen.</p>
-<p>Fazit: li ist ein Komfort-Befehl, der dir die Arbeit abnimmt, dir selbst Gedanken darüber machen zu müssen, ob eine Konstante in 12 Bit passt oder ob du sie über mehrere Instruktionen hinweg stückeln musst.</p>
+<p>Zwölf Bit ergeben 2 hoch 12 gleich 4096 Muster. Signed reicht das von minus 2 hoch 11 bis 2 hoch 11 minus 1, also minus 2048 bis 2047. Im Zwölf-Bit-Feld ist 0x800 gleich minus 2048 und 0x7FF gleich 2047. 2048 passt nicht als positive addi-Konstante.</p>
+<p>li, Load Immediate, ist keine native Instruktion ohne Grenze. Der Assembler erzeugt passende Befehle. Die ausführliche lui-Rechnung steht bei der li-Folie. Für Lehrkonstanten nutzen wir t-Register und überschreiben nicht ohne Grund x1, das ra, die Rücksprungadresse.</p>
+<p>Kontrollfrage: Ist 2048 ein gültiger addi-Immediate? Nein. Der signed Zwölf-Bit-Wert muss auf 32 Bit erweitert werden.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2189,7 +2333,9 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Die Sign-Extension bewahrt den Zahlenwert beim Übergang von 12 auf 32 Bit.</p>
+<p>Sign-Extension kopiert das Vorzeichenbit. Bit 11 des Immediates ist Instruktionsbit 31 und wird auf die oberen 20 Bit des 32-Bit-Operanden geschrieben. Es entsteht kein Register mit undefinierten oberen Bits. Der erweiterte Wert ist der ALU-Operand.</p>
+<p>minus 4 ist zwölf Bit 0xFFC, binär 111111111100, erweitert 0xFFFFFFFC. plus 5 ist 0x005 und wird 0x00000005. Beide Werte behalten ihre signed Bedeutung.</p>
+<p>Kontrollfrage: Welche 20 Bits werden bei einem gesetzten Bit 11 eingefügt? Einsen. Auch logische Immediate-Operationen verwenden diese Erweiterung.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2214,7 +2360,9 @@ graph TD
 <span id="cb30-3"><a aria-label="3"></a>xori t0<span class="op">,</span> t1<span class="op">,</span> <span class="op">-</span><span class="dv">1</span></span>
 <span id="cb30-4"><a aria-label="4"></a># -1 ist <span class="dv">12</span><span class="op">-</span>Bit<span class="op">-</span>Zweierkomplement und wird auf <span class="bn">0xFFFFFFFF</span> erweitert</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Auch logische Immediates werden vorzeichenerweitert. <code>xori t0, t1, -1</code> invertiert deshalb alle 32 Bits, nicht nur die unteren zwölf.</p>
+<p>andi, ori und xori verknüpfen bitweise mit einem Immediate statt mit rs2. Der Immediate wird trotzdem vorzeichenerweitert. Lehrfolge mit getrennten Zielen: t1 ist 0xA5. andi mit 0x0F schreibt 0x05. ori dieses Ergebnisses mit 0x80 schreibt 0x85. xori von t1, nicht vom Zwischenergebnis, mit minus 1 schreibt 0xFFFFFF5A.</p>
+<p>minus 1 ist zwölf Bit 0xFFF und wird 0xFFFFFFFF. Deshalb kippt xori alle 32 Bit. Die positive Maske 4095, also 0x00000FFF, ist als signed Immediate 0xFFF nicht darstellbar. Dafür braucht man li und and.</p>
+<p>Kontrollfrage: Invertiert xori mit minus 1 nur die unteren zwölf Bit? Nein, alle 32. Shift-Immediates haben eine besondere Aufteilung.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2238,7 +2386,9 @@ graph TD
 <span id="cb31-2"><a aria-label="2"></a>srli t0<span class="op">,</span> t1<span class="op">,</span> <span class="dv">3</span></span>
 <span id="cb31-3"><a aria-label="3"></a>srai t0<span class="op">,</span> t1<span class="op">,</span> <span class="dv">1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Bei <code>srai</code> wird das Vorzeichenbit fortgeführt; bei <code>srli</code> werden links Nullen eingefügt.</p>
+<p>slli, srli und srai sind die Immediate-Varianten von sll, srl und sra. shamt, shift amount, ist die Verschiebungsanzahl. In RV32I sind die unteren fünf Bit die Weite 0 bis 31. Darüber steht Funktionsinformation, kein normales signed Zahlenoperand. srli und srai unterscheiden sich unter anderem in Instruktionsbit 30.</p>
+<p>Getrennte Fälle: 5 slli 2 wird 20. 24 srli 3 wird 3. minus 3 srai 1 wird minus 2. Ein Immediate 32 ist kein normaler gültiger RV32I-Shift. Ein Registershift mit Inhalt 32 hat dagegen effektive Weite 0.</p>
+<p>Kontrollfrage: Ist slli mit 32 eine normale RV32I-Instruktion? Nein. Kleine negative Immediates ersetzen viele konstante Subtraktionen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2260,7 +2410,9 @@ graph TD
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb32-1"><a aria-label="1"></a>addi t0<span class="op">,</span> t0<span class="op">,</span> <span class="op">-</span><span class="dv">7</span>    <span class="op">#</span> t0 <span class="op">=</span> t0 <span class="op">-</span> <span class="dv">7</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Ausnahme beim Umformen: Das Gegenstück zu <span class="math inline">\(-2048\)</span> ist <span class="math inline">\(2048\)</span> und passt nicht in das 12-Bit-Feld.</p>
+<p>X minus K ist X plus minus K. Deshalb hat RV32I keinen nativen subi-Befehl. t0 gleich 20 und addi mit minus 7 ergeben 13. Ob ein Werkzeug einen Pseudobefehl anbietet, ist eine andere Frage als der native Befehlssatz.</p>
+<p>Der Grenzfall: minus 2048 als Subtrahend verlangt die Addition von plus 2048. plus 2048 passt nicht ins signed Zwölf-Bit-Feld. Eine Möglichkeit ist li t1, minus 2048 und sub t0, t0, t1. Nicht jede konstante Subtraktion ist deshalb ein einzelnes addi.</p>
+<p>Kontrollfrage: Wie wird eine Subtraktion von 7 mit addi geschrieben? Als Addition von minus 7. li hilft bei solchen und bei größeren Konstanten.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2283,7 +2435,10 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb33-1"><a aria-label="1"></a>li t0<span class="op">,</span> <span class="dv">123</span></span>
 <span id="cb33-2"><a aria-label="2"></a>li t1<span class="op">,</span> <span class="dv">100000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Pseudo-Instruktionen vereinfachen den Quelltext, erweitern aber nicht die ISA.</p>
+<p>li ist eine Assemblerhilfe, keine eigene ALU-Operation. Kleine Werte kann der Assembler als addi mit x0 umsetzen. 123 kann addi t0, x0, 123 werden.</p>
+<p>2048 braucht eine Korrektur, weil der untere Teil signed ist. lui t0, 0x1 schreibt 0x00001000. addi t0, t0, minus 2048 ergibt 0x00000800. lui ist Load Upper Immediate, ein U-Type, hier nur als Vorschau. 0x1000 ist der Zwischenwert, nicht das Ziel.</p>
+<p>50000 ist 0x0000C350. lui t0, 0xC und addi t0, t0, 848 ergeben diesen Wert. Für 0x12345ABC ist der untere Zwölf-Bit-Anteil 0xABC signed minus 1348. lui t0, 0x12346 und addi mit minus 1348 korrigieren die oberen Bits. Diese Sequenzen sind gültige Lehrentwicklungen, nicht ein ungeprüfter Venus-Output. Ein Step auf der ersten nativen Instruktion muss die Konstante noch nicht fertig zeigen.</p>
+<p>Kontrollfrage: Ist 0x00001000 bereits 2048? Nein, 2048 ist 0x800. Die Disassembly kann die Expansion sichtbar machen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2299,7 +2454,21 @@ graph TD
 <section>
 <section id="praxis-venus-onboarding" class="title-slide slide level1 center">
 <h1>6. Praxis: Venus Onboarding</h1>
-
+<aside class="notes">
+<p>Bisher wurden Wirkung und Codierung von Hand erklärt. Venus ist der Assembler und ISA-Simulator, in dem wir sie prüfen. Die Arbeit folgt vier Schritten: eingeben, assemblieren, den Zustand vorhersagen, dann Step und Vergleich.</p>
+<p>Ein Step ist die Fortschaltung gemäß der Toolbedienung, keine Messung einer realen CPU.</p>
+<p>Kontrollfrage: Ersetzt der Simulator die Vorhersage? Nein, er prüft sie. Quelltext und ausgeführte Instruktionen erscheinen in getrennten Ansichten.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="vom-text-zur-ausführung" class="slide level2">
 <h2>Vom Text zur Ausführung</h2>
@@ -2309,7 +2478,9 @@ graph TD
 <li>Der Simulator macht Register, Speicher und Konsole sichtbar.</li>
 </ul>
 <aside class="notes">
-<p>Sie kennen die Grundbefehle — jetzt Venus. Tippen Sie im Editor, wechseln Sie in den Simulator und beobachten Sie Register und PC Takt für Takt. So wird aus der ISA eine greifbare Ausführung.</p>
+<p>Assemblieren erzeugt Maschinencode. Der Simulator zeigt Registerzustand, den PC und gegebenenfalls die Konsole. Wir verfolgen native Instruktionen schrittweise. Das ist keine Gatterlaufzeit und kein Takt für Takt eines Chips.</p>
+<p>Eine Quelltextzeile und ihr Disassembly-Eintrag können auseinanderfallen. li einer großen Konstanten kann mehrere Einträge erzeugen. Erst nach erfolgreichem Assemblieren beobachten wir den Zustand.</p>
+<p>Kontrollfrage: Darf man eine Pseudozeile als einen Hardwaretakt zählen? Nein. Aufgaben und Grenzen von Venus werden nun eingeordnet.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2330,7 +2501,9 @@ graph TD
 <li>Venus ist ein Simulator, keine konkrete Mikroarchitektur.</li>
 </ul>
 <aside class="notes">
-<p>Venus emuliert RV32I im Browser: Assembler, Debugger, Registeranzeige. Keine GCC-Toolchain nötig. Wichtig: Venus zeigt ISA-Verhalten, nicht die konkrete Mikroarchitektur eines Chips — den Datenpfad bauen wir später.</p>
+<p>Venus ist Simulator, Assembler und Debugger. Die ursprüngliche Distribution kann RV32IM unterstützen. Dieser Kurs nutzt einen RV32I-Ausschnitt. Nicht jede Variante hat dieselbe Oberfläche oder dieselben Direktiven. Schaltflächennamen werden deshalb nicht universal garantiert. Die Referenzdistribution ist das Projekt kvakil/venus. Schaltflächen können je nach Distribution anders heißen.</p>
+<p>Sichtbare Registeränderungen belegen die ISA-Wirkung im Modell. Pipeline, Cache und Takt eines Chips folgen daraus nicht. GCC, die GNU Compiler Collection, wäre ein Vergleichsübersetzer und ist nicht Venus.</p>
+<p>Kontrollfrage: Beweist ein Venus-Step eine Chip-Latenz? Nein. Die erste Bedienstation ist der Editor.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2353,7 +2526,9 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb34-1"><a aria-label="1"></a>.text</span>
 <span id="cb34-2"><a aria-label="2"></a>addi t0<span class="op">,</span> x0<span class="op">,</span> <span class="dv">5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Formatieren Sie in Spalten (Befehl | Operanden | Kommentar). Kommentare mit <code>#</code>. Rote Meldungen genau lesen: fehlende Kommas und <code>t0</code> vs.&nbsp;<code>to</code> (Null vs.&nbsp;Buchstabe O) sind die Klassiker.</p>
+<p>UI bedeutet User Interface, die Bedienoberfläche. Ein Tab ist ein Reiter. Das Kommentarzeichen ist #. Der Assembler meldet Diagnose an der Quelltextstelle. t0 mit der Ziffer Null ist ein Registeralias. to mit dem Buchstaben O ist keiner.</p>
+<p>Ein zwei Zeilen langes Beispiel ist nur ein Einstieg. Ein vollständiger Lauf braucht den Rahmen mit Startlabel und Abschluss, damit die Ausführung nicht über den Code hinaus weiterläuft. Eine konkrete Fehlermeldung gilt nur, wenn sie aus dem verwendeten Tool stammt oder klar als Illustration gekennzeichnet ist.</p>
+<p>Kontrollfrage: Ist eine Kommentarzeile eine Instruktion? Nein. Als Nächstes kommen Codebereich, Startlabel und Umgebungsvertrag.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2377,7 +2552,9 @@ graph TD
 <span id="cb35-3"><a aria-label="3"></a>    addi t0<span class="op">,</span> x0<span class="op">,</span> <span class="dv">5</span></span>
 <span id="cb35-4"><a aria-label="4"></a>    addi t1<span class="op">,</span> t0<span class="op">,</span> <span class="dv">10</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>main:</code> ist ein Label und kein auszuführender Befehl.</p>
+<p>.text ist eine Assemblerdirektive und markiert den Codebereich. main ist ein Label, kein Prozessorbefehl. .globl main macht das Symbol sichtbar, soweit der Rahmen es braucht. Ob main der Startpunkt ist, hängt vom Tool ab. Ein Label erzeugt keine 32-Bit-Instruktion.</p>
+<p>addi t0, x0, 5 schreibt 5. addi t1, t0, 10 schreibt 15. Ein abgeschlossener Lauf setzt danach den Venus-Abschluss. Ohne diesen Rahmen wäre der PC nach der letzten Zeile nicht definiert erklärt.</p>
+<p>Kontrollfrage: Erhöht .globl den PC um 4? Nein. Nach dem Assemblieren zeigt der Simulator die tatsächlichen Instruktionen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2398,7 +2575,9 @@ graph TD
 <li>Reset stellt den Anfangszustand wieder her.</li>
 </ul>
 <aside class="notes">
-<p>Links sehen Sie Disassembly inkl. Hex der 32-Bit-Instruktion; die farbige Markierung ist der PC (noch nicht ausgeführt). Rechts die Register mit Hardware- und ABI-Namen. Vor jedem Step vorhersagen, welches Register welchen Wert bekommt.</p>
+<p>Disassembly ist die Rücklesung der Maschinenworte in Mnemonics. Der PC markiert die aktuelle Instruktion im ISA-Modell. Step führt eine native Instruktion aus. Reset stellt den Anfangszustand wieder her. Ob die Markierung die nächste auszuführende Zeile zeigt, ist eine Eigenschaft der verwendeten Oberfläche und darf nicht umgekehrt angenommen werden.</p>
+<p>Vorher, Step und Nachher gehören zum selben Programmschritt, einschließlich des anschließenden PC. Nach einer Quelltextänderung neu assemblieren und zurücksetzen, sonst liest man einen alten Zustand. Ohne Screenshot der geladenen Distribution bleibt die Abbildung eine schematische Ansicht.</p>
+<p>Kontrollfrage: Gilt ein alter Registerwert nach einer Codeänderung noch? Nein, erst nach erneutem Assemblieren und Reset. Die Registeranzeige hat mehrere Namen für denselben Zustand.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2448,7 +2627,9 @@ graph TD
 <li>Registerwerte können dezimal, hexadezimal oder binär dargestellt werden.</li>
 </ul>
 <aside class="notes">
-<p>ABI-Namen wie <code>t0</code> sind Aliasnamen; die Hardware arbeitet mit Registernummern.</p>
+<p>x-Nummern und die Aliase t, s und a bezeichnen dieselben Architekturregister. Der PC ist kein GPR. GPR bedeutet General Purpose Register, ein allgemeines Register. x0 bleibt 0. a0 kann in einer Funktion ein Ergebnis halten und im Venus-Dienst eine Dienstnummer. Das sind zwei Kontexte, nicht zwei Register.</p>
+<p>Hex, binär und dezimal sind Darstellungen derselben Bits. Ob die Dezimalanzeige signed oder unsigned ist, muss an der Oberfläche geprüft werden. Spezialregister jenseits von x0 bis x31 und PC listen wir hier nicht.</p>
+<p>Kontrollfrage: Ist der PC x32? Nein. Gerade bei negativen Werten macht die Darstellung einen sichtbaren Unterschied.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2470,7 +2651,9 @@ graph TD
 <li><span class="math inline">\(-1 = 0xFFFFFFFF\)</span> bei 32 Bit.</li>
 </ul>
 <aside class="notes">
-<p>Hex ist nur eine andere Schreibweise desselben Bitmusters.</p>
+<p>0x leitet eine Hexadezimalzahl zur Basis 16 ein. Ein Nibble ist eine Vier-Bit-Gruppe und eine Hexziffer. 0x0000000A ist 10. 0xFFFFFFFF ist als signed 32-Bit-Wert minus 1 und als unsigned Wert 4294967295. Die Gleichsetzung gilt für diese Breite und diese Interpretation.</p>
+<p>Das Umschalten der Anzeige führt keine Recheninstruktion aus. Dieselbe Bitfolge kann parallel binär, hexadezimal und in beiden Dezimalwerten notiert werden.</p>
+<p>Kontrollfrage: Ist 0xFFFFFFFF immer die Zahl minus 1? Nur in der signed 32-Bit-Lesart. Mit dieser Darstellung prüfen wir einen einzelnen Ausführungsschritt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2513,7 +2696,9 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Nicht blind auf Run: das Programm rast durch. Step = eine ISA-Instruktion (nicht ein Hardware-Takt): Befehl ausführen, Register prüfen, PC += 4. Das ist Ihr Standardwerkzeug im Labor.</p>
+<p>Der Step-Button führt eine ISA-Instruktion aus, keinen Hardwaretakt. Die Vorhersage bezieht sich auf den aktuellen Disassembly-Eintrag. Bei normalen unkomprimierten Recheninstruktionen steigt der PC um 4. Systemdienste und spätere Sprünge haben eine eigene Semantik. Bei einem mehrteiligen Pseudobefehl können Zwischenwerte erscheinen.</p>
+<p>Run mit Haltepunkten kann nützlich sein. Step bleibt das Lernwerkzeug, Run ist nicht verboten. Die genaue Schaltflächenwirkung prüfen Sie an der geladenen Venus-Distribution.</p>
+<p>Kontrollfrage: Zählt Step die Gatterverzögerung? Nein. Ein festes Traceverfahren strukturiert die Beobachtung.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2537,7 +2722,9 @@ graph LR
 <span id="cb36-2"><a aria-label="2"></a>Code:    addi t0, t0, 1</span>
 <span id="cb36-3"><a aria-label="3"></a>Nachher: t0 = 6</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Tracing: Zeile lesen → laut vorhersagen („wenn ich klicke, wird t2 = 15“) → Step → Register vergleichen. Der erste abweichende Zustand isoliert den Bug — planloses Steppen lernt nichts.</p>
+<p>Ein Trace notiert Vorher und Nachher. Das Beispiel dieser Folie bleibt beisammen: t0 ist 5, addi t0, t0, 1 schreibt 6. Es gibt keinen Wechsel zu einem unbegründeten t2 gleich 15. Quellen werden vor dem Step gelesen, das Ziel danach verglichen.</p>
+<p>Die Zeile enthält PC, Instruktion, Quellen, erwartetes Ziel und tatsächliches Ziel. Beim ersten abweichenden Schritt bleiben wir stehen. R- und I-Syntax sowie die Aliase erklären, welches Register gemeint ist.</p>
+<p>Kontrollfrage: Welchen Wert muss t0 nach genau diesem addi haben? 6. Die erste Fehlerklasse entsteht bereits beim Assemblieren.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2560,7 +2747,9 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb37-1"><a aria-label="1"></a>addi t0<span class="op">,</span> t1<span class="op">,</span> <span class="dv">5</span>     <span class="op">#</span> korrekt</span>
 <span id="cb37-2"><a aria-label="2"></a>addi t0 t1<span class="op">,</span> <span class="dv">5</span>      <span class="op">#</span> Komma fehlt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Syntaxfehler und CPU-Traps sind verschiedene Fehlerklassen.</p>
+<p>Ein Assemblerfehler ist keine Runtime-Trap. Die absichtlich falsche Zeile ohne Komma oder mit vertauschten Operanden bleibt ein Negativbeispiel und gehört nicht in ein Referenzprogramm. Der Decoder sieht die Kommas nicht. Der Parser schon.</p>
+<p>Der Weg ist: Diagnose lesen, die Quelltextstelle finden, korrigieren, erneut assemblieren. Danach kontrollieren wir mit gesetzten Quellwerten, ob das Ergebnis stimmt. Ein leeres Register wird nicht still als null angenommen, außer x0.</p>
+<p>Kontrollfrage: Kann die CPU ein fehlendes Komma beanstanden? Nein, das geschieht vor der Ausführung. Eine zweite Fehlerklasse liegt an der Codierungsgrenze.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2583,7 +2772,9 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb38-1"><a aria-label="1"></a>addi t0<span class="op">,</span> x0<span class="op">,</span> <span class="dv">2047</span></span>
 <span id="cb38-2"><a aria-label="2"></a>li t0<span class="op">,</span> <span class="dv">2048</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Die Begrenzung folgt direkt aus den zwölf verfügbaren Bits.</p>
+<p>2047 passt in den signed Zwölf-Bit-Bereich, 2048 nicht. Eine Testzeile addi t0, x0, 2048 soll ein strikter Assembler ablehnen. Die konkrete Ablehnung prüfen Sie in der geladenen Venus-Distribution. Eine große Zahl darf nicht still als anderes Bitmuster übernommen werden.</p>
+<p>li t0, 2048 ist die Quelltextform. Nach der vollständigen Expansion erwarten wir 0x00000800, nicht zwingend schon nach dem ersten nativen Teilbefehl. Der erste Teil kann 0x00001000 sein.</p>
+<p>Kontrollfrage: Welcher Wert ist nach dem letzten Teilbefehl richtig? 0x800. Zusätzlich kann die Umgebung einen Wert ausgeben.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2607,7 +2798,9 @@ graph LR
 <span id="cb39-2"><a aria-label="2"></a>li a1<span class="op">,</span> <span class="dv">42</span></span>
 <span id="cb39-3"><a aria-label="3"></a>ecall</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>ecall</code> ist eine Vorschau auf kontrollierte Übergänge und Traps; es ist kein ALU-Befehl.</p>
+<p>ecall bedeutet Environment Call, den Aufruf einer Umgebungsdienstleistung. Die ISA definiert den Übergang, nicht die Drucknummern. In der klassischen Venus-Konvention steht die Dienstnummer in a0 und der Druckwert in a1. a0 gleich 1 und a1 gleich 42 drucken 42. Danach setzt a0 gleich 10 und ein weiteres ecall beendet den Lauf.</p>
+<p>Das ist kein Funktionsaufruf und kein C-printf. Ein bereits in a0 stehendes Ergebnis wird vor der Dienstbelegung nach a1 oder in ein Beobachtungsregister kopiert. Der Rahmen braucht Start und Ende, nicht nur die drei Druckzeilen.</p>
+<p>Kontrollfrage: Welches Register hält beim Drucken die 42? a1. Die Laboraufgabe verbindet Initialisierung, Zwischenrechnung und prüfbares Ergebnis.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2634,7 +2827,10 @@ graph LR
 <span id="cb40-3"><a aria-label="3"></a><span class="fu">main:</span></span>
 <span id="cb40-4"><a aria-label="4"></a>    # Ihr Code hier<span class="op">...</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Zerlegung: <code>li</code> für A–D in t0–t3, dann <code>t4 = A+B</code>, <code>t5 = C+D</code>, <code>t6 = t4-t5</code> (Ergebnis 10). Nach jedem Step prüfen Sie die betroffenen Register. Bei Immediate-Fehlern an die 12-Bit-Grenze denken und ggf. <code>li</code> statt großem <code>addi</code> nutzen.</p>
+<p>Die Aufgabe Y gleich (A plus B) minus (C plus D) bleibt auf der Folie offen. Die Musterlösung steht getrennt in beispiele/vl2_gleichung.s. A, B, C und D sind 5, 10, 3 und 2 in t0 bis t3. t bedeutet temporary. li ist die Pseudoinstruktion für die Initialisierung. Für diese kleinen Werte ist typischerweise je ein addi die Expansion. Das ist nicht durch einen Venus-Lauf dieser Fassung bestätigt.</p>
+<p>add t4, t0, t1 schreibt 15. add t5, t2, t3 schreibt 5. sub t6, t4, t5 schreibt 10. Die Eingaben bleiben erhalten. Am Label Ergebnis_pruefen, vor der Kopie nach a1, gilt t6 gleich 10. Ein Label ist keine Instruktion. Danach hält a1 den Druckwert und a0 die Dienstnummer 1, später 10. Das Ergebnis der Aufgabe ist t6, nicht a0.</p>
+<p>Weitere Lehrbelegungen nach Reset: alle Eingaben 0 ergeben 0. 5, 1, 10 und 2 ergeben 6, 12 und minus 6, also 0xFFFFFFFA. minus 5, 10, 3 und 2 ergeben 5, 5 und 0. Weicht ein Wert ab, prüfen wir den ersten abweichenden Schritt.</p>
+<p>Kontrollfrage: Welcher Wert steht unmittelbar vor der Kopie nach a1 in t6? 10. In der praktischen Phase dient diese Lösung als späterer Vergleich.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2652,7 +2848,7 @@ graph LR
 <ul>
 <li>Venus im Browser öffnen</li>
 <li>Folien als Spickzettel (R-/I-Type-Übersicht)</li>
-<li>Exzessiv Step + mentales Tracing nutzen</li>
+<li>Step verfolgt native Instruktionen, nicht gemessene Hardwaretakte</li>
 <li>Support: Syntax-Fehler, die Sie in unter 2 Minuten nicht klären</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
@@ -2677,7 +2873,9 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Damit endet der Theorieteil. Folien als Spickzettel offen lassen, Venus starten, formatieren und kommentieren.</p>
+<p>Q&amp;A bedeutet Questions and Answers, Hands-On die praktische Arbeit. Die Folge ist: Musterrahmen öffnen, Eingaben und Ergebnisse vorhersagen, selbst implementieren, assemblieren, schrittweise vergleichen und zum Schluss Ausgabe und Exit prüfen.</p>
+<p>Step verfolgt native Instruktionen. Exzessives Step ohne Vorhersage ersetzt die Kontrolle nicht. Zur Unterstützung bringen Sie die erste abweichende Stelle und den erwarteten Zustand mit. Drei Selbstkontrollen: Opcode 0110011 ist die Klasse, nicht schon add. sra von minus 3 um 1 ist minus 2. 2048 braucht mehr als ein addi.</p>
+<p>Kontrollfrage: Was bringen Sie zur Fehlersuche mit? Den ersten abweichenden Schritt und den erwarteten Wert. Das Abschlussblatt bündelt Begriffe, Grenzen und die wichtigsten Verwechslungen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2694,12 +2892,15 @@ graph LR
 <h2>Abschlussblatt</h2>
 <ul>
 <li>Begriffe: Architekturregister, R-/I-Format, Pseudoinstruktion, ABI, <code>ecall</code>.</li>
-<li>ISA-Regel: RV32I, Little Endian, keine <code>C</code>-Instruktionen in den Kernbeispielen.</li>
+<li>ISA-Regel dieses Kurses: RV32I ohne <code>C</code>; Little Endian ist die Umgebungsfestlegung, nicht jede RISC-V-Implementierung</li>
 <li>Typischer Fehler: Funktions-<code>a0</code> und Venus-Dienstnummer verwechseln.</li>
 <li>Übung: <code>add x9, x20, x21</code> als <code>0x015A04B3</code> prüfen; <code>srai</code> von <span class="math inline">\(-3\)</span> um 1 ergibt <span class="math inline">\(-2\)</span>.</li>
 </ul>
 <aside class="notes">
-<p>Verbindliche Festlegungen stehen in <code>referenz/kursvertrag.md</code>.</p>
+<p>ISA ist die Befehlssatzarchitektur, ABI die binäre Schnittstellenvereinbarung, RV32I die 32-Bit-Integerbasis. R-Type und I-Type sind die hier behandelten Formate. Ein Immediate ist eine direkte Konstante. Eine Pseudoinstruktion kann mehrere native Befehle erzeugen. ecall ruft die Umgebung auf.</p>
+<p>Little Endian, das niederwertige Byte an der kleineren Adresse, ist die Festlegung dieser Kursumgebung, nicht jede RISC-V-Implementierung. Zusammenfassung: 32 Architekturregister, x0 bleibt null, native Instruktionen ohne C sind 32 Bit, der normale PC-Schritt ist plus 4, Rechen-Immediates sind signed 12 Bit, die Shiftweite liegt bei 0 bis 31.</p>
+<p>Kurzaufgaben: add x9, x20, x21 ist 0x015A04B3. srai von minus 3 um 1 ergibt minus 2. Die C-Division minus 3 durch 2 ergibt minus 1. li von 2048 braucht eine passende Expansion, etwa über 0x1000 und dann minus 2048. Funktions-a0 und Dienst-a0 sind zwei Verträge.</p>
+<p>Kontrollfrage: Ist Little Endian eine RV32I-Pflicht jeder Implementierung? Nein, es ist unsere Kurs- und Umgebungsfestlegung. Einheit 3 ergänzt Speicheradressen, Loads, Stores und Bedingungen. Registerrollen, signed Werte und Formate bleiben die Grundlage.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
