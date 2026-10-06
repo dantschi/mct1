@@ -15,7 +15,7 @@
   <!-- Control Unit -->
   <rect class="box-ctrl" x="380" y="24" width="340" height="56" rx="4"/>
   <text class="lbl" x="550" y="50" text-anchor="middle">Control Unit (Steuerwerk)</text>
-  <text class="cap" x="550" y="68" text-anchor="middle">Opcode -> ALUSrc, MemtoReg, PCSrc, RegWrite, &</text>
+  <text class="cap" x="550" y="68" text-anchor="middle">Lehrsubset: ALUSrc, MemtoReg, RegWrite, Branch; PCSrc = Branch UND Zero</text>
 
   <!-- PCSrc MUX -->
   <rect class="box-accent" x="36" y="200" width="70" height="70" rx="4"/>
