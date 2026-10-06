@@ -221,7 +221,20 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <section>
 <section id="performance-pipelining" class="title-slide slide level1 center">
 <h1>Performance &amp; Pipelining</h1>
-
+<aside class="notes">
+<p>Einheit 5 und 6 haben Datenpfad und Steuerwerk erklärt. Einheit 7 fragt nach der Laufzeit. Performance ist hier die überprüfbare Programmlaufzeit beziehungsweise der Durchsatz. Pipelining überlappt mehrere Befehle zeitlich. Die Lernziele sind: die CPU-Zeit rechnen, ein Zeitdiagramm lesen und einen Hazard nachvollziehen. CPU bedeutet Central Processing Unit.</p>
+<p>Kontrollfrage: Sagt ein korrektes Ergebnis allein die Laufzeit? Nein. Die nächste Folie motiviert das Fließband.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="fließbandarbeit-im-prozessor" class="slide level2">
 <h2>Fließbandarbeit im Prozessor</h2>
@@ -250,7 +263,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Willkommen zu Einheit 7. Steuerwerk und Datenpfad stehen — der Single-Cycle-Prozessor ist logisch klar, aber langsam. Heute: Pipelining, Leistungsgewinn und Hazards; am Ende Ripes.</p>
+<p>Ein Single-Cycle-Datenpfad führt einen unterstützten Befehl in einem langen Takt aus. Der Takt wird vom längsten Pfad begrenzt. Das ist verständlich, aber nicht automatisch langsam für jede Aufgabe. Mehrere gleichzeitig bearbeitete Instruktionen sind hier nicht mehrere gleichzeitig bestätigte Ergebnisse pro Takt. Ein Data Hazard betrifft eine benötigte Datenabhängigkeit, ein Control Hazard den noch unbekannten nächsten Befehlsfluss.</p>
+<p>Kontrollfrage: Ist Single Cycle eine Sackgasse? Nein, ein einfaches Modell. Die Agenda verbindet Rechnung und Korrektheit.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -297,7 +311,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Von der Performance-Analyse über die Waschsalon-Metapher zur fünfstufigen Pipeline. Danach Hazards und Ripes.</p>
+<p>Ziele: CPU-Zeit berechnen, IF, ID, EX, MEM und WB unterscheiden, RAW erkennen, Forwarding begründen, einen Load-Use-Stall erklären und falsche Branch-Folgebefehle erkennen. IF ist Instruction Fetch, ID Instruction Decode, EX Execute, MEM Memory Access, WB Write Back. RAW bedeutet Read After Write. RISC-V ist die Befehlssatzarchitektur. Fünf Stufen sind unser Modell, keine ISA-Vorschrift. Für einfache Systeme können andere Entwurfsziele gelten.</p>
+<p>Kontrollfrage: Schreibt die ISA fünf Stufen vor? Nein. Zuerst reaktivieren wir den Single-Cycle-Ausgangspunkt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -322,7 +337,8 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb1-1"><a aria-label="1"></a>Ein Design ist nur dann gut, wenn es nicht nur logisch korrekt,</span>
 <span id="cb1-2"><a aria-label="2"></a>sondern auch effizient ist.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Der Prozessor funktioniert. Warum zersägen wir ihn? Weil er ineffizient ist. Silizium kostet; ungenutzte Hardware hat auf dem Markt keine Chance.</p>
+<p>Die fünf Bereiche Fetch, Decode, Execute, Memory und Write Back arbeiten hier noch innerhalb eines langen Zyklus für dieselbe Instruktion. Sie sind noch keine fünf getakteten Stufen. Fetch holt den Befehl, Decode liest Register und steuert, Execute rechnet, Memory greift auf Daten zu, Write Back schreibt ein Register. Einfachheit, Fläche und Energie können ebenfalls Entwurfsziele sein. Konkrete Werte behaupten wir dafür nicht.</p>
+<p>Kontrollfrage: Sind die fünf Kästen schon Pipeline-Takte? Nein. Der kritische Pfad setzt die Taktperiode.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -339,7 +355,7 @@ graph LR
 <h2>Die Timing-Falle (Refresher)</h2>
 <ul>
 <li>Taktfrequenz diktiert vom kritischen Pfad</li>
-<li>Ein Takt muss das langsamste Gatter im schlechtesten Fall abdecken</li>
+<li>Ein Takt muss den längsten relevanten Signalpfad abdecken, nicht nur ein einzelnes Gatter</li>
 <li>Langsamster Befehl: <code>lw</code> — nutzt alle Komponenten und setzt die Uhr</li>
 <li>Fazit: extrem langer Takt drosselt die gesamte CPU</li>
 </ul>
@@ -348,7 +364,8 @@ graph LR
 <span id="cb2-3"><a aria-label="3"></a>Add:       |========|............  (wartet am Ende)</span>
 <span id="cb2-4"><a aria-label="4"></a>           ^ fertig   ^ verschwendete Zeit</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Aus Einheit 5: Timing-Falle. Ein Takt muss lang genug für den Speicherzugriff eines Load sein — die Uhr tickt langsam.</p>
+<p>Der kritische Pfad ist der längste relevante Signalweg einschließlich der Zustandsübergangsbedingungen, nicht das langsamste einzelne Gatter. lw, Load Word, durchläuft in diesem Datenpfad Befehlsspeicher, Registerlesen, ALU, Datenspeicher und Write-Back-Auswahl. ALU bedeutet Arithmetic Logic Unit. Das ist ein langer Pfad dieses Modells, kein Nachweis für jede CPU. Die Taktperiode muss diesen Weg plus den effektiven Registeroverhead aufnehmen.</p>
+<p>Kontrollfrage: Reicht das langsamste Gatter als Taktgrenze? Nein. Schnellere Befehle nutzen denselben langen Takt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -370,7 +387,8 @@ graph LR
 <li>Massive Rechenleistung geht durch Warten auf die nächste Flanke verloren</li>
 </ul>
 <aside class="notes">
-<p>Bei <code>add</code> ist die ALU nach wenigen Nanosekunden fertig — dann Schlaf bis zum Taktende. Absolute Ressourcenverschwendung.</p>
+<p>Eine kombinatorische Stufe kann nach dem Einschwingen stabil sein. Das ist nicht automatisch abgeschalteter Strom. Entscheidend ist die ungenutzte Zeit, bevor die nächste Instruktion aufgenommen wird. Die ALU rechnet in diesem Bild nur einen Teil der Periode. Dieselben qualitativen Wege wie zuvor gelten, ohne erfundene Nanosekunden.</p>
+<p>Kontrollfrage: Liegen Fetch und Decode elektrisch still, sobald ihr Teil fertig ist? Nicht zwingend. Die Formel trennt die Stellgrößen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -393,7 +411,8 @@ graph LR
 <li>Taktzeit: Dauer eines Clock-Ticks (Nanosekunden)</li>
 </ul>
 <aside class="notes">
-<p>Single-Cycle: CPI = 1, aber miserable Taktzeit. Ziel heute: Taktzeit drastisch senken, ohne den CPI völlig zu ruinieren.</p>
+<p>CPU-Zeit gleich N mal CPI mal Taktperiode. N ist die Anzahl dynamisch abgeschlossener Maschineninstruktionen, nicht die Quellzeilenzahl. CPI bedeutet Cycles per Instruction, mittlere Takte pro Instruktion. Die Einheiten ergeben Sekunden. CPI gleich 1 beweist allein keine hohe Leistung, weil der Takt lang sein kann. Compiler können N ändern. Zwei Systeme werden auf dieselbe Aufgabe bezogen. Schleifen erhöhen N durch Wiederholung.</p>
+<p>Kontrollfrage: Zählt eine Quellzeile als eine dynamische Instruktion? Nicht allgemein. Eine Stationsfolge führt zum Pipelineprinzip.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -436,7 +455,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Pipelining ist kein Hexenwerk. Vier Stationen à 30 Minuten: ein Korb braucht zwei Stunden von Anfang bis Ende.</p>
+<p>Vier Stationen brauchen im Modell je 30 Minuten. Ein Korb braucht 120 Minuten, wenn keine Zusatzzeit zwischen den Stationen anfällt. Das ist ein Lehrbild, kein gemessenes Waschsalon-Timing. Die Stationen brauchen unabhängige Kapazität, auch beim Falten. Die Latenz eines Korbs ist zwei Stunden. Die Gesamtzeit mehrerer Körbe ist noch offen.</p>
+<p>Kontrollfrage: Wie lange braucht ein Korb? Zwei Stunden. Zuerst ohne Überlappung.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -463,7 +483,8 @@ graph LR
 <span id="cb3-3"><a aria-label="3"></a>|&lt;-------------- 2 Stunden ---------------&gt;|</span>
 <span id="cb3-4"><a aria-label="4"></a>  ^ erst hier startet Korb 2</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Sequenziell: Maschine läuft 30 Minuten, dann 90 Minuten Pause. Vier Körbe brauchen acht Stunden — teure Hardware langweilt sich.</p>
+<p>Vier Körbe mal vier Schritte mal 30 Minuten sind 480 Minuten, also acht Stunden. Jeder Korb belegt eine Station nur in seinem Abschnitt. Die übrigen Stationen warten. Das Bild ist keine Energie- oder Flächenaussage des Prozessors.</p>
+<p>Kontrollfrage: Wie viele Minuten sind vier Körbe sequenziell? 480. Überlappung startet den nächsten Korb an der freien ersten Station.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -491,7 +512,8 @@ graph LR
 <span id="cb4-5"><a aria-label="5"></a>Korb 3:                 Wash   Dry    Fold   Shelf</span>
 <span id="cb4-6"><a aria-label="6"></a>Korb 4:                        Wash   Dry    Fold   Shelf</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Entkopplung: freie Station sofort neu beladen. Parallelität spart fast fünf Stunden bei vier Körben.</p>
+<p>Sieben Halbstunden-Abschnitte: der erste Korb endet nach vier, der vierte nach sieben. Sieben mal 30 Minuten sind 3,5 Stunden. Der Gesamt-Speedup ist 8 geteilt durch 3,5, etwa 2,29. Der stationäre Durchsatz, ein Korb je 30 Minuten, ist eine andere Größe als dieser endliche Gewinn. Füllung und Leerung erklären, warum es nicht vier mal so schnell für genau vier Körbe ist.</p>
+<p>Kontrollfrage: Ist der Gesamtgewinn Faktor 4? Nein, etwa 2,29. Die nächste Folie trennt Latenz und Durchsatz.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -507,16 +529,16 @@ graph LR
 <section id="latenz-vs.-durchsatz" class="slide level2">
 <h2>Latenz vs.&nbsp;Durchsatz</h2>
 <ul>
-<li>Häufigster Denkfehler beim Pipelining</li>
-<li>Hat Pipelining die Latenz eines einzelnen Korbs verkürzt?</li>
-<li>Nein: Korb 1 braucht weiterhin exakt 2 Stunden</li>
-<li>Pipelining wäscht nicht heißer oder schneller</li>
-<li>Pipelining erhöht ausschließlich den Durchsatz (Throughput)</li>
+<li>Im Waschsalonmodell bleibt die Latenz eines Korbs zwei Stunden</li>
+<li>Pipeline-Register und ungleiche Stufen können die Einzellatenz eines Befehls erhöhen</li>
+<li>Das Lehrbeispiel später: 820 ps Single Cycle, 1350 ps Pipeline-Latenz</li>
+<li>Der Durchsatz kann trotzdem steigen</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb5-1"><a aria-label="1"></a>Latenz    = Wie lange dauert EIN Befehl von Anfang bis Ende?</span>
 <span id="cb5-2"><a aria-label="2"></a>Durchsatz = Wie viele Befehle werden pro Sekunde fertiggestellt?</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Prägen Sie sich ein: Latenz eines Tasks bleibt; der Output der Anlage steigt. Karriere-relevant in der Informatik.</p>
+<p>Im Waschsalon bleibt die Latenz eines Korbs zwei Stunden. Das gilt für dieses Modell ohne Zusatzaufwand. Pipeline-Register, ungleiche Stufen und Wartezyklen können die Einzellatenz eines Befehls erhöhen. Latenz ist die Dauer eines Auftrags, Durchsatz die Fertigstellungen pro Zeit. Das CPU-Lehrbeispiel zeigt später 820 gegen 1350 Pikosekunden.</p>
+<p>Kontrollfrage: Verkürzt Pipelining immer die Einzellatenz? Nein. Der Durchsatz wird als Nächstes quantifiziert.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -539,7 +561,8 @@ graph LR
 <li>Genau so werden Computer und Grafik flüssig</li>
 </ul>
 <aside class="notes">
-<p>Sobald das Fließband warmgelaufen ist, explodiert der Output. Videospiele: Millionen Pixel pro Sekunde — reiner Durchsatz.</p>
+<p>Throughput ist der Durchsatz. Stationär kommt ein Korb je 30 Minuten statt je 120 Minuten, also die vierfache Rate. Für vier Körbe ist der Gesamt-Speedup trotzdem etwa 2,29. Computer und Grafik sind nur eine Motivation, keine vereinfachte GPU-Messung. GPU würde Graphics Processing Unit bedeuten, falls der Begriff fällt.</p>
+<p>Kontrollfrage: Ist die vierfache Rate der Gesamt-Speedup? Nein. Die Stationen werden auf den Prozessor übertragen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -583,7 +606,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Bisher: ein Befehl durch alle fünf Stationen, dann der nächste. Ab sofort: ALU an A, Decoder an B, Fetch an C — parallel.</p>
+<p>IF holt aus dem Instruction Memory, kurz IM. ID liest die Registerbank, das Register File. EX nutzt die ALU. MEM kann den Datenspeicher, RAM, nutzen. WB schreibt zurück. add durchläuft MEM, ohne zwingend Daten zu lesen. Ein Store hat in WB kein Register-Write-Back. Nicht jeder Befehl nutzt in jeder Stufe jede Komponente. Fünf Stufen sind trotzdem der gemeinsame Taktplan.</p>
+<p>Kontrollfrage: Schreibt jeder WB-Eintrag ein Register? Nein. Der nächste Abschnitt setzt die Stufengrenzen um.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -599,7 +623,20 @@ graph LR
 <section>
 <section id="die-5-stufige-risc-v-pipeline" class="title-slide slide level1 center">
 <h1>Die 5-stufige RISC-V-Pipeline</h1>
-
+<aside class="notes">
+<p>Die fünfstufige Pipeline ist eine mögliche Mikroarchitektur für RISC-V, keine Vorschrift der ISA, der Instruction Set Architecture. Bisher war die Stationsmetapher. Jetzt werden Zeitgrenzen echte Speicherzustände. Die Frage lautet, wie Befehl, Daten und Steuerung nach jedem Takt zusammenbleiben.</p>
+<p>Kontrollfrage: Gehört IF/ID zur ISA? Nein, zum Modell. Die nächste Folie skizziert den Umbau.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="den-prozessor-physisch-umbauen" class="slide level2">
 <h2>Den Prozessor physisch umbauen</h2>
@@ -630,7 +667,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Phase 2: Theorie in Hardware. Single-Cycle-Datenpfad aus Einheit 5 in fünf Inseln schneiden und Takt beschleunigen.</p>
+<p>Ein Ideal-Speedup von 5 braucht ausgeglichene Stufen, vernachlässigbaren Overhead, lange Folgen und keine Hazards. Das ist kein garantierter Gewinn. Die Säge ist eine Metapher für eingefügte Register. Danach kommen Forwarding, Stall und Flush als neue Kontrollfunktionen. Signal-Chaos meint eine falsche zeitliche Zuordnung, nicht einen elektrischen Zusammenstoß.</p>
+<p>Kontrollfrage: Folgt Faktor 5 aus fünf Schnitten? Nein. Die fünf Bereiche werden benannt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -646,18 +684,19 @@ graph LR
 <section id="den-datenpfad-zersägen" class="slide level2">
 <h2>Den Datenpfad zersägen</h2>
 <ul>
-<li>Vertikale Schnitte durch den Patterson/Hennessy-Schaltplan</li>
-<li>Fünf Hardware-Inseln:</li>
-<li>IF: PC und Befehlsspeicher</li>
-<li>ID: Register File und Control Unit</li>
-<li>EX: Haupt-ALU</li>
-<li>MEM: Daten-RAM</li>
-<li>WB: Write-Back-MUX vor dem Register File</li>
+<li><p>Vertikale Schnitte durch den Patterson/Hennessy-Schaltplan</p></li>
+<li><p>Fünf Hardware-Inseln:</p></li>
+<li><p>IF: PC und Befehlsspeicher</p></li>
+<li><p>ID: Register File und Control Unit</p></li>
+<li><p>EX: Haupt-ALU</p></li>
+<li><p>MEM: Daten-RAM</p></li>
+<li><p>WB: Write-Back-MUX vor dem Register File</p></li>
+<li><p>Registergrenzen und später Forwarding, Stall und Flush verändern die Mikroarchitektur</p></li>
+<li><p>Fünf Stufen sind eine Modellentscheidung, keine RISC-V-Vorschrift</p></li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb6-1"><a aria-label="1"></a>[  IF  ] | [  ID  ] | [  EX  ] | [ MEM ] | [  WB  ]</span>
-<span id="cb6-2"><a aria-label="2"></a> Stufe 1    Stufe 2    Stufe 3    Stufe 4    Stufe 5</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Keine Gatterlogik ändern: Strom fließt weiter von links nach rechts. Nur die Strecke wird in fünf Abschnitte geteilt.</p>
+<p>Die Schnitte ändern die Mikroarchitektur. Pipeline-Register und später Forwarding, Stall und Flush sind zusätzliche Logik. IF enthält PC und Befehlsspeicher. Der PC, Program Counter, ist die Befehlsadresse. ID enthält Registerlesen und Steuerung. Der Schreibport derselben Registerbank liegt bei WB. EX enthält die ALU, MEM den Datenspeicher, WB die Schreibauswahl. Information ist ein Signalzustand, kein Strom, der von links nach rechts fließt.</p>
+<p>Kontrollfrage: Bleibt die Gatterlogik unverändert? Nein. Die Grenzen verändern den kritischen Pfad.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -673,10 +712,9 @@ graph LR
 <section id="ein-viel-schnellerer-takt" class="slide level2">
 <h2>Ein viel schnellerer Takt</h2>
 <ul>
-<li>Clock muss nicht mehr die Summe aller fünf Stufen abdecken</li>
-<li>Nur noch die langsamste Einzelstufe (oft ALU oder RAM)</li>
-<li>Jede Stufe = Bruchteil der Gatter → Takt massiv verkürzbar</li>
-<li>Beispiel: 4 GHz statt 800 MHz (Größenordnung)</li>
+<li>Der Takt folgt der längsten Stufe plus effektivem Registeroverhead</li>
+<li>Lehrwerte: Single Cycle 820 ps, Pipeline-Takt 270 ps</li>
+<li>Das sind Modellrechnungen, keine gemessenen 800 MHz oder 4 GHz</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -696,7 +734,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Kritischer Pfad: vorher durch alle Inseln, jetzt durch die längste. Taktfrequenz steigt stark — neues physikalisches Problem folgt.</p>
+<p>Die Pipeline-Taktperiode ist die längste Stufenlogik plus ein effektiver Registeroverhead von 20 Pikosekunden. Die Stufen sind 200, 100, 150, 250 und 100 Pikosekunden. Das Maximum ist 250, plus 20 ergibt 270. Der Single-Cycle-Pfad ist 800 plus 20 gleich 820. Weniger Gatter je Stufe bedeuten nicht gleiche Laufzeiten. Ein Gigahertz ist eins geteilt durch die Periode. 270 Pikosekunden sind ein Modellwert, keine gemessenen 4 Gigahertz.</p>
+<p>Kontrollfrage: Ist 270 ps gleich 4 GHz? Nein. Reine Schnittlinien speichern noch nichts.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -709,8 +748,8 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
-<section id="das-isolations-problem" class="slide level2">
-<h2>Das Isolations-Problem</h2>
+<section id="warum-zustandsgrenzen-nötig-sind" class="slide level2">
+<h2>Warum Zustandsgrenzen nötig sind</h2>
 <ul>
 <li>Ohne Schutz: Signal-Chaos nach dem Zersägen</li>
 <li>Kombinatorik fließt ungebremst weiter</li>
@@ -719,7 +758,8 @@ graph LR
 <li>Dicke Wände zwischen den Inseln nötig</li>
 </ul>
 <aside class="notes">
-<p>Gatter sind offene Rohre. Ohne Barrieren vermischt sich der Fließband-Verkehr — Inseln müssen elektrisch isoliert werden.</p>
+<p>Ohne gespeicherte Zwischenergebnisse gibt es keine getrennten Taktzustände. Das Problem ist nicht galvanische Isolation. Eine ältere Instruktion kann den Wert 10 berechnen, während eine jüngere noch den alten Registerwert 99 gelesen hat. An der Registergrenze wird das zusammengehörige Paket übernommen, nicht ein Strom kurz geöffnet.</p>
+<p>Kontrollfrage: Öffnet die Grenze den Strom? Nein, sie speichert einen Zustand. Flip-Flop-Bänke halten dieses Paket.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -764,7 +804,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>D-Flip-Flop-Bänke wie Luftschleusen: IF/ID hält das 32-Bit-Wort, bis ID bereit ist. Strom fließt nicht mehr unkontrolliert.</p>
+<p>Ein D-Flip-Flop speichert ein Bit nach dem Taktmodell. Die vier Register heißen IF/ID, ID/EX, EX/MEM und MEM/WB. Der Schrägstrich trennt benachbarte Stufen. IF/ID übernimmt regulär an der Taktgrenze und wird bei einem Stall gehalten. Ein beispielhafter Inhalt sind Instruktion, PC-Information und Gültigkeit. Die späteren Register tragen zusätzlich Operanden, rd und Steuersignale.</p>
+<p>Kontrollfrage: Hält IF/ID nur, bis ID bereit ist? Nein, es taktet regulär. Der erste Fetch folgt im gemeinsamen Zeitmodell.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -786,10 +827,11 @@ graph LR
 <li>Befehl staut sich am IF/ID-Register</li>
 <li>ID, EX, MEM, WB noch leer</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb7-1"><a aria-label="1"></a>Takt 1:</span>
-<span id="cb7-2"><a aria-label="2"></a>[ I1 IF ] -&gt; [ ID - ] -&gt; [ EX - ] -&gt; [ MEM - ] -&gt; [ WB - ]</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb6-1"><a aria-label="1"></a>Takt 1:</span>
+<span id="cb6-2"><a aria-label="2"></a>[ I1 IF ] -&gt; [ ID - ] -&gt; [ EX - ] -&gt; [ MEM - ] -&gt; [ WB - ]</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Takt 1: Instruktion 1 prallt gegen die Flip-Flop-Mauer IF/ID. Stufen 2–5 schlafen noch.</p>
+<p>Relativer Takt 1 ist der erste betrachtete Fetch. Der PC adressiert den Befehlsspeicher. Bis zum Taktende liegt die Instruktion zur Übernahme in IF/ID bereit. Die anderen Stufen sind im leeren Anfangszustand ungültig, nicht zwingend elektrisch aus. IF bedeutet Instruction Fetch, IM Instruction Memory.</p>
+<p>Kontrollfrage: Arbeiten in Takt 1 schon fünf Befehle? Nein. An der nächsten Grenze aktualisieren mehrere Register gleichzeitig.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -810,10 +852,11 @@ graph LR
 <li>Instruktion 2 betritt IF</li>
 <li>Zwei Inseln arbeiten parallel an zwei Instruktionen</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb8-1"><a aria-label="1"></a>Takt 2:</span>
-<span id="cb8-2"><a aria-label="2"></a>[ I2 IF ] -&gt; [ I1 ID ] -&gt; [ EX - ] -&gt; [ MEM - ] -&gt; [ WB - ]</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb7-1"><a aria-label="1"></a>Takt 2:</span>
+<span id="cb7-2"><a aria-label="2"></a>[ I2 IF ] -&gt; [ I1 ID ] -&gt; [ EX - ] -&gt; [ MEM - ] -&gt; [ WB - ]</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Echte Parallelität: Decode analysiert Instruktion 1, Fetch liest Instruktion 2.</p>
+<p>In Takt 2 wird die erste Instruktion in ID decodiert und liest Register. Die zweite wird gleichzeitig in IF geholt. Die Übernahme geschieht an der Taktgrenze, nicht indem Schleusen nacheinander öffnen. Jede Instruktion behält ihren eigenen PC. Decode liest das Befehlswort, das Register File liefert die Operanden, der Opcode ist die Befehlsklasse.</p>
+<p>Kontrollfrage: Gehören IF und ID in Takt 2 zur selben Instruktion? Nein, zu zwei verschiedenen. Nach mehreren Takten ist das Band voll.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -834,11 +877,12 @@ graph LR
 <li>Instruktionen 5–1 in IF–WB</li>
 <li>Ab diesem Takt: bei jedem Tick ein fertiger Befehl am Ende</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb9-1"><a aria-label="1"></a>Takt 5 (volles Fliessband):</span>
-<span id="cb9-2"><a aria-label="2"></a>[ Instr 5 (IF) ] -&gt; [ Instr 4 (ID) ] -&gt; [ Instr 3 (EX) ]</span>
-<span id="cb9-3"><a aria-label="3"></a>  -&gt; [ Instr 2 (MEM) ] -&gt; [ Instr 1 (WB) ]</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb8-1"><a aria-label="1"></a>Takt 5 (volles Fliessband):</span>
+<span id="cb8-2"><a aria-label="2"></a>[ Instr 5 (IF) ] -&gt; [ Instr 4 (ID) ] -&gt; [ Instr 3 (EX) ]</span>
+<span id="cb8-3"><a aria-label="3"></a>  -&gt; [ Instr 2 (MEM) ] -&gt; [ Instr 1 (WB) ]</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Maximale Last: Instruktion 1 schreibt zurück, während Instruktion 5 gerade geholt wird. Hochleistungsfabrik.</p>
+<p>In Takt 5 eines idealen fortgesetzten Modells steht die älteste Instruktion in WB, die nächsten in MEM, EX, ID und IF. Ab dann kann pro Takt eine Instruktion abschließen. Ein Eintrag in WB schreibt nicht immer ein Register, zum Beispiel bei einem Store. Bei endlichen Folgen leert sich die Pipeline später wieder.</p>
+<p>Kontrollfrage: Wie viele verschiedene Instruktionen sind in Takt 5 aktiv? Fünf, wenn das Band voll und gültig ist. Ein Diagramm zeigt das über die Zeit.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -906,7 +950,8 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p>Klassisches Klausur-/Lehrbuchdiagramm: Treppenstruktur als Sinnbild des Pipelining.</p>
+<p>Horizontal stehen die Takte, vertikal die dynamischen Instruktionen. Drei unabhängige Befehle brauchen sieben Takte bis zum Ende des letzten WB, weil 3 plus 4 gleich 7 ist. Eine Zeile zeigt die Latenz, die Diagonale die Überlappung, die WB-Spalte die Fertigstellungen. Die gezeigten Befehle müssen unabhängig sein, sonst gelten andere Zeiten.</p>
+<p>Kontrollfrage: Warum sieben und nicht fünf Takte für drei Befehle? Wegen Füllung und Leerung. Daraus folgt N plus 4.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -935,20 +980,8 @@ graph LR
 </figure>
 </div>
 <aside class="notes">
-<p>Lehrwerte, keine Messung: Stufen 200, 100, 150, 250 und 100 ps, je Registerübergang 20 ps. Single-Cycle-Takt 820 ps, Pipeline-Takt 270 ps, Latenz einer Instruktion <span class="math inline">\(5 \times 270 = 1350\)</span> ps. Für 20 unabhängige Instruktionen: <span class="math inline">\(20 \times 820 = 16400\)</span> ps gegenüber <span class="math inline">\(24 \times 270 = 6480\)</span> ps, Speedup etwa 2,53.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-<aside class="notes">
-<p>Traum des Ingenieurs: idealer Speedup gleich Stufenzahl (bei vollem Fließband und ohne Hazards). CPI bleibt ideal ~1, aber mit viel kürzerer Taktzeit. Hazards und Overhead senken den realen Faktor.</p>
+<p>Die Stufenlogik ist 200, 100, 150, 250 und 100 Pikosekunden. Der Overhead von 20 Pikosekunden gilt einmal je Taktpfad, nicht viermal zusätzlich auf den Single-Cycle-Weg. T single ist 820 ps, T pipe 270 ps. Fünf mal 270 ist 1350 ps Einzellatenz. Für N gleich 20 ist die Pipeline-Taktzahl 24, CPI endlich 1,2. 20 mal 820 ist 16400 ps, 24 mal 270 ist 6480 ps. Der Speedup ist etwa 2,53. ps ist eine Pikosekunde.</p>
+<p>Kontrollfrage: Ist die Einzellatenz in der Pipeline kürzer? Nein, 1350 gegen 820. Die nächste Folie erklärt den Abstand zu 5.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -989,7 +1022,8 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Hardware-Overhead und ungleiche Stufen drosseln den Idealwert — der Gewinn bleibt gigantisch.</p>
+<p>Füllung und Leerung kosten vier zusätzliche Takte, die Stufen sind ungleich, und der Overhead ist 20 ps. Der Grenzwert ohne Hazards ist 820 geteilt durch 270, etwa 3,04, nicht 5. Bei N gleich 1 dauert die Pipeline 1350 ps und der Single Cycle 820 ps. Der Gewinn ist das konkrete 2,53 für 20 Befehle, keine unbelegte Spanne.</p>
+<p>Kontrollfrage: Warum nicht Faktor 5? Wegen Ungleichheit, Overhead und endlicher Folge. Als Nächstes müssen die Steuersignale mitwandern.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1012,7 +1046,8 @@ graph TD
 <li>Lösung: Steuersignale reisen Huckepack mit dem Befehl</li>
 </ul>
 <aside class="notes">
-<p>Zwischen ID und MEM liegen zwei Takte. Ohne Mitnahme wäre <code>MemWrite</code> in MEM längst vergessen.</p>
+<p>Die Control Unit in ID erzeugt die Signale des gerade decodierten Befehls. Opcode ist die Familie, nicht jede Operation. MemWrite, die Speicher-Schreibfreigabe, muss zum älteren Store gehören, der inzwischen in MEM steht. Ein Store-Paket enthält daher Freigabe, Adresse, Daten und Gültigkeit zusammen.</p>
+<p>Kontrollfrage: Darf MEM das MemWrite des gerade in ID stehenden Befehls nutzen? Nein. Der Weg führt über zwei Registergrenzen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1055,7 +1090,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Blaue Leitungen durch die Barrieren: Pipeline-Register speichern Daten und Steuersignale. MemWrite als blinder Passagier bis zum RAM.</p>
+<p>MemWrite wandert mit Store-Daten, Adresse und Gültigkeit über ID/EX nach EX/MEM. Es ist kein unabhängig wandernder Faden. RegWrite und rd laufen später bis MEM/WB. Die Wirkung tritt in der passenden Stufe an deren Übernahme ein. rd ist die Zielregisternummer.</p>
+<p>Kontrollfrage: Darf das MemWrite eines jüngeren Befehls den älteren Store steuern? Nein. Ohne Abhängigkeiten wäre das ausreichend. Nun folgen benötigte Ergebnisse.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1076,12 +1112,13 @@ graph LR
 <li>Realität: Code-Zeilen brauchen ständig Daten voneinander</li>
 <li>Nächster Schritt: die Gefahren (Hazards) des Fließbands</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb10-1"><a aria-label="1"></a><span class="co">/* Illusion: alles unabhaengig */</span></span>
-<span id="cb10-2"><a aria-label="2"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></span>
-<span id="cb10-3"><a aria-label="3"></a><span class="dt">int</span> b <span class="op">=</span> <span class="dv">6</span><span class="op">;</span></span>
-<span id="cb10-4"><a aria-label="4"></a><span class="dt">int</span> c <span class="op">=</span> <span class="dv">7</span><span class="op">;</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb9-1"><a aria-label="1"></a><span class="co">/* Illusion: alles unabhaengig */</span></span>
+<span id="cb9-2"><a aria-label="2"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></span>
+<span id="cb9-3"><a aria-label="3"></a><span class="dt">int</span> b <span class="op">=</span> <span class="dv">6</span><span class="op">;</span></span>
+<span id="cb9-4"><a aria-label="4"></a><span class="dt">int</span> c <span class="op">=</span> <span class="dv">7</span><span class="op">;</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Pipeline funktioniert nur perfekt bei unabhängigen Befehlen. Software ist verflochten — als Nächstes: Blockaden und Hazards.</p>
+<p>Unabhängige C-Zuweisungen kann ein Compiler vereinfachen oder entfernen. Sie sind nicht garantiert drei Maschineninstruktionen. Eine native Folge mit getrennten Zielen wäre add t0, t1, t2 und add t3, t4, t5. CPI nahe 1 gilt stationär bei langen unabhängigen Folgen, nicht wegen unabhängiger Quellzeilen allein.</p>
+<p>Kontrollfrage: Garantiert drei C-Zeilen drei Maschinenbefehle? Nein. Der nächste Abschnitt betrachtet echte Registerabhängigkeiten.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1097,7 +1134,20 @@ graph LR
 <section>
 <section id="data-hazards-forwarding" class="title-slide slide level1 center">
 <h1>Data Hazards &amp; Forwarding</h1>
-
+<aside class="notes">
+<p>Ein Data Hazard ist das zeitliche Problem einer benötigten Datenabhängigkeit. Forwarding leitet ein bereits verfügbares Ergebnis weiter. Die ISA-Wirkung bleibt gleich. Zusätzliche Logik sichert sie trotz Überlappung.</p>
+<p>Kontrollfrage: Ändert Forwarding das sichtbare Additionsresultat? Nein, nur den Weg. Die nächste Folie baut Produzent und Konsument auf.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="utopie-beenden" class="slide level2">
 <h2>Utopie beenden</h2>
@@ -1128,7 +1178,8 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Phase 3: Befehle sind in der Realität abhängig. Ein Befehl berechnet eine Variable, der nächste nutzt sie sofort. Auf dem Fließband entstehen Data Hazards — wir retten die Pipeline davor.</p>
+<p>RAW bedeutet Read After Write: die jüngere Instruktion braucht den Wert, den die ältere schreiben wird. Ein Stall ist ein Wartezyklus. Er sichert die Korrektheit und senkt den Durchsatz. Er vernichtet nicht automatisch jeden Pipelinegewinn. Die Abhängigkeit steht im Programm. Forwarding und Stall sind zwei Behandlungen. Forwarding nutzt ein Ergebnis vor dem abgeschlossenen Register-Write-Back.</p>
+<p>Kontrollfrage: Ist jede RAW-Abhängigkeit ein Stall? Nein. Die Hazard-Arten werden abgegrenzt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1152,7 +1203,8 @@ graph TD
 <li>Control Hazards: Sprung ändert den PC, während schon falscher Code geladen ist</li>
 </ul>
 <aside class="notes">
-<p>Hazard = Fließband-Gefahr. Heute praxisrelevant: Data Hazards und Control Hazards. Structural Hazards klären wir kurz vorab.</p>
+<p>Ein Hazard bedroht den korrekten Fortschritt oder den korrekten Kontrollfluss. Die Lösung kann Weiterleitung, Warten oder Verwerfen sein. Ein Structural Hazard ist ein Ressourcenkonflikt, ein Data Hazard eine Datenabhängigkeit, ein Control Hazard ein unbekannter nächster PC. Nicht jeder Data Hazard ist ein Stall.</p>
+<p>Kontrollfrage: Muss bei jedem Hazard die Pipeline stehen? Nein. Zuerst ein Ressourcenbeispiel.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1194,7 +1246,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Ein gemeinsamer Speicher für Code und Daten würde IF und MEM kollidieren lassen. Im Lehrbuch-/Ripes-Modell (wie in Einheit 5) trennen wir Instruction Memory und Data Memory bzw. getrennte L1-I/D-Caches — oft als modified Harvard bezeichnet. Die RISC-V-ISA schreibt Harvard nicht vor; die getrennten Ports lösen hier den Structural Hazard.</p>
+<p>Ein gemeinsamer einportiger Speicher kann Fetch und einen Datenzugriff im selben Takt nicht beide bedienen. Ein gemeinsamer Adressraum allein ist noch kein Konflikt, wenn getrennte Ports existieren. Getrennte L1-Instruktions- und Datencaches sind eine mögliche Lösung. L1 ist die erste Cacheebene. Harvard meint hier getrennte Zugriffspfade, nicht eine ISA-Pflicht. Die Registerbank braucht im Modell genug Lese- und Schreibports.</p>
+<p>Kontrollfrage: Erzwingt ein gemeinsamer Adressraum den Konflikt? Nein. Als Nächstes geht es um Ergebnisverfügbarkeit.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1216,11 +1269,12 @@ graph LR
 <li>Single-Cycle: kein Problem — Zeile 1 ist fertig, bevor Zeile 2 startet</li>
 <li>Pipeline: Überhol-Problem auf dem Fließband</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb11-1"><a aria-label="1"></a><span class="co">/* Klassischer Data Hazard (RAW): */</span></span>
-<span id="cb11-2"><a aria-label="2"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">10</span> <span class="op">+</span> <span class="dv">5</span><span class="op">;</span>   <span class="co">/* schreibt a */</span></span>
-<span id="cb11-3"><a aria-label="3"></a><span class="dt">int</span> d <span class="op">=</span> a <span class="op">+</span> <span class="dv">20</span><span class="op">;</span>   <span class="co">/* liest a sofort danach */</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb10-1"><a aria-label="1"></a><span class="co">/* Klassischer Data Hazard (RAW): */</span></span>
+<span id="cb10-2"><a aria-label="2"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">10</span> <span class="op">+</span> <span class="dv">5</span><span class="op">;</span>   <span class="co">/* schreibt a */</span></span>
+<span id="cb10-3"><a aria-label="3"></a><span class="dt">int</span> d <span class="op">=</span> a <span class="op">+</span> <span class="dv">20</span><span class="op">;</span>   <span class="co">/* liest a sofort danach */</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Im Single-Cycle lag das Ergebnis fest im Register File, bevor der nächste Befehl startete. In der Pipeline überholt der Leser den Schreiber.</p>
+<p>In-order behält die Programmreihenfolge. Der Konsument braucht nur einen noch nicht zurückgeschriebenen Wert. Das ist kein Überholen. Das C-Bild a gleich b plus c und d gleich a minus e ist konzeptionell, kein garantierter Compileroutput, wenn die Werte nicht konstant sind. RAW bleibt die Lesart nach einem noch ausstehenden Schreiben.</p>
+<p>Kontrollfrage: Darf der jüngere Befehl den älteren in der Reihenfolge überholen? In diesem Modell nein. Das Assemblerpaar macht Ziel und Quelle sichtbar.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1242,10 +1296,11 @@ graph LR
 <li>Konflikt: <code>sub</code> verlangt einen Wert, der noch nicht im Register File liegt</li>
 <li>Schreiben erst in WB (Stufe 5), Lesen schon in ID (Stufe 2)</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb12-1"><a aria-label="1"></a><span class="bu">add</span> t0<span class="op">,</span> t1<span class="op">,</span> t2    <span class="op">#</span> t0 erst in WB <span class="op">(</span>Stufe <span class="dv">5</span><span class="op">)</span></span>
-<span id="cb12-2"><a aria-label="2"></a><span class="bu">sub</span> t3<span class="op">,</span> t0<span class="op">,</span> t4    <span class="op">#</span> t0 schon in ID <span class="op">(</span>Stufe <span class="dv">2</span><span class="op">)</span> gelesen</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb11-1"><a aria-label="1"></a><span class="bu">add</span> t0<span class="op">,</span> t1<span class="op">,</span> t2    <span class="op">#</span> t0 erst in WB <span class="op">(</span>Stufe <span class="dv">5</span><span class="op">)</span></span>
+<span id="cb11-2"><a aria-label="2"></a><span class="bu">sub</span> t3<span class="op">,</span> t0<span class="op">,</span> t4    <span class="op">#</span> t0 schon in ID <span class="op">(</span>Stufe <span class="dv">2</span><span class="op">)</span> gelesen</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>RAW: Write von <code>add</code>, Read von <code>sub</code>. Physikalisch klaffen Stufe 5 und Stufe 2 auseinander.</p>
+<p>Lehrwerte: t1 gleich 7, t2 gleich 3, t4 gleich 4, alter t0 gleich 99. add t0, t1, t2 schreibt 10. sub t3, t0, t4 soll 6 ergeben. t0 ist x5, t1 ist x6, t3 ist x28, t4 ist x29. rd ist das Ziel, rs1 und rs2 die Quellen. Das Schreiben liegt in WB, das Lesen in ID. Forwarding kann den alten gelesenen Wert später ersetzen.</p>
+<p>Kontrollfrage: Welches Ergebnis ist richtig? 6, nicht 95. Die Zeitachse zeigt beide Befehle.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1299,7 +1354,8 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p>In Takt 3 ist <code>sub</code> in ID und liest <code>t0</code>, während <code>add</code> erst in EX ist. Das Fließband produziert Müll.</p>
+<p>add liegt in IF1, ID2, EX3, MEM4, WB5. sub liegt in IF2, ID3, EX4, MEM5, WB6. Ohne Behandlung könnte sub den alten Wert 99 lesen und 95 rechnen. Das ist ein falscher Datenwert, kein elektrischer Stoß. Die Registernummer und der Datenwert sind verschieden.</p>
+<p>Kontrollfrage: Welcher falsche Wert entstünde? 95. Ein Stall könnte das Lesen verzögern.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1320,11 +1376,12 @@ graph LR
 <li>Preis: typisch drei verlorene Taktzyklen (Konvention ohne Write/Read-Split im selben Takt; mit H&amp;H-Registerfile-Hälften oft nur 2 Bubbles)</li>
 <li>Der Speedup durch kürzeren Takt wird teilweise zunichtegemacht</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb13-1"><a aria-label="1"></a>ADD:  IF ID EX MEM WB(schreibt)</span>
-<span id="cb13-2"><a aria-label="2"></a>SUB:     IF .. .. .. ID(liest sicher) EX MEM WB</span>
-<span id="cb13-3"><a aria-label="3"></a>             ^--- drei Takte Warten ---^</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb12-1"><a aria-label="1"></a>ADD:  IF ID EX MEM WB(schreibt)</span>
+<span id="cb12-2"><a aria-label="2"></a>SUB:     IF .. .. .. ID(liest sicher) EX MEM WB</span>
+<span id="cb12-3"><a aria-label="3"></a>             ^--- drei Takte Warten ---^</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Stall rettet die Korrektheit, vernichtet aber Durchsatz. Gibt es einen besseren Weg?</p>
+<p>Zwei Registerlese-Konventionen bleiben getrennt. Schreibt WB und liest ID noch im selben Takt 5, startet sub in EX in Takt 6. Das sind zwei zusätzliche Takte gegenüber der idealen Folge. Kann ID den WB-Wert im selben Takt nicht nutzen, liest sub erst in Takt 6 und rechnet in Takt 7. Das sind drei zusätzliche Takte. Die gehaltene Instruktion bleibt sichtbar in ID. Das ist keine universelle Ripes-Zahl. Harris und Harris ist die Lehrbuchreferenz, falls sie genannt wird.</p>
+<p>Kontrollfrage: Ist die Stallzahl immer zwei? Nein, sie hängt von der Lese-Schreib-Konvention ab. Das ALU-Ergebnis existiert schon vor WB.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1346,11 +1403,12 @@ graph LR
 <li>Idee: Ergebnis direkt am ALU-Ausgang abgreifen und zur nächsten ALU leiten</li>
 <li>Kein Umweg über das Register File</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb14-1"><a aria-label="1"></a>Forwarding (Bypassing):</span>
-<span id="cb14-2"><a aria-label="2"></a>Nutze das Ergebnis, sobald es physikalisch fertig ist.</span>
-<span id="cb14-3"><a aria-label="3"></a>Warte nicht auf Write-Back.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb13-1"><a aria-label="1"></a>Forwarding (Bypassing):</span>
+<span id="cb13-2"><a aria-label="2"></a>Nutze das Ergebnis, sobald es physikalisch fertig ist.</span>
+<span id="cb13-3"><a aria-label="3"></a>Warte nicht auf Write-Back.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Am Ende von EX liegt die Summe im EX/MEM-Register bereit. Wir reichen sie dem bedürftigen Befehl über den Tisch.</p>
+<p>Forwarding, auch Bypassing, leitet das Ergebnis weiter. Am Ende von EX ist es berechnet und wird in EX/MEM übernommen. Im nächsten Zyklus kann es den jüngeren EX-Operanden versorgen. WB bestätigt danach den Registerzustand. Es ist nicht nur Bürokratie. Der Endpunkt ist Takt 3, der Verbraucher Takt 4.</p>
+<p>Kontrollfrage: Muss sub auf das Register-Write-Back warten? In diesem ALU-Fall nein. Der zusätzliche Datenpfad folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1389,7 +1447,8 @@ graph RL
 </div>
 </div>
 <aside class="notes">
-<p>Gegen die normale Flussrichtung: frisches Ergebnis aus dem Bypass-Kabel in die Recheneinheit, statt Müll aus dem Register File.</p>
+<p>Der Pfad führt vom EX/MEM-Register zum Operandenmultiplexer der ALU. Gegen die Flussrichtung beschreibt nur die Lage im Bild, nicht die Zeit. Mit Ergebnis 10 und t4 gleich 4 rechnet sub korrekt 6. Der alte ID-Wert wird ersetzt. Nicht jeder Hazard ist damit gelöst.</p>
+<p>Kontrollfrage: Welches Ergebnis hat sub? 6. Ein weiter hinten liegender Produzent braucht einen zweiten Pfad.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1411,7 +1470,8 @@ graph RL
 <li>Neue Stränge kreuzen das Diagramm von rechts nach links</li>
 </ul>
 <aside class="notes">
-<p>Zwei kritische Bypässe: direkt nach der ALU und weiter hinten vor dem Write-Back.</p>
+<p>EX/MEM liefert ein bereits berechnetes ALU-Ergebnis. MEM/WB liefert den tatsächlichen Write-Back-Wert. Bei einem Load ist das das geladene Wort, nicht die Adresse. Beide Quellen rs1 und rs2 werden geprüft. Ein direkter Vorgänger nutzt EX/MEM. Liegt eine unabhängige Instruktion dazwischen, kann MEM/WB passen. Ein Load in EX/MEM hat dort noch die Adresse.</p>
+<p>Kontrollfrage: Darf die Load-Adresse als Nutzdatum weitergereicht werden? Nein. Die Forwarding Unit entscheidet den Pfad.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1454,7 +1514,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Verkehrsbeobachter: Ziel des einen und Quelle des anderen vergleichen — bei Treffer Bypass-Alarm.</p>
+<p>Verglichen werden die fünf Bit der Registernummern, nicht die 32-Bit-Daten. Eingänge sind Gültigkeit, RegWrite, Ergebnisart und die Zielnummern beider Quellen. Bei zwei passenden Produzenten gewinnt der jüngere. ForwardA und ForwardB sind getrennte Ausgänge. Ein älterer MEM/WB-Wert ersetzt keinen noch nicht bereiten jüngeren Load.</p>
+<p>Kontrollfrage: Gewinnt bei zwei Treffern der ältere Wert? Nein. Die Bedingungen werden ausgeschrieben.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1470,16 +1531,18 @@ graph LR
 <section id="die-hazard-erkennung-logik" class="slide level2">
 <h2>Die Hazard-Erkennung (Logik)</h2>
 <ul>
-<li>Formale Bedingung (vereinfacht):</li>
-<li>Wenn <code>EX/MEM.RegWrite = 1</code> <span class="math inline">\(\land\)</span> <span class="math inline">\(EX/MEM.rd \neq 0\)</span> <span class="math inline">\(\land\)</span> <code>EX/MEM.rd</code> <span class="math inline">\(=\)</span> <code>ID/EX.rs1</code></li>
-<li>Übersetzt: Vorgänger speichert, Ziel ist nicht <code>x0</code>, Ziel = meine Quelle</li>
-<li>Dann: ForwardA-MUX auf Bypass (z. B. <code>10</code>)</li>
+<li>Teilbedingung für EX/MEM-Forwarding an rs1:</li>
+<li><code>EX/MEM</code> gültig, <code>RegWrite = 1</code>, <code>rd</code> ungleich <code>x0</code>, <code>rd</code> gleich benutztes <code>rs1</code></li>
+<li>Das Ergebnis muss schon der Nutzdatenwert sein, nicht nur eine Load-Adresse</li>
+<li>Bei zwei Treffern hat der jüngere Produzent Vorrang</li>
+<li>Analog für <code>rs2</code> und für den MEM/WB-Pfad</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb15-1"><a aria-label="1"></a><span class="cf">if</span> <span class="op">(</span>vorheriger_schreibt <span class="op">&amp;&amp;</span> sein_ziel <span class="op">==</span> meine_quelle<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb15-2"><a aria-label="2"></a>    aktiviere_abkuerzung<span class="op">();</span></span>
-<span id="cb15-3"><a aria-label="3"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb14-1"><a aria-label="1"></a><span class="cf">if</span> <span class="op">(</span>vorheriger_schreibt <span class="op">&amp;&amp;</span> sein_ziel <span class="op">==</span> meine_quelle<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb14-2"><a aria-label="2"></a>    aktiviere_abkuerzung<span class="op">();</span></span>
+<span id="cb14-3"><a aria-label="3"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Großes AND: RegWrite, nicht x0, rd == rs1. Dann Weiche umlegen. Analog für rs2.</p>
+<p>Die EX/MEM-Teilbedingung lautet: der Produzent ist gültig, RegWrite ist 1, rd ist nicht x0, und rd entspricht der benutzten Quelle. Zusätzlich muss der Wert schon das Nutzdatum sein. Ein Load in EX/MEM erfüllt das für das Datum nicht. Der MEM/WB-Pfad prüft dasselbe für den Write-Back-Wert. Der jüngere Treffer hat Vorrang. Ein noch nicht bereiter neuerer Load darf keinen alten Wert durchlassen. Diese Logik ist Forwarding, nicht die spätere Stall-Erkennung. Die Lehrselektoren sind 00, 10 und 01.</p>
+<p>Kontrollfrage: Darf x0 einen Bypass auslösen? Nein. Die MUX-Struktur setzt die Wahl um.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1495,15 +1558,14 @@ graph LR
 <section id="mux-erweiterung-an-der-alu" class="slide level2">
 <h2>MUX-Erweiterung an der ALU</h2>
 <ul>
-<li>Die 2-zu-1-MUX aus Einheit 5 reichen nicht mehr</li>
-<li>Upgrade auf 3-zu-1-Multiplexer</li>
-<li>Eingang 00: Register File / ImmGen</li>
-<li>Eingang 10: Bypass aus EX/MEM (ALU-frisch)</li>
-<li>Eingang 01: Bypass aus MEM/WB</li>
-<li>Forwarding Unit steuert die Herkunft (2-Bit-Steuersignal)</li>
+<li>Forwarding wählt den Registerdatenwert; <code>ALUSrc</code> wählt danach Register oder Immediate</li>
+<li>Lehrcodes: <code>00</code> aus ID/EX, <code>10</code> aus EX/MEM, <code>01</code> aus MEM/WB; <code>11</code> unbenutzt</li>
+<li>Diese Codes sind keine Ripes-Portwerte</li>
+<li>Ein Store-Datum darf nicht durch den Immediate ersetzt werden</li>
 </ul>
 <aside class="notes">
-<p>Drei Pfade, 2-Bit-Steuerung. Die ALU weiß nicht mehr nur „Register oder Immediate“, sondern auch „welcher Bypass“.</p>
+<p>Forwarding wählt zwischen Registerwerten. ALUSrc wählt danach, ob der zweite ALU-Eingang der weitergeleitete Registerwert oder der Immediate ist. 00 ist der aus ID/EX übernommene Registerwert, nicht pauschal Immediate. 10 ist EX/MEM, 01 ist MEM/WB. 11 ist unbenutzt. Das ist eine Lehrkonvention, kein Ripes-Code. Store-Daten bleiben ein eigener Pfad.</p>
+<p>Kontrollfrage: Ersetzt Forwarding den Immediate von addi? Nein. Der add/sub-Trace prüft den Pfad.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1557,7 +1619,8 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p><code>add</code> fertig in EX (Takt 3); in Takt 4 reicht Forwarding das Paket in die EX von <code>sub</code>. Hazard besiegt.</p>
+<p>Rechtzeitige Weiterleitung ersetzt die Metapher Zeitreise. Am Ende von Takt 3 liegt 10 in EX/MEM. In Takt 4 nutzt sub diesen Wert und rechnet 6. Der alte ID-Wert wird ersetzt. Es entsteht keine zusätzliche Bubble. Beide Befehle schreiben später trotzdem ihre Register.</p>
+<p>Kontrollfrage: In welchem Takt nutzt sub die 10? In Takt 4, in EX. Der Gewinn gilt nur unter Voraussetzungen, deren Grenze folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1578,11 +1641,12 @@ graph LR
 <li>Zusammenspiel aus Datenpfad-Erweiterung und Kontroll-Logik</li>
 <li>Aber: Ist Forwarding allmächtig?</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb16-1"><a aria-label="1"></a>Performance-Check:</span>
-<span id="cb16-2"><a aria-label="2"></a>Bei RAW von Rechenbefehlen: 0 Taktzyklen Verlust.</span>
-<span id="cb16-3"><a aria-label="3"></a>CPI bleibt ~1.0</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb15-1"><a aria-label="1"></a>Performance-Check:</span>
+<span id="cb15-2"><a aria-label="2"></a>Bei RAW von Rechenbefehlen: 0 Taktzyklen Verlust.</span>
+<span id="cb15-3"><a aria-label="3"></a>CPI bleibt ~1.0</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Triumph bei ALU-zu-ALU-Abhängigkeiten. Es gibt jedoch einen Befehl, bei dem die Physik im Weg steht.</p>
+<p>Null zusätzliche Verlustzyklen gelten für die gezeigte ALU-zu-ALU-Abhängigkeit mit vorhandenem Forwarding. Neue Multiplexer können den kritischen Pfad verlängern. CPI nahe 1 bleibt eine stationäre Aussage. Die endliche Füllung zählt weiterhin. Softwaretransparenz bedeutet gleiche ISA-Ergebnisse, nicht unsichtbare Elektrik.</p>
+<p>Kontrollfrage: Ist der Takt durch Forwarding garantiert gleich kurz? Nein. Loads erzeugen ihr Ergebnis später.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1598,10 +1662,23 @@ graph LR
 <section>
 <section id="load-use-hazards-stalls" class="title-slide slide level1 center">
 <h1>Load-Use Hazards &amp; Stalls</h1>
-
+<aside class="notes">
+<p>Ein Load-Use-Hazard entsteht, wenn die nächste Instruktion das geladene Wort schon in EX braucht. Hazard ist die Abhängigkeit, Stall der Wartezyklus. Das Datum ist nach MEM verfügbar, nicht schon nach der Adressrechnung. Die offene Frage ist, ob die früheste Weiterleitung rechtzeitig kommt.</p>
+<p>Kontrollfrage: Ist die Load-Adresse schon das Wort? Nein. Die Lösungen werden benannt.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
-<section id="grenzen-der-zeitreise" class="slide level2">
-<h2>Grenzen der Zeitreise</h2>
+<section id="grenzen-des-forwarding" class="slide level2">
+<h2>Grenzen des Forwarding</h2>
 <ul>
 <li>Gefährlichster Datenkonflikt: Load-Use Hazard</li>
 <li>RAM-Latenz sabotiert das Fließband</li>
@@ -1628,7 +1705,8 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Phase 4: Forwarding scheitert, wenn Daten erst aus dem RAM kommen. Stall und Bubble — und Hilfe vom Compiler.</p>
+<p>Die bisherigen Pfade reichen nicht, weil das Wort im Modell erst nach MEM vorliegt. Eine Bubble ist ein ungültiger Pipeline-Eintrag, keine aus dem Programm geholte NOP. Ein Compiler übersetzt Quelltext. Instruction Scheduling ordnet zulässige Befehle um.</p>
+<p>Kontrollfrage: Ist eine Bubble eine addi-Instruktion aus dem Quelltext? Nein. Zuerst die zeitliche Voraussetzung des ALU-Forwardings.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1650,7 +1728,8 @@ graph TD
 <li>Frage: Welcher Befehl liefert das Ergebnis erst nach EX?</li>
 </ul>
 <aside class="notes">
-<p>Bei <code>lw</code> rechnet die ALU nur die Adresse. Die Nutzdaten liegen noch im Arbeitsspeicher.</p>
+<p>Bereit heißt: der Wert steht am richtigen Pfad rechtzeitig für die Verbraucherberechnung. Ein add hat sein Ergebnis am Ende von EX. Ein lw hat in EX nur die Adresse und das Wort am Ende von MEM. Adresse und Speicherwort bleiben getrennt.</p>
+<p>Kontrollfrage: Kann EX/MEM eines Loads das Wort liefern? Nein, dort liegt die Adresse. Das folgende add zeigt die Lücke.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1671,10 +1750,11 @@ graph TD
 <li>Daten eines <code>lw</code> erst am Ende von MEM (Stufe 4)</li>
 <li>Der RAM ist träge</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb17-1"><a aria-label="1"></a>lw  t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span>    <span class="op">#</span> Daten erst in MEM <span class="op">(</span>Takt <span class="dv">4</span><span class="op">)</span></span>
-<span id="cb17-2"><a aria-label="2"></a><span class="bu">add</span> t3<span class="op">,</span> t0<span class="op">,</span> t2   <span class="op">#</span> braucht Daten schon in EX <span class="op">(</span>Takt <span class="dv">4</span><span class="op">)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb16-1"><a aria-label="1"></a>lw  t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span>    <span class="op">#</span> Daten erst in MEM <span class="op">(</span>Takt <span class="dv">4</span><span class="op">)</span></span>
+<span id="cb16-2"><a aria-label="2"></a><span class="bu">add</span> t3<span class="op">,</span> t0<span class="op">,</span> t2   <span class="op">#</span> braucht Daten schon in EX <span class="op">(</span>Takt <span class="dv">4</span><span class="op">)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>In Takt 4: <code>lw</code> in MEM liefert erst am Taktende; <code>add</code> in EX braucht die Daten sofort.</p>
+<p>s1 zeigt auf ein Wort mit dem Lehrwert 42, t2 ist 8. lw t0, 0(s1) und add t3, t0, t2 sollen 50 ergeben. Das Wort liegt im einzykligen MEM erst am Ende von Takt 4 bereit. Der kurze EX-Takt der folgenden Addition kann es nicht mehr verarbeiten. Ein korrektes Modell wartet. Der Code ist nicht fatal.</p>
+<p>Kontrollfrage: Welches Ergebnis ist richtig? 50. Das Raster zeigt die fehlende Zeit.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1728,7 +1808,8 @@ graph TD
 </tbody>
 </table>
 <aside class="notes">
-<p>Paradoxon in Takt 4: Produzent fertig erst am Ende, Konsument braucht sie am Anfang.</p>
+<p>Der ungehaltene Plan ist ein Fehlerfall, keine korrekte Ausführung. In Takt 4 endet das Load-MEM, während die Addition schon in EX rechnen müsste. Anfang und Ende sind vereinfachte Stufengrenzen. Es muss genug Zeit bis zur Übernahme bleiben. Eine gemeinsame MEM-und-EX-Rechnung im selben kurzen Takt wäre ein anderer, längerer kritischer Pfad.</p>
+<p>Kontrollfrage: Darf add in Takt 4 das Wort nutzen? In diesem Modell nein. Die nächste Folie grenzt die Zeitreise ein.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1766,7 +1847,8 @@ graph RL
 </div>
 </div>
 <aside class="notes">
-<p>Strom fließt nur vorwärts in der Zeit. Die Daten existieren in diesem Moment noch nicht in der CPU.</p>
+<p>Ein kombinatorischer Weg vom MEM-Ausgang zum EX-Eingang im selben Takt ist nicht grundsätzlich unmöglich. In diesem Timing reicht die Restzeit nicht. Ein längerer Takt wäre ein anderer Entwurf. Der Balken zeigt Datenbereitstellung am Ende von MEM und die nötige Rechen- und Setup-Zeit. Es fließen Signalzustände, kein Strom rückwärts.</p>
+<p>Kontrollfrage: Verbietet die Physik jeden MEM-nach-EX-Draht? Nein. Ein Wartezyklus hält den kurzen Takt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1787,9 +1869,10 @@ graph RL
 <li>Abhängiger Befehl wird in ID eingefroren (kein Wechsel nach EX)</li>
 <li>PC ebenfalls eingefroren (kein neuer Fetch)</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb18-1"><a aria-label="1"></a>Erzwungener STALL = Kaffeepause-Takt fuer das Fließband</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb17-1"><a aria-label="1"></a>Erzwungener STALL = Kaffeepause-Takt fuer das Fließband</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Notbremse: Produzent darf Daten holen, Konsument und Fetch stehen still.</p>
+<p>Drei Aktionen: den PC halten, IF/ID halten und ID/EX mit einer Bubble belegen. Der Load läuft über EX/MEM und MEM/WB weiter. Der abhängige Befehl bleibt in ID. Kein neuer Fetch übernimmt eine neue Befehlsposition. Am selben PC kann weiter ein Wert anliegen.</p>
+<p>Kontrollfrage: Wird der Load eingefroren? Nein. Der leere EX-Platz heißt Bubble.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1811,7 +1894,8 @@ graph RL
 <li>Bubble wandert EX → MEM → WB und tut nichts</li>
 </ul>
 <aside class="notes">
-<p>Luftblase statt Chaos: Die Stufe bekommt Arbeit, die aber Register und RAM nicht anfasst.</p>
+<p>Eine Bubble ist ein ungültiger oder wirkungsloser Pipeline-Eintrag. Der abhängige Befehl bleibt in ID erhalten. Im Trace liegt die Bubble in EX in Takt 4, in MEM in Takt 5 und in WB in Takt 6. Eine Anzeige als nop beweist keine aus dem Programm geholte NOP. Eine echte NOP ist addi x0, x0, 0 und schreitet im PC fort.</p>
+<p>Kontrollfrage: Verschwindet add durch die Bubble? Nein, es bleibt in ID. Die Nebenwirkungen werden unterdrückt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1832,11 +1916,12 @@ graph RL
 <li>Befehl darf nichts Speichern/Schreiben</li>
 <li>Hardware „schläft“ einen Takt</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb19-1"><a aria-label="1"></a>NOP in Assembler (Beispiel):</span>
-<span id="cb19-2"><a aria-label="2"></a>addi x0, x0, 0</span>
-<span id="cb19-3"><a aria-label="3"></a># sinnlos, ungefährlich, wirkungslos = Bubble</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb18-1"><a aria-label="1"></a>NOP in Assembler (Beispiel):</span>
+<span id="cb18-2"><a aria-label="2"></a>addi x0, x0, 0</span>
+<span id="cb18-3"><a aria-label="3"></a># sinnlos, ungefährlich, wirkungslos = Bubble</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>NOP = alle sensiblen Steuersignale auf Null. ALU-Müll prallt am geschlossenen Register File ab.</p>
+<p>Eine Hardware-Bubble kann valid gleich 0 nutzen oder Schreib-, Zugriffs- und Sprungwirkungen abschalten. Die echte NOP addi x0, x0, 0 hat das Wort 0x00000013. Ihr normaler addi-Decoder kann RegWrite setzen. x0 macht den Schreibversuch für Registerdaten wirkungslos. PC und Zähler laufen weiter. Deshalb bedeuten nicht alle Steuersignale null. Eine Bubble schläft nicht und spart nicht automatisch Strom.</p>
+<p>Kontrollfrage: Ist NOP gleich alle Signale null? Nein. Der Stall-Trace prüft die Wirkung.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1893,7 +1978,8 @@ graph RL
 </tbody>
 </table>
 <aside class="notes">
-<p>In Takt 5: <code>add</code> in EX, <code>lw</code> hat MEM beendet — Forwarding reicht die RAM-Daten rechtzeitig.</p>
+<p>lw liegt in IF1, ID2, EX3, MEM4, WB5. add liegt in IF2, ID3, gehalten in ID4, EX5, MEM6, WB7. Die Bubble liegt in EX4, MEM5 und WB6. In Takt 5 kommt 42 aus MEM/WB an die EX-Operanden. Mit t2 gleich 8 entsteht 50. t3 übernimmt 50 erst in seinem WB. Der Pfad ist die Weiterleitung nach dem Speicherzyklus, nicht eine beliebige Gleichzeitigkeit.</p>
+<p>Kontrollfrage: In welchem Takt rechnet add? In Takt 5. Der Zusatzzyklus verändert den CPI.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1914,9 +2000,10 @@ graph RL
 <li>Viele Arrays laden + sofort verrechnen → viele Blasen</li>
 <li>Hardware am Limit — Rettung durch Software</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb20-1"><a aria-label="1"></a>Jeder Load-Use Hazard: typisch 1 Takt Penalty</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb19-1"><a aria-label="1"></a>Jeder Load-Use Hazard: typisch 1 Takt Penalty</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Forwarding und Stalling sind ausgereizt. Der Compiler muss helfen.</p>
+<p>Ein zusätzlicher Takt gilt für die unmittelbar folgende EX-Nutzung bei einzykligen Speicherzugriffen und passenden Bypässen. Ein Cache-Miss kann länger dauern. Der CPI-Zuschlag ist der dynamische Load-Use-Anteil, hier zum Beispiel 0,10, also plus 0,10. Die Füllung bleibt separat. Ein Compiler findet nicht immer unabhängige Arbeit.</p>
+<p>Kontrollfrage: Kostet jeder Load einen Stall? Nur wenn der Wert sofort in EX gebraucht wird. Scheduling ordnet vorhandene Arbeit um.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1956,7 +2043,8 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Der Compiler kennt die Pipeline und verschiebt unabhängige Arbeit in die Hazard-Lücke.</p>
+<p>Ein Compiler übersetzt Quellcode. Instruction Scheduling verschiebt bereits nötige und zulässige Befehle. Der verschobene Befehl darf Register, Speicher und Kontrollfluss der abhängigen Rechnung nicht zerstören. Produzent, Konsument und eine unabhängige Operation bilden die minimale Abhängigkeit.</p>
+<p>Kontrollfrage: Darf jede beliebige Instruktion in die Lücke? Nein. Ein konkretes Beispiel folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1977,12 +2065,13 @@ graph TD
 <li>Gut (0 Bubbles):</li>
 <li><code>lw</code> / <code>sub</code> (Lücke füllen) / <code>add</code> (Daten haben Zeit)</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb21-1"><a aria-label="1"></a># Bubble durch produktive Arbeit ersetzt<span class="op">:</span></span>
-<span id="cb21-2"><a aria-label="2"></a>lw  t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
-<span id="cb21-3"><a aria-label="3"></a><span class="bu">sub</span> t4<span class="op">,</span> t5<span class="op">,</span> t6    <span class="op">#</span> unabhaengig<span class="op">,</span> fuellt die Luecke</span>
-<span id="cb21-4"><a aria-label="4"></a><span class="bu">add</span> t3<span class="op">,</span> t0<span class="op">,</span> t2    <span class="op">#</span> Forwarding greift</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb20-1"><a aria-label="1"></a># Bubble durch produktive Arbeit ersetzt<span class="op">:</span></span>
+<span id="cb20-2"><a aria-label="2"></a>lw  t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
+<span id="cb20-3"><a aria-label="3"></a><span class="bu">sub</span> t4<span class="op">,</span> t5<span class="op">,</span> t6    <span class="op">#</span> unabhaengig<span class="op">,</span> fuellt die Luecke</span>
+<span id="cb20-4"><a aria-label="4"></a><span class="bu">add</span> t3<span class="op">,</span> t0<span class="op">,</span> t2    <span class="op">#</span> Forwarding greift</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Dasselbe Programm, ein Takt schneller: Scheduling ersetzt die leere Bubble.</p>
+<p>Beide Folgen enthalten dieselben lw, add und die unabhängige Operation, nur in anderer Reihenfolge. Die unabhängige Operation darf die Load-Adresse und die add-Operanden nicht überschreiben. Im Modell hat die erste Folge einen Stall und die zweite keinen. Der Unterschied ist ein Zyklus, weil die Instruktionsmenge gleich bleibt.</p>
+<p>Kontrollfrage: Ist eine neue addi-Zeile derselbe Vergleich? Nein. Ein Compiler kann solche Entscheidungen unter Bedingungen automatisieren.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2004,7 +2093,8 @@ graph TD
 <li>Hardware und Software müssen Hand in Hand arbeiten</li>
 </ul>
 <aside class="notes">
-<p>Für Menschen Chaos, für die Pipeline ein choreografierter Tanz um RAM-Latenzen.</p>
+<p>GCC ist die GNU Compiler Collection. Scheduling ist nicht exklusiv an die Option -O3 gebunden. Zielarchitektur und Optimierungen entscheiden. Es entsteht nicht automatisch stallfreier Code. Die beobachtbare Wirkung muss erhalten bleiben. Ohne einen echten Compilerlauf gibt es keine gemessene Verbesserung.</p>
+<p>Kontrollfrage: Garantiert -O3 keine Bubbles? Nein. Auch korrekte Daten lösen nicht die Frage nach dem nächsten PC.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2020,7 +2110,20 @@ graph TD
 <section>
 <section id="control-hazards-branch-prediction" class="title-slide slide level1 center">
 <h1>Control Hazards &amp; Branch Prediction</h1>
-
+<aside class="notes">
+<p>Ein Control Hazard ist die Unsicherheit über den korrekten nächsten Kontrollfluss. Branch Prediction ist die Vorhersage des Sprungverhaltens. Ein Branch kann zusätzlich Datenabhängigkeiten haben. Die Abschnitte sind nicht isoliert.</p>
+<p>Kontrollfrage: Ist jeder Branch nur ein Datenproblem? Nein. Die bereits geholten jüngeren Befehle motivieren die Frage.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="der-endgegner-des-fließbands" class="slide level2">
 <h2>Der Endgegner des Fließbands</h2>
@@ -2050,7 +2153,8 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Phase 5 beginnt: Data Hazards gemeistert. Control Hazards: <code>beq</code> wirft den Kontrollfluss um, während die Pipeline schon falschen Code geladen hat.</p>
+<p>Der PC lügt nicht. Der Fetch arbeitet, bevor das Branch-Ergebnis bekannt ist. Flush verwirft jüngere Instruktionen eines falschen Pfads. Bereits bestätigte richtige Ergebnisse bleiben. Ein Branch und zwei Nachfolgebefehle zeigen das konkreter als eine Symbolkette. Vorhersage und Korrektur gehören zusammen.</p>
+<p>Kontrollfrage: Löscht Flush jeden älteren Befehl? Nein. Der zeitliche Informationsmangel folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2072,11 +2176,12 @@ graph TD
 <li>Pipeline: Fließband steht niemals still</li>
 <li>Während <code>beq</code> durch die ersten Stufen kriecht, muss der PC in jedem Takt die nächste Fetch-Adresse wählen</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb22-1"><a aria-label="1"></a>Fundamentales Problem:</span>
-<span id="cb22-2"><a aria-label="2"></a>Der PC muss wissen, wo er weitergeht (Fetch), BEVOR</span>
-<span id="cb22-3"><a aria-label="3"></a>die CPU verstanden hat, ob sie springen muss!</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb21-1"><a aria-label="1"></a>Fundamentales Problem:</span>
+<span id="cb21-2"><a aria-label="2"></a>Der PC muss wissen, wo er weitergeht (Fetch), BEVOR</span>
+<span id="cb21-3"><a aria-label="3"></a>die CPU verstanden hat, ob sie springen muss!</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Control Hazard: Der PC zieht stur den nächsten Befehl, ohne zu wissen, dass in der Röhre ein Sprung steckt, der die Route ändert.</p>
+<p>beq bedeutet Branch if Equal. Der PC ist die Befehlsadresse. Das Fließband steht bei Stalls sehr wohl. Solange kein Halt oder Redirect greift, holt das Modell sequenzielle Folgeinstruktionen. Es fehlen Bedingung und Zieladresse. Die Branch-Erkennung allein genügt nicht. Der PC der Branch-Instruktion muss bis zur Entscheidung verfügbar bleiben.</p>
+<p>Kontrollfrage: Reicht es zu wissen, dass ein Branch vorliegt? Nein. Die Entscheidung liegt im EX-Modell in einem bestimmten Takt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2097,13 +2202,14 @@ graph TD
 <li>Zero-Flag erst am Ende von Takt 3</li>
 <li>AND vor dem PC gibt die Zieladresse erst zu Beginn von Takt 4 frei</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb23-1"><a aria-label="1"></a>beq-Latenz:</span>
-<span id="cb23-2"><a aria-label="2"></a>Takt 1: IF</span>
-<span id="cb23-3"><a aria-label="3"></a>Takt 2: ID (Opcode bekannt, Bedingung noch unklar)</span>
-<span id="cb23-4"><a aria-label="4"></a>Takt 3: EX (ALU rechnet, Zero am Ende)</span>
-<span id="cb23-5"><a aria-label="5"></a>Takt 4: PC kann umschalten</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb22-1"><a aria-label="1"></a>beq-Latenz:</span>
+<span id="cb22-2"><a aria-label="2"></a>Takt 1: IF</span>
+<span id="cb22-3"><a aria-label="3"></a>Takt 2: ID (Opcode bekannt, Bedingung noch unklar)</span>
+<span id="cb22-4"><a aria-label="4"></a>Takt 3: EX (ALU rechnet, Zero am Ende)</span>
+<span id="cb22-5"><a aria-label="5"></a>Takt 4: PC kann umschalten</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>In ID weiß die CPU nur, dass es ein Branch ist — nicht, ob die Bedingung gilt. Die ALU in EX entscheidet.</p>
+<p>Im EX-Modell werden Bedingung und Ziel während Takt 3 berechnet. An der Grenze zu Takt 4 kann der neue PC wirken. Ein AND-Gatter liefert den Auswahlentscheid, nicht selbst die Zieladresse. Zero ist ein internes Gleichheitssignal dieser Variante, kein ISA-Flag. In Ripes müssen Vergleichseinheit und Stufe geprüft werden. Diese Fassung hat Ripes nicht ausgeführt.</p>
+<p>Kontrollfrage: Liefert Zero die Zieladresse? Nein. Welche jüngeren Befehle sind dann falsch?</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2137,30 +2243,38 @@ graph TD
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>beq t0, t1, Label</code></td>
+<td><code>beq</code></td>
 <td>IF</td>
 <td>ID</td>
 <td>EX</td>
 <td>MEM</td>
 </tr>
 <tr class="even">
-<td>Befehl bei <span class="math inline">\(PC+4\)</span></td>
+<td>Folge bei <span class="math inline">\(PC+4\)</span></td>
 <td></td>
 <td>IF</td>
 <td>ID</td>
-<td>EX</td>
+<td>ungültig</td>
 </tr>
 <tr class="odd">
-<td>Befehl bei <span class="math inline">\(PC+8\)</span></td>
+<td>Folge bei <span class="math inline">\(PC+8\)</span></td>
 <td></td>
 <td></td>
 <td>IF</td>
-<td>ID</td>
+<td>ungültig</td>
+</tr>
+<tr class="even">
+<td>Zielinstruktion</td>
+<td></td>
+<td></td>
+<td></td>
+<td>IF</td>
 </tr>
 </tbody>
 </table>
 <aside class="notes">
-<p>Bei Branch Taken sitzen ahnungslose Folgebefehle in IF/ID — sie gehören nicht mehr zum Ablauf.</p>
+<p>Bei einem genommenen EX-Branch werden die bis Takt 3 geholten Folgen an PC plus 4 und PC plus 8 an der Grenze zu Takt 4 ungültig. Sie dürfen in Takt 4 nicht als gültige EX- oder ID-Arbeit erscheinen. In Takt 4 beginnt die Zielinstruktion in IF. Branch-PC, Fetch-PC und Zieladresse bleiben getrennte Werte. Der Offset wird zur Adresse der Branch-Instruktion addiert, nicht zu einem schon weitergelaufenen Fetch-PC.</p>
+<p>Kontrollfrage: Steht die Folge in Takt 4 noch gültig in EX? Nein. Die Flush-Aktionen folgen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2183,7 +2297,8 @@ graph TD
 <li>PC schwenkt auf Label; Fetch startet neu</li>
 </ul>
 <aside class="notes">
-<p>Flushing spült die Pipeline. System überlebt, Preis ist hoch.</p>
+<p>Taken bedeutet genommen. Flush invalidiert im EX-Modell IF/ID und ID/EX und setzt den Ziel-PC. Ältere Inhalte in MEM und WB bleiben. Steuersignale nur in IF und ID auf null zu setzen, beschreibt die Register nicht genau genug. Verworfene Einträge dürfen nicht schreiben und nicht noch einmal umlenken. Ein Absturz folgt daraus nicht automatisch.</p>
+<p>Kontrollfrage: Wird der Branch selbst gelöscht? Nein. Die leeren Plätze ergeben die Penalty.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2204,10 +2319,11 @@ graph TD
 <li>Ständiges Flushen zerstört den Throughput</li>
 <li>Nächster Schritt: Penalty in Hardware reduzieren</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb24-1"><a aria-label="1"></a>Ein Fließband ist nur schnell, wenn es nicht stoppt.</span>
-<span id="cb24-2"><a aria-label="2"></a>Jeder Flush ist ein Riss im Getriebe.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb23-1"><a aria-label="1"></a>Ein Fließband ist nur schnell, wenn es nicht stoppt.</span>
+<span id="cb23-2"><a aria-label="2"></a>Jeder Flush ist ein Riss im Getriebe.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Zwei Takte Penalty sind die Folge der Auflösung in EX. Daraus folgt kein fester Prozentverlust, solange Branch-Häufigkeit und Programm nicht gegeben sind.</p>
+<p>Zwei zusätzliche Takte gelten für einen genommenen Branch unter der Annahme Not Taken und EX-Auflösung. Nicht jeder Branch und nicht jede CPU hat diese Penalty. Ein illustratives Beispiel: Branch-Anteil 0,20, Taken-Anteil 0,60, Penalty 2. Der Zuschlag ist 0,24, CPI etwa 1,24. Bei einem Predictor zählt die Fehlvorhersagerate. Calls sind keine bedingten Branches. 15 bis 20 Prozent sind kein gemessener Kurswert.</p>
+<p>Kontrollfrage: Kostet ein nicht genommener Branch diese zwei Takte? In diesem Modell nein. Früheres Entscheiden kann den Verlust verkleinern.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2248,7 +2364,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Nicht auf die schwere ALU in EX warten: XOR + NOR in ID (Gleichheit, wenn alle Bit-XORs null sind). Ein Flush statt zwei — Lehrbuch-Standard zur Penalty-Reduktion. In realen CPUs ist Early Branch Resolve oft komplexer (eigene Vergleichslogik, Adressberechnung parallel, teils mit Prediction gekoppelt) — das XOR+NOR-Modell hier ist die didaktische Vereinfachung. Für tiefe Pipelines reicht selbst 1 Takt Penalty oft nicht; dort kommt Branch Prediction.</p>
+<p>XOR ist exklusives Oder, NOR das negierte Oder. Bitweises XOR und danach NOR kann Gleichheit prüfen. Für bne wird die Gleichheit invertiert. Ein ID-Entscheid braucht aktuelle Operanden, eine frühe Zielrechnung und genug Taktzeit. Forwarding in EX kommt für einen schon in ID benötigten Wert zu spät. Neue Stalls können entstehen. Die Penalty von einem Takt gilt nur, wenn Operanden und Ziel rechtzeitig bereitstehen.</p>
+<p>Kontrollfrage: Genügt der Komparator allein? Nein. Bei längerer Unsicherheit wird vorhergesagt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2270,7 +2387,8 @@ graph LR
 <li>Prozessor rät spekulativ, wohin es geht, und lädt Folge-Befehle</li>
 </ul>
 <aside class="notes">
-<p>Königsklasse: spekulativ weiterarbeiten, bevor die Bedingung bekannt ist.</p>
+<p>Branch Prediction ist die Sprungvorhersage. Richtung und Zielinformation sind verschieden. Tiefe Pipelines können höhere Fehlkosten haben. Die Penalty ist nicht einfach die Stufenzahl. Spekulativer Fetch wird geprüft und korrigiert. Herstellerfrequenzen ohne Quelle bleiben weg. Ultimativ ist diese Technik nicht.</p>
+<p>Kontrollfrage: Liefert eine Richtungsvorhersage die Zieladresse? Nein. Die einfachste Vorhersage ist der sequenzielle Pfad.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2291,11 +2409,12 @@ graph LR
 <li>Richtig geraten: null Taktverlust</li>
 <li>Falsch: Flush — im Schnitt oft noch Gewinn</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb25-1"><a aria-label="1"></a>Assume Not Taken:</span>
-<span id="cb25-2"><a aria-label="2"></a>Nehmen Sie an, der Sprung werde nicht genommen,</span>
-<span id="cb25-3"><a aria-label="3"></a>bis der Zero-Ausgang des Vergleichers Sie eines Besseren belehrt.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb24-1"><a aria-label="1"></a>Assume Not Taken:</span>
+<span id="cb24-2"><a aria-label="2"></a>Nehmen Sie an, der Sprung werde nicht genommen,</span>
+<span id="cb24-3"><a aria-label="3"></a>bis der Zero-Ausgang des Vergleichers Sie eines Besseren belehrt.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Naive, aber wirksame Strategie, wenn Sprünge selten genommen werden.</p>
+<p>Assume Not Taken nimmt PC plus 4 an, solange die C-Erweiterung aus ist. Richtig vorhergesagt bedeutet keine zusätzliche Control-Recovery in diesem Modell. Datenhazards können trotzdem warten. Bei bne ist Nichtnahme nicht einfach Zero gleich 0. Der Gewinn hängt von Taken-Rate und Penalty ab.</p>
+<p>Kontrollfrage: Ist Not Taken immer der häufigere Fall? Das ist nicht belegt. Eine Richtungsheuristik nutzt Schleifen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2311,9 +2430,9 @@ graph LR
 <section id="schleifen-vorhersage-heuristik" class="slide level2">
 <h2>Schleifen-Vorhersage (Heuristik)</h2>
 <ul>
-<li>Schleifen springen meist rückwärts (Taken)</li>
-<li>Schleifenende: einmal vorwärts raus (Not Taken)</li>
-<li>Heuristik:</li>
+<li>Schleifenbranch bleibt rückwärts gerichtet</li>
+<li>Neunmal genommen, einmal nicht genommen: dann Fall-through nach <span class="math inline">\(PC+4\)</span></li>
+<li>Das letzte Mal ist kein plötzlich vorwärts gerichteter Branch</li>
 <li>Zieladresse <span class="math inline">\(&lt;\)</span> PC <span class="math inline">\(\rightarrow\)</span> Prediction Taken (Schleife)</li>
 <li>Zieladresse <span class="math inline">\(&gt;\)</span> PC <span class="math inline">\(\rightarrow\)</span> Prediction Not Taken (If/Else)</li>
 </ul>
@@ -2337,7 +2456,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>For-Schleife: 999× zurück, 1× raus — Rückwärtssprung als Taken macht die Schleife fast penalty-frei.</p>
+<p>Backward Taken, Forward Not Taken ist eine Heuristik. Ein rückwärts gerichteter Countdown-Branch wird neunmal genommen und einmal nicht genommen. Beim letzten Mal fällt er nach PC plus 4 durch. Die Zieladresse bleibt rückwärts. Sie wird nur nicht verwendet. Ein Ziel kleiner als der PC sagt Taken vorher, ein größeres Not Taken. Ein Offset null braucht einen ausdrücklichen Default.</p>
+<p>Kontrollfrage: Wird der letzte Schleifenbranch vorwärts? Nein. Dynamische Vorhersage nutzt beobachtete Entscheidungen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2381,7 +2501,8 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p>Die CPU lernt Ihr Programm: Statistik in Flip-Flops, spekulativer Fetch auf das geratene Ziel. Unsere Tabelle zeigt die 1-Bit-Vereinfachung (letzte Aktion = Prediction). Vertiefung: in der Praxis oft 2-Bit-Saturating Counter (Zustände stark/schwach Taken bzw. Not Taken) — ein einzelner Fehlgriff kippt die Prediction nicht sofort, das dämpft Rauschen an Schleifenenden.</p>
+<p>BHT bedeutet Branch History Table. Der Anfangszustand muss genannt werden. Im Einbitmodell ist die letzte Entscheidung die nächste Vorhersage. Mehrere PCs können denselben Index belegen. Eine Folge Taken, Taken, Taken, Not Taken erzeugt beim letzten Schritt einen Fehler, wenn vorher Taken vorhergesagt wurde. Der Zweibitzähler hat 00 stark Not Taken, 01 schwach Not Taken, 10 schwach Taken und 11 stark Taken. Taken erhöht bis 3, Not Taken verringert bis 0. Das hohe Bit entscheidet. Ein Fehler kippt aus einem starken Zustand zuerst nur die Stärke. Aus einem schwachen Zustand kann ein Ereignis die Richtung wechseln. Die Tabelle liefert keine Zieladresse. Ein BTB, Branch Target Buffer, wäre eine ergänzende Zielinformation.</p>
+<p>Kontrollfrage: Kippt ein einzelner Fehler nie die Vorhersage? Nur nicht aus einem starken Zustand. Die Bestätigung der vorläufigen Arbeit folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2402,10 +2523,11 @@ graph LR
 <li>Fließband führt Code aus, bevor die Legalität feststeht</li>
 <li>Trivia: Spectre/Meltdown hängen an Spekulation und Caches</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb26-1"><a aria-label="1"></a>Ohne Branch Prediction würde ein 5-GHz-Prozessor</span>
-<span id="cb26-2"><a aria-label="2"></a>durch ständiges Flushen nur einen Bruchteil leisten.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb25-1"><a aria-label="1"></a>Ohne Branch Prediction würde ein 5-GHz-Prozessor</span>
+<span id="cb25-2"><a aria-label="2"></a>durch ständiges Flushen nur einen Bruchteil leisten.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Ohne spekulatives Raten würden tiefe Pipelines ständig stottern.</p>
+<p>Spekulativ heißt: vorläufig ausführen, bevor der richtige Kontrollfluss feststeht, nicht bevor die Legalität eines Opcodes feststeht. Vorläufige Ergebnisse werden bestätigt oder verworfen. Out-of-order-Ausführung liegt außerhalb dieses Fünfstufenmodells. Falsche Pfade dürfen den Architekturzustand nicht bestätigen. Cacheinhalte können trotzdem bleiben. Spectre und Meltdown sind eine optionale Einordnung und nicht dieses Labor. Eine 5-Gigahertz-Aussage ohne Messung bleibt weg.</p>
+<p>Kontrollfrage: Darf ein verworfener Store den Speicher ändern? Als bestätigte Wirkung nein. Ripes zeigt die einfachen Hazards, nicht automatisch diese Predictor-Architektur.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2421,7 +2543,20 @@ graph LR
 <section>
 <section id="praxis-hazards-live-in-ripes" class="title-slide slide level1 center">
 <h1>Praxis: Hazards live in Ripes</h1>
-
+<aside class="notes">
+<p>Ripes ist ein RISC-V-Lehrsimulator. Die Zeitmodelle sind Vorhersagen für eine konkrete Konfiguration. Drei Ziele sind Forwarding, Load-Use-Stall und Branch-Flush. Eine dynamische BHT wird nicht ungeprüft vorausgesetzt.</p>
+<p>Kontrollfrage: Zeigt jede Ripes-Version eine BHT? Das ist nicht belegt. Der Arbeitsablauf folgt.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="vom-papier-in-den-simulator" class="slide level2">
 <h2>Vom Papier in den Simulator</h2>
@@ -2432,7 +2567,8 @@ graph LR
 <li>Flushing bei Schleifen erleben</li>
 </ul>
 <aside class="notes">
-<p>Single-Cycle beiseitelegen, 5-Stage laden: Forwarding, Stalls und Flushes in Farbe.</p>
+<p>Version, Prozessor und Layout gehören zu jeder Beobachtung. Zuerst die erwartete Stufenbelegung, dann Portwerte. Farben ergänzen Zahlen und Gültigkeit. Zwischen Versuchen wird zurückgesetzt. Eine Branch-Penalty stammt aus dem gewählten Modell, nicht ungeprüft aus dem Lehrdiagramm. Diese Fassung hat die Oberfläche nicht ausgeführt.</p>
+<p>Kontrollfrage: Beweist eine Farbe den Bypass? Nein. Die Modellwahl hat Folgen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2457,7 +2593,8 @@ graph LR
 <li>Processor-Tab: Datenpfad hat sich radikal verändert</li>
 </ul>
 <aside class="notes">
-<p>Für die Aufgaben: Standard-5-Stage mit Forwarding und Bubbles.</p>
+<p>Das Standardmodell ist die fünfstufige RV32-Pipeline mit Forwarding und Hazard-Erkennung, C-Erweiterung aus. Extended zeigt mehr Steuerung. Ein Modell ohne Forwarding, aber mit Hazard-Erkennung, kann länger warten und trotzdem rechnen. Ohne ausreichende Behandlung sind falsche Ergebnisse ein Merkmal dieser Variante, kein Fehler der Standardkonfiguration. Die Menüposition ist versionsabhängig.</p>
+<p>Kontrollfrage: Darf man die Variante ohne Hazard-Erkennung als Normalfall nehmen? Nein. Register und Steuerblöcke werden identifiziert.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2502,7 +2639,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Dicke Mauern = Pipeline-Register. ALU-MUX mit mehr Eingängen = Bypass aus MEM/WB.</p>
+<p>IF/ID, ID/EX, EX/MEM und MEM/WB sind die vier Grenzen. Die Forwarding Unit wählt Ergebnisse. Die Hazard Detection Unit erkennt nötige Wartebedingungen. Beispielports sind rd, RegWrite, der Weiterleitungswert und Hold oder Flush. Nicht jede Rückleitung ist MEM/WB. Ohne Screenshot bleibt dies ein Lehrdiagramm. Ein UI-Test liegt nicht vor.</p>
+<p>Kontrollfrage: Ist jede Rückleitung das Load-Datum? Nein. Die Historie ist die zweite Ansicht.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2524,7 +2662,8 @@ graph LR
 <li>Blöcke IF/ID/EX/MEM/WB zeigen die Lage jedes Befehls</li>
 </ul>
 <aside class="notes">
-<p>Perfekt, um NOPs und Stalls visuell zu jagen.</p>
+<p>Die offizielle Einführung nennt Show stage table, nicht zwingend einen Tab namens Pipeline. Während Run wird laut dieser Dokumentation keine Stufenhistorie aufgezeichnet. Clock oder ein passender Auto-Clock-Modus ist zu prüfen. Zeilen sind dynamische Maschineninstruktionen. Gehalten, gültig, Bubble und verworfen müssen an der Version abgelesen werden.</p>
+<p>Kontrollfrage: Zeichnet Run die Stage-Tabelle auf? Laut der genannten Dokumentation nein. Der erste Versuch ist eine ALU-Abhängigkeit.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2542,15 +2681,16 @@ graph LR
 <ul>
 <li>Forwarding testen mit:</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb27-1"><a aria-label="1"></a>li  t0<span class="op">,</span> <span class="dv">50</span></span>
-<span id="cb27-2"><a aria-label="2"></a>li  t1<span class="op">,</span> <span class="dv">100</span></span>
-<span id="cb27-3"><a aria-label="3"></a><span class="bu">add</span> t2<span class="op">,</span> t0<span class="op">,</span> t1    <span class="op">#</span> Ergebnis in t2</span>
-<span id="cb27-4"><a aria-label="4"></a><span class="bu">sub</span> a0<span class="op">,</span> t2<span class="op">,</span> t0    <span class="op">#</span> Abhaengigkeit von t2</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb26-1"><a aria-label="1"></a>li  t0<span class="op">,</span> <span class="dv">50</span></span>
+<span id="cb26-2"><a aria-label="2"></a>li  t1<span class="op">,</span> <span class="dv">100</span></span>
+<span id="cb26-3"><a aria-label="3"></a><span class="bu">add</span> t2<span class="op">,</span> t0<span class="op">,</span> t1    <span class="op">#</span> Ergebnis in t2</span>
+<span id="cb26-4"><a aria-label="4"></a><span class="bu">sub</span> a0<span class="op">,</span> t2<span class="op">,</span> t0    <span class="op">#</span> Abhaengigkeit von t2</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>Clock Takt für Takt: wenn <code>add</code> in MEM und <code>sub</code> in EX</li>
 </ul>
 <aside class="notes">
-<p>RAW herausfordern: <code>sub</code> greift gierig auf <code>t2</code> zu, das <code>add</code> gerade berechnet. Hinweis: <code>li</code> ist ein Pseudo-Befehl und expandiert in Ripes oft zu mehreren Instruktionen — im Pipeline-Tab die echten Maschinenbefehle zählen.</p>
+<p>Das Programm steht in beispiele/vl7_forwarding.s. addi t0, x0, 50 und addi t1, x0, 100 sind native Befehle. Die Kernfolge ist add t2, t0, t1 und sub a0, t2, t0. Erwartet werden t2 gleich 150 und a0 gleich 100. t0 ist x5, t1 ist x6, t2 ist x7, a0 ist x10. Die echten addi x0, x0, 0 davor und danach sind Programm-NOPs, keine Hazard-Bubbles. Der Kernzähler beginnt beim IF von add.</p>
+<p>Kontrollfrage: Ist li immer eine Instruktion? Nein, es kann expandieren. Der kritische Takt zeigt den Bypass.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2572,7 +2712,8 @@ graph LR
 <li>Dann haben Sie Bypassing nachgewiesen</li>
 </ul>
 <aside class="notes">
-<p>Forwarding Unit schaltet den MUX; Hex-Wert auf dem Rückführkabel ist Ihr ADD-Ergebnis.</p>
+<p>Im Kernmodell ist add in Takt 4 in MEM und sub in EX. rs1 von sub braucht 150, rs2 bleibt 50. Das Ergebnis ist 100. Ein Selektor ungleich null beweist das nur zusammen mit Portname, Quelle, Datenwert und konsumierender Instruktion. Die Lehrcodes 00, 10 und 01 sind nicht die Ripes-Codes. a0 ist architektonisch erst nach dem WB von sub gleich 100.</p>
+<p>Kontrollfrage: Ist das ALU-Ergebnis schon der Registerwert? Nein. Der Load liefert sein Wort später.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2590,17 +2731,18 @@ graph LR
 <ul>
 <li>Daten und Code, dann:</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb28-1"><a aria-label="1"></a>.<span class="bu">data</span></span>
-<span id="cb28-2"><a aria-label="2"></a><span class="fu">array:</span> .<span class="dt">word</span> <span class="dv">42</span></span>
-<span id="cb28-3"><a aria-label="3"></a>.text</span>
-<span id="cb28-4"><a aria-label="4"></a>la  s1<span class="op">,</span> array</span>
-<span id="cb28-5"><a aria-label="5"></a>lw  t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
-<span id="cb28-6"><a aria-label="6"></a><span class="bu">add</span> a0<span class="op">,</span> t0<span class="op">,</span> t0</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb27-1"><a aria-label="1"></a>.<span class="bu">data</span></span>
+<span id="cb27-2"><a aria-label="2"></a><span class="fu">array:</span> .<span class="dt">word</span> <span class="dv">42</span></span>
+<span id="cb27-3"><a aria-label="3"></a>.text</span>
+<span id="cb27-4"><a aria-label="4"></a>la  s1<span class="op">,</span> array</span>
+<span id="cb27-5"><a aria-label="5"></a>lw  t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
+<span id="cb27-6"><a aria-label="6"></a><span class="bu">add</span> a0<span class="op">,</span> t0<span class="op">,</span> t0</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>Pipeline-Tab: was passiert in Takt 4 oder 5?</li>
 </ul>
 <aside class="notes">
-<p>Load sofort gefolgt von Nutzung — Forwarding muss scheitern, Stall greift.</p>
+<p>beispiele/vl7_loaduse.s legt ein Wort 42 an eine ausgerichtete Adresse. la s1, array kann mehrere Befehle erzeugen und liegt außerhalb der Kernfolge. lw t0, 0(s1) und add a0, t0, t0 ergeben t0 gleich 42 und a0 gleich 84. Beide Quellen von add brauchen das Load-Datum. Relativ: Load-EX in Takt 3, add gehalten in ID in Takt 4, add-EX in Takt 5.</p>
+<p>Kontrollfrage: Ist 0(s1) ein Immediate von vier Byte? Hier ist der Offset 0. Hold und Bubble werden getrennt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2621,7 +2763,8 @@ graph LR
 <li>Ein Takt Pause für den langsamen RAM</li>
 </ul>
 <aside class="notes">
-<p>Decode eingefroren, NOP wandert als Platzhalter durch die hinteren Stufen.</p>
+<p>Ein grauer Block ist nicht automatisch eine echte nop-Instruktion. IF/ID wird gehalten, ID/EX wird ungültig, der Load läuft nach MEM. Die Bubble erscheint in EX4, MEM5 und WB6. Die sichtbaren Farben prüft die verwendete Version. Der Wartezyklus folgt aus der Ergebnisverfügbarkeit, nicht aus einem pauschal langsamen RAM.</p>
+<p>Kontrollfrage: Holt die Hardware addi x0, x0, 0 als Bubble nach? Nicht als Programmbefehl. Branch verwirft statt zu halten.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2639,16 +2782,17 @@ graph LR
 <ul>
 <li>Countdown über zehn Schritte, danach Ende:</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb29-1"><a aria-label="1"></a>li t0<span class="op">,</span> <span class="dv">10</span></span>
-<span id="cb29-2"><a aria-label="2"></a><span class="fu">Loop:</span></span>
-<span id="cb29-3"><a aria-label="3"></a>  addi t0<span class="op">,</span> t0<span class="op">,</span> <span class="op">-</span><span class="dv">1</span></span>
-<span id="cb29-4"><a aria-label="4"></a>  bne  t0<span class="op">,</span> zero<span class="op">,</span> Loop</span>
-<span id="cb29-5"><a aria-label="5"></a># hier ist t0 <span class="op">=</span> <span class="dv">0</span><span class="co">; die Schleife ist beendet</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb28-1"><a aria-label="1"></a>li t0<span class="op">,</span> <span class="dv">10</span></span>
+<span id="cb28-2"><a aria-label="2"></a><span class="fu">Loop:</span></span>
+<span id="cb28-3"><a aria-label="3"></a>  addi t0<span class="op">,</span> t0<span class="op">,</span> <span class="op">-</span><span class="dv">1</span></span>
+<span id="cb28-4"><a aria-label="4"></a>  bne  t0<span class="op">,</span> zero<span class="op">,</span> Loop</span>
+<span id="cb28-5"><a aria-label="5"></a># hier ist t0 <span class="op">=</span> <span class="dv">0</span><span class="co">; die Schleife ist beendet</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <ul>
 <li>Was passiert, wenn <code>bne</code> springt und der PC zurückgeht?</li>
 </ul>
 <aside class="notes">
-<p>Beobachten Sie die Befehle, die blind in IF/ID geladen wurden, bevor der Sprung feststeht.</p>
+<p>beispiele/vl7_branch.s zählt von 10 abwärts. addi t0, x0, 10 ist eine klare Maschineninstruktion. Die Schleife führt zehnmal addi und zehnmal bne aus. Neunmal wird genommen, einmal nicht. Danach ist a0 gleich 7. bne bedeutet Branch if Not Equal. Jede Iteration hat zusätzlich RAW von addi nach bne. Ein zweiter Versuch mit bereits bereiten Operanden isoliert den Kontrollfluss. Absolute Taktnummern ohne vollständigen Trace bleiben Lehrannahmen.</p>
+<p>Kontrollfrage: Wie oft wird der Branch genommen? Neunmal. Die verworfenen Einträge folgen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2669,7 +2813,8 @@ graph LR
 <li>Falsche Befehle werden zu NOP-Bubbles — Branch Penalty live</li>
 </ul>
 <aside class="notes">
-<p>Hazard Unit radiert IF/ID; Label-Ziel erscheint wieder in IF. Jeder Schleifendurchlauf kostet Zeit.</p>
+<p>Die Auflösungsstufe und alle betroffenen Register prüft das gewählte Ripes-Modell. Nicht nur IF/ID zu löschen genügt als Behauptung. Ein Wrong-Path-Store darf nicht bestätigt werden. beispiele/vl7_flush.s erwartet bei Gleichheit: Speicherwort bleibt 0, t3 bleibt 0, a0 wird 7. Die verworfenen sw und addi dürfen keine bestätigte Wirkung haben. Die konkrete Penalty ist ohne UI-Test nur die Lehrmodellzahl von zwei zusätzlichen Takten. Beim letzten Not-Taken-bne der Schleife läuft der Fall-through.</p>
+<p>Kontrollfrage: Zählen verworfene Befehle als abgeschlossene Programminstruktionen? Nein. Zum Schluss wird dieselbe Arbeit umgeordnet.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2685,14 +2830,14 @@ graph LR
 <section id="labor-aufgabe-4-compiler-magie-selbst-gemacht" class="slide level2">
 <h2>Labor-Aufgabe 4: Compiler-Magie selbst gemacht</h2>
 <ul>
-<li>Code aus Aufgabe 2 (Load-Use Stall)</li>
-<li>Unabhängigen Befehl einfügen, z. B. <code>addi a5, a5, 1</code></li>
-<li>Vor <code>lw</code> oder nach <code>add</code>: Stall bleibt</li>
-<li>Genau zwischen <code>lw</code> und <code>add</code>: Stall verschwindet</li>
+<li>Beide Varianten enthalten dieselben drei Befehle und dieselben Endwerte</li>
+<li>Nur die Reihenfolge von <code>addi a5, a5, 1</code> ändert sich</li>
+<li>Ein neu erfundenes <code>addi</code> wäre ein anderes Programm</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb30-1"><a aria-label="1"></a>Werden Sie zum Compiler: sortieren, bis keine NOPs mehr da sind.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb29-1"><a aria-label="1"></a>Werden Sie zum Compiler: sortieren, bis keine NOPs mehr da sind.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Unabhängige Arbeit füllt die Bubble — gleiches Ergebnis, ein Takt schneller.</p>
+<p>beispiele/vl7_schedule_a.s und vl7_schedule_b.s enthalten dieselben drei Kernbefehle. A führt lw, add, addi a5 aus. B verschiebt addi a5 zwischen lw und add. a5 ist x15 und startet bei 0. In beiden Fällen enden t0 mit 42, a0 mit 84 und a5 mit 1. A braucht im Lehrfenster acht Takte, B sieben. Eine neu eingefügte Instruktion wäre ein anderes Programm und beweist keinen Gewinn. CPI im Fenster ist 8 durch 3 gegen 7 durch 3, einschließlich Füllung. Der globale Ripes-Zähler enthält Setup und Exit.</p>
+<p>Kontrollfrage: Darf man nur B um addi erweitern? Dann ist der Vergleich nicht mehr dasselbe Programm. Die Zusammenfassung trennt Nutzen und Kosten.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2708,16 +2853,15 @@ graph LR
 <section id="zusammenfassung-einheit-7" class="slide level2">
 <h2>Zusammenfassung Einheit 7</h2>
 <ul>
-<li>Pipelining maximiert Durchsatz, ändert Latenz eines Befehls nicht</li>
-<li>Fünf Stufen → viel kürzerer Takt</li>
-<li>Data Hazards: Forwarding/Bypassing</li>
-<li>Load-Use: Stall; Compiler hilft durch Scheduling</li>
-<li>Control Hazards: Flush; moderne Rettung Branch Prediction</li>
+<li>Pipelining kann den Durchsatz erhöhen; die Einzellatenz hängt vom Modell ab</li>
+<li>Lehrbeispiel: ein Befehl 820 ps im Single Cycle, 1350 ps in der Pipeline</li>
+<li>Für 20 Befehle Speedup etwa 2,53, nicht Faktor 5</li>
+<li>Forwarding, Stall, Scheduling, Flush und Prediction haben je einen eigenen Anwendungsbereich</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb31-1"><a aria-label="1"></a>Pipelining-Verständnis trennt den Coder</span>
-<span id="cb31-2"><a aria-label="2"></a>vom Computer-Engineer.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb30-1"><a aria-label="1"></a>Pipelining-Verständnis trennt Durchsatz von Einzellatenz.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Forwarding, Stalling und Branch Prediction machen Hochleistungs-CPUs erst möglich.</p>
+<p>Pipelining überlappt Instruktionen und kann den Durchsatz erhöhen. Die Einzellatenz kann steigen: 820 gegen 1350 Pikosekunden. Für 20 Befehle ist der Speedup etwa 2,53. Forwarding bedient bereite ALU-Ergebnisse. Ein Load-Use-Stall wartet auf das Wort. Scheduling verschiebt zulässige Arbeit. Flush verwirft falsche Folgebefehle. Prediction reduziert Fehlkosten nur passend zu ihrem Modell.</p>
+<p>Kontrollfrage: Ändert Pipelining die Latenz nie? Im Waschsalon nicht, im CPU-Lehrbeispiel schon. Die letzte Folie prüft das Verständnis.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2735,8 +2879,8 @@ graph LR
 <ul>
 <li>Ripes: 5-Stage einstellen</li>
 <li>Hazard-Szenarien aus den Folien nachbauen</li>
-<li>Code darf kaputtgehen — der Simulator fängt ab</li>
-<li>Viel Erfolg bei der Optimierung Ihres Fließbands</li>
+<li>Ripes fängt nicht jede falsche Modellwahl ab</li>
+<li>Ergebnisse nur in der Konfiguration mit Forwarding und Hazard-Erkennung erwarten</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -2760,7 +2904,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Bauen Sie bewusst RAW, Load-Use und Flush. Wenn Sie Bypässe und rote Linien verstanden haben, gehört Ihnen die Architektur.</p>
+<p>Q&amp;A bedeutet Questions and Answers, Hands-On die praktische Übung. Durchsatz ist die Fertigstellungsrate, Latenz die Dauer eines Auftrags. Ideale fünf Stufen brauchen N plus 4 Takte. Beim Forwarding gewinnt der jüngere passende Produzent. Eine Load-Adresse ist nicht das Wort. Eine Bubble ist kein addi x0, x0, 0 aus dem Programm. Faires Scheduling behält dieselben Befehle und Ergebnisse. Die Programme liegen unter beispiele/vl7_forwarding.s, vl7_loaduse.s, vl7_branch.s, vl7_flush.s sowie vl7_schedule_a.s und vl7_schedule_b.s. Der Simulator garantiert korrekte Ergebnisse nur in der passenden Konfiguration. Die folgende Einheit wird hier nicht vorweg behauptet.</p>
+<p>Kontrollfrage: Wie viele Takte braucht eine ideale Folge von N Befehlen? N plus 4. Damit sind Durchsatz, Wartezyklen und falsche Pfade unterscheidbar.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
