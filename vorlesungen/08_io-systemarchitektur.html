@@ -221,7 +221,20 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <section>
 <section id="io-systemarchitektur" class="title-slide slide level1 center">
 <h1>I/O &amp; Systemarchitektur</h1>
-
+<aside class="notes">
+<p>Mikrocomputertechnik 1 verbindet das bekannte Rechenwerk mit Ein- und Ausgabe, kurz I/O für Input/Output. Heute geht es darum, Geräte über Adressen anzusprechen und Dienste einer Ausführungsumgebung zu nutzen. Vorausgesetzt sind Register, Loads und Stores sowie das vereinfachte Pipeline-Modell. Ein Betriebssystemkern wird nicht vorausgesetzt.</p>
+<p>Kontrollfrage: Liegt der Schwerpunkt auf schnellerer Arithmetik? Nein, auf der Verbindung zur Umgebung. Die nächste Folie nennt die fehlende Fähigkeit.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="die-brücke-zur-außenwelt" class="slide level2">
 <h2>Die Brücke zur Außenwelt</h2>
@@ -250,7 +263,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Willkommen zu Einheit 8. Datenpfad, Control Unit und Pipelining stehen. Der Chip rechnet isoliert: Ergebnisse bleiben im Silizium. Heute: Kommunikation mit Sensoren, Aktoren und dem Betriebssystem.</p>
+<p>Datenpfad, Steuerwerk und Pipeline erklären, wie Befehle rechnen. Hoher Durchsatz beantwortet noch nicht, wie ein Schalter das Programm beeinflusst oder eine LED, eine Leuchtdiode, ein Ergebnis zeigt. Das bisherige Modell ist ein Lehrchip, nicht ein vollständiges System. CPU bedeutet Central Processing Unit. RISC-V ist die Befehlssatzarchitektur, kurz ISA für Instruction Set Architecture.</p>
+<p>Kontrollfrage: Bedeutet logisch korrekt schon ein fertiges Gerät? Nein. Die Agenda zerlegt die Brücke in Teilfragen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -297,7 +311,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Von der untersten Hardware bis zur OS-Abstraktion: LEDs, Polling vs.&nbsp;Interrupt, CSRs und <code>ecall</code>.</p>
+<p>Sechs Fragen: Wo liegt das Gerät? Wie lesen wir seine Bits? Wie warten wir? Welchen Zustand braucht eine Unterbrechung? Wie fordert Software einen Dienst an? Wie prüfen wir das im Labor? MMIO bedeutet Memory-Mapped I/O, Gerätezugriff über Adressen. CSR bedeutet Control and Status Register. OS bedeutet Operating System. ecall ist der Environment Call. Ripes zeigt Geräte, Venus die Konsole. Das sind Kursaufgaben, keine Ausschlüsse.</p>
+<p>Kontrollfrage: Sind Ripes und Venus dasselbe Modell? Nein. Zuerst der bekannte Prozessor.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -321,7 +336,8 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb1-1"><a aria-label="1"></a>Ein Prozessor ohne I/O ist wie ein Taschenrechner</span>
 <span id="cb1-2"><a aria-label="2"></a>ohne Display und ohne Tasten: physikalisch nutzlos.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Die schnellste Pi-Berechnung hilft nicht, wenn das Ergebnis für immer in <code>s0</code> liegt.</p>
+<p>Die ALU, Arithmetic Logic Unit, rechnet. Der PC, Program Counter, hält die Befehlsadresse. RAM, Random Access Memory, ist der Arbeitsspeicher im Modell. Ein Ergebnis in s0 bleibt unsichtbar, solange kein Ausgabegerät angeschlossen ist. Daten müssen nicht ausschließlich auf einem Die liegen. Die Aussage gilt für das bisherige Modell ohne Eingabe, nicht für jeden realen Chip.</p>
+<p>Kontrollfrage: Beeinflusst ein Knopf das bisherige Programm? In diesem Modell nein. Die Metapher macht die Grenze anschaulich.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -344,7 +360,8 @@ graph LR
 <li>Reize empfangen, Aktionen in der Welt auslösen</li>
 </ul>
 <aside class="notes">
-<p>I/O = Kamera, Mikrofon und Greifarme für das isolierte Gehirn.</p>
+<p>Ein Sensor liefert ein elektrisches Signal, ein Aktor eine Wirkung. Das Interface übersetzt den Zustand in ein lesbares Register. Die CPU denkt nicht und besitzt keine zusätzlichen Sinnesorgane. Die Metapher motiviert nur diese fehlende Verbindung.</p>
+<p>Kontrollfrage: Liefert ein Schalter eine fertige Dezimalzahl? Nein, ein Signal, das ein Register abbildet. Als Nächstes heißt das Peripherie.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -385,7 +402,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Peripherie verbindet Bits mit Physik. Ziel: ein einheitliches Ansteuerungsmodell für RISC-V.</p>
+<p>Peripherie meint hier Geräte für Kommunikation, Messung oder Steuerung. Speicher und interne Prozessorstrukturen sind nicht automatisch Peripherie. Ein Sensor misst, ein Aktor wirkt, ein Netzinterface kann beides. Ein Motor wird über Treiber und Leistungselektronik angesteuert, nicht direkt durch einen Registerwert an den Wicklungen.</p>
+<p>Kontrollfrage: Ist RAM Peripherie im selben Sinn wie eine LED? Nein. Eine gemeinsame Zugriffsmethode führt zu MMIO.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -401,7 +419,20 @@ graph LR
 <section>
 <section id="memory-mapped-io" class="title-slide slide level1 center">
 <h1>Memory-Mapped I/O</h1>
-
+<aside class="notes">
+<p>Memory-Mapped I/O ordnet Geräteregister Adressen zu. Der Prozessor nutzt passende Speicherbefehle. Die Leitfrage lautet, woran das System RAM und Gerät unterscheidet. Decoder und Zugriff folgen.</p>
+<p>Kontrollfrage: Braucht MMIO einen eigenen Portbefehl? In diesem Modell nein. Zuerst die beiden Zugriffsarten.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="wie-spricht-die-cpu-mit-peripherie" class="slide level2">
 <h2>Wie spricht die CPU mit Peripherie?</h2>
@@ -413,7 +444,8 @@ graph LR
 <li>ARM und RISC-V: konsequent Memory-Mapped I/O</li>
 </ul>
 <aside class="notes">
-<p>Spezielle I/O-Befehle vs.&nbsp;Illusion „Hardware ist Speicher“ — diese Wege spalten die Architekturen bis heute.</p>
+<p>Port-Mapped I/O nutzt einen eigenen logischen Port-Adressraum und eigene Befehle. Memory-Mapped I/O nutzt Adressen wie Speicher. x86 kann beides. RISC-V-Geräte liegen auf plattformspezifischen Adressen. Die ISA allein legt weder Gerät noch Adresse fest.</p>
+<p>Kontrollfrage: Ist MMIO die einzige mögliche Einteilung? Nein. Das x86-Beispiel zeigt den Port-Raum.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -437,7 +469,8 @@ graph LR
 <span id="cb2-2"><a aria-label="2"></a><span class="bu">MOV</span> <span class="kw">DX</span><span class="op">,</span> <span class="bn">0x03F8</span>    <span class="op">#</span> COM1</span>
 <span id="cb2-3"><a aria-label="3"></a><span class="bu">OUT</span> <span class="kw">DX</span><span class="op">,</span> <span class="kw">AL</span>        <span class="op">#</span> <span class="dt">Byte</span> aus <span class="kw">AL</span> an den Port</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Extra-Leitungen und Sonderbefehle: normale ALU-Befehle greifen auf Ports nicht zu.</p>
+<p>IN und OUT adressieren einen logischen Port, nicht zwingend einen eigenen physischen Bus. DX kann die Portnummer halten, AL das Byte. COM1 und der Tastaturport 0x60 sind verschiedene historische Zuordnungen. Ein normales lw trifft diesen Port-Raum nicht. Siliziumkosten ohne Beleg bleiben weg.</p>
+<p>Kontrollfrage: Erreicht lw automatisch Port 0x60? Nein. MMIO nutzt den adressierten Pfad.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -459,7 +492,8 @@ graph LR
 <li>Bekannte Befehle: <code>lw</code> und <code>sw</code></li>
 </ul>
 <aside class="notes">
-<p>Load/Store reichen: Thermometer und LED erscheinen als 32-Bit-Zellen im Adressraum.</p>
+<p>Gleiche Adressierung bedeutet nicht gleiche Zelle. Ein Geräteregister ist kein frei nutzbarer RAM. Für die hier gewählten 32-Bit-Register passen lw und sw. Andere Geräte können andere Breiten und Nebenwirkungen haben. Keine eigenen Portbefehle heißt nicht, dass keine Bridges existieren.</p>
+<p>Kontrollfrage: Darf man ein Geräteregister wie ein Arrayelement cachen? Nicht ohne Vertrag. Die Adresse wählt das Ziel.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -502,7 +536,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Betrug auf dem Mainboard: gleiche Pins, andere Chip-Select-Ziele.</p>
+<p>Schritte: Adresse bilden, Zugriff übertragen, dekodieren, Ziel wählen, Daten liefern. Der Prozessor wird nicht betrogen. 0xF0000000 ist hier illustrativ, solange der Export sie nicht bestätigt. RV32 bedeutet nicht 32 Adresspins an jedem Chip.</p>
+<p>Kontrollfrage: Ist jede hohe Adresse ein Gerät? Nein, das legt die Karte fest. Der Decoder braucht diese Karte.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -528,7 +563,8 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb3-1"><a aria-label="1"></a>lw aus 0x10000000 -&gt; Array-Element im RAM</span>
 <span id="cb3-2"><a aria-label="2"></a>lw aus 0xF0000000 -&gt; z.B. Pixel/Sensor-Wert</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Reviere abstecken: niedrige Adressen RAM, hoher Bereich Peripherie.</p>
+<p>2 hoch 32 Byte sind 4 GiB, nicht automatisch 4 dezimale GB und nicht der eingebaute RAM. Die gezeigte Aufteilung ist ein Lehrbeispiel. Der Bereich zwischen RAM und MMIO kann reserviert sein. RAM liegt nicht allgemein unten und Geräte nicht allgemein oben.</p>
+<p>Kontrollfrage: Sind 4 GiB eingebauter Speicher? Nein. Die Karte wählt einen Baustein.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -550,7 +586,8 @@ graph LR
 <li>Decoder: AND-Netzwerk auf oberen Adressbits (z. B. <code>0xF...</code>)</li>
 </ul>
 <aside class="notes">
-<p>Nur das adressierte Gerät wacht auf und bedient den Datenbus.</p>
+<p>SoC bedeutet System on Chip. Ein Chip Select, kurz CS, lässt den gewählten Baustein am Zugriff teilnehmen. In diesem vereinfachten Bild ist CS aktiv-high. Andere Interfaces sind aktiv-low. Obere Adressbits sind ein Lehrdecoder, keine universelle Schaltung. Zwei gleichzeitig antwortende Ziele sind zu vermeiden. Unzugeordnete Adressen sind eine Plattformfrage.</p>
+<p>Kontrollfrage: Weckt CS den Baustein aus dem Schlaf? Es wählt ihn für den Zugriff. Danach gelten Load und Store.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -580,7 +617,8 @@ graph LR
 <span id="cb4-9"><a aria-label="9"></a>sw t2<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s2<span class="op">)</span>        <span class="op">#</span> MMIO<span class="op">-</span>Write<span class="op">:</span> Alarm<span class="op">-</span>LED</span>
 <span id="cb4-10"><a aria-label="10"></a><span class="fu">Safe:</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Keine neuen Opcodes: Temperatur schwellenbasiert auf LED abbilden.</p>
+<p>Die Adressen im Thermometerbeispiel sind fiktiv. Der Wert 100 ist ohne Einheit keine Temperatur. lw liest das Register, der Vergleich entscheidet, sw schreibt die Warn-LED. Ein Pfad, der den Alarm nur setzt, löscht ihn nicht. Für eine Schwellwertanzeige muss auch der inaktive Zustand geschrieben werden.</p>
+<p>Kontrollfrage: Schaltet der bisherige Safe-Pfad einen Alarm aus? Nicht, wenn nur der aktive Zweig schreibt. Ripes-Geräte haben eigene Verträge.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -596,7 +634,20 @@ graph LR
 <section>
 <section id="praxis-der-mmio-schalter-und-leds" class="title-slide slide level1 center">
 <h1>Praxis der MMIO (Schalter und LEDs)</h1>
-
+<aside class="notes">
+<p>Ziel ist lauffähiger I/O-Code aus einer Registerkarte. Switches, D-Pad und LED-Matrix sind verschiedene Modelle. Eine Bitmaske isoliert Eingabebits. Ein RGB-Wort, Rot Grün Blau, ist nicht dieselbe Bitmaske.</p>
+<p>Kontrollfrage: Darf man das Schalterwort unverändert in ein Farbregister schreiben? Für die Matrix hier nein. Zuerst die Formate.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="von-der-theorie-zur-laborpraxis" class="slide level2">
 <h2>Von der Theorie zur Laborpraxis</h2>
@@ -628,7 +679,8 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Bit-Maskierung aus früheren Einheiten wird wieder gebraucht.</p>
+<p>Schritte: Gerät anlegen, Export lesen, Eingabe lesen, Bit isolieren, Farbe bilden, schreiben. volatile in C kennzeichnet extern veränderliche Zugriffe. Das ist keine Hardware-Cache-Abschaltung. Registerhaltung durch den Compiler ist eine andere Ebene als ein Daten-Cache.</p>
+<p>Kontrollfrage: Ist volatile ein Cache-Attribut? Nein. Zuerst das gepackte Schalterregister.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -669,7 +721,8 @@ graph TD
 </tbody>
 </table>
 <aside class="notes">
-<p>Nur die Switches-Komponente ist eine Bitmaske. Das D-Pad ist anders aufgebaut (nächste Folie).</p>
+<p>Im konkreten Aufbau mit mindestens vier Schaltern ist SW0 Bit 0. SWITCHES_0_BASE kommt aus dem Export. 0b0101 bedeutet SW0 und SW2 aktiv. Die Anzahl und die elektrische Polarität hängen vom Gerät ab. Eins muss nicht gedrückt bedeuten.</p>
+<p>Kontrollfrage: Ist 0b0101 die Farbe Rot? Nein, eine Eingabemaske. Das D-Pad trennt die Richtungen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -691,7 +744,8 @@ graph TD
 <li>Ripes-Symbole: <code>D_PAD_0_UP</code>, <code>D_PAD_0_DOWN</code>, …</li>
 </ul>
 <aside class="notes">
-<p>Nicht mit Switches verwechseln: Beim D-Pad gibt es keine Bitmaske an einer Adresse. Jede Richtung wird separat per <code>lw</code> gelesen.</p>
+<p>Vier Richtungen können vier Register mit Offsets 0, 4, 8 und 12 sein. Das ist am Export zu prüfen, nicht als universelle Hardware. Der Tastenzustand wird maskiert, reservierte Bits nicht als null angenommen. Basis plus Offset ist die Registeradresse.</p>
+<p>Kontrollfrage: Liegt oben im selben Wort wie die Schalter? In diesem Modell nein. Bei den Schaltern isoliert die Maske ein Bit.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -718,7 +772,8 @@ graph TD
 <span id="cb5-5"><a aria-label="5"></a>andi t1<span class="op">,</span> t0<span class="op">,</span> <span class="dv">4</span></span>
 <span id="cb5-6"><a aria-label="6"></a>bne t1<span class="op">,</span> zero<span class="op">,</span> Jump</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Wert 5 bedeutet SW0 und SW2 an. AND filtert auf eine saubere 4 oder 0.</p>
+<p>0b0101 und 0b0100 ergeben 0b0100, also 4. Die Maske 4 trifft Bit 2, SW2, nicht den vierten Schalter. bne gegen zero erkennt Aktivität, obwohl das Ergebnis 4 und nicht 1 ist. Ein Vergleich des ganzen Wortes mit 4 scheitert, wenn zusätzlich SW0 aktiv ist. s1 hält die Basis, t0 den Rohwert, t1 das Maskenergebnis.</p>
+<p>Kontrollfrage: Ist das Ergebnis nach andi immer 0 oder 1? Hier 0 oder 4. Das D-Pad wählt zuerst das Register.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -740,7 +795,8 @@ graph TD
 <span id="cb6-5"><a aria-label="5"></a>lw t3<span class="op">,</span> <span class="dv">12</span><span class="op">(</span>s1<span class="op">)</span>          <span class="op">#</span> RIGHT <span class="op">(+</span><span class="dv">12</span><span class="op">)</span></span>
 <span id="cb6-6"><a aria-label="6"></a>bne t0<span class="op">,</span> zero<span class="op">,</span> UpPressed</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Prüfen Sie den LSB bzw. den ganzen Wortwert auf <span class="math inline">\(\neq 0\)</span>. Nach dem Erkennen: warten, bis die Taste wieder losgelassen ist (Release), sonst rauscht ein Klick durch mehrere Zustände.</p>
+<p>Jede Richtung ist ein eigener lw. Wenn nur das niederwertige Bit, das LSB, den Zustand trägt, reicht ein Vergleich des ganzen Wortes mit ungleich null nicht. andi mit 1 isoliert es. Langes Halten ist ein Pegel. Ein Zähler braucht die Freigabe, sonst zählt er bei jeder Schleife erneut. Warten auf Loslassen ist noch keine mechanische Entprellung.</p>
+<p>Kontrollfrage: Zählt ein gehaltener Pegel mehrfach? In einer naiven Schleife ja. Die Matrix braucht ein Farbwort.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -781,7 +837,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Hex-Farbe per Store Word: Computergrafik auf unterster Ebene.</p>
+<p>Ein Pixel ist hier ein 32-Bit-Farbregister. 0x00RRGGBB bedeutet je ein Byte Rot, Grün und Blau. 0x00FF0000 ist Rot, 0x0000FF00 Grün. Ein Store schaltet die Anzeige im Modell, er brennt nichts dauerhaft ein. Die Adresse ist Basis plus 4 mal Index, wenn der Index gültig ist.</p>
+<p>Kontrollfrage: Ist die Maske 8 schon Rot? Nein. Eingaben können sich ohne Store ändern.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -804,7 +861,8 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb7-1"><a aria-label="1"></a>RAM: Tresor — ändert sich nur, wenn ICH schreibe.</span>
 <span id="cb7-2"><a aria-label="2"></a>I/O: Fenster — die Welt draußen ändert sich ständig.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Zwei aufeinanderfolgende <code>lw</code> können verschiedene Werte liefern.</p>
+<p>Ein MMIO-Register kann zwischen zwei Lesungen einen anderen Wert liefern, weil das Gerät den Zustand ändert. Das ist keine Datenverlust-Flüchtigkeit ohne Strom. Auch RAM kann sich durch DMA, Direct Memory Access, oder andere Kerne ändern. Manche Zugriffe haben Nebenwirkungen. volatile ist der C-Qualifizierer für wiederholte Zugriffe, nicht die elektrische Eigenschaft selbst.</p>
+<p>Kontrollfrage: Bleibt ein Tasterregister zwischen zwei lw garantiert gleich? Nein. Der Compiler darf die Wiederholung nicht wegoptimieren.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -835,7 +893,8 @@ graph LR
 <span id="cb8-5"><a aria-label="5"></a><span class="co">/* Rettung (Compiler): */</span></span>
 <span id="cb8-6"><a aria-label="6"></a><span class="dt">volatile</span> <span class="dt">int</span> <span class="op">*</span>button <span class="op">=</span> <span class="op">(</span><span class="dt">volatile</span> <span class="dt">int</span> <span class="op">*)</span><span class="bn">0xF0000000</span><span class="op">;</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p><code>volatile</code> hindert den Compiler daran, wiederholte Zugriffe zu streichen. Es macht den Zugriff nicht automatisch uncached und ersetzt weder <code>FENCE</code> noch Synchronisation mit DMA oder anderen Kernen. „Jedes <code>lw</code> ist ein Buszugriff“ gilt nur im uncached-MMIO-Modell dieser Folie.</p>
+<p>Ohne volatile kann der Compiler eine wiederholte Abfrage in ein Register ziehen. Das ist nicht nur ein -O3-Thema. volatile ist keine Speicherbarriere und keine Thread-Sperre. Die Aussage, jedes lw sei ein Buszugriff, gilt hier nur für das uncached-MMIO-Lehrmodell. Cacheattribute und Speicherordnung sind weitere Ebenen.</p>
+<p>Kontrollfrage: Schaltet volatile den Cache aus? Nein. Im Labor wird der Zugriff sichtbar.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -857,7 +916,8 @@ graph LR
 <li>Mausklick auf Schalter → Bit im gespiegelten Adressraum</li>
 </ul>
 <aside class="notes">
-<p>Graue Registerzahlen verlassen: Hardware-Komponenten visuell verdrahten.</p>
+<p>Der I/O-Tab modelliert Register und sichtbare Wirkungen. Er simuliert nicht automatisch mechanisches Prellen oder eine Interrupt-Leitung. Eine Schalteränderung erscheint beim nächsten passenden Read. Ohne Screenshot dieser Version bleibt die Oberfläche schematisch. Ripes wurde hier nicht ausgeführt.</p>
+<p>Kontrollfrage: Beweist ein Klick im Tab einen IRQ? Nein. Der Adressvertrag folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -880,7 +940,8 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb9-1"><a aria-label="1"></a><span class="pp">#define LED_BASE    </span><span class="bn">0xF0000020</span></span>
 <span id="cb9-2"><a aria-label="2"></a><span class="pp">#define SWITCH_BASE </span><span class="bn">0xF0000000</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>In Ripes die Basisadresse der Komponente prüfen — sonst Heap statt LED.</p>
+<p>Base Address, Offset und ein Board Support Package, kurz BSP, verbinden Karte und Code. Feste typische Adressen sind illustrative Snapshots. Eine falsche Adresse kann RAM, ein anderes Gerät, eine Lücke oder eine Fehlerreaktion treffen. Sie landet nicht zwingend im Heap. Nach einer neuen Geräteanlage müssen die Exports erneut gelesen werden.</p>
+<p>Kontrollfrage: Ist 0xF0000000 immer die Schalterbasis? Nein. Damit kann das erste Programm geschrieben werden.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -899,15 +960,23 @@ graph LR
 <li>Hello World der Hardware: Schalter spiegelt LED</li>
 <li>Endlosschleife: <code>lw</code> Schalter, <code>sw</code> LED, Jump</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb10-1"><a aria-label="1"></a>li s1<span class="op">,</span> <span class="bn">0xF0000000</span>   <span class="op">#</span> Schalter</span>
-<span id="cb10-2"><a aria-label="2"></a>li s2<span class="op">,</span> <span class="bn">0xF0000020</span>   <span class="op">#</span> LED</span>
-<span id="cb10-3"><a aria-label="3"></a></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb10-1"><a aria-label="1"></a># Illustrative Adressen nur<span class="op">,</span> wenn der Export sie bestätigt</span>
+<span id="cb10-2"><a aria-label="2"></a>li s1<span class="op">,</span> SWITCHES_0_BASE</span>
+<span id="cb10-3"><a aria-label="3"></a>li s2<span class="op">,</span> LED_MATRIX_0_BASE</span>
 <span id="cb10-4"><a aria-label="4"></a><span class="fu">Loop:</span></span>
 <span id="cb10-5"><a aria-label="5"></a>    lw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
-<span id="cb10-6"><a aria-label="6"></a>    sw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s2<span class="op">)</span></span>
-<span id="cb10-7"><a aria-label="7"></a>    j Loop</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-6"><a aria-label="6"></a>    andi t1<span class="op">,</span> t0<span class="op">,</span> <span class="dv">8</span></span>
+<span id="cb10-7"><a aria-label="7"></a>    beq t1<span class="op">,</span> zero<span class="op">,</span> Off</span>
+<span id="cb10-8"><a aria-label="8"></a>    li t2<span class="op">,</span> <span class="bn">0x00FF0000</span></span>
+<span id="cb10-9"><a aria-label="9"></a>    j Store</span>
+<span id="cb10-10"><a aria-label="10"></a><span class="fu">Off:</span></span>
+<span id="cb10-11"><a aria-label="11"></a>    li t2<span class="op">,</span> <span class="dv">0</span></span>
+<span id="cb10-12"><a aria-label="12"></a><span class="fu">Store:</span></span>
+<span id="cb10-13"><a aria-label="13"></a>    sw t2<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s2<span class="op">)</span></span>
+<span id="cb10-14"><a aria-label="14"></a>    j Loop</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>CPU als intelligentes Übertragungskabel: Load, Store, Jump.</p>
+<p>Das Echo schreibt nicht den Rohwert in die Matrix. SW3, Maske 8, wählt Rot 0x00FF0000, sonst Schwarz 0. Andere Schalter ändern diese eine Zelle nicht. Das Programm zeigt einen Pegel. Ein gehaltener Schalter bleibt sichtbar, ohne zu zählen. Die Endlosschleife ist für diese Anzeige beabsichtigt. Das vollständige Programm steht in beispiele/vl8_sw3_rot.s.</p>
+<p>Kontrollfrage: Was schreibt 0b1101? Rot, weil Bit 3 gesetzt ist. Zählen macht Prellen relevant.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -929,7 +998,8 @@ graph LR
 <li>Ein menschlicher Klick wird als Dutzende Klicks gezählt</li>
 </ul>
 <aside class="notes">
-<p>Counter-Variablen explodieren ohne Entprellung.</p>
+<p>Mechanisches Prellen ist ein mehrfaches Öffnen und Schließen des Kontakts. Rohsignal, stabiler Zustand und gezähltes Ereignis sind verschieden. Ein Echo ohne Zähler erzeugt nicht von selbst Dutzende Klicks. Eine Maus im Simulator muss nicht prellen. Zeitwerte ohne gemessenen Takt bleiben illustrativ. Die Pipeline fragt nicht allgemein milliardenfach pro Sekunde ab.</p>
+<p>Kontrollfrage: Ist jede Flanke ein Klick? Nur wenn die Erkennung sie so zählt. Simulator und reale Kontakte werden getrennt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -957,7 +1027,8 @@ graph LR
 <span id="cb11-3"><a aria-label="3"></a>    addi t1<span class="op">,</span> t1<span class="op">,</span> <span class="op">-</span><span class="dv">1</span></span>
 <span id="cb11-4"><a aria-label="4"></a>    bne t1<span class="op">,</span> zero<span class="op">,</span> Delay</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Software-Debouncing: nach der ersten Flanke warten, dann sauber weiterlesen.</p>
+<p>10000 Schleifeniterationen sind ohne Takt und CPI, Cycles per Instruction, keine belegte Wartezeit von 20 ms. Für stabile Simulatorpegel genügt Warten auf Druck und danach auf Freigabe. Die Folge 0,0,1,1,1,0,0,1,0 ergibt zwei Ereignisse. Eine Prellfolge 0,1,0,1 kann mehrfach zählen. Eine zeitbasierte Entprellung braucht eine definierte Zeitquelle und eine Stabilitätsdauer. Die wird hier nicht mit einer erfundenen Timeradresse implementiert.</p>
+<p>Kontrollfrage: Ist Druck-und-Freigabe schon Entprellung? Nein. Als Nächstes die Frage, wie oft die CPU prüft.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -973,7 +1044,20 @@ graph LR
 <section>
 <section id="polling-vs.-interrupts" class="title-slide slide level1 center">
 <h1>Polling vs.&nbsp;Interrupts</h1>
-
+<aside class="notes">
+<p>Polling ist die programmgesteuerte Abfrage. Ein Interrupt ist ein gemeldetes Ereignis, das unter erfüllten Bedingungen den Ablauf unterbricht. Die Wahl hängt von Häufigkeit, Reaktionszeit, Hardware und Aufwand ab. Die Leitfrage ist, ob zwischen Ereignissen andere Arbeit möglich ist.</p>
+<p>Kontrollfrage: Ist Interrupt immer besser? Nein. Zuerst die zwei Wartebilder.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="aktives-warten-vs.-aufwecken" class="slide level2">
 <h2>Aktives Warten vs.&nbsp;Aufwecken</h2>
@@ -1004,7 +1088,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Phase 3 beginnt: Polling verschwendet Energie. Als Nächstes das Interrupt-System moderner Computer.</p>
+<p>Busy Waiting wiederholt die Abfrage ohne andere Arbeit. Polling kann auch periodisch zwischen Aufgaben stattfinden. Ein Interrupt kann Arbeit unterbrechen. Schlafen ist keine Voraussetzung. Energie wird nicht automatisch gespart, wenn danach weitergerechnet wird. Exceptions nutzen denselben Trap-Rahmen und folgen später.</p>
+<p>Kontrollfrage: Ist jedes Polling Busy Waiting? Nein. Die Größenordnung der Wartezeit folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1028,7 +1113,8 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb12-1"><a aria-label="1"></a>Ein Mensch ist für einen Prozessor unvorstellbar langsam.</span>
 <span id="cb12-2"><a aria-label="2"></a>Wartet die CPU auf uns, vergehen für sie "Jahrzehnte".</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Hardwarewelt blitzschnell, physische Welt im Vergleich im Koma. Ein Tastendruck ist für die CPU ein Ereignis alle paar “Jahrhunderte”. Was macht der Prozessor in den Milliarden Zyklen dazwischen?</p>
+<p>4 GHz mal 2 Sekunden sind 8 Milliarden Takte. Das ist ein hypothetisches Beispiel, kein Ripes-Takt. Takte sind nicht automatisch Befehle. Dafür brauchte man CPI und den Schleifenaufbau. In dieser Zeit kann gerechnet, periodisch geprüft oder in einem geeigneten System gewartet werden.</p>
+<p>Kontrollfrage: Sind 8 Milliarden Takte 8 Milliarden Abfragen? Nein. Die einfachste Implementierung prüft ununterbrochen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1050,7 +1136,8 @@ graph LR
 <li>CPU fragt in einer Endlosschleife das MMIO-Register ab, bis Bit = 1</li>
 </ul>
 <aside class="notes">
-<p>Geschäftiges Warten: ununterbrochen Load, Prüfen, Branch. Das klassische “Sind wir schon da?”-Syndrom.</p>
+<p>Die Schleife liest, prüft und springt zurück. Eine Abfrage ist nicht nutzlos. Eine sehr hohe Frequenz kann im Verhältnis zum Gerät unnötig sein. Für kurze Wartezeiten kann Busy Waiting vertretbar sein. Für lange Pausen blockiert es diesen Programmfluss.</p>
+<p>Kontrollfrage: Ist die Rückschleife ein Fehler? Nicht grundsätzlich. Der Assembler macht sie konkret.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1077,7 +1164,8 @@ graph LR
 <span id="cb13-6"><a aria-label="6"></a></span>
 <span id="cb13-7"><a aria-label="7"></a>    # Knopf wurde gedrückt — weiter mit Nutzcode</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Load und Branch milliardenfach: sinnlose Abfragen, während der Mensch überlegt.</p>
+<p>Die Adresse kommt aus dem Export. Geprüft wird ein gewähltes Bit, nicht irgendein Rohwert ungleich null. Bitposition 1 ist der Wert 2, nicht dasselbe wie der Zahlenwert 1. Kommt nie ein Ereignis, bleibt die Schleife. Eine gehaltene Taste löst nach dem Verlassen ohne Freigabeprüfung erneut aus.</p>
+<p>Kontrollfrage: Was passiert ohne Ereignis? Die Schleife läuft weiter. Die Kosten werden gegen Alternativen gestellt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1117,7 +1205,8 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Busy Waiting hält einen Kern beschäftigt. Polling in Embedded-Systemen bleibt eine normale Methode, wenn die Periode und die übrige Arbeit festliegen.</p>
+<p>Periodisches Polling ist legitim. Die Grafik darf nicht jedes Polling als Blockade zeichnen. Busy Waiting, periodische Abfrage und Interrupt unterscheiden sich in Aufwand, Reaktionszeit und nötiger Hardware. Bei periodischer Abfrage kann die zusätzliche Wartezeit etwa eine Periode betragen, plus Bearbeitung.</p>
+<p>Kontrollfrage: Verhindert Polling Multitasking? Nicht grundsätzlich. Eine Gerätemeldung kann die Nachfrage ersetzen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1139,7 +1228,8 @@ graph TD
 <li>Rolle umkehren: Peripherie meldet sich, wenn Daten da sind</li>
 </ul>
 <aside class="notes">
-<p>Aktiv warten vs.&nbsp;Ereignis-getrieben: CPU widmet sich nützlicher Arbeit, bis das Gerät signalisiert.</p>
+<p>Die Klingel ist nur die Meldung. Die Bearbeitung ist die Routine. Eine IRQ, Interrupt Request, braucht Aktivierung, Entscheidung und einen Handler. Nicht jede Peripherie und nicht die Ripes-Schalter besitzen automatisch eine Interrupt-Leitung.</p>
+<p>Kontrollfrage: Verarbeitet die Klingel das Paket? Nein. Der Begriff Interrupt folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1179,7 +1269,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Rückgrat moderner Betriebssysteme: asynchrones Aufwecken statt Busy Waiting.</p>
+<p>Ein Interrupt kann eine Flanke, ein Pegel, ein Controller oder ein interner Timer sein, nicht nur ein Stromimpuls. Im vereinfachten M-Mode-Modell zählen Pending, Quellenfreigabe und das globale MIE, Machine Interrupt Enable. Die Hardware rettet nicht alle x-Register. Ein Taster-IRQ wird nur versprochen, wenn das Gerät ihn nachweislich hat. Das ist hier nicht belegt.</p>
+<p>Kontrollfrage: Sichert der Trap t0? Nein. Der Zeitablauf folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1221,7 +1312,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Zeitstrahl: Spiel läuft, Leertaste feuert Interrupt, ISR puffert den Event, <code>mret</code> setzt unsichtbar fort.</p>
+<p>Der Ablauf ist Nutzprogramm, angenommene Anforderung, Hardwareeintritt, Kontextrettung, Behandlung, Wiederherstellung und Rückkehr. Zwischen Ereignis und Handler kann Latenz liegen. mret gilt für den M-Mode-Handler dieses Modells. Die Quittierung hängt vom Gerät ab. Bei einem Interrupt wird mepc nicht pauschal um 4 erhöht.</p>
+<p>Kontrollfrage: Beginnt die ISR im selben Moment wie der Tastendruck? Nicht zwingend. Nicht jede Unterbrechung ist asynchron.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1268,7 +1360,8 @@ graph LR
 </tbody>
 </table>
 <aside class="notes">
-<p>Interrupts von außen und asynchron; Exceptions von innen und synchron am fehlerhaften Befehl. Beide unterbrechen — Ursachen verschieden.</p>
+<p>Eine Exception ist einem Befehl zugeordnet. Ein Interrupt ist gegenüber diesem Befehlsstrom asynchron. Intern und extern als einzige Einteilung ist falsch, etwa bei einem Timer oder einem Speicherfehler. ecall ist eine absichtliche Exception, kein Fehler.</p>
+<p>Kontrollfrage: Ist jeder Trap ein Fehler? Nein. Typische Exceptions folgen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1293,7 +1386,8 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb14-1"><a aria-label="1"></a><span class="dt">int</span> <span class="op">*</span>ptr <span class="op">=</span> NULL<span class="op">;</span></span>
 <span id="cb14-2"><a aria-label="2"></a><span class="dt">int</span> crash <span class="op">=</span> <span class="op">*</span>ptr<span class="op">;</span>   <span class="co">/* typisch: Access Fault */</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Nullpointer: Memory-Unit alarmiert. Bei RISC-V Integer-Division durch 0 entsteht kein Trap (Quotient = all-1s).</p>
+<p>Illegal Instruction kann auch ein unerlaubter CSR-Zugriff sein, nicht nur ein unbekannter Opcode. Ein Access Fault ist nicht nur ein System ohne MMU. MMU bedeutet Memory Management Unit. Ein Page Fault betrifft Übersetzung oder Rechte. Ein Nullzeiger in C hat undefiniertes Verhalten und ist kein garantierter Access Fault. Adresse 0 kann im Simulator gültig sein. Eine Integerdivision durch null in der M-Erweiterung erzeugt keinen Trap. Der Quotient ist definiert, nicht eine Exception.</p>
+<p>Kontrollfrage: Stürzt Division durch null in RV32M ab? Nein. Beide Klassen heißen Traps.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1338,7 +1432,8 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>In der RISC-V-Spezifikation: Trap = jedes erzwungene Verlassen des normalen Programmflusses Richtung OS/Handler.</p>
+<p>Ein Trap übergibt den Kontrollfluss wegen Exception oder Interrupt. Ein Syscall ist eine reguläre Anfrage, kein Notfall. Auch Firmware ohne OS kann Traps behandeln. Ein Branch ist gewöhnlicher Programmfluss. Der Trap-Eintritt wird durch das Ereignis bestimmt.</p>
+<p>Kontrollfrage: Braucht jeder Trap Linux? Nein. Der Hardwarezustand folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1361,7 +1456,8 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb15-1"><a aria-label="1"></a>Ein Trap ist ein erzwungener Hardware-Sprung</span>
 <span id="cb15-2"><a aria-label="2"></a>an eine vom Betriebssystem vorbereitete Adresse.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Drei Hardware-Schritte: PC sichern, Pipeline säubern, PC auf Rettungscode setzen.</p>
+<p>Im benannten M-Mode-Modell werden Rückkehradresse, Ursache und Status festgehalten. Der Handler liegt am konfigurierten Ziel. Ein Pipeline-Flush kann jüngere Wirkungen unterdrücken, ist aber nicht die Definition des Traps. Nur IF und ID zu löschen genügt nicht allgemein. IF und ID bedeuten Instruction Fetch und Decode. Das Ziel hängt vom Vector-Modus ab.</p>
+<p>Kontrollfrage: Löscht der Trap nur IF/ID? Nicht als allgemeine Regel. Die Registerrettung bleibt Software.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1383,7 +1479,8 @@ graph TD
 <li>Deshalb: Handler muss jedes genutzte Register selbst sichern</li>
 </ul>
 <aside class="notes">
-<p>Kein Caller bei asynchronen Interrupts: ungesicherte Temporaries zerstören den Kontext. Lösung: Kontextsicherung und CSRs.</p>
+<p>Clobbering heißt, einen noch benötigten Registerwert zu überschreiben. Hat das Hauptprogramm t0 gleich 7 und der Handler setzt t0 auf 99, rechnet das Programm falsch weiter. Die Funktions-ABI, Application Binary Interface, gilt für normale Aufrufe. Ein asynchron unterbrochenes Programm konnte seine temporären Register nicht vorher sichern. Ein CSR ist kein Backup der Registerbank.</p>
+<p>Kontrollfrage: Rettet die Hardware t0? Nein. Die CSRs liefern Ursache und Rückkehradresse.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1399,7 +1496,20 @@ graph TD
 <section>
 <section id="das-csr-system" class="title-slide slide level1 center">
 <h1>Das CSR-System</h1>
-
+<aside class="notes">
+<p>Ein CSR ist ein Kontroll- oder Statusregister, kein gewöhnliches x-Register. Wir brauchen Ursache, Rückkehrstelle, Einsprungziel und Freigabestatus. Schattenregister darf nur Metapher sein, keine zweite Kopie der Registerbank. Zicsr ist die Erweiterung für die Zugriffsbefehle, ohne erfundene Langform des Kürzels.</p>
+<p>Kontrollfrage: Liegt mcause in x31? Nein. Der Bedarf an diesem Zustand folgt.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="schattenregister-für-die-notaufnahme" class="slide level2">
 <h2>Schattenregister für die Notaufnahme</h2>
@@ -1431,7 +1541,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Phase 4: Geheim-Tresor in der CPU, den der User nicht sieht — Fundament sicherer OS-Handler.</p>
+<p>CSRs halten Ursache, Rückkehradresse und Statusregeln. Anwendercode kann einzelne freigegebene CSRs lesen. M-Mode ist kein x86-Ring. Die Hardware sichert keine Anwendungsdaten automatisch. Der Handler muss Register selbst erhalten.</p>
+<p>Kontrollfrage: Sind CSRs unsichtbar für jeden User-Zugriff? Nicht pauschal. Der Stackunterschied folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1453,7 +1564,8 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb16-1"><a aria-label="1"></a>Schatten-Register: vertrauenswürdig und nicht manipulierbar.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Handler darf User-Registern nicht vertrauen. Deshalb separate, sichere Hardware-Register.</p>
+<p>RV32I hat 32 Architekturregister. x0 bleibt null. Nicht jeder Compiler nutzt alle. Timer und Puffer liegen gewöhnlich nicht als Daten in der CSR-Bank. Ein Handler darf einen vom User kontrollierten Stackzeiger sp nicht ungeprüft als privilegierten Stack verwenden. CSR-Zugriffe folgen Rechten, nicht einer absoluten Unmanipulierbarkeit.</p>
+<p>Kontrollfrage: Darf der Handler den User-sp blind nutzen? In diesem U-nach-M-Modell nein. Der Adressraum der CSRs folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1475,7 +1587,8 @@ graph LR
 <li>Normale Befehle (<code>add</code>, <code>lw</code>) greifen nicht zu</li>
 </ul>
 <aside class="notes">
-<p>CSRs sind für User-Code unsichtbar und abgekapselt.</p>
+<p>Ein 12-Bit-Spezifikator erlaubt bis zu 4096 Adressen, nicht 4096 vorhandene Register. CSRs sind weder RAM noch MMIO. Lesen, Schreiben und zulässige Werte hängen vom einzelnen Register ab. Nicht alle sind für User-Code unsichtbar. Geeignete Zähler können lesbar sein.</p>
+<p>Kontrollfrage: Ist 4096 die Zahl der Flip-Flops? Nein. Der Modus entscheidet den Zugriff.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1493,7 +1606,7 @@ graph LR
 <ul>
 <li>Machine Mode (M): höchste Rechte, Boot; voller CSR-Zugriff (Firmware)</li>
 <li>Supervisor Mode (S): großes OS (Linux); viele CSRs (z. B. Paging)</li>
-<li>User Mode (U): Apps im Käfig; CSR-Zugriff <span class="math inline">\(\rightarrow\)</span> Trap</li>
+<li>User Mode (U): Anwendungen; unerlaubte privilegierte CSR-Zugriffe erzeugen einen Trap</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
 <div class="cell-output-display">
@@ -1515,7 +1628,8 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Boot mit höchsten Privilegien, dann Herabstufung. Hardware verriegelt CSR-Türen im User Mode.</p>
+<p>M-Mode ist die fundamentale privilegierte Stufe. Supervisor und User müssen nicht auf jedem kleinen System existieren. Voller M-Zugriff erlaubt trotzdem kein beliebiges Schreiben in nur lesbare oder fehlende CSRs. Ein unerlaubter Zugriff erzeugt Illegal Instruction. Speicherschutz gegen MMIO entsteht durch Rechte oder Übersetzung, nicht allein durch den Namen User Mode.</p>
+<p>Kontrollfrage: Darf User-Code nie einen CSR lesen? Doch, wenn er freigegeben ist. Die Zugriffsbefehle folgen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1538,7 +1652,8 @@ graph TD
 <span id="cb17-2"><a aria-label="2"></a>li t1<span class="op">,</span> <span class="dv">8</span>             <span class="op">#</span> Maske<span class="op">:</span> Bit MIE</span>
 <span id="cb17-3"><a aria-label="3"></a>csrrs x0<span class="op">,</span> mstatus<span class="op">,</span> t1  <span class="op">#</span> nur Bits setzen <span class="op">(OR)</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Brücke zwischen Schattenwelt und Integer-Registerbank. <code>csrw</code> überschreibt das ganze Register — Bits setzen mit <code>csrrs</code>.</p>
+<p>csrr ist die Kurzform von csrrs mit Quelle x0. csrw ist csrrw mit Ziel x0. MIE ist Bit 3, die Maske ist 8, nicht 1. csrrs setzt die maskierten schreibbaren Bits und erhält die anderen. Ein csrw kann das ganze Register ersetzen. Vor dem Einschalten müssen Handler und Quellen konfiguriert sein.</p>
+<p>Kontrollfrage: Setzt die Maske 1 das Bit MIE? Nein, Maske 8. Der kombinierte Zugriff vermeidet Zwischenzustände.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1558,10 +1673,12 @@ graph TD
 <li>Lösung: <code>csrrw</code> — Read und Write in einer Instruktion (atomar)</li>
 <li>Software-seitig ununterbrechbar (eine Instruktion)</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb18-1"><a aria-label="1"></a>li t1<span class="op">,</span> <span class="bn">0x1</span></span>
-<span id="cb18-2"><a aria-label="2"></a>csrrw t0<span class="op">,</span> mstatus<span class="op">,</span> t1  <span class="op">#</span> t0 <span class="op">=</span> alt<span class="co">; mstatus = t1</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb18-1"><a aria-label="1"></a># Lehrbeispiel<span class="op">:</span> nur MIE <span class="op">(</span>Bit <span class="dv">3</span><span class="op">,</span> Maske <span class="dv">8</span><span class="op">)</span> setzen<span class="op">,</span> übrige Bits erhalten</span>
+<span id="cb18-2"><a aria-label="2"></a>li t1<span class="op">,</span> <span class="dv">8</span></span>
+<span id="cb18-3"><a aria-label="3"></a>csrrs x0<span class="op">,</span> mstatus<span class="op">,</span> t1</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Atomarer Austausch verhindert verlorene Bits zwischen Read und Write.</p>
+<p>csrrw tauscht den ganzen Wert. csrrs setzt Bits, csrrc löscht Bits. mstatus mit 1 zu überschreiben wäre falsch, weil andere Statusbits verloren gingen. Für MIE ist csrrs mit Maske 8 passend. Die Atomarität einer CSR-Instruktion ist keine Mehrkernsperre und keine Speicherbarriere.</p>
+<p>Kontrollfrage: Erhält csrrw automatisch alle übrigen Bits? Nein. Die Trap-Register folgen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1578,14 +1695,15 @@ graph TD
 <h2>CSR: mtvec (Trap-Vector)</h2>
 <ul>
 <li>Vier Kern-CSRs für Trap-Handling</li>
-<li><code>mtvec</code>: Basisadresse der ISR</li>
-<li>Bei Trap: Hardware kopiert <code>mtvec</code> in den PC</li>
+<li><code>mtvec</code>: BASE und MODE</li>
+<li>Direct: Trapziel ist BASE, nicht eine blinde Kopie des ganzen Registers</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb19-1"><a aria-label="1"></a>Boot des OS:</span>
 <span id="cb19-2"><a aria-label="2"></a>  la t0, MeineRettungsRoutine</span>
 <span id="cb19-3"><a aria-label="3"></a>  csrw mtvec, t0</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Zentrale Notaufnahme-Adresse: Hardware springt blind dorthin.</p>
+<p>mtvec enthält BASE und MODE. Im Direct-Modus gehen alle Traps nach BASE. Im Vectored-Modus gehen Interrupts nach BASE plus 4 mal Ursache, Exceptions weiterhin nach BASE. Die Hardware kopiert nicht blind das ganze Register in den PC. Das Label muss ausgerichtet sein. Ob Venus diesen CSR-Zugriff ausführt, ist nicht belegt.</p>
+<p>Kontrollfrage: Ist das Ziel immer exakt der Registerinhalt? Nein, es hängt vom Modus ab. Die Fortsetzungsstelle folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1608,7 +1726,8 @@ graph TD
 <li>Bei einem Interrupt die Fortsetzungsadresse in <code>mepc</code> nicht pauschal erhöhen</li>
 </ul>
 <aside class="notes">
-<p><code>mepc</code> = Rückflugticket. Ohne +4 kehrt <code>mret</code> zum selben <code>ecall</code> zurück. Simulatoren wie Venus erledigen das intern.</p>
+<p>Bei einem Interrupt bleibt die gespeicherte Fortsetzungsadresse. Ein bewusst konsumierter 32-Bit-ecall wird um 4 erhöht, weil der Befehl selbst nicht wiederholt werden soll. Ein zu wiederholender Fehler behält die Fehleradresse. ecall bleibt auch mit C-Erweiterung 32 Bit lang. Venus verbirgt diese Fortsetzung und beweist damit kein sichtbares mepc.</p>
+<p>Kontrollfrage: Darf jeder Handler mepc um 4 erhöhen? Nein. Die Ursache entscheidet die Strategie.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1633,7 +1752,8 @@ graph TD
 <span id="cb20-2"><a aria-label="2"></a>li t1<span class="op">,</span> <span class="dv">8</span></span>
 <span id="cb20-3"><a aria-label="3"></a>beq t0<span class="op">,</span> t1<span class="op">,</span> Syscall   <span class="op">#</span> nach Interrupt<span class="op">-</span>Bit<span class="op">-</span>Check</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Erste Handlung der ISR: Interrupt-Bit und Exception-Code lesen, dann abzweigen.</p>
+<p>Bei RV32 ist Bit 31 das Interrupt-Bit. Der übrige Code ist die Ursache. 0x00000008 ist U-ecall, Ursache 8. 0x0000000B ist M-ecall, Ursache 11. 0x8000000B ist ein External Interrupt mit gesetztem Interrupt-Bit und demselben niedrigen Code 11. Der Code ersetzt nicht die Dienstnummer des Syscalls.</p>
+<p>Kontrollfrage: Bedeutet Code 11 immer denselben Trap? Nein, das Interrupt-Bit unterscheidet. mstatus begleitet Eintritt und Rückkehr.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1650,7 +1770,8 @@ graph TD
 <h2>CSR: mstatus (Status)</h2>
 <ul>
 <li>Herz der Kontrolle; u. a. Bit MIE (Machine Interrupt Enable)</li>
-<li>MIE = 1: Interrupts wahrnehmen; MIE = 0: taub</li>
+<li>MIE = 1: maskierbare M-Interrupts können angenommen werden</li>
+<li>MIE = 0: diese Interrupts sind global gesperrt; synchrone Exceptions bleiben möglich</li>
 <li>Beim Trap: Hardware setzt MIE automatisch auf 0 (kein Nesting)</li>
 </ul>
 <div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
@@ -1661,7 +1782,7 @@ graph TD
 <pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 
 graph TD
-  ON[MIE = 1 an] --&gt;|Trap| OFF[MIE = 0 taub]
+  ON[MIE = 1] --&gt;|Trap| OFF[MIE = 0, Exceptions bleiben]
   OFF --&gt;|mret| ON2[MIE &lt;- MPIE]
   style OFF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style ON fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
@@ -1673,7 +1794,8 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Hauptschalter der Ohren: Notaufnahme darf nicht durch einen zweiten Interrupt zerrissen werden.</p>
+<p>MIE sperrt oder erlaubt maskierbare M-Interrupts im aktuellen M-Mode. Quellenfreigabe und Pending bleiben nötig. MIE gleich 0 verhindert keine synchronen Exceptions. Beim Eintritt gilt MPIE gleich bisheriges MIE, MIE gleich 0 und MPP gleich vorheriger Modus. MPIE ist Machine Previous Interrupt Enable, MPP Machine Previous Privilege. Previous ist der gespeicherte Zustand für die Rückkehr. Dieses Lehrmodell schaltet im Handler nicht erneut frei.</p>
+<p>Kontrollfrage: Macht MIE gleich 0 die CPU für ecall taub? Nein. Der Handler-Prolog folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1709,7 +1831,8 @@ graph TD
 <span id="cb21-10"><a aria-label="10"></a>    mret</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Ein Handler mit Unteraufruf muss <code>ra</code> und alle möglicherweise veränderten Caller-Saved-Register sichern. Für <code>ra</code>, <code>t0</code>–<code>t6</code> und <code>a0</code>–<code>a7</code> sind das 16 Wörter, also 64 Byte. <code>mepc</code> wird nur bei einem bewusst konsumierten 4-Byte-<code>ecall</code> um 4 erhöht. Ein Interrupt setzt bei <code>mepc</code> bereits die Fortsetzungsadresse; dort nicht pauschal addieren.</p>
 <aside class="notes">
-<p>Produktionssysteme tauschen auf den Kernel-Stack. Die Kurzform dient nur der Lesbarkeit.</p>
+<p>Annahmen: Direct-Modus, gültiger 16-Byte-ausgerichteter Stack, kein verschachteltes Trap, Leaf ohne call. Der Frame von 16 Byte sichert t0. csrr liest die Ursache. Danach wird t0 zurückgeladen und mret ausgeführt. Eine Quittierung ohne Gerätevertrag ist nur ein Gerüst. Ein U-nach-M-Handler kann sp mit mscratch tauschen. Das ist eine mögliche Konvention, kein universelles OS-Rezept.</p>
+<p>Kontrollfrage: Darf dieser Leaf-Handler call ausführen? Nein, ra wäre ungesichert. Ein Unteraufruf vergrößert den Frame.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1732,7 +1855,8 @@ graph TD
 <span id="cb22-2"><a aria-label="2"></a># die der <span class="dv">16</span><span class="op">-</span><span class="dt">Byte</span><span class="op">-</span>Leaf<span class="op">-</span>Frame oben nicht gesichert hat<span class="op">.</span></span>
 <span id="cb22-3"><a aria-label="3"></a># Entweder Leaf ohne Call<span class="op">,</span> oder <span class="dv">64</span><span class="op">-</span><span class="dt">Byte</span><span class="op">-</span>Frame für ra<span class="op">,</span> t0–t6<span class="op">,</span> a0–a7<span class="op">.</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Nach Sicherung nur Register benutzen, die der Frame enthält. Ein <code>call</code> ohne gesichertes <code>ra</code> kehrt nicht zuverlässig zurück.</p>
+<p>call verändert ra und kann t- und a-Register verändern. Unter der üblichen RV32-Integerkonvention sind ra, t0 bis t6 und a0 bis a7 sechzehn Wörter, also 64 Byte. Die Ausrichtung bleibt 16 Byte. s-Register bleiben nur erhalten, wenn die Konvention eingehalten wird. Gleitkomma liegt außerhalb. mepc wird nur nach begründeter Policy geändert. Ein IRQ-Handler muss t0 erhalten, obwohl t0 bei normalen Funktionen caller-saved ist, weil der unterbrochene Code nicht sichern konnte.</p>
+<p>Kontrollfrage: Warum t0 sichern, wenn es caller-saved ist? Weil kein Aufruf voranging. Danach die Rückkehr.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1759,7 +1883,8 @@ graph TD
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb23-1"><a aria-label="1"></a>    mret    <span class="op">#</span> zurück ins User<span class="op">-</span>Programm</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Bei Trap: MPIE &lt;- MIE, MIE &lt;- 0. Bei <code>mret</code>: MIE &lt;- MPIE, plus Rücksprung und Ring-Herabstufung.</p>
+<p>ret springt über ra. mret stellt PC aus mepc her und den Modus aus MPP. In ra kann eine gültige Funktionsadresse liegen, nur nicht die Trap-Fortsetzung. Bei M nach M wird nicht nach User abgestuft. MIE wird aus MPIE wiederhergestellt. Danach setzt das Referenzmodell MPIE auf 1 und MPP auf den niedrigsten unterstützten Modus. Das ist der gespeicherte Wert, nicht der gerade wiederhergestellte aktuelle Modus. Ein S-Mode-Handler nutzt sret.</p>
+<p>Kontrollfrage: Setzt mret immer nach User zurück? Nein. Der Gesamtablauf folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1806,7 +1931,8 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Hardware fängt Signale und steuert CSRs; Kernel sichert Kontext und arbeitet. Timer-Interrupts verteilen Rechenzeit.</p>
+<p>Ein vollständiger Durchlauf ist Ereignis, Hardwareeintritt, Rettung, Behandlung, Wiederherstellung und mret. Das ist nicht automatisch ein Prozesswechsel. Timer können Scheduling auslösen, müssen es aber nicht. Die Kontrollfrage lautet: Warum t0 sichern, obwohl Funktionen es nicht erhalten? Weil der Interrupt asynchron kommt. Die Antwort steht in der vorherigen Notiz.</p>
+<p>Kontrollfrage: Wechselt jeder Trap den Prozess? Nein. Dieselbe Idee dient absichtlichen Diensten.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1822,7 +1948,20 @@ graph TD
 <section>
 <section id="syscalls-das-betriebssystem" class="title-slide slide level1 center">
 <h1>Syscalls &amp; Das Betriebssystem</h1>
-
+<aside class="notes">
+<p>Ein System Call ist eine Dienstanforderung. ecall löst sie aus. Das Laborziel ist Textausgabe. Venus erhält dafür keinen vollständigen privilegierten Kernel. Der bisherige Trap erklärt den Rahmen, der Dienst den Zweck.</p>
+<p>Kontrollfrage: Ist die Konsolenausgabe schon ein Kernel? Nein. Die Schnittstelle folgt.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="absichtliche-traps-und-der-pförtner" class="slide level2">
 <h2>Absichtliche Traps und der Pförtner</h2>
@@ -1853,7 +1992,8 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>Phase 5 beginnt: System Calls als Brücke vom User Mode in den privilegierten Kernel.</p>
+<p>Die Anwendung fordert einen Dienst an. Die Umgebung prüft Argumente und Rechte, führt die Operation aus und kann ein Ergebnis liefern. Das ist kein Notfall. Die ABI ist der binäre Vertrag über Register und Parameter. Ein API, Application Programming Interface, benennt die angebotenen Operationen. Venus simuliert den Dienst, ein echter User-nach-Kernel-Übergang ist ein anderes Modell.</p>
+<p>Kontrollfrage: Ist der Pförtner ein Notarzt? Nein. Als Nächstes der absichtliche Trap.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1877,7 +2017,8 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb24-1"><a aria-label="1"></a>Ein Syscall ist wie ein roter Notfallknopf.</span>
 <span id="cb24-2"><a aria-label="2"></a>Das Programm drückt ihn, friert sich ein und ruft das OS zu Hilfe.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Hardware-Interrupts sind nur die halbe Miete. User-Mode-Programme dürfen Monitor oder SSD nicht direkt anfassen — sie bitten das OS über Software-Traps um Hilfe.</p>
+<p>ecall fordert einen Dienst an. ebreak dient eher dem Debugging. Nicht jeder absichtliche Trap ist ein Syscall. Die Ausführung geht kontrolliert über, das Programm friert nicht ein. Ein Dienst kann später blockieren, muss es aber nicht. Direkter Gerätezugriff ist in Bare Metal üblich.</p>
+<p>Kontrollfrage: Ist ebreak ein Print? Nein. Geschützte Anwendungen überlassen Geräte oft der Umgebung.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1898,7 +2039,8 @@ graph TD
 <li>Abstraktion: tausende Monitore/Treiber — das OS kapselt Hardware in einer universellen Schnittstelle</li>
 </ul>
 <aside class="notes">
-<p>Betriebssysteme existieren wegen Sicherheit und Bequemlichkeit: <code>print</code> statt Grafikkarten-Handbuch.</p>
+<p>Schutz, Verwaltung und Abstraktion erklären eine Konsole. User Mode sperrt MMIO nicht automatisch. Dafür braucht es Rechte oder Übersetzung. Ein OS ist für viele Systeme typisch, für jeden eingebetteten Rechner aber nicht nötig. printf formatiert meist in einer Bibliothek und nutzt dann einen Ausgabedienst.</p>
+<p>Kontrollfrage: Ist jeder printf ein direkter Gerätestore? Nein. Der Kern stellt den Zugang bereit.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1940,7 +2082,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Türsteher vor der Hardware: Zettel (Syscall) prüfen, Treiber anstoßen, Kontrolle zurückgeben.</p>
+<p>Ein Kernel und seine Treiber arbeiten privilegiert. RISC-V nutzt Modi, keine x86-Ringe. Der Vertrag prüft Nummer, Zeiger und Rechte. Der Kernel muss nicht jedes Gerät allein bedienen. Für den Einstieg genügt ein vereinfachtes geschütztes Modell.</p>
+<p>Kontrollfrage: Ist M-Mode Ring 0? Die Rollen ähneln sich, die Namen nicht. Der Auslösebefehl folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1963,7 +2106,8 @@ graph LR
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb25-1"><a aria-label="1"></a>ecall    <span class="op">#</span> aus U<span class="op">-</span>Mode in den Kernel</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Instruction Decoder erkennt <code>ecall</code>, löst absichtlich einen Trap aus: PC nach <code>mtvec</code>, Kernel erwacht.</p>
+<p>ecall hat keine Operanden. Die Parameter stehen vorher in Registern. Die ISA kennt Print Integer nicht. Die Umgebung definiert den Dienst. Ein Trap ist kein automatischer Prozesswechsel. Ein Simulator kann die Anfrage im Host behandeln.</p>
+<p>Kontrollfrage: Steht die Dienstnummer im Befehlswort von ecall? Nein, in einem Register. Die Liste der Dienste folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1985,7 +2129,8 @@ graph LR
 <li>Antwort: Vertrag erfüllen — die Syscall-ABI</li>
 </ul>
 <aside class="notes">
-<p>Restaurant mit Speisekarte: Klingel (<code>ecall</code>) reicht nicht — Gericht muss vorher kommuniziert sein.</p>
+<p>Die API nennt die Operation, die ABI Nummer, Register und Fehlerregel. Hunderte Dienste sind eine mögliche OS-Eigenschaft, nicht die drei Venus-Dienste dieses Labors. Die Speisekarte braucht diese Zuordnung, sonst bleibt sie eine Metapher.</p>
+<p>Kontrollfrage: Ist Print Integer Teil der RISC-V-ISA? Nein. Die Register unterscheiden sich je Umgebung.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2009,7 +2154,8 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb26-1"><a aria-label="1"></a>Venus:  a0 = Service-ID,  a1 = Argument</span>
 <span id="cb26-2"><a aria-label="2"></a>Linux:  a7 = Service-ID,  a0 = Argument</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Venus folgt der SPIM/MARS-Tradition (ID in a0). Echte RISC-V-Linux-Systeme und RARS nutzen a7. Verwechslung ist die häufigste Laborfalle.</p>
+<p>Venus: Nummer in a0, erstes Argument in a1. Ripes und RARS: Nummer in a7, erstes Argument in a0. Linux auf RISC-V: Nummer in a7, Argumente in a0 bis a5. Gleiche Register sind nicht gleiche Dienste. Print Integer 1 ist ein Simulatordienst, kein Linux-Dienst. MIPS-Konventionen mit v0 bleiben außen vor.</p>
+<p>Kontrollfrage: Darf Venus-Code a7 gleich 1 für die Ausgabe nutzen? Nicht in dieser Konvention. Der Venus-Vertrag folgt im Code.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2032,7 +2178,8 @@ graph LR
 <span id="cb27-2"><a aria-label="2"></a>li a1<span class="op">,</span> <span class="dv">42</span>       <span class="op">#</span> Argument</span>
 <span id="cb27-3"><a aria-label="3"></a>ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Drei Zeilen unter Venus-ABI. Bare-Metal-Handler müssten zuvor <code>mepc += 4</code> setzen.</p>
+<p>li a0, 1 setzt die Dienstnummer. li a1, 42 setzt den Wert, keine Adresse. ecall fordert die Ausgabe 42 an. li ist ein Pseudobefehl. Kleine Konstanten passen in eine Immediate-Operation. Die Fortsetzung stellt Venus bereit. Nicht jeder Bare-Metal-Handler muss mepc erhöhen. Das gilt nur für einen bewusst konsumierten ecall im passenden Trap-Modell.</p>
+<p>Kontrollfrage: Ist 42 eine Stringadresse? Nein. Danach das Programmende.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2054,7 +2201,8 @@ graph LR
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb28-1"><a aria-label="1"></a>li a0<span class="op">,</span> <span class="dv">10</span>       <span class="op">#</span> Venus<span class="op">:</span> Exit</span>
 <span id="cb28-2"><a aria-label="2"></a>ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Professioneller Stil: nach dem Algorithmus Exit statt Endlosschleife.</p>
+<p>Dienst 10 beendet ohne Rückkehr. Eine Anweisung dahinter ist kein sicherer Programmschritt. Eine Endlosschleife ist für dauerhafte Firmware legitim. Für diese Konsole ist Exit der klare Abschluss. Das minimale Programm gibt aus und beendet.</p>
+<p>Kontrollfrage: Läuft Code nach Exit zuverlässig weiter? Nein. Simulator und privilegierte Architektur werden getrennt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2100,7 +2248,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Dieselbe Notaufnahme wie beim Hardware-Interrupt; Code 8 = absichtlicher User-Anruf. Venus verbirgt <code>mepc+4</code> und die Service-Auswertung.</p>
+<p>Im U-nach-M-Modell ohne Delegation, Direct-Modus, gilt mepc gleich ecall-Adresse, mcause gleich 8 und das Ziel BASE. Ein M-ecall hätte Ursache 11. Ein konsumierter ecall wird um 4 erhöht. Linux mit Supervisor nutzt stvec, sepc und sret. Venus erklärt den Dienst, ohne diese CSRs als nachgewiesene Simulation zu behaupten.</p>
+<p>Kontrollfrage: Ist mcause bei jedem ecall 8? Nur aus User Mode in diesem Modell. Das Schichtenbild greift das auf.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2140,7 +2289,8 @@ graph TD
 </div>
 </div>
 <aside class="notes">
-<p>App → Syscall-Vertrag → Kernel → nackte Hardware. Im Berufsleben trifft man oft alle Schichten.</p>
+<p>Ein Ausgabewert geht durch Anwendung, Bibliothek, Dienst und Gerät. Ergebnisse und Fehler können zurückkommen. Abstraktion und Schutz sind verschieden. Venus abstrahiert den Konsolendienst. Die sichtbare Ausgabe beweist keinen Kernel und kein MMIO-Register.</p>
+<p>Kontrollfrage: Folgt aus der Konsole ein mtvec? Nein. Beide Modelle gehen ins Labor.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2156,7 +2306,20 @@ graph TD
 <section>
 <section id="praxis-ripes-venus" class="title-slide slide level1 center">
 <h1>Praxis: Ripes &amp; Venus</h1>
-
+<aside class="notes">
+<p>Zwei Ziele: in Ripes eine Maske in eine Farbe übersetzen, in Venus einen String und einen berechneten Wert ausgeben. mret ist keine Voraussetzung. Ripes prüft Adressen und Farbwort, Venus die Register vor ecall.</p>
+<p>Kontrollfrage: Braucht Hello World einen Trap-Handler? In Venus nein. Die Werkzeugwahl folgt.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="dualer-laboreinsatz" class="slide level2">
 <h2>Dualer Laboreinsatz</h2>
@@ -2168,7 +2331,8 @@ graph TD
 <li>Typische I/O-Bugs und Clobbering-Warnung</li>
 </ul>
 <aside class="notes">
-<p>Theorie von Einheit 8 abgeschlossen: Bare-Metal und OS-Aufrufe mit beiden Werkzeugen.</p>
+<p>Ripes zeigt hier die Matrix, Venus die Konsole. Beide Werkzeuge können mehr. Ripes muss nicht geschlossen werden. Erfolg in Ripes ist die erwartete Farbe, in Venus die erwartete Ausgabe.</p>
+<p>Kontrollfrage: Schließt das eine Werkzeug das andere aus? Nein. Die Grenzen werden benannt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2185,13 +2349,14 @@ graph TD
 <h2>Tool-Zweck im Labor</h2>
 <ul>
 <li>Zwei Welten: nackte Hardware (MMIO) vs.&nbsp;Abstraktion (Syscalls)</li>
-<li>Ripes: Hardware-Simulator, Bare-Metal mit <code>lw</code>/<code>sw</code> auf MMIO</li>
-<li>Venus: OS-Simulator, fängt <code>ecall</code> ab und simuliert Konsole</li>
+<li>Ripes: MMIO-Labor mit Switches und LED-Matrix; Environment Calls existieren zusätzlich</li>
+<li>Venus: Instruktionssimulator mit Konsolendiensten über ecall, kein nachgewiesener Kernel</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb29-1"><a aria-label="1"></a>Ripes  → Schalter-LED-Labor (Bare-Metal)</span>
-<span id="cb29-2"><a aria-label="2"></a>Venus  → Print-/EVA-Labor mit `.data` (Syscalls)</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb29-1"><a aria-label="1"></a>Ripes  → Schalter-LED-Labor</span>
+<span id="cb29-2"><a aria-label="2"></a>Venus  → Konsolenausgabe mit ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Ripes = Physik ohne Linux; Venus = Kernel-Simulation mit Konsole.</p>
+<p>Ripes ist für dieses Labor das MMIO-Werkzeug und besitzt zusätzlich Environment Calls. Venus ist ein Instruktionssimulator mit Konsolendiensten, kein nachgewiesener OS-Kernel. Version und Prozessormodell wurden hier nicht live geprüft. CSR-Zugriffe und mret werden nicht als in beiden Werkzeugen lauffähig behauptet.</p>
+<p>Kontrollfrage: Simuliert Venus mtvec? Das ist nicht belegt. Die Geräte werden angelegt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2212,7 +2377,8 @@ graph TD
 <li>Ripes verdrahtet virtuell und vergibt MMIO-Adressen</li>
 </ul>
 <aside class="notes">
-<p>Steckbrett-Simulation inkl. Adress-Decoder.</p>
+<p>Switches mit mindestens vier Eingängen und eine LED-Matrix, für das Lauflicht eine Zeile und acht Spalten, werden im I/O-Tab angelegt. Registerkarte und Exports müssen abgelesen werden. Interaktives Run ist keine Messung realer Latenz. Ein geänderter Aufbau kann die Adressen ändern. Ein UI-Test dieser Fassung liegt nicht vor.</p>
+<p>Kontrollfrage: Bleiben die Adressen nach dem Umbau gleich? Nicht garantiert. Der Code muss sie verwenden.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2230,32 +2396,33 @@ graph TD
 <ul>
 <li>Bauteil anklicken <span class="math inline">\(\rightarrow\)</span> Konfiguration unten links</li>
 <li>Base Address zwingend ablesen</li>
-<li>Typisch: Switches <code>0xF0000000</code>, LEDs <code>0xF0000020</code></li>
-<li>Diese Adressen in Register laden für <code>lw</code>/<code>sw</code></li>
+<li>Base Address aus der Registerkarte bzw. den Exports ablesen</li>
+<li>Die Zahlen unten sind ein illustrativer Snapshot, keine universelle Hardwarekonstante</li>
 </ul>
 <table class="caption-top">
 <thead>
 <tr class="header">
 <th>Gerät</th>
 <th>Typ</th>
-<th>Typische Adresse</th>
+<th>Illustrativer Snapshot</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Switches</td>
 <td>Input (Bit-Map)</td>
-<td><code>0xF0000000</code></td>
+<td>Export <code>SWITCHES_0_BASE</code></td>
 </tr>
 <tr class="even">
 <td>LED Matrix</td>
 <td>Output (Wort-Array)</td>
-<td><code>0xF0000020</code></td>
+<td>Export <code>LED_MATRIX_0_BASE</code></td>
 </tr>
 </tbody>
 </table>
 <aside class="notes">
-<p>Ohne Hausnummer ist der Code blind; Basisadresse oft in <code>s</code>-Register.</p>
+<p>SWITCHES_0_BASE und LED_MATRIX_0_BASE sind die Namen, sofern der Export sie so liefert. Eine Größe in Byte ist nicht automatisch die Pixelzahl. Ein Wort je Pixel bedeutet Teilung durch 4. Ein fester Snapshot wie 0xF0000000 bleibt illustrativ. Zugriffstyp und Breite werden in der Karte geprüft.</p>
+<p>Kontrollfrage: Ist LED_MATRIX_0_SIZE immer die Pixelzahl? Nein. Der erste Pixel folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2276,21 +2443,23 @@ graph TD
 <li>Ja: erste LED rot (<code>0x00FF0000</code>); nein: schwarz (<code>0x00000000</code>)</li>
 <li>Offset der ersten LED: <code>0(Base)</code></li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb30-1"><a aria-label="1"></a>li s1<span class="op">,</span> <span class="bn">0xF0000000</span>      <span class="op">#</span> Switches</span>
-<span id="cb30-2"><a aria-label="2"></a>li s2<span class="op">,</span> <span class="bn">0xF0000020</span>      <span class="op">#</span> LED<span class="op">-</span>Matrix</span>
-<span id="cb30-3"><a aria-label="3"></a><span class="fu">Loop:</span></span>
-<span id="cb30-4"><a aria-label="4"></a>  lw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
-<span id="cb30-5"><a aria-label="5"></a>  andi t1<span class="op">,</span> t0<span class="op">,</span> <span class="dv">8</span>       <span class="op">#</span> Maske Bit <span class="dv">3</span></span>
-<span id="cb30-6"><a aria-label="6"></a>  beq t1<span class="op">,</span> zero<span class="op">,</span> Off</span>
-<span id="cb30-7"><a aria-label="7"></a>  li t2<span class="op">,</span> <span class="bn">0x00FF0000</span>    <span class="op">#</span> Rot</span>
-<span id="cb30-8"><a aria-label="8"></a>  j Store</span>
-<span id="cb30-9"><a aria-label="9"></a><span class="fu">Off:</span></span>
-<span id="cb30-10"><a aria-label="10"></a>  li t2<span class="op">,</span> <span class="dv">0</span></span>
-<span id="cb30-11"><a aria-label="11"></a><span class="fu">Store:</span></span>
-<span id="cb30-12"><a aria-label="12"></a>  sw t2<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s2<span class="op">)</span></span>
-<span id="cb30-13"><a aria-label="13"></a>  j Loop</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb30-1"><a aria-label="1"></a># Adressen nur<span class="op">,</span> wenn der Export sie bestaetigt</span>
+<span id="cb30-2"><a aria-label="2"></a>li s1<span class="op">,</span> SWITCHES_0_BASE</span>
+<span id="cb30-3"><a aria-label="3"></a>li s2<span class="op">,</span> LED_MATRIX_0_BASE</span>
+<span id="cb30-4"><a aria-label="4"></a><span class="fu">Loop:</span></span>
+<span id="cb30-5"><a aria-label="5"></a>  lw t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s1<span class="op">)</span></span>
+<span id="cb30-6"><a aria-label="6"></a>  andi t1<span class="op">,</span> t0<span class="op">,</span> <span class="dv">8</span>       <span class="op">#</span> Maske Bit <span class="dv">3</span></span>
+<span id="cb30-7"><a aria-label="7"></a>  beq t1<span class="op">,</span> zero<span class="op">,</span> Off</span>
+<span id="cb30-8"><a aria-label="8"></a>  li t2<span class="op">,</span> <span class="bn">0x00FF0000</span>    <span class="op">#</span> Rot</span>
+<span id="cb30-9"><a aria-label="9"></a>  j Store</span>
+<span id="cb30-10"><a aria-label="10"></a><span class="fu">Off:</span></span>
+<span id="cb30-11"><a aria-label="11"></a>  li t2<span class="op">,</span> <span class="dv">0</span></span>
+<span id="cb30-12"><a aria-label="12"></a><span class="fu">Store:</span></span>
+<span id="cb30-13"><a aria-label="13"></a>  sw t2<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s2<span class="op">)</span></span>
+<span id="cb30-14"><a aria-label="14"></a>  j Loop</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Einheit 3 (Bits) + Einheit 8 (I/O): nicht nur „ungleich 0“, sondern exakt Schalter 3 maskieren.</p>
+<p>beispiele/vl8_sw3_rot.s maskiert mit 8. 0b0000 und 0b0101 schreiben Schwarz. 0b1000 und 0b1101 schreiben Rot 0x00FF0000. Andere Schalter stören diese Zelle nicht. Das ist eine Pegelanzeige, keine Entprellung. s1 und s2 halten Adressen, t0 bis t2 die aktuellen Werte. Die Endlosschleife ist beabsichtigt. Ripes wurde nicht ausgeführt.</p>
+<p>Kontrollfrage: Welches Farbwort schreibt 0b0101? Null. Das Lauflicht nutzt mehrere Wörter.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2306,13 +2475,14 @@ graph TD
 <section id="labor-aufgabe-2-ripes" class="slide level2">
 <h2>Labor-Aufgabe 2 (Ripes)</h2>
 <ul>
-<li>Lauflicht (Knight-Rider): grüne LED wandert links <span class="math inline">\(\rightarrow\)</span> rechts</li>
+<li>Umlaufendes Lauflicht: ein grüner Pixel wandert und der vorige wird gelöscht</li>
 <li>Offset-Pointer startet bei 0; Delay-Loop für Sichtbarkeit</li>
 <li>Pointer += 4 für nächstes LED-Wort; am Ende zurücksetzen</li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb31-1"><a aria-label="1"></a># Lauflicht im I<span class="op">/</span>O<span class="op">-</span>Tab beobachten</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Jede LED = 32 Bit; Pointer um 4 Bytes erhöhen, sonst unsichtbar schnell.</p>
+<p>beispiele/vl8_lauflich.s setzt eine Zeile mit acht grünen Schritten. Der Offset läuft 0, 4 bis 28. Die Bytegrenze ist 32 und wird nicht beschrieben. Der alte Pixel wird gelöscht. Der Zähler 10000 wird je Pixel neu geladen und belegt keine Millisekunden. Ein Hin-und-her-Muster wäre ein anderes Programm.</p>
+<p>Kontrollfrage: Bleibt der vorige Pixel an? Nein, er wird genullt. Danach ersetzt ein Dienstvertrag den Pixel.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2325,15 +2495,16 @@ graph TD
           display:block!important;
       }</style></aside>
 </section>
-<section id="wechsel-zu-venus-os-simulation" class="slide level2">
-<h2>Wechsel zu Venus (OS-Simulation)</h2>
+<section id="wechsel-zu-venus-konsolendienste" class="slide level2">
+<h2>Wechsel zu Venus: Konsolendienste</h2>
 <ul>
 <li>Ripes schließen, Venus öffnen; Konsole unten</li>
 <li>Venus fängt <code>ecall</code> ab, wertet Service-ID in <code>a0</code> aus, schreibt in die Konsole</li>
 <li>Keine harten MMIO-Adressen — Arbeit an das OS delegieren</li>
 </ul>
 <aside class="notes">
-<p>Paradigmenwechsel: vom Bare-Metal-Bus zur Syscall-API (Venus-ABI!).</p>
+<p>Geöffnet wird die Kursvariante von Venus. Assembliert und ausgeführt wird dort. a0 ist die Dienstnummer, a1 das Argument. Die Konsole ist die Wirkung. Das ist kein nachgewiesener Kernel. Ripes darf offen bleiben. Ein Screenshot liegt nicht vor.</p>
+<p>Kontrollfrage: Steht die Nummer in a7? In dieser Venus-Konvention nein. Die drei Dienste folgen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2383,7 +2554,8 @@ graph TD
 </table>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb32-1"><a aria-label="1"></a>Hinweis: Venus hat keinen interaktiven Read-Int (anders als RARS).</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Labor nutzt Print und Exit. Interaktive Eingabe gehört nicht zum Standard-Venus.</p>
+<p>Dienst 1 druckt eine ganze Zahl aus a1. Dienst 4 druckt einen nullterminierten String, dessen Adresse in a1 steht. Dienst 10 beendet ohne Rückkehr. Ein Read-Int ist in dieser Standardtabelle nicht enthalten. Registererhaltung ist ein eigener Vertrag und hier nicht als universelle Venus-Garantie belegt.</p>
+<p>Kontrollfrage: Ist a1 bei Dienst 4 der Text selbst? Nein, die Adresse. Der String wird angelegt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2409,7 +2581,8 @@ graph TD
 <span id="cb33-4"><a aria-label="4"></a>li a0<span class="op">,</span> <span class="dv">10</span></span>
 <span id="cb33-5"><a aria-label="5"></a>ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>String-Adresse in a1, Service-ID 4 in a0 — Venus-ABI.</p>
+<p>beispiele/vl8_hello.s legt msg mit .asciiz an. .data und .text trennen Daten und Code. la lädt die Adresse, nicht das erste Zeichen. Das Nullbyte beendet den String. Die Ausgabe ist Hello World mit Zeilenumbruch, danach Exit. Eine konkrete Datenadresse wird nicht erfunden. .globl main passt nur, wenn der Simulator main startet.</p>
+<p>Kontrollfrage: Druckt das Nullbyte? Nein. Als Nächstes ein Zahlenwert aus dem Speicher.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2435,7 +2608,8 @@ graph TD
 <span id="cb34-3"><a aria-label="3"></a>li a0<span class="op">,</span> <span class="dv">1</span></span>
 <span id="cb34-4"><a aria-label="4"></a>ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>EVA-Prinzip über Syscalls; Input kommt aus <code>.data</code>, nicht von der Konsole.</p>
+<p>EVA bedeutet Eingabe, Verarbeitung, Ausgabe. n ist das Wort 21. la und lw 0(Register) laden es. slli um 1 ergibt 42. Dienst 1 druckt 42, Dienst 4 den Zeilenumbruch, Dienst 10 beendet. Das Wort steht vor dem String, damit die Ausrichtung erhalten bleibt. lw t0, n ist keine garantierte Basisinstruktion. Es gibt keine interaktive Eingabe. Das Programm ist beispiele/vl8_eva.s und wurde nicht ausgeführt.</p>
+<p>Kontrollfrage: Warum nicht zuerst der String? Damit das Wort ausgerichtet bleibt. Fehler liegen oft im Vertrag.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2453,19 +2627,15 @@ graph TD
 <ul>
 <li>Ripes LED schwarz?
 <ul>
-<li>Basisadresse korrekt?</li>
-<li>Memory-Tab bei <code>0xF0…</code>: Farbmuster sichtbar?</li>
-<li>Im RAM, aber dunkel: Refresh; nicht im RAM: <code>sw</code>/Adresse prüfen</li>
+<li>Gerät, Export, effektive Adresse, Maske und Farbwort prüfen</li>
+<li>Ein Speicherbild allein beweist nicht die sichtbare Diodenwirkung</li>
 </ul></li>
-<li>Venus stürzt bei <code>ecall</code>?
-<ul>
-<li>ID in <code>a0</code>, Argument in <code>a1</code> (nicht a7/a0 wie bei Linux/RARS)</li>
-<li>String: Adresse mit <code>la</code> in <code>a1</code>; Integer: Wert in <code>a1</code></li>
-</ul></li>
+<li>Venus: Dienstnummer in <code>a0</code>, Argument in <code>a1</code></li>
 </ul>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb35-1"><a aria-label="1"></a>Simulator als Spion: Register vor ecall prüfen.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Memory-Tab verrät, ob <code>sw</code> traf; Venus: ID in <code>a0</code>, Payload in <code>a1</code>.</p>
+<p>Bei Ripes werden Gerät, Export, effektive Adresse, Breite, Alignment, Maske, Farbwort und Store geprüft. Die Memory-Ansicht allein beweist weder RAM noch die Diodenwirkung. Bei Venus werden a0, a1, Wert gegen Zeiger, Terminator und Exit geprüft. Ein Refresh ist keine belegte allgemeine Heilung.</p>
+<p>Kontrollfrage: Liegt eine falsche LED-Adresse immer im Heap? Nein. Der Registererhalt über ecall folgt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2490,7 +2660,8 @@ graph TD
 <li>Lösung: vor <code>ecall</code> auf Stack sichern oder <code>s0</code>–<code>s11</code> nutzen</li>
 </ul>
 <aside class="notes">
-<p>Klassische Falle: Venus wirkt „nett“ zu <code>t</code>-Registern, die ABI erlaubt aber Clobbering. Portabler Code hält Zähler in <code>s</code>-Registern bzw. sichert vor dem Syscall.</p>
+<p>Der Clobber-Vertrag kommt aus der konkreten Umgebung. ecall ist kein normaler Funktionsaufruf. Daraus folgt nicht, dass alle caller-saved Register zerstört werden. RARS dokumentiert Erhaltung außer Ergebnisregistern. Für die gewählte Venus-Variante ist die Erhaltung ohne Prüfung offen. Ein s-Register ist nur sicher, wenn der Vertrag es sagt. Portabilität braucht außerdem passende Dienste.</p>
+<p>Kontrollfrage: Ist s0 über jeden ecall portabel sicher? Nein. Die Zusammenfassung ordnet die Verträge.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2515,7 +2686,8 @@ graph TD
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb36-1"><a aria-label="1"></a>Von Transistoren bis zum Betriebssystem:</span>
 <span id="cb36-2"><a aria-label="2"></a>das Ökosystem der Computerarchitektur ist durchdrungen.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Isolation durchbrochen: Bare-Metal-I/O und der Tanz CPU ↔︎ OS.</p>
+<p>MMIO ordnet Geräten Adressen zu. Masken isolieren Bits. RGB-Wörter kodieren Pixel. volatile und Cacheattribute sind verschiedene Ebenen. Polling und Interrupts organisieren Reaktionen. CSRs halten den Trap-Zustand. Syscalls folgen dem Vertrag der Umgebung. Das ist keine Beherrschung der gesamten Systemarchitektur. Der direkte MMIO-Pfad und der Dienstpfad bleiben getrennt.</p>
+<p>Kontrollfrage: Ist Venus-Ausgabe ein Beweis für mtvec? Nein. Die Aufgaben prüfen das selbst.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2558,7 +2730,8 @@ graph LR
 </div>
 </div>
 <aside class="notes">
-<p>Letzte Hands-On-Phase: Lauflicht in Ripes, EVA-Syscalls in Venus. Viel Erfolg!</p>
+<p>Q&amp;A bedeutet Questions and Answers. Ein 32-Bit-Wortarray schreitet um 4 Byte. Ein String ist eine Bytefolge mit Nullterminator, nicht generell plus 4. Ripes erwartet bei SW3 Rot und sonst Schwarz, das Lauflicht genau einen grünen Pixel. Venus erwartet Hello World und danach 42. 0b1101 und Maske 8 ergeben 8 und dann Rot. Druck und Freigabe zählen einen gehaltenen Pegel einmal, filtern Prellen aber nicht. MIE gleich 0 sperrt nicht ecall. 0x0000000B ist M-ecall, 0x8000000B ein External Interrupt. Die nächste Einheit wird hier nicht erfunden.</p>
+<p>Kontrollfrage: Was steht bei Venus Print Integer in a0 und a1? 1 und der Zahlenwert. Damit sind Adresse, Maske und Dienstvertrag unterscheidbar.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
