@@ -45,6 +45,7 @@ format:
   # Reveal.js — Vorlesungsfolien (Vortrag)
   # ---------------------------------------------------------------------------
   revealjs:
+    lang: de
     theme:
       - simple
       - assets/styles/slides.scss

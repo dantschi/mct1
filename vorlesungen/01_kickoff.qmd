@@ -2,6 +2,7 @@
 title: "Mikrocomputertechnik 1"
 subtitle: "Duale Hochschule Baden-Württemberg Stuttgart - Studiengang Elektro- und Informationstechnik"
 author: "Prof. Dr.-Ing. Daniel Klünder"
+lang: de
 # Vortrag:  quarto preview vorlesungen/01_kickoff.qmd
 #           (Notizen nur mit Taste S)
 # Handout:  quarto render vorlesungen/01_kickoff.qmd --profile handout --to pdf
@@ -9,8 +10,24 @@ author: "Prof. Dr.-Ing. Daniel Klünder"
 format: revealjs
 ---
 
+
+::: notes
+Mikrocomputertechnik 1, kurz MCT1, an der DHBW Stuttgart verbindet Digitaltechnik mit der softwareseitig sichtbaren Maschine. DHBW bedeutet Duale Hochschule Baden-Württemberg. Der Studiengang ist Elektro- und Informationstechnik. Informationstechnik, kurz IT, ist hier die Verarbeitung von Information durch Schaltungen und Programme.
+
+Die Folien bleiben im Vortrag knapp. Die Lernfassung enthält dieselben Folien mit diesen Notizen, einschließlich der Rechnungen. Die Leitfrage lautet: Wie wird aus Bits ein gespeichertes und berechenbares Ergebnis?
+
+Kontrollfrage: Ist diese Titelfolie bereits der Datenpfad? Nein. Die nächste Folie grenzt die heutigen Grundlagen ein.
+:::
 # Einleitung und Grundlagen
 
+
+::: notes
+Der Kickoff stellt Modelle und Bausteine bereit. Daraus entsteht in späteren Einheiten ein programmierbarer Datenpfad. Nötig sind elementare Gatter, der Unterschied zwischen 0 und 1 und die Idee eines Registers. Die lokale Auffrischung ersetzt keine stillen Voraussetzungen.
+
+CPU bedeutet Central Processing Unit, der Prozessor. ALU bedeutet Arithmetic Logic Unit, die arithmetisch-logische Einheit. Heute bleiben wir bei Darstellung, Auswahl, Addition und Zustand.
+
+Kontrollfrage: Programmieren wir heute schon vollständige Assemblerprogramme? Nein, das folgt in Einheit 2. Zuerst kommt der Auftrag des Moduls.
+:::
 ## Modul: Mikrocomputertechnik 1
 
 - Studiengang: Elektro- und Informationstechnik
@@ -18,7 +35,11 @@ format: revealjs
 - Zielsetzung: Verständnis des Datenpfads von der Logik bis zur Software
 
 ::: notes
-Herzlich willkommen zur Vorlesung Mikrocomputertechnik 1 (MCT 1). Wir vollziehen den Brückenschlag zwischen abstrakter Software und greifbarer Hardware: Sie lernen nicht nur, wie man programmiert, sondern was im Silizium passiert, wenn eine Instruktion ausgeführt wird. Ziel ist ein Verständnis eines modernen Mikroprozessors — am Beispiel der RISC-V-Architektur.
+MCT1 benutzt RISC-V als Befehlssatzarchitektur, englisch Instruction Set Architecture, kurz ISA. Die ISA beschreibt beobachtbares Verhalten. Die Mikroarchitektur, kurz µArch, ist eine konkrete Umsetzung. Hardwarenahe Programmierung meint hier: Operanden sind Registerzustände, Gatter verarbeiten sie, ein Ergebnis wird gespeichert.
+
+Lehrbild: zwei Register halten 5 und 3. Eine ALU addiert sie zu 8 und ein Register übernimmt 8 an der aktiven Flanke. Das ist unser Kursmodell, kein vollständiger moderner Prozessor mit Caches und mehreren Kernen.
+
+Kontrollfrage: Schreibt die ISA die Transistorverdrahtung vor? Nein. Die Agenda ordnet die dafür nötigen Begriffe.
 :::
 
 ## Agenda für den Kickoff
@@ -42,17 +63,27 @@ graph LR
 ```
 
 ::: notes
-Heute legen wir das Fundament: von Datenrepräsentation über kombinatorische Logik und ALU bis zu Takt, sequenziellen Speichern, Register File und der Anbindung an den RAM — die Bausteine des späteren RISC-V-Datenpfads.
+ALU, Register File und RAM sind Themen, kein physikalischer Datenweg. Register File, kurz RF, ist die Registerbank, keine Datei. RAM bedeutet Random Access Memory, den Arbeitsspeicher. Die Lernfolge ist: Bits darstellen, verrechnen, speichern und adressieren.
+
+Ohne feste Breite ist ein Bitmuster mehrdeutig. Ohne Zustand überlebt ein ALU-Ergebnis die nächste Eingangsänderung nicht. Ohne Adressen gibt es keinen Hauptspeicher neben den Registern.
+
+Kontrollfrage: Fließen die Agenda-Kästen in dieser Reihenfolge als Spannungen? Nein, sie sind der Themenplan. Die Lernziele sagen, was danach überprüfbar sein soll.
 :::
 
 ## Lernziele
 
-- Dieselben Bitmuster als vorzeichenlos und als Zweierkomplement lesen, einschließlich der einen Null und des Bereichs $-2^{n-1}$ bis $2^{n-1}-1$.
+- Hex und Binär ineinander umrechnen und dieselben Bitmuster vorzeichenlos sowie als Zweierkomplement lesen.
+- Einen 2:1-MUX und einen Volladdierer an einem konkreten Eingang erklären.
+- Eine Registerübernahme mit Write Enable und aktiver Flanke vorhersagen.
 - Byte-Reihenfolge und Alignment als getrennte Begriffe verwenden.
-- Eine steigende Taktflanke und Setup/Hold als Eigenschaft **dieses** Flip-Flop-Lehrmodells beschreiben.
+- Steigende Taktflanke sowie Setup/Hold als Eigenschaft **dieses** Flip-Flop-Lehrmodells beschreiben.
 
 ::: notes
-Prüffrage: Warum sind `0000` und `1000` in 4-Bit-Sign-Magnitude verschiedene Codierungen derselben Zahl Null, ohne dass daraus eine C-Vergleichsregel folgt?
+Am Ende dieser Einheit sollen Sie eine Hexzahl in Bits zerlegen, ein Bitmuster vorzeichenlos und als Zweierkomplement lesen, einen Multiplexer, kurz MUX, umschalten und einen Volladdierer erklären. Außerdem sagen Sie voraus, wann ein Register mit Write Enable, kurz WE, einen neuen Wert übernimmt.
+
+n ist die festgelegte Bitbreite. Der signed Bereich ist minus 2 hoch n-1 bis 2 hoch n-1 minus 1. Alignment ist die Ausrichtung einer Adresse; Setup und Hold sind Stabilitätszeiten um die aktive Flanke. Die Sign-Magnitude-Frage zu 0000 und 1000 beantworten wir, sobald diese Codierung eingeführt ist.
+
+Kontrollfrage: Welche drei Leistungen sind heute zentral? Umrechnen, Auswählen beziehungsweise Addieren, und eine Registerübernahme vorhersagen. Organisation und Übungen zeigen den Weg dorthin.
 :::
 
 ## Organisatorisches & Spielregeln
@@ -80,7 +111,13 @@ Prüffrage: Warum sind `0000` und `1000` in 4-Bit-Sign-Magnitude verschiedene Co
 ::::
 
 ::: notes
-Das Modul schließt mit einer schriftlichen Klausur ab — Theorie und Praxis. Neun Blöcke à Theorie und Praxis (insgesamt 36 UE; Block 9: 1+3). Wichtigster Rat: Mikrocomputertechnik lernt man nicht durch bloßes Zuhören. Nutzen Sie die Übungszeiten intensiv: Fehler einbauen, debuggen, Venus und Ripes ausreizen. Wer die Übungsblätter aktiv bearbeitet, hat in der Klausur einen klaren Vorteil.
+UE bedeutet Unterrichtseinheit. Die Tabelle gibt jedem der neun Blöcke 4 UE, zusammen 36 UE. Ob eine UE 45 Minuten dauert, ist eine übliche Hochschulkonvention; die Minuten dieser Veranstaltung stehen in der bestätigten Modulplanung. Block 9 mit dem Vermerk 1 plus 3 meint in der vorhandenen Planung die Aufteilung innerhalb seiner vier UE, keine neue Prüfungsregel.
+
+I/O bedeutet Input/Output, Ein- und Ausgabe. Single-Cycle ist ein Lehrmodell mit einer nativen Instruktion pro Takt. Pipeline und Hazard kommen später: überlappte Ausführung und ihre Konflikte. C-to-Assembly bedeutet die spätere Zuordnung von C zu Assembler.
+
+Vorbereitung: die Hex- und Zweierkomplementbeispiele dieser Notizen nachrechnen. Nachbereitung: MUX, Volladdierer und die Registerflanke ohne Folie erklären.
+
+Kontrollfrage: Sind 9 mal 4 gleich 36 UE? Ja, nach dieser Tabelle. Die Literatur stützt die Nachbereitung.
 :::
 
 
@@ -94,7 +131,11 @@ Das Modul schließt mit einer schriftlichen Klausur ab — Theorie und Praxis. N
 - Vertiefung: Patterson / Hennessy — *Computer Organization and Design* (RISC-V)
 
 ::: notes
-Harris & Harris in der RISC-V-Edition ist unsere zentrale Referenz — didaktisch stark, vom Transistor bzw. von der Digitaltechnik bis zur Software. Wir orientieren uns an der Buchstruktur. Patterson/Hennessy eignet sich zur Vertiefung von Architektur und Performance.
+Bottom-Up bedeutet hier der Aufbau von der Digitaltechnik zur sichtbaren Maschine. Zentrale Literatur ist Sarah L. Harris und David Money Harris, Digital Design and Computer Architecture, RISC-V Edition. Zur Vertiefung dienen David A. Patterson und John L. Hennessy, Computer Organization and Design, ebenfalls RISC-V Edition. Seitenzahlen erfinden wir nicht; die Notizen bleiben ohne Buch verständlich.
+
+Heute passen Zahlendarstellung, Gatter, Addierer und Register zu den Grundlagenkapiteln dieser Bücher. Performance und Pipeline sind optionale spätere Vertiefung.
+
+Kontrollfrage: Ersetzt das Buch die Rechnung auf der Folie? Nein. Die Werkzeuge machen die Modelle beobachtbar.
 :::
 
 ## Die Werkzeuge im Praktikum
@@ -107,20 +148,30 @@ Harris & Harris in der RISC-V-Edition ist unsere zentrale Referenz — didaktisc
 :::
 ::: {.column width="54%"}
 ```text
-1. Code in Venus
-2. Debug im Terminal
-3. Hex → Ripes
-4. Datenpfad verfolgen
+Schematisch, nicht als geprüfter Dateitransfer:
+1. Assembler in Venus betrachten
+2. Wirkung an Registern prüfen
+3. Dasselbe Befehlsmodell in Ripes nachvollziehen
 ```
 :::
 ::::
 
 ::: notes
-Zwei Simulatoren im Labor: Venus für Assembler, Register und Software-Fokus. Ripes zeigt den hardwareseitigen Datenpfad — im Einzelschritt sehen Sie Multiplexer, ALU und Registerschreibungen. Die GNU Toolchain kommt bei Assembler- und C-Übungen dazu. In der Vorlesung nutzen wir die Tools, um Theorie sofort sichtbar zu machen.
+Ein Simulator führt ein Modell aus, kein Silizium. Assemblersprache ist der Text; der Assembler übersetzt ihn. GNU steht für GNU's Not Unix, GCC für die GNU Compiler Collection. Eine Toolchain ist die zusammengehörige Werkzeugkette. Venus schaltet einen ISA-Schritt weiter. Ripes kann einen Modelltakt eines gewählten Prozessormodells zeigen. Beides ist weder eine Quelltextzeile noch eine gemessene Chipzeit.
+
+Der Kasten ist eine schematische Übersicht. Ein Dateitransfer von Venus nach Ripes ist nur gültig, wenn Format, ISA-Subset und Speicherabbild zusammenpassen. Diese Fassung hat keinen solchen Transfer ausgeführt.
+
+Kontrollfrage: Ist ein Venus-Schritt ein Ripes-Takt? Nein. Vor den Werkzeugdetails brauchen wir das Prinzip der Abstraktion.
 :::
 
 # 2. Warum Abstraktion?
 
+
+::: notes
+Ein Prozessor wird über Ebenen und Schnittstellen verstanden. Die nächsten Folien begründen, warum ein Modell Details auswählen muss. Weglassen ist nur dann zulässig, wenn die gewählte Aufgabe diese Details nicht braucht. Timing kann zum Vertrag einer Schaltung gehören, auch wenn die Transistoren verborgen sind.
+
+Kontrollfrage: Ist jede weggelassene Eigenschaft irrelevant? Nein, nur für die gerade gestellte Frage. Die Strukturierung macht diese Auswahl konkret.
+:::
 ## Strukturierung von Komplexität
 
 - Verstecken von irrelevanten Details
@@ -129,20 +180,28 @@ Zwei Simulatoren im Labor: Venus für Assembler, Register und Software-Fokus. Ri
 - Das Fundament der Informatik und der Rechnerarchitektur
 
 ::: notes
-Erstes Kernkonzept: Abstraktion. Bevor wir uns in Bits und Gattern verlieren: Warum denken wir in Schichten, Modellen und Hierarchien? Ohne Abstraktion wären moderne IT-Systeme — Smartphone wie Rechenzentrum — unmöglich.
+Abstraktion zeigt eine Schnittstelle und verbirgt eine Umsetzung. Ein Addierer zeigt Eingänge, Summe und gegebenenfalls den Übertrag. Die Transistorschaltung bleibt zunächst verborgen. IT bedeutet Informationstechnik. Trotzdem können gültige Pegel und Laufzeit Teil des Vertrags sein, sobald wir speichern oder takten.
+
+Dieselbe Addition 1 plus 1 ist auf Gatterebene ein Übertrag, auf Wortbreite ein Bitmuster und auf Systemebene ein Befehlseffekt.
+
+Kontrollfrage: Darf man die Laufzeit immer weglassen? Nein, nicht wenn die Frage den Takt betrifft. Die Größenordnung realer Systeme erklärt den Nutzen der Methode.
 :::
 
 ## Das Komplexitätsproblem
 
-- Schiere Menge: moderne Prozessoren mit Milliarden Transistoren
-- Dimension: Strukturen im Bereich weniger Nanometer
-- Kognitive Limits: kein Mensch behält Milliarden Bauteile im Kopf
-- Fehleranfälligkeit: ein falsch verbundener Transistor kann das System zerstören
+- Ein SoC enthält sehr viele Transistoren; eine Zahl nur mit datiertem Produkt
+- Nanometer bezeichnen einen Fertigungsprozess, nicht jede Transistorlänge
+- Schnittstellen machen den Entwurf prüfbar
+- Ein Verdrahtungsfehler kann eine Fehlfunktion verursachen
 
 Herausforderung: Wie organisiert man die Entwicklung eines solchen Systems?
 
 ::: notes
-Stellen Sie sich den Entwurf eines modernen SoCs vor: zig Milliarden Transistoren. Transistor für Transistor zu planen übersteigt jede kognitive Kapazität. Ein Designfehler kann Millionen Chips wertlos machen. Die Ingenieursfrage seit den 1970ern: Wie baut man Maschinen, deren Komplexität unsere eigene Kapazität weit übersteigt?
+SoC bedeutet System on Chip, ein Chip mit Prozessor und weiteren Funktionen. Transistor ist das Schaltelement. nm, Nanometer, ist bei Fertigungsbezeichnungen nicht automatisch die Länge jedes Transistors. Eine Milliardenangabe bleibt weg, solange kein datiertes Produkt genannt ist. Ein Verdrahtungsfehler kann eine Fehlfunktion verursachen; er zerstört nicht zwingend das Silizium.
+
+Gegenmittel sind Module mit prüfbaren Schnittstellen und Verifikation, also der Abgleich von Soll- und Istverhalten.
+
+Kontrollfrage: Ist jede Nanometerangabe eine gemessene Gate-Länge? Nein. Module teilen den Entwurf in Aufgaben.
 :::
 
 ## Die Lösung: Teile und Herrsche
@@ -162,7 +221,11 @@ graph LR
 ```
 
 ::: notes
-Antwort auf extreme Komplexität: Divide and Conquer. Aus Transistoren ein Gatter — danach interessiert nur noch das Verhalten von außen. Aus Gattern ein Addierer — wieder kapseln. Strikte Schnittstellen ermöglichen parallele Arbeit: Das Addierer-Team muss das OS-Team nicht kennen. Das führt zur formellen Definition von Abstraktion.
+Divide and Conquer bedeutet Teile und Herrsche. Ein Modul kapselt eine Aufgabe hinter einer Schnittstelle. Auf Gatterebene sind Summe und Übertrag die Schnittstelle eines Volladdierers. Auf Addiererebene ist es das 32-Bit-Ergebnis. Auf Systemebene ist es die Wirkung eines Additionsbefehls. OS, Operating System, das Betriebssystem, ist eine noch höhere Schicht und hier nur Einordnung.
+
+Die Dreierkette ist eine Hierarchie, kein Stromfluss.
+
+Kontrollfrage: Sind die drei Ebenen drei Takte? Nein. Abstraktion beschreibt, welche Details jede Ebene sichtbar hält.
 :::
 
 ## Was ist Abstraktion?
@@ -181,7 +244,11 @@ graph LR
 ```
 
 ::: notes
-Abstraktion heißt bewusstes Weglassen. Beim Autofahren: Pedal drücken beschleunigt — Einspritzung und Zündung bleiben Black Box. In der Informatik ebenso: In Python eine Variable deklarieren, ohne Elektronen im Silizium zu verfolgen. Ohne Abstraktion gäbe es keine moderne Software. Achtung: Abstraktion entbindet nicht von Verantwortung — in MCT1 schauen wir gezielt *unter* die Haube.
+Eine Black Box zeigt Verhalten und Voraussetzungen, nicht die Innenschaltung. Eine API, Application Programming Interface, ist eine Softwareschnittstelle. Die ISA ist die Befehlsschnittstelle der Maschine. Beides sind Verträge, aber nicht derselbe Vertrag.
+
+Die Autometapher hilft nur bis zur Grenze: Sie dürfen das Verhalten nutzen, ohne den Motor zu öffnen. Eine Python-Zuweisung ist keine formale Deklarationspflicht dieser Vorlesung. Am Addierer bleibt sichtbar: zwei Operanden hinein, Summe und Carry hinaus.
+
+Kontrollfrage: Ist die ISA eine Python-API? Nein. Ein Schichtenbild ordnet die Schnittstellen.
 :::
 
 ## Das Schichtenmodell der IT
@@ -201,11 +268,21 @@ graph LR
 ```
 
 ::: notes
-Das Schichtenmodell ordnet die Welt von der Physik bis zur App. Die meisten Ingenieurinnen und Ingenieure arbeiten nur auf ein bis zwei Ebenen. In MCT1 liegen wir bewusst „in der Mitte“: Digitaltechnik als Fundament, Mikroarchitektur als konkrete Hardware-Realisierung, Architektur/ISA als Vertrag zwischen Soft- und Hardware. Genau diese drei Schichten (hier hervorgehoben) bilden unseren roten Faden.
+Die Pfeile im Schichtenbild bedeuten Abstraktion und Implementierung, keinen Strom. Digitaltechnik liefert Gatter. Die Mikroarchitektur verdrahtet sie. Die ISA verspricht die sichtbare Wirkung. Dieselbe ISA kann mehrere Mikroarchitekturen haben.
+
+Ein add liest zwei Registerwerte, verrechnet sie und schreibt ein Ziel. Darunter wählen Gatter Summe oder Übertrag. Es gibt keine Regel, dass jede Ingenieurin nur ein oder zwei Ebenen sehen darf.
+
+Kontrollfrage: Erzwingt eine ISA eine einzige ALU-Verdrahtung? Nein. Die nächste Abstraktion betrifft die Darstellung der Daten.
 :::
 
 # 3. Datenrepräsentation
 
+
+::: notes
+Dieselben Bits können Zahlen, Zeichen oder Befehle darstellen. Heute klären wir Breiten und Interpretationsregeln, bevor wir rechnen und speichern. Bit bedeutet Binary Digit. Ein Byte hat im Kurs acht Bit.
+
+Kontrollfrage: Hat ein Bitmuster ohne Kontext bereits eine Bedeutung? Nein. Der Überblick verbindet Repräsentation und logische Werte.
+:::
 ## Datenrepräsentation — Überblick
 
 - Von Pegeln zu logischen Werten
@@ -216,9 +293,9 @@ Das Schichtenmodell ordnet die Welt von der Physik bis zur App. Die meisten Inge
 %%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph TD
-  A["Spannung 3.3V"] --> B["Binär 1"]
-  B --> C[Hexadezimal]
-  C --> D[Assembler]
+  A["Beispielpegel, nicht universell"] --> B["logisches Bit"]
+  B --> C["Hex als Schreibweise"]
+  C --> D["Befehlswirkung"]
   style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
   style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
@@ -226,16 +303,20 @@ graph TD
 ```
 
 ::: notes
-In diesem Block: Datenrepräsentation. Komplexität kapseln wir durch Abstraktion — die Hardware kennt aber nur physikalische Zustände, meist Spannungspegel. Bevor wir einen Prozessor bauen oder RISC-V-Assembler schreiben, definieren wir, wie die Architektur diese Zustände als Daten interpretiert: Bündelung von Nullen und Einsen, lesbare Darstellung für Menschen, und wie die Hardware negative Zahlen auf Bitebene löst.
+Binär ist die Basis 2, Hex die Basis 16. Die alte Kette von 3,3 Volt zu Assembler vermischt einen Beispielpegel, eine Schreibweise und eine Programmsprache. 3,3 Volt ist keine universelle Eins. High und Low sind logische Pegelbereiche; die Voltgrenzen gehören zu einem genannten Bauteil.
+
+Ebenen: ein physikalischer Zustand kann ein Bit repräsentieren, Bits bilden Muster, Hex macht Muster lesbar, ein Befehl deutet Muster als Operation.
+
+Kontrollfrage: Ist jede hohe Spannung eine logische Eins? Nein. Das Bitmuster erhält erst durch Kontext eine Bedeutung.
 :::
 
 ## Alles ist eine Zahl
 
 :::: {.columns}
 ::: {.column width="46%"}
-- Nur Spannungszustände → Bits
-- Text, Bild, Befehl: alles Zahlen
-- Kontext entscheidet die Deutung
+- Bits repräsentieren Information; sie sind nicht selbst schon eine Bedeutung
+- Dieselben Bits können Zahl, Zeichen oder Befehl sein
+- Kontext allein macht ein Muster nicht zu einem gültigen Befehl
 :::
 ::: {.column width="54%"}
 ```text
@@ -247,15 +328,17 @@ Text? Zahlen? Instruktion?
 ::::
 
 ::: notes
-Für den Prozessor ist absolut alles eine Zahl. String, JPEG, ausführbarer Befehl — auf dem Datenbus nur Nullen und Einsen. Physikalisch gibt es keinen Unterschied zwischen Pixel und Instruktion; die Interpretation liegt bei Architektur und Software. Unsere Aufgabe: Schaltungen entwerfen, die diese Bitströme korrekt und schnell verarbeiten.
+Information wird durch Bitmuster repräsentiert. Ein String ist eine Zeichenfolge, JPEG ein Bildformat; beide bleiben Bitmuster. 01000001 ist unsigned 65 und im genannten ASCII, American Standard Code for Information Interchange, der Buchstabe A. Nicht jedes Muster ist ein gültiger Befehl. Kontext wählt die Deutung, die ISA entscheidet die Gültigkeit.
+
+Kontrollfrage: Ist 01000001 immer der Buchstabe A? Nur in der genannten Zeichencodierung. Bitgruppen erhalten dafür feste Namen.
 :::
 
 ## Das Bit und das Byte
 
 - Bit: kleinste Informationseinheit (Binary Digit, 0 oder 1)
 - Nibble: genau 4 Bits (Halb-Byte)
-- Byte: genau 8 Bits — kleinste adressierbare Speichereinheit
-- Skalierung: Kilobyte (KB), Megabyte (MB), Gigabyte (GB)
+- Byte: im Kurs acht Bit und kleinste adressierbare Einheit des RV32-Speichermodells
+- kB, MB, GB sind dezimal; KiB, MiB, GiB sind Zweierpotenzen. b und B nicht verwechseln
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -273,16 +356,17 @@ graph TD
 ```
 
 ::: notes
-Vokabeln fürs Semester: Bit, Byte (8 Bits) als Standard-Container des Speichers — kleinste abrufbare Menge aus dem RAM. Das Nibble (4 Bits) wirkt zunächst unwichtig, wird aber bei der Hex-Umrechnung zum zentralen Werkzeug.
+Ein Nibble ist vier Bit. High und Low bezeichnen hier die obere und untere Vier-Bit-Gruppe, nicht Voltwerte. Im Kursmodell ist das Byte die kleinste adressierbare Einheit. Ein RAM-Transfer oder eine Cachezeile kann größer sein. kB ist 1000 Byte, KiB ist 1024 Byte. Ein kleines b wäre Bit, ein großes B ist Byte. 1 KiB sind 1024 Byte, nicht 1000 Bit.
+
+Kontrollfrage: Ist ein Kilobyte in jeder Schreibweise 1024 Byte? Nein. Word und Registerbreite bilden größere Pakete.
 :::
 
 ## Das Word (Wortbreite)
 
-- Word: natürliche Datenbreite einer Architektur
-- Bits, die der Prozessor typischerweise in einem Schritt verarbeitet
-- RISC-V RV32I: Wortbreite exakt 32 Bits
-- Half-Word: 16 Bits (2 Bytes)
-- Double-Word: 64 Bits (relevant für RV64)
+- RISC-V-Word: 32 Bit, auch wenn XLEN bei RV64 gleich 64 ist
+- XLEN: Breite der allgemeinen Architekturregister; im Kurs 32
+- Halfword: 16 Bit; Doubleword: 64 Bit
+- Registerbreite, Busbreite und Taktzahl sind verschiedene Größen
 
 | Byte 3 | Byte 2 | Byte 1 | Byte 0 |
 |:------:|:------:|:------:|:------:|
@@ -291,15 +375,17 @@ Vokabeln fürs Semester: Bit, Byte (8 Bits) als Standard-Container des Speichers
 $\rightarrow$ zusammen **1 Word = 32 Bit**
 
 ::: notes
-Das Word klassifiziert den Prozessor: Breite der internen Busse und der ALU. Desktop-Chips oft 64 Bit; wir arbeiten mit RV32I — 32-Bit-Worte, 32-Bit-Register. Das Word ist das Standard-Datenpaket unserer Architektur.
+Ein RISC-V-Word bleibt 32 Bit, auch wenn bei RV64 die Registerbreite XLEN gleich 64 ist. XLEN ist die Breite der allgemeinen Architekturregister. Halfword ist 16 Bit, Doubleword 64 Bit. Vier Byte sind ein Word, acht Hexziffern stellen es dar. Die Aussage, ein Word werde in einem Schritt verarbeitet, gilt nicht als Taktzahl. Registerbreite, Busbreite und Instruktionslänge bleiben getrennt. Im Kurs sind Register und unkomprimierte Instruktionen 32 Bit.
+
+Kontrollfrage: Wird Word bei RV64 zu 64 Bit? Nein, das wäre das Doubleword. Hex verkürzt die Binärmuster.
 :::
 
 ## Das Problem mit Binärzahlen
 
 :::: {.columns}
 ::: {.column width="42%"}
-- 32 Bit schwer lesbar
-- Ein Bit kippen → Absturz
+- 32 Bit sind für Menschen schwer lesbar
+- Ein geändertes Bit kann Daten oder die Operation verändern
 :::
 ::: {.column width="58%"}
 ```text
@@ -311,7 +397,9 @@ Das Word klassifiziert den Prozessor: Breite der internen Busse und der ALU. Des
 ::::
 
 ::: notes
-Hardware liebt Binär (Strom an/aus). Menschen nicht: 32 Bits flimmern. Ein gekipptes Bit in der Mitte kann das Programm abstürzen lassen. Wir brauchen eine kompaktere Repräsentation mit gleichem Wert.
+Bits sind abstrakte Werte, nicht pauschal Strom an oder aus. Zwei Muster 00000101 und 00000111 unterscheiden sich in Bit 1. Der erste Wert ist 5, der zweite 7. Ein gekipptes Bit kann ein anderes Ergebnis liefern; es muss nicht das ganze System zerstören. Die Schreibweise ändert das Muster nicht.
+
+Kontrollfrage: Macht Hex aus einer 5 eine andere Zahl? Nein, nur die Darstellung ändert sich. Das Hexadezimalsystem ist diese Darstellung.
 :::
 
 ## Die Lösung: Das Hexadezimalsystem
@@ -322,7 +410,9 @@ Hardware liebt Binär (Strom an/aus). Menschen nicht: 32 Bits flimmern. Ein geki
 - Basis 16 ist Zweierpotenz ($2^4$) → einfache Umrechnung aus Binär
 
 ::: notes
-Hexadezimal löst das Lesbarkeitsproblem. Nach 9 kommen A–F (10–15). Warum 16 und nicht Dezimal? Weil $2^4$ — die Umrechnung Binär ↔ Hex ist fast magisch einfach.
+Basis 16 nutzt die Ziffern 0 bis 9 und A bis F für 10 bis 15. 0x2A ist 2 mal 16 plus 10, also 42. Dieselbe Zahl ist als acht Bit 00101010. Die Vier-Bit-Gruppen sind 0010 und 1010, also 2 und A. Hex ist keine eigene Hardwareart.
+
+Kontrollfrage: Welcher Dezimalwert ist 0x2A? 42. Ein Nibble entspricht genau einer Hexziffer.
 :::
 
 ## Der magische Vierer-Block (Nibble)
@@ -341,7 +431,9 @@ Binär     Hex      Dezimal
 ```
 
 ::: notes
-Der Trick: Nibble und Hex-Ziffer haben dieselbe Kardinalität — 1-zu-1-Zuordnung. Statt Potenzen über das ganze Wort: jeden 4-Bit-Block durch eine Ziffer ersetzen. 32 Bit → 8 Zeichen, kompakt und präzise.
+Vier Bit haben 2 hoch 4 gleich 16 Muster, ebenso eine Hexziffer. Deshalb ist die Zuordnung eins zu eins. 32 geteilt durch 4 ist 8 Hexziffern, 8 geteilt durch 4 ist 2. Führende Nullen sichern die Breite und ändern den unsigned Wert nicht. Die Tabelle 0 bis F steht im Arbeitsblatt; Ausschnitt: 0000 ist 0, 1010 ist A gleich 10, 1111 ist F gleich 15.
+
+Kontrollfrage: Wie viele Hexziffern hat ein Byte? Zwei. Damit rechnen wir längere Ketten blockweise um.
 :::
 
 ## Mustererkennung: Visuelle Umrechnung
@@ -371,25 +463,27 @@ graph TD
 ```
 
 ::: notes
-Algorithmus: von rechts (LSB) in Vierergruppen; bei Bedarf links mit Nullen auffüllen. `1111` → F, `1010` → A. Nach wenigen Übungen lesen Sie Binär fließend als Hex.
+LSB bedeutet Least Significant Bit, das niederwertige Bit, hier rechts. 1101 1010 0011 1111 wird blockweise D, A, 3, F, also 0xDA3F. Die Gruppen bleiben in derselben Reihenfolge. Links mit Nullen aufzufüllen gruppiert eine unsigned Darstellung. Das ist keine Vorzeichenerweiterung einer negativen Zahl.
+
+Kontrollfrage: Wird aus 1010 durch Auffüllen links eine negative Zahl? Nein, nicht allein dadurch. Programmiersprachen brauchen eine definierte Literalnotation.
 :::
 
 ## Notation und Präfixe im Code
 
-- Ohne Präfix: fast immer Dezimal
-- Präfix `0b`: Binär
-- Präfix `0x`: Hexadezimal
-- Gilt in C, C++, Java, Python und RISC-V-Assembler
+- Im Kurs: Dezimal ohne Präfix, Hexadezimal mit `0x`
+- `0b` ist in C ab C23 standard und in älterem GNU C eine Erweiterung
+- Eine führende Null ist in C oktal: `010` bedeutet 8, nicht zehn
 
 ```c
-// Ein und derselbe Wert in drei Schreibweisen:
+/* Dieselbe Zahl 42. 0b nur mit C23 oder als GNU-Erweiterung. */
 int dezimal = 42;
-int binaer  = 0b101010;
 int hex     = 0x2A;
 ```
 
 ::: notes
-Compiler und Assembler brauchen die Basis: `10` ist dezimal zehn, `0b10` ist zwei, `0x10` ist sechzehn. `0x` wird zur Standardnotation für Adressen und Bitmasken.
+0x leitet Hexadezimal ein, 0b Binär. 0b ist in C erst ab C23 standard; in älterem GNU C kann es eine Erweiterung sein. Der C11-Kurs nutzt deshalb 42 und 0x2A. 0b101010 ist dieselbe 42 nur dort, wo das Binärliteral erlaubt ist. In C bedeutet eine führende Null Oktal: 010 ist 8, nicht zehn. Assemblerregeln prüft man am jeweiligen Werkzeug, nicht an einer universellen Sprachliste.
+
+Kontrollfrage: Ist 010 in C gleich zehn? Nein, oktal acht. Die nächste Übung nutzt nur die Vier-Bit-Zuordnung.
 :::
 
 ## Interaktive Übung: Konvertierung
@@ -409,11 +503,19 @@ Resultat: 0b 1100 1010 1111 1110 1011 1010 1011 1110
 ```
 
 ::: notes
-„Cafe Babe“ ist eine bekannte Magic Number (u. a. Java-Klassendateien). Hex → Binär geht blockweise im Kopf; Dezimal über $2^{31}$ wäre mühsam. Hex ist der natürliche Begleiter der Hardware-Entwicklung.
+Aufgabe zuerst: 0xCAFEBABE in 32 Bit. Hilfe: jede Ziffer ist ein Nibble. C ist 1100, A ist 1010, F ist 1111, E ist 1110, B ist 1011. Auch wiederholte Ziffern werden ausgeschrieben. Das Ergebnis ist 1100 1010 1111 1110 1011 1010 1011 1110. Die Leerzeichen sind Gruppierung, kein Quelltextliteral. Magic Number bedeutet eine vereinbarte Dateikennung; der Java-Bezug bleibt ein optionaler Exkurs.
+
+Kontrollfrage: Wie viele Bit hat das Ergebnis? 32. Unsigned Interpretation reicht nun nicht mehr für negative Werte.
 :::
 
 # 4. Negative Zahlen in der Hardware
 
+
+::: notes
+Negative Zahlen brauchen eine Codierung bei festgelegter Breite. Wir vergleichen Sign-Magnitude und Zweierkomplement, bevor die ALU damit rechnet. Signed bedeutet vorzeichenbehaftet, unsigned vorzeichenlos.
+
+Kontrollfrage: Reicht ein Minuszeichen im Register? Nein, das Register speichert Bits. Die Grundfrage ist, wie das Minus im Muster liegt.
+:::
 ## Negative Zahlen — Überblick
 
 - Kein Minus-Transistor · Sign-Magnitude vs. Zweierkomplement
@@ -430,7 +532,11 @@ graph LR
 ```
 
 ::: notes
-Wie rechnet ein Computer? Er addiert. Subtraktion ist Addition einer negativen Zahl: $5 - 3 = 5 + (-3)$. Es gibt keinen Minus-Transistor — nur 0 und 1. Wir brauchen eine Kodierung, mit der die Hardware negative Werte korrekt verarbeitet.
+Sign-Magnitude trennt Vorzeichen und Betrag. Zweierkomplement gibt dem höchsten Bit ein negatives Gewicht. Sign Extension, die Vorzeichenerweiterung, kopiert dieses Bit beim Verbreitern. Die ALU kann modular addieren; sie muss nicht nur addieren dürfen. Die Metapher vom fehlenden Minus-Transistor begründet kein Verbot anderer Operationen.
+
+Für 5 minus 3 schreiben wir 5 plus minus 3 in fester Breite. Ziel ist eine Codierung, deren Bitmuster zur modularen Addition passen.
+
+Kontrollfrage: Ist jede Subtraktion eine eigene Subtrahierhardware? In unserem Modell nicht. Zunächst wird Vorzeichen und Betrag getrennt codiert.
 :::
 
 ## Das Vorzeichen-Problem der Hardware
@@ -442,7 +548,9 @@ Wie rechnet ein Computer? Er addiert. Subtraktion ist Addition einer negativen Z
 - Gesucht: binäre Kodierung, die Additionen mit negativen Operanden erlaubt
 
 ::: notes
-Auf Papier reicht ein Querstrich. Auf dem Chip: 32 Bits im Register. Zwei getrennte Rechenwerke (Addierer + Subtrahierer) wären teuer und stromhungrig. Ziel: eine Additionsschaltung, die durch die richtige Bitkodierung auch Subtraktion leistet.
+Register speichern Bits, nicht Dezimalzeichen. Low und High sind hier logische Werte. Gemeinsame Additionshardware ist ein Entwurfsziel, keine ISA-Pflicht und kein Energiebeleg. Plus 5 und minus 5 sind bei acht Bit verschiedene Muster. Eine negative Zahl ist nicht dasselbe wie das Invertieren einzelner Bits.
+
+Kontrollfrage: Sieht die Hardware das Zeichen minus? Nein, nur das Bitmuster. Sign-Magnitude setzt die naheliegende Vorzeichenidee um.
 :::
 
 ## Ansatz 1: Vorzeichen & Betrag (Sign-Magnitude)
@@ -462,7 +570,9 @@ graph LR
 ```
 
 ::: notes
-Frühzeit der Computer: MSB zweckentfremden als Plus/Minus-Schalter, Rest = Betrag. Sign-Magnitude ist leicht lesbar — führt in der Schaltungstechnik aber in die Sackgasse.
+MSB bedeutet Most Significant Bit, das höchste Bit. Bei acht Bit Sign-Magnitude ist 10000101 das Vorzeichen 1 und der Betrag 5, also minus 5. Der Bereich ist minus 127 bis plus 127. 00000000 und 10000000 sind zwei Nullen. Dieselben Bits bedeuten im Zweierkomplement etwas anderes: 10000101 wäre dort minus 123. Die Schwierigkeiten betreffen hier Integeraddition und Nullerkennung, nicht jede denkbare Anwendung.
+
+Kontrollfrage: Ist 10000101 in beiden Codierungen minus 5? Nur in Sign-Magnitude. Zwei Nullcodierungen zeigen die Grenze eines bloßen Bitvergleichs.
 :::
 
 ## Die +0 und die −0
@@ -479,7 +589,9 @@ Frühzeit der Computer: MSB zweckentfremden als Plus/Minus-Schalter, Rest = Betr
 | `1000` | verschieden von `0000` | $0$ |
 
 ::: notes
-Das ist ausdrücklich kein C-Programm. `int a = +0` und `int b = -0` sind in C dieselbe Zahl; `a == b` ist wahr, weil C numerisch vergleicht. Ein naiver Hardware-Gleichheitsvergleich der Bitmuster würde `0000` und `1000` unterscheiden. Genau dieser doppelte Nullcode macht Sign-Magnitude für eine ALU unhandlich.
+In einer hypothetischen 4-Bit-Sign-Magnitude-Codierung sind 0000 und 1000 beide numerisch null, aber verschiedene Muster. Ein C-Programm vergleicht int-Werte numerisch: plus 0 und minus 0 sind dort gleich. 0b1000 ist nicht automatisch ein C-Objekt für negative Null. Gleitkomma ist hier nicht das Thema. Die vorgezogene Prüffrage ist damit beantwortet: Die Muster unterscheiden sich, der C-Vergleich folgt daraus nicht.
+
+Kontrollfrage: Darf man 0000 und 1000 bitweise als gleiche C-ints behandeln? Nein. Zweierkomplement vermeidet für diese Integerdarstellung die doppelte Null.
 :::
 
 ## Ansatz 2: Das Zweierkomplement
@@ -495,7 +607,11 @@ N = -x_{n-1} \cdot 2^{n-1} + \sum_{i=0}^{n-2} x_i \cdot 2^i
 $$
 
 ::: notes
-Zweierkomplement: MSB zählt z. B. bei 8 Bit als $-128$, nicht als Fahne. Nur eine Null. Vorteil: der Addierer addiert stur Bits — das Ergebnis stimmt durch den Kodierungstrick.
+Bei Breite n hat das Bit i das Gewicht 2 hoch i, außer dem höchsten Bit mit Gewicht minus 2 hoch n-1. Für n gleich 8 ist 11111011 gleich minus 128 plus 64 plus 32 plus 16 plus 8 plus 0 plus 2 plus 1, also minus 5. Der Addierer liefert die unteren n Bits, also modulo 2 hoch n. Liegt das mathematische Ergebnis außerhalb des signed Bereichs, ist das ein Overflow, ein Überlauf, und kein automatischer Trap der ISA.
+
+Das MSB ist keine getrennt umschaltbare Vorzeichenfahne. Es trägt Gewicht.
+
+Kontrollfrage: Welches Gewicht hat Bit 7 bei acht Bit? Minus 128. NOT plus eins liefert das Gegenstück innerhalb der Breite.
 :::
 
 ## Bildung des Zweierkomplements
@@ -512,7 +628,9 @@ Zweierkomplement: MSB zählt z. B. bei 8 Bit als $-128$, nicht als Fahne. Nur ei
 ```
 
 ::: notes
-Mechanischer Algorithmus, in Hardware leicht: invertieren, dann +1. Damit ist die Zahl negiert.
+Vor dem Invertieren steht die Breite fest. NOT kippt jedes Bit. Plus eins kann einen Übertrag erzeugen, der über das Wort hinaus verworfen wird. Plus 5 ist 00000101. NOT ergibt 11111010, hexadezimal 0xFA. Plus eins ergibt 11111011, 0xFB, signed minus 5. Null wird zu null. Der kleinste signed Wert, bei acht Bit 10000000, bleibt bei modularer Negation dasselbe Muster, weil plus 128 nicht darstellbar ist.
+
+Kontrollfrage: Welche drei Muster durchläuft plus 5? 00000101, 11111010, 11111011. Das nächste Bild zeigt genau diese Schritte.
 :::
 
 ## Rechenbeispiel: Aus +5 wird −5
@@ -530,7 +648,9 @@ graph LR
 ```
 
 ::: notes
-Durchrechnen: +5 → invertieren → +1 → `1111 1011`. Das MSB wird automatisch 1 — die „Negativ-Erkennung“ bleibt praktisch erhalten.
+Die Grafik beginnt beim Bitmuster, nicht bei der Dezimalbeschriftung. NOT von der Zahl plus 5 ohne Bits wäre missverständlich. n ist 8. 00000101 wird 11111010 und dann 11111011. Die Hexwerte sind 0x05, 0xFA und 0xFB. MSB gleich 1 bedeutet negativ nur in der signed Zweierkomplementlesart. Unsigned wäre 0xFB gleich 251.
+
+Kontrollfrage: Ist 11111011 unsigned ebenfalls minus 5? Nein, unsigned 251. Die Rückrichtung verwendet dieselbe modulare Negation.
 :::
 
 ## Die Symmetrie: Von −5 zu +5
@@ -546,7 +666,9 @@ ob der Startwert positiv oder negativ war!
 ```
 
 ::: notes
-Symmetrie: keine neuen Regeln für die Rückrichtung. Eine simple Schaltung reicht, um Vorzeichen zu drehen.
+Von 11111011 kippt NOT auf 00000100, plus eins ergibt 00000101, also plus 5. Zweimalige modulare Negation stellt das Ausgangsmuster wieder her, außer beim kleinsten signed Wert. Bei acht Bit bleibt 10000000 gleich 10000000, weil plus 128 nicht in acht Bit signed passt. Es gibt keine uneingeschränkte Vorzeichensymmetrie des Wertebereichs.
+
+Kontrollfrage: Hat minus 128 bei acht Bit ein positives Gegenstück? Nein. Das Zahlenrad zeigt die endliche Wertemenge.
 :::
 
 ## Das Zahlenrad und der Überlauf (Overflow)
@@ -559,7 +681,11 @@ Symmetrie: keine neuen Regeln für die Rückrichtung. Eine simple Schaltung reic
 - Registerarithmetik: modulo $2^{n}$, ISA-Regel ohne Trap in RV32I
 
 ::: notes
-Bei RV32I arbeitet die Register-ALU modulo $2^{32}$. Das ist definiert und setzt kein Flag. In C ist vorzeichenbehafteter Überlauf von `int` undefiniertes Verhalten — eine andere Ebene als die ISA. Der asymmetrische Bereich entsteht, weil eine der $2^{n}$ Codierungen für die Null verbraucht ist und das MSB das Gewicht $-2^{n-1}$ trägt.
+Bei vier Bit laufen unsigned die Werte 0 bis 15 im Kreis. Signed sind es 0 bis 7 und dann minus 8 bis minus 1. 0111 plus 1 wird 1000: unsigned 8, signed minus 8. Das ist signed Overflow, obwohl man es auch als Wrap sehen kann.
+
+Bei acht Bit: 0x7F plus 1 wird 0x80, Carry-Out 0, aber signed Overflow. 0xFF plus 1 wird 0x00, Carry-Out 1; signed ist das minus 1 plus 1 gleich 0, ohne signed Overflow. RV32I-add schreibt die unteren 32 Bits und löst dafür keinen Overflow-Trap aus. Das ist nicht die C-Regel für signed Overflow.
+
+Kontrollfrage: Bedeutet Carry-Out immer signed Overflow? Nein. Beim Verbreitern muss die Interpretation erhalten bleiben.
 :::
 
 ## Vorzeichenerweiterung (Sign Extension)
@@ -577,11 +703,19 @@ graph LR
 ```
 
 ::: notes
-Häufiger Laborfehler: $-5$ als 8 Bit laden und links mit Nullen auffüllen → MSB wird 0 → positive $+251$. Richtig: Vorzeichenbit nach links kopieren (Sign Extension).
+Sign Extension kopiert das Vorzeichenbit. Zero Extension füllt mit Nullen. Minus 5 als 0xFB wird auf 32 Bit zu 0xFFFFFFFB und bleibt minus 5. Die oberen 24 Bit sind Einsen, kopiert von Bit 7. Zero Extension ergibt 0x000000FB, unsigned 251. lb, Load Byte, würde vorzeichenerweitern, lbu mit Nullen. Das ist eine Vorschau auf Einheit 3, keine vorausgesetzte Programmierübung.
+
+Kontrollfrage: Welcher 32-Bit-Wert ist die signed Erweiterung von 0xFB? 0xFFFFFFFB. Ein Mehrbytewert muss danach auf Adressen verteilt werden.
 :::
 
 # 5. Byte-Reihenfolge (Endianness)
 
+
+::: notes
+Bisher lag das Muster in einem Register. Im Speicher liegt es in Bytezellen. Endianness ordnet die Bytes eines Mehrbytewerts den Adressen zu. Sie vertauscht nicht die Bits innerhalb eines Bytes und ändert nicht den bereits interpretierten Registerwert.
+
+Kontrollfrage: Dreht Little Endian die Bits eines Bytes um? Nein. Der Überblick stellt Adresse, Inhalt und Ordnung gegenüber.
+:::
 ## Byte-Reihenfolge — Überblick
 
 - RAM als lineares Array von Bytes
@@ -600,7 +734,9 @@ graph TD
 ```
 
 ::: notes
-Daten liegen in Registern — müssen aber aus dem RAM geladen und zurückgeschrieben werden. Organisation und Byte-Reihenfolge: Endianness. In Venus schauen Sie oft direkt in den Speicher — dieses Modell brauchen Sie zum Debuggen.
+RAM ist ein möglicher Speicher, nicht der einzige. Ein Array ist hier eine Folge von Bytezellen. Byte-Adressierbarkeit bedeutet: jede Adresse nennt ein Byte. Die Zeichnung soll ein zusammenhängendes Feld sein, nicht getrennte Speicher je Adresse. Ein Pfeil zur Adresse ist kein Datenwert. Registerinhalt, Speicherinhalt und Adresse bleiben drei Spalten.
+
+Kontrollfrage: Ist die Adresse 0x01 dasselbe wie der Inhalt 0x01? Nein. Das Feld erhält eindeutig beschriftete Adressen.
 :::
 
 ## Der Speicher als lineares Array
@@ -608,7 +744,8 @@ Daten liegen in Registern — müssen aber aus dem RAM geladen und zurückgeschr
 - Jede Zelle: exakt 1 Byte (8 Bits)
 - Jede Zelle: eindeutige Adresse $0, 1, 2, \ldots$
 - Byte-Adressierbarkeit
-- RV32I: Adressen selbst 32 Bit → bis ca. 4 GB adressierbar
+- RV32I: 32-Bit-Adressen, also $2^{32}$ Byte = 4 GiB Adressraum
+- Nicht jeder Adresswert ist eingebauter oder zugreifbarer RAM
 
 | Adresse | Inhalt |
 |---------|--------|
@@ -618,7 +755,9 @@ Daten liegen in Registern — müssen aber aus dem RAM geladen und zurückgeschr
 | `0x03` | Byte (8 Bit) |
 
 ::: notes
-Mentales Modell: endloses Regal, jedes Fach ein Byte. 32-Bit-Adressen → rund 4 Milliarden Hausnummern ≈ 4 GB — das klassische 32-Bit-Limit.
+Der Adressraum von RV32 umfasst 2 hoch 32 Byte, das sind 4 GiB oder 4 294 967 296 Byte. GiB ist 2 hoch 30 Byte, GB dezimal ist 10 hoch 9 Byte. Das Regal ist endlich. Nicht jede Adresse ist zugreifbarer RAM. In der Tabelle ist die linke Spalte die Adresse und die rechte der Inhalt. Adresse 0x01 ist nicht der Inhalt 0x01.
+
+Kontrollfrage: Sind 4 GiB der eingebaute Speicher? Nein, die Größe des Adressraums. Vier Bytezellen müssen einen 32-Bit-Wert aufnehmen.
 :::
 
 ## Das Platzproblem im Speicher
@@ -635,7 +774,9 @@ Wohin mit EF — Adresse 0x00 oder 0x03?
 ```
 
 ::: notes
-32-Bit-Word passt nicht in ein 8-Bit-Fach → vier aufeinanderfolgende Bytes. Reihenfolge: Kopf (DE) zuerst oder Schwanz (EF) zuerst?
+MSB und LSB bedeuten hier Most und Least Significant Byte, nicht Bit. 0xDEADBEEF zerfällt in die Bytes DE, AD, BE und EF. Jedes Byte ist zwei Hexziffern. Vier aufeinanderfolgende Adressen nehmen sie auf. Das Platzproblem ist das byteadressierte Modell, nicht die Behauptung, der Speicher führe vier einzelne Transaktionen aus.
+
+Kontrollfrage: Wie viele Byte hat 0xDEADBEEF? Vier. Endianness legt ihre Zuordnung fest.
 :::
 
 ## Big-Endian vs. Little-Endian
@@ -646,15 +787,9 @@ Wohin mit EF — Adresse 0x00 oder 0x03?
 - Netzwerke oft Big-Endian; viele PCs Little-Endian
 
 ::: notes
-Historischer „Glaubenskrieg“. Big-Endian: Speicher-Dump sieht aus wie die Zahl. Little-Endian: LSB zuerst. Die Namen sind ein Insider-Witz aus Gulliver: 
+Big Endian legt das höchstwertige Byte an die kleinste Adresse, Little Endian das niederwertigste. Zuerst gespeichert ist missverständlich; gemeint ist die kleinste Adresse, keine zeitliche Reihenfolge. Für 0x12345678 ab der illustrativen Adresse 0x100 steht bei Little Endian 78, 56, 34, 12 und bei Big Endian 12, 34, 56, 78. Gulliver und Cohen bleiben ein optionaler Namenshinweis, keine Überlegenheit. Die Rekonstruktion bei Little Endian ist 0x78 plus 0x56 verschoben um 8 plus 0x34 um 16 plus 0x12 um 24.
 
-Die Begriffe Big-Endian und Little-Endian stammen aus Jonathan Swifts Satire Gulliver’s Travels (1726).  In der Geschichte führen die Königreiche Lilliput und Blefuscu einen Krieg über die Frage, ob man ein gekochtes Ei vom kleinen Ende (Little-Endian) oder vom großen Ende (Big-Endian) aufbrechen soll. 
-
-In der Informatik wurden diese Begriffe 1980 von Danny Cohen übernommen, um die Reihenfolge der Bytes in der digitalen Datenverarbeitung zu beschreiben:
-
-Big-Endian: Das bedeutendste Byte wird zuerst gespeichert. 
-Little-Endian: Das unbedeutendste Byte wird zuerst gespeichert. 
-Die Analogie dient als humorvolle Beschreibung für technische Unterschiede in der Byte-Reihenfolge, die keine fundamentale Überlegenheit einer Methode über die andere implizieren, sondern lediglich unterschiedliche Konventionen darstellen.
+Kontrollfrage: Welches Byte liegt bei Little Endian an 0x100? 0x78. Die Kursumgebung wählt eine Ordnung ausdrücklich.
 :::
 
 ## Endianness in der Kursumgebung
@@ -678,11 +813,19 @@ Die Analogie dient als humorvolle Beschreibung für technische Unterschiede in d
 - Ein Zeiger auf das Wort zeigt auf das LSB.
 
 ::: notes
-Im Labor: `DEADBEEF` erscheint im Speicher als `EF BE AD DE` — kein Simulatorfehler, sondern korrektes Little-Endian. MSB auf der höchsten Adresse. Damit sind Sie für den Speicherdump in Venus gerüstet.
+Little Endian ist die Festlegung dieser Kurs- und Simulatorumgebung, keine universelle RISC-V-Pflicht. Alignment fragt, ob die Adresse zur Zugriffsbreite passt, etwa ein Word an einer durch vier teilbaren Adresse. 0x100 modulo 4 ist 0. Die Abbildung zeigt 0x12345678. Die Tabelle mit 0xDEADBEEF ist ein zweites Beispiel: Little Endian EF, BE, AD, DE. Ein Zeiger bezeichnet die Startadresse. Nur bei diesem little-endian Mehrbyteobjekt liegt dort das niederwertigste Byte.
+
+Kontrollfrage: Zeigt jeder Zeiger auf das niederwertigste Byte? Nur in dieser Little-Endian-Lesart eines Mehrbyteobjekts. Mit diesen Regeln lässt sich die logische Verarbeitung erklären.
 :::
 
 # 6. Kombinatorische Logik
 
+
+::: notes
+Bisher ging es um Darstellungen. Nun berechnen Schaltungen neue Bitwerte. Kombinatorisch bedeutet: ohne bewusst gespeicherten Zustand, nicht ohne physikalische Laufzeit. Nach der Stabilisierung gilt der Ausgang als Funktion der Eingänge.
+
+Kontrollfrage: Ist eine kombinatorische Schaltung zeitlos? Nein. Der Überblick benennt die Bausteine.
+:::
 ## Kombinatorische Logik — Überblick
 
 - Kein Gedächtnis: Ausgang nur von aktuellen Eingängen
@@ -701,7 +844,9 @@ graph LR
 ```
 
 ::: notes
-Zweiter großer Block: Wir wissen, wie Daten als Bits kodiert werden — jetzt: durch welche Strukturen fließen sie? Kombinatorische Logik kennt kein Gedächtnis und keine Zeitachse: Der Ausgang hängt nur von den aktuellen Eingängen ab. Darauf bauen wir ALU und Routing-Infrastruktur auf.
+Ein MUX, Multiplexer, wählt eine Datenquelle. Routing meint diese Auswahl, nicht einen Netzwerkrouter. Keine Zeitachse bedeutet: nach der Stabilisierung hängt Y nur von den aktuellen Eingängen ab. Änderungen brauchen trotzdem Laufzeit. Ein AND mit Eingängen 1 und 0 liefert nach dieser Laufzeit 0. Vorher ist ein Zwischenwert möglich.
+
+Kontrollfrage: Ist der AND-Ausgang im selben Moment 0, in dem ein Eingang fällt? Nicht physikalisch. Der Vergleich grenzt Verarbeitung von Speicherung ab.
 :::
 
 ## Kombinatorik vs. Sequenzielle Logik
@@ -723,7 +868,9 @@ Zweiter großer Block: Wir wissen, wie Daten als Bits kodiert werden — jetzt: 
 ::::
 
 ::: notes
-Zwei Fundamentalkategorien: Kombinatorik wie eine Waage — reagiert nur auf den Ist-Zustand (Addierer, MUX). Sequenziell hat Gedächtnis (Flip-Flop behält eine 1). Der Prozessor vereint beides: Register speichern, kombinatorische ALUs rechnen.
+Kombinatorisch: der stabile Ausgang folgt nur den aktuellen Eingängen. Sequenziell: der Ausgang hängt von einem gespeicherten Zustand ab. Sequenziell ist nicht dasselbe wie global getaktet. Unser Flip-Flop-Modell ist taktsynchron. Gatter rechnen auch zwischen den Flanken. Ein Latch ist pegelsensitiv und hier nur die Vorstufe zum Flip-Flop.
+
+Kontrollfrage: Rechnet ein Gatter nur bei der Taktflanke? Nein. Grundgatter liefern die Funktionen für MUX und Addierer.
 :::
 
 ## Refresher: Die grundlegenden Logikgatter
@@ -735,7 +882,9 @@ Zwei Fundamentalkategorien: Kombinatorik wie eine Waage — reagiert nur auf den
 ![IEC-60617 Logikgatter AND, OR, XOR und NOT](../assets/images/logic-gates-refresher.svg)
 
 ::: notes
-Kurzer Digitaltechnik-Rückblick. Wir sprechen nicht mehr über einzelne MOSFETs in einem NAND — wir arbeiten auf Gatterebene. XOR wird zentral für die Addition. Die Schaltsymbole folgen IEC 60617 (rechteckig: `&`, `≥1`, `=1`, NOT mit Negationskreis).
+AND ist Und, OR ist Oder, XOR ist exklusives Oder, NOT ist Negation. XOR ist bei genau einem von zwei Eingängen eins; bei zwei Einsen ist es null. IEC ist die International Electrotechnical Commission. Ein rechteckiges Symbol in der Abbildung ist unsere Lehrzeichnung. Die Konformität zu IEC 60617 folgt nicht allein aus der Rechteckform; Negationskreise müssen am konkreten Symbol geprüft werden. MOSFET, der Metal-Oxide-Semiconductor Field-Effect Transistor, bleibt unter dieser Gatterebene. Später gilt die Funktion je Bit eines Busses.
+
+Kontrollfrage: Ist XOR bei zwei Einsen eins? Nein, es ist null. Ein MUX verwendet diese Funktionen zur Auswahl.
 :::
 
 ## Das „Weichen“-Problem im Datenpfad
@@ -748,7 +897,9 @@ Kurzer Digitaltechnik-Rückblick. Wir sprechen nicht mehr über einzelne MOSFETs
 ![Digitale Weiche als 2:1-Multiplexer im Datenpfad](../assets/images/mux-weichen.svg)
 
 ::: notes
-Routing-Problem: Manchmal `R1 + R2`, manchmal `R1 + 5` (Immediate). Der zweite ALU-Eingang muss umschaltbar sein — Register-File oder Instruktionswort. Wir brauchen eine digitale Weiche.
+Ein Datenbus bündelt Leitungen. Ein Immediate ist eine im Befehl codierte Konstante, nicht das ganze Instruktionswort. Das Register File liefert einen Registerwert. Die ALU ist das Ziel der Auswahl, nicht der Takt. Lehrquellen: Registerwert 7 und Konstante 5. S, das Select-Signal, wählt eine Quelle. Es ist selbst keine dritte Datenquelle und kein Taktsignal.
+
+Kontrollfrage: Liegt die Konstante 5 als eigenes Datenwort im RAM, nur weil sie gewählt wird? Nein, sie kann aus dem Befehl aufbereitet sein. Das MUX-Symbol fasst die Auswahl zusammen.
 :::
 
 ## Der Multiplexer (MUX)
@@ -762,7 +913,9 @@ Routing-Problem: Manchmal `R1 + R2`, manchmal `R1 + 5` (Immediate). Der zweite A
 ![2:1-Multiplexer mit Eingängen A/B, Select S und Ausgang Y](../assets/images/mux-2to1-block.svg)
 
 ::: notes
-2-zu-1-MUX: Eingänge A und B, Ausgang Y, Select S. Bei $S=0$ fließt A nach Y, bei $S=1$ fließt B. Die Control-Unit steuert die Weiche.
+Ein 2:1-MUX hat Eingänge A und B, Ausgang Y und Select S. In unserem Modell gilt S gleich 0 ergibt Y gleich A, S gleich 1 ergibt Y gleich B, jeweils nach Stabilisierung. Beispiel: A ist 0 und B ist 1. Dann ist Y bei S gleich 0 gleich 0 und bei S gleich 1 gleich 1. Die Control Unit, das Steuerwerk, wird später S setzen. Der MUX hat keinen CLK-Eingang und speichert nicht.
+
+Kontrollfrage: Welcher Ausgang entsteht bei S gleich 0? Y gleich A. Eine Wahrheitstabelle macht das formal prüfbar.
 :::
 
 ## Die Logik des 2:1-Multiplexers
@@ -780,12 +933,14 @@ Routing-Problem: Manchmal `R1 + R2`, manchmal `R1 + 5` (Immediate). Der zweite A
 | 1 | X | 1 | 1 |
 
 ::: notes
-$\land$ = AND, $\lor$ = OR. Bei $S=0$ wird $\overline{S}=1$, also $Y=A$; der $B$-Term fällt weg. „X“ = Don't Care: Der nicht gewählte Eingang ist egal.
+Die Gleichung lautet Y gleich nicht S und A oder S und B. Der Überstrich ist die Negation. AND und OR sind Und und Oder. X in einer verkürzten Tabelle ist ein Don't-Care-Platzhalter, kein elektrisch undefinierter Draht. Bei S gleich 0 wird der erste Term A und der zweite 0, also Y gleich A. Bei S gleich 1 wird Y gleich B. Die ungewählte Leitung darf real weiter anliegen. Alle acht Kombinationen stehen im Arbeitsblatt als Selbstkontrolle.
+
+Kontrollfrage: Was bedeutet X in der verkürzten Tabelle? Einen zusammengefassten, hier nicht unterschiedenen Fall. Die Gleichung lässt sich mit Gattern bauen.
 :::
 
 ## Der Multiplexer in reiner Hardware
 
-- Keine Magie: reine Gatter-Logik
+- Umsetzung mit NOT, AND und OR; die stabile Auswahl folgt der Gleichung
 - NOT für $\overline{S}$
 - Zwei AND-Gatter sperren bzw. freigeben $A$ und $B$
 - OR führt die freigegebenen Pfade zusammen
@@ -793,7 +948,9 @@ $\land$ = AND, $\lor$ = OR. Bei $S=0$ wird $\overline{S}=1$, also $Y=A$; der $B$
 ![2:1-Multiplexer aus NOT-, AND- und OR-Gattern nach IEC 60617](../assets/images/mux-2to1-gates.svg)
 
 ::: notes
-$S$ geht einmal direkt (Pfad B) und einmal invertiert (Pfad A) in die AND-Gatter — Verriegelung: immer nur ein Pfad offen. Das OR sammelt das aktive Signal.
+S geht direkt in ein AND und invertiert in das andere. Die beiden UND-Terme treffen sich im ODER. Lehrwerte: A gleich 1, B gleich 0. Bei S gleich 0 ist Y gleich 1. Bei S gleich 1 ist Y gleich 0. Im stabilen Idealmodell ist nur ein Term aktiv. Beim Umschalten können Verzögerungen einen Zwischenwert erzeugen. Glitchfreiheit ist nicht garantiert.
+
+Kontrollfrage: Ist während des Umschaltens jeder Zwischenwert ausgeschlossen? Nein. Software kann dieselbe Auswahl beschreiben, ohne denselben Ablauf zu haben.
 :::
 
 ## Die Brücke zur Software: MUX = IF/ELSE
@@ -821,7 +978,9 @@ if (S == 1) {
 ::::
 
 ::: notes
-Software springt in einen Zweig. Hardware: A und B liegen permanent an; der MUX wählt, was weiterfließt. Der ternäre Operator bildet genau dieses Verhalten ab.
+Der C-Ausdruck y gleich S gleich 1 ? B : A beschreibt für ein boolesches S dieselbe Ergebniswahl. Er beweist nicht, dass der Compiler einen physischen MUX oder einen Sprung einbaut. S gleich 1 ist enger als jede Nichtnull-Bedingung. C wertet beim bedingten Operator nur den gewählten Operanden aus. An den Hardwareeingängen können A und B gleichzeitig anliegen. Die beiden Beschreibungen sind Analogien, keine identischen Abläufe.
+
+Kontrollfrage: Liegt an einem Hardware-MUX nur der gewählte Eingang elektrisch an? Nein, beide können anliegen. Dieselbe Auswahl gilt für alle Bits eines Wortes.
 :::
 
 ## Vom 1-Bit- zum 32-Bit-Bus-Multiplexer
@@ -834,11 +993,19 @@ Software springt in einen Zweig. Hardware: A und B liegen permanent an; der MUX 
 ![32-Bit-Bus-Multiplexer mit gemeinsamem Select-Signal](../assets/images/mux-32bit-bus.svg)
 
 ::: notes
-Ein Blockschaltbild-MUX meint eine Batterie aus 32 Weichen. Ein Bit $S$ klappt alle synchron um — das ganze Word von B fließt durch.
+Ein Bus-MUX besteht aus 32 Ein-Bit-MUX mit demselben S. Der Schrägstrich 32 meint 32 Datenleitungen, nicht 32 Takte. Bei S gleich 0 kommt das Wort A, bei S gleich 1 das Wort B. Synchron umklappen meint hier dasselbe Steuersignal, keine Taktflanke. Beispiel: A ist 0x00000005, B ist 0x0000000A. S gleich 0 liefert 5, S gleich 1 liefert 10. Kleine Laufzeitunterschiede zwischen den Bits bleiben möglich.
+
+Kontrollfrage: Schaltet der Bus-MUX mit der Clock? Nein. Aus gewählten Bits sollen nun Rechenergebnisse entstehen.
 :::
 
 # 7. Addition in Hardware
 
+
+::: notes
+Der MUX hat Daten gewählt. Ein Addierer berechnet daraus neue Werte. Zuerst gelten die Stellenregeln eines Bits, danach die Kaskade. Summe ist das Stellenbit, Carry der Übertrag zur nächsten Stelle.
+
+Kontrollfrage: Kann die zweite Stelle rechnen, bevor ihr Carry festliegt? Im Ripple-Modell nein. Der Überblick legt die Bausteine fest.
+:::
 ## Addition in Hardware — Überblick
 
 - Vom Routing zur mathematischen Verarbeitung
@@ -849,7 +1016,9 @@ Ein Blockschaltbild-MUX meint eine Batterie aus 32 Weichen. Ein Bit $S$ klappt a
 ![Addierer-Blockschaltbild mit Summe und Carry](../assets/images/adder-overview.svg)
 
 ::: notes
-Signale leiten wir mit dem MUX — jetzt rechnen. Keine Magie: Grundschul-Additionsregeln mit Gattern nachbauen. Zuerst 1 Bit, dann 32 Bit.
+Ein Volladdierer braucht den Carry der Nachbarstelle, Cin. Cout ist der ausgehende Übertrag. Eine Vier-Bit-Zeichnung ist kein 32-Bit-Addierer, sondern ein Ausschnitt oder ein kleines Beispiel. Die Breite steht an den Leitungen. Kaskadieren heißt, Cout der Stelle i wird Cin der Stelle i plus 1.
+
+Kontrollfrage: Reicht für Stelle 3 der eigene Wert von A und B? Nein, der eingehende Carry fehlt dann. Die Binärregeln erklären die Gattergleichungen.
 :::
 
 ## Binäre Addition (mentales Modell)
@@ -876,7 +1045,9 @@ Signale leiten wir mit dem MUX — jetzt rechnen. Keine Magie: Grundschul-Additi
 ::::
 
 ::: notes
-Bei $1+1$ gibt es keine „2“ — wir schreiben 0 und Carry 1. Summenspalte = XOR-Wahrheitstabelle, Carry = AND. Mathematik wird zu Logik.
+1011 plus 0011, also 11 plus 3, von rechts: Bit 0 ist 1 plus 1, Summe 0, Carry 1. Bit 1 ist 1 plus 1 plus 1, Summe 1, Carry 1. Bit 2 ist 0 plus 0 plus 1, Summe 1, Carry 0. Bit 3 ist 1 plus 0 plus 0, Summe 1. Ergebnis 1110, unsigned 14. Die Zweieingangstabelle gilt nur bei Cin gleich 0. Mit Carry-In ist die Summe eine Dreieingangsparität, XOR allein reicht nicht.
+
+Kontrollfrage: Welcher Wert entsteht? 14 unsigned. Der Halbaddierer setzt genau den Fall ohne Cin um.
 :::
 
 ## Der Halbaddierer (Half-Adder)
@@ -890,7 +1061,9 @@ Bei $1+1$ gibt es keine „2“ — wir schreiben 0 und Carry 1. Summenspalte = 
 ![Halbaddierer aus XOR- und AND-Gatter](../assets/images/half-adder.svg)
 
 ::: notes
-„Halb“, weil nur zwei Operanden — reicht für die LSB-Stelle. Weiter links brauchen wir drei Eingänge: $A$, $B$ und den Übertrag der rechten Spalte.
+HA bedeutet Half-Adder, Halbaddierer. S ist A XOR B, Cout ist A AND B. Die vier Zeilen: 00 ergibt Summe 0 Carry 0; 01 und 10 ergeben Summe 1 Carry 0; 11 ergibt Summe 0 Carry 1. Halb meint fehlenden Cin, nicht die halbe Breite. An der niedrigsten Stelle reicht er nur bei Startcarry 0. Eine Subtraktion mit Startcarry 1 braucht dort einen Volladdierer. Die Abbildung ordnet XOR der Summe und AND dem Carry zu.
+
+Kontrollfrage: Was liefert A gleich B gleich 1? Summe 0, Carry 1. Der Volladdierer nimmt den Übertrag der vorigen Stelle hinzu.
 :::
 
 ## Der Volladdierer (Full-Adder)
@@ -903,17 +1076,21 @@ Bei $1+1$ gibt es keine „2“ — wir schreiben 0 und Carry 1. Summenspalte = 
 ![Volladdierer aus zwei Halbaddierern und OR-Gatter](../assets/images/full-adder.svg)
 
 ::: notes
-$C_{in}$ kommt von der vorherigen Stelle. Als Systemarchitekten: Volladdierer fortan als Black Box — elementarer ALU-Baustein.
+FA bedeutet Full-Adder. S ist A XOR B XOR Cin. Cout ist A AND B ODER Cin AND (A XOR B). Alle acht Zeilen erfüllen A plus B plus Cin gleich S plus 2 mal Cout. Bei A gleich B gleich Cin gleich 1 entstehen S gleich 1 und Cout gleich 1, denn 3 gleich 1 plus 2. Zwei Halbaddierer und ein ODER der Carryanteile sind eine mögliche Umsetzung, kein Naturgesetz jedes Prozessors. Es ist der Baustein unseres Addierermodells.
+
+Kontrollfrage: Welches Paar entsteht bei drei Einsen? S gleich 1, Cout gleich 1. Mehrere Zellen bilden den Mehrbitaddierer.
 :::
 
 ## Kaskadierung: Ripple-Carry-Adder (RCA)
 
 - 32 Volladdierer · Carry von Bit $i$ nach $i+1$
 
-![Ripple-Carry-Adder: Kaskade von vier Volladdierern](../assets/images/ripple-carry-adder.svg)
+![Ripple-Carry-Adder: vier Volladdierer als vergrößerter Ausschnitt, nicht die ganze 32-Bit-Kette](../assets/images/ripple-carry-adder.svg)
 
 ::: notes
-32 Volladdierer nebeneinander, Carry-Kette von Bit 0 bis 31 — exakt wie mit dem Stift. Name: Ripple-Carry-Adder.
+RCA bedeutet Ripple-Carry-Adder. Bitindex i läuft von der niedrigen Stelle nach oben. C0 ist der erste Carry-Eingang. Die Abbildung zeigt vier Zellen als Ausschnitt; eine 32-Bit-Kette setzt dasselbe Prinzip fort. Beispiel 0111 plus 0001 mit C0 gleich 0: jede der unteren drei Stellen erzeugt Summe 0 und Carry 1, die höchste Stelle ergibt Summe 1 und Carry 0. Ergebnis 1000. Jede Zelle hat ein Summebit. Der Carry fließt zur nächsthöheren Stelle.
+
+Kontrollfrage: Welches Bit ist S0 in diesem Beispiel? 0. Die Carryabhängigkeit kann einen langen Pfad ergeben.
 :::
 
 ## Das Problem der Laufzeit (Ripple Delay)
@@ -925,10 +1102,12 @@ $C_{in}$ kommt von der vorherigen Stelle. Als Systemarchitekten: Volladdierer fo
 - Lösung in der Praxis: den Übertrag **vorausberechnen**
 
 ::: notes
-Logisch korrekt, physikalisch langsam bei 32/64 Bit. Der kritische Pfad diktiert den Takt. Wie man den Übertrag parallel statt sequenziell gewinnt, zeigt die nächste Folie.
+Ripple Delay ist die Laufzeit entlang der Carrykette. Der kritische Pfad ist der längste für das gewählte Timing relevante Pfad, nicht jeder Eingabefall. Ein Register-zu-Register-Takt muss zusätzlich die Clock-to-Q-Zeit tCQ und die Setup-Zeit aufnehmen. Eine Pfeilfolge ist keine Messung. GHz- oder Gatterzeiten ohne Datenblatt bleiben weg.
+
+Kontrollfrage: Dauert jede Addition die maximale Carrykette? Nein, nur der sensitierte Fall kann sie auslösen. Carrynetzwerke können die Abhängigkeit anders organisieren.
 :::
 
-## Der „echte“ Addierer: Carry-Lookahead (CLA)
+## Carry-Lookahead als schnellere Addiererstruktur
 
 - Idee: Carry nicht durchreichen, sondern **vorhersagen**
 - Pro Bit zwei Hilfssignale (nur aus $A_i$, $B_i$ — ohne Warten):
@@ -939,11 +1118,19 @@ Logisch korrekt, physikalisch langsam bei 32/64 Bit. Der kritische Pfad diktiert
 - Preis: mehr Hardware; Speedup oft von $O(n)$ auf $O(\log n)$
 
 ::: notes
-Generate und Propagate kennt man schon aus dem Volladdierer — CLA baut daraus ein flaches Logiknetz für alle Überträge. So bleibt die Summe korrekt, aber der kritische Pfad wächst nicht linear mit der Wortbreite. Moderne CPUs nutzen Varianten (CLA, Carry-Select, Prefix-Addierer); didaktisch bleibt der RCA das mentale Modell, CLA die Brücke zur Realität.
+CLA bedeutet Carry-Lookahead-Adder, eine andere Addiererimplementierung, nicht der einzig echte Addierer. G, Generate, ist A AND B. P, Propagate, ist A XOR B. Der nächste Carry ist G ODER P AND Cin. Für zwei Bit lässt sich C2 aus C0, G0, P0, G1 und P1 ausrollen. O von log n beschreibt geeignete hierarchische Netze unter einem Modell, keine Messgarantie jedes CLA. Fan-in begrenzt die ideale Tiefe. Diese Folie ist Vertiefung; die Grundaddition bleibt der Volladdierer.
+
+Kontrollfrage: Schätzt der Lookahead den Carry? Nein, er berechnet ihn boolesch. Die ALU kombiniert Addition mit weiteren Operationen.
 :::
 
 # 8. Die Arithmetic Logic Unit (ALU)
 
+
+::: notes
+ALU bedeutet Arithmetic Logic Unit. Die bisherigen MUX- und Addiererblöcke können ein Rechenwerk mit mehreren Funktionen bilden. Welche Funktion aktiv ist, bestimmt ein modellabhängiges Steuersignal, nicht schon der Name RISC-V.
+
+Kontrollfrage: Ist jede ALU ein einzelner Volladdierer? Nein. Der Überblick benennt Operationen und Steuersignale.
+:::
 ## Die ALU — Überblick
 
 - Mathematischer Motor jedes Prozessors
@@ -952,10 +1139,12 @@ Generate und Propagate kennt man schon aus dem Volladdierer — CLA baut daraus 
 - Vereint Addierer und Routing (MUX)
 - Reagiert auf Control Signals aus der Instruktion
 
-![ALU-Blockschaltbild mit Operanden, Steuerung, Ergebnis und Zero-Flag](../assets/images/alu-overview.svg)
+![ALU-Lehrmodell mit Operanden, ALUControl, Ergebnis und internem Zero-Signal](../assets/images/alu-overview.svg)
 
 ::: notes
-MUX + Volladdierer → ALU. In Software `C = A + B` landet hier. Multifunktional: addieren, subtrahieren, bitweise Verknüpfen.
+Add und Sub sind Addition und Subtraktion, AND, OR und XOR die bitweisen Funktionen. Control Signals sind die Steuersignale. Zero, Z, ist ein aktueller Nullerkennungsdraht, kein RISC-V-Flagregister. Lehrwerte A gleich 5 und B gleich 3: Addition liefert 8, Subtraktion 2. Das Steuerwerk übersetzt Instruktionsinformation in ALUControl. Die Instruktionsbits sind nicht automatisch diese zwei Steuerbits.
+
+Kontrollfrage: Ist Z ein Register, das die nächste Instruktion vorfindet? In RV32I nicht als Condition Code. Die Auswahl kann ein MUX zwischen Pfaden sein.
 :::
 
 ## Ein Taschenrechner ohne Tasten
@@ -967,7 +1156,9 @@ MUX + Volladdierer → ALU. In Software `C = A + B` landet hier. Multifunktional
 - Select kommt von der Control Unit
 
 ::: notes
-Daten fließen parallel in alle Rechenpfade; der MUX wirft unerwünschte Ergebnisse weg. Effizient in Silizium, anders als sequentieller Software-Kontrollfluss.
+Das Bild mit parallelen Rechenpfaden ist ein Lehrmodell. Reale ALUs können Pfade abschalten oder teilen. Eine Aussage über Siliziumeffizienz bleibt qualitativ. Die Control Unit wählt am Ausgangsmultiplexer eines der Kandidatenergebnisse. Dieselben Eingänge 5 und 3 liefern je nach Wahl 8, 2 oder ein bitweises Muster. Nicht jeder Pfad muss dafür gleichzeitig ein zweites, anderes Ergebnis schreiben.
+
+Kontrollfrage: Rechnen in diesem Bild alle Pfade mit verschiedenen Eingaben? Nein, mit derselben Belegung. Eine Bitzelle macht die Struktur übersichtlich.
 :::
 
 ## Struktur einer 1-Bit-ALU
@@ -977,37 +1168,36 @@ Daten fließen parallel in alle Rechenpfade; der MUX wirft unerwünschte Ergebni
 ![1-Bit-ALU: parallele AND/OR/FA-Pfade mit Ausgangs-MUX](../assets/images/alu-1bit-structure.svg)
 
 ::: notes
-Beispiel-Kodierung: `00` AND, `01` OR, `10` Addierer; `11` oft Reserve. Genau dieses Muster skaliert auf 32 Bit.
+Die 1-Bit-Zelle enthält einen Volladdierer, Logikpfade und einen MUX auf Y. Cin und Cout verbinden die Stellen. Die Codierung 00 AND, 01 OR, 10 Addierpfad und 11 Reserve ist ein Lehrmodell, keine ISA. XOR kann die Reserve belegen; sonst bleibt 11 unbenutzt. Subtraktion braucht zusätzlich die Invertierung von B und C0 gleich 1. Diese Codes gelten in allen folgenden ALU-Bildern dieser Einheit.
+
+Kontrollfrage: Ist 10 der Opcode von add? Nein, es ist unser Steuerwert. Ein gemeinsamer Addierer kann subtrahieren.
 :::
 
 ## Subtraktion elegant integrieren
 
 - $A - B = A + \overline{B} + 1$ · MUX vor $B$, $C_{in}=1$
 
-![Subtraktion in der ALU: NOT und MUX vor dem Volladdierer](../assets/images/alu-subtract.svg)
+![Subtraktion: NOT von B und nur der erste Carry-Eingang C0 gleich 1](../assets/images/alu-subtract.svg)
 
 ::: notes
-Aus dem Zweierkomplement-Block: Bits kippen und +1. Der MUX vor $B$ liefert $\overline{B}$; das $+1$ kommt als Carry-In. Reines Routing macht aus dem Addierer einen Subtrahierer.
+A minus B ist bei fester Breite A plus NOT B plus 1. Nur der erste Carry-Eingang C0 wird auf eins gesetzt. Höhere Stellen erhalten den weitergereichten Carry. Vier Bit: 7 ist 0111, 3 ist 0011, NOT B ist 1100. Mit C0 gleich 1 entsteht 0100 und ein herauslaufender Carry. Die unteren vier Bits sind 4. Binvert wählt im MUX das invertierte B. Der hinauslaufende Carry ist nicht pauschal ein signed Overflow. Seine Bedeutung als Borrow hängt von der Konvention ab.
+
+Kontrollfrage: Setzen wir an jeder Stelle Cin gleich 1? Nein, nur an der ersten. Nullerkennung wertet das Ergebnis zusätzlich aus.
 :::
 
-## Das Zero-Flag (Null-Erkennung)
+## Das Zero-Signal (Null-Erkennung)
 
-- Status-Flags neben dem Ergebnis $Y$
-- Zero-Flag ($Z$): 1, wenn Ergebnis exakt 0
-- Hardware: oft großes NOR über alle Ergebnis-Bits
-- Vergleich $A == B$: rechne $A - B$; $Z=1$ ⇒ gleich
-
-```c
-// Software:
-if (A == B) { ... }
-
-// Hardware-Idee:
-Ergebnis = A - B;
-if (Zero_Flag == 1) { ... }
-```
+- $Z$ ist ein kombinatorischer Ausgang unseres ALU-Lehrmodells
+- $Z = 1$, wenn alle Ergebnisbits 0 sind: NOR über diese Bits
+- RV32I speichert dafür kein Condition-Code-Register
+- BEQ und BNE vergleichen Register; ein Subtraktionspfad ist nur eine mögliche Umsetzung
 
 ::: notes
-Wichtigstes Flag für bedingte Sprünge in RISC-V. Control Unit liest $Z$ und entscheidet über den Kontrollfluss.
+Z, Zero, ist die kombinatorische Nullerkennung. Alle Ergebnisbits werden mit ODER verknüpft und danach invertiert. Bei A gleich B gleich 5 ist die Differenz null und Z wird eins. Bei A gleich 5 und B gleich 3 entsteht 2, also mindestens ein gesetztes Bit, und Z ist null. Das Signal folgt nach der Laufzeit des Netzes und muss nicht gespeichert werden.
+
+RV32I hat für diese Integeroperationen kein Condition-Code-Register. BEQ und BNE, Branch if Equal und Branch if Not Equal, vergleichen die genannten Register. Eine Schaltung darf den Vergleich intern subtrahieren. Die Software sieht den Registervergleich. Die Syntax folgt in Einheit 3.
+
+Kontrollfrage: Muss vor BEQ ein sub stehen? Nein. Die nächste Folie skaliert die Zellen auf 32 Bit.
 :::
 
 ## Die 32-Bit RISC-V ALU
@@ -1017,7 +1207,9 @@ Wichtigstes Flag für bedingte Sprünge in RISC-V. Control Unit liest $Z$ und en
 ![32-Bit-ALU als Kaskade von 1-Bit-Slices](../assets/images/alu-32bit-cascade.svg)
 
 ::: notes
-32 Scheiben, Carry verbunden, gemeinsame Steuerung — der Motor für Integer-Arithmetik und Logik.
+Die Kaskade ist eine 32-Bit-Lehrimplementierung für RV32I, nicht der vorgeschriebene Aufbau jeder RISC-V-ALU. Alle Stellen teilen ALUControl. 32 Ergebnisbits entstehen. Der Carry verbindet die Addierpfade. Schiebeoperationen brauchen andere Verbindungen als eine reine RCA-Kette; sie sind hier noch nicht diese Kaskade. Beispiel: die Subtraktion 5 minus 3 schreibt in die unteren Bits 0x00000002, die oberen Bits bleiben 0.
+
+Kontrollfrage: Kann diese Kette allein einen variablen Shift? Nicht als reine Carry-Kette. Das Symbol verbirgt die Details hinter einer Schnittstelle.
 :::
 
 ## Das ALU-Schaltsymbol
@@ -1028,14 +1220,22 @@ Wichtigstes Flag für bedingte Sprünge in RISC-V. Control Unit liest $Z$ und en
 - Unten: Ergebnis (32 Bit)
 - Seitlich: ALUControl und Flags (z. B. Zero)
 
-![Klassisches ALU-Schaltsymbol als Trapez mit Operanden, Steuerung und Zero-Flag](../assets/images/alu-symbol.svg)
+![ALU-Symbol des Lehrmodells; Zero ist ein interner Ausgang, kein RISC-V-Statusregister](../assets/images/alu-symbol.svg)
 
 ::: notes
-Kreis zur Abstraktion: Transistor → Gatter → Addierer → 32-Bit-ALU. Ab der nächsten Einheit zeichnen wir nur noch das V-Symbol — Sie wissen, dass dahinter Multiplexer umklappen und Carry-Ketten laufen.
+Das Symbol zeigt zwei 32-Bit-Operanden, ein 32-Bit-Ergebnis, ALUControl und das interne Z. Trapez oder V-Form beweisen allein keine Norm. Zur Schnittstelle gehören die gewählte Operation und die gültige Verzögerung. Z ist kein automatisch sichtbares Architekturflag. Ab jetzt nutzen wir das Symbol, wenn die Innenschaltung nicht gefragt ist.
+
+Kontrollfrage: Verschwindet die Laufzeit durch das Symbol? Nein. Für mehrschrittige Arbeit müssen Ergebnisse gespeichert werden.
 :::
 
 # 9. Die Notwendigkeit der Zeit
 
+
+::: notes
+Die ALU hat keinen eigenen Zustand. Ein Ergebnis muss gehalten werden, wenn die Eingänge sich ändern. Zeit erscheint als Laufzeit und als erlaubter Übernahmezeitpunkt. Die aktive Flanke ist die Stelle, an der unser Modell den Zustand aktualisiert.
+
+Kontrollfrage: Speichert die ALU allein den vorigen Wert? Nein. Der Überblick trennt Verarbeitung und Übernahme.
+:::
 ## Die Notwendigkeit der Zeit — Überblick
 
 - Die vierte Dimension der Computerarchitektur
@@ -1048,35 +1248,36 @@ Kreis zur Abstraktion: Transistor → Gatter → Addierer → 32-Bit-ALU. Ab der
 %%| fig-width: 3.5
 %%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph LR
-  A[Kombinatorik] -->|Ohne Gedächtnis| B[Daten fließen sofort ab]
-  C[Sequenziell] -->|Mit Gedächtnis| D[Daten warten auf den Takt]
+  A[Kombinatorik] -->|nach Laufzeit| B[Ausgang folgt den Eingängen]
+  C[Registermodell] -->|aktive Flanke| D[Q hält bis zur nächsten Übernahme]
   style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
   style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
 ```
 
 ::: notes
-Letzter großer Grundlagenblock: MUX und ALU haben wir — aber kein Gedächtnis. Wir fügen die Dimension Zeit hinzu und führen den Takt (Clock) als Herzschlag des Systems ein.
+CLK bedeutet Clock, das Taktsignal. Kombinatorische Ausgänge folgen nach Laufzeit. Q eines Registers hält einen Zustand bis zur erlaubten Aktualisierung. Die Kästchenkette ist kein Zeitdiagramm. Physikalisch verläuft die Spannung kontinuierlich; logisch zählen wir Zustände und Ereignisse wie die aktive Flanke.
+
+Kontrollfrage: Warten Daten im wörtlichen Sinn auf den Takt? Nur die Übernahme in den Speicherbaustein ist an die Flanke gebunden. Eine ALU allein bewahrt das vorige Ergebnis nicht.
 :::
 
 ## Das Problem der reinen Kombinatorik
 
-- Reagiert sofort auf Eingangsänderungen
-- Kein Mechanismus, ein Ergebnis „einzufrieren“
-- Fallen die Eingänge weg, ist das Ergebnis weg
-- Laufzeitunterschiede → temporäre Glitches
-- Fazit: Mit einer ALU allein lassen sich keine Programme ausführen
+- Der Ausgang folgt den Eingängen nach einer endlichen Laufzeit
+- Es gibt keinen gespeicherten Zustand, der ein Ergebnis festhält
+- Verschiedene Pfadlaufzeiten können einen Glitch erzeugen
+- Für einen programmierbaren Ablauf brauchen wir gespeicherten Zustand
 
 ::: notes
-Metapher: ALU wie ein Rohrsystem — ohne Pumpe läuft es leer. Für $C = A + B$ und später $D = C + 5$ brauchen wir Schleusen: Ergebnisse müssen überleben, wenn sich die Eingänge ändern.
+Sofort heißt hier nach endlicher Laufzeit, nicht im selben idealen Zeitpunkt. Ein Glitch ist ein Zwischenwert, weil Pfade verschieden schnell sind. Für C gleich A plus B und danach D gleich C plus 5 muss der Zwischenwert entweder stabil anliegen oder gespeichert werden. Nicht jede Reihenschaltung braucht dafür ein Register. Ein programmierbarer Ablauf braucht jedoch gespeicherten Zustand, sonst gibt es keinen nächsten Schritt.
+
+Kontrollfrage: Muss zwischen zwei Gattern immer ein Register stehen? Nein. Ein Register kann den Wert über spätere Eingangsänderungen erhalten.
 :::
 
 ## Die Lösung: Zustandsspeicherung
 
-- Bauteile, die Ladungen/Daten über Zeit halten
-- Globale Synchronisation aller Speicherelemente
-- Speicherelemente = Dämme/Schleusen im Datenpfad
-- ALU-Ergebnisse werden zwischengespeichert
-- Weiterfluss erst beim Öffnen der Schleusen
+- Im Kursmodell übernimmt ein Register seinen neuen Wert an der gemeinsamen Sollflanke
+- Q bleibt danach erhalten, auch wenn sich der ALU-Eingang ändert
+- Reale Verzögerungen bleiben; es gibt keinen gemeinsamen Nanosekundenpunkt ohne Versatz
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -1089,46 +1290,55 @@ graph LR
 ```
 
 ::: notes
-Datentresore im Datenpfad — nicht asynchron jeder für sich, sondern global synchron: im selben Nanosekundenbruchteil öffnen, aufnehmen, verriegeln. Dirigent: der Taktgeber.
+Die globale Synchronisation gilt für das Kursmodell mit einer Taktdomäne. Ein Register speichert einen logischen Zustand; nicht jeder Speicher hält ihn nur als isolierte Ladung. Die gemeinsame Sollflanke hat reale Verzögerungen, keinen identischen Nanosekundenpunkt. Zeigt die ALU danach einen anderen Wert, bleibt Q bis zur nächsten erlaubten Übernahme erhalten. Q ist auch zwischen den Flanken sichtbar.
+
+Kontrollfrage: Wird Q erst beim nächsten Öffnen sichtbar? Nein, es hält den bereits übernommenen Wert. CLK legt die Übernahmeereignisse fest.
 :::
 
 ## Das Taktsignal (Clock / CLK)
 
-- Oszillator = Herzschlag / Metronom des Prozessors
-- Periodisches Rechtecksignal ($0 \leftrightarrow 1$)
-- Periode $T$: Dauer eines Zyklus (z. B. $1\,\text{ns}$)
-- Frequenz $f = 1/T$ (z. B. $1\,\text{GHz}$)
-- Alle Speicherelemente hören auf dieses globale Signal
+- CLK ist das Taktsignal der betrachteten Taktdomäne
+- Periode $T$, Frequenz $f = 1/T$; $1\,\text{ns}$ entspricht $1\,\text{GHz}$
+- Ein Tick ist kein universeller Instruktionsschritt
+- Nicht jedes Speicherelement jedes Systems hängt an diesem einen Takt
 
 ::: notes
-CLK vom Quarz-Oszillator: Bei 3 GHz tickt das Metronom drei Milliarden Mal pro Sekunde — jeder Tick ein Schritt vorwärts für die gesamte CPU.
+T ist die Periodendauer, f gleich 1 geteilt durch T die Frequenz. Eine Nanosekunde entspricht einem Gigahertz. Drei Gigahertz entsprächen etwa 0,333 Nanosekunden; das ist eine Umrechnung, keine Messung unseres Modells. Ein Quarz liefert nicht pauschal direkt den Kerntakt. Ein Tick ist kein vollständiger Instruktionsschritt. Gemeint sind die Register der betrachteten Taktdomäne, nicht alle Speicherelemente jedes Systems.
+
+Kontrollfrage: Bedeutet 1 ns immer 3 GHz? Nein, 1 ns entspricht 1 GHz. Die aktive Flanke ist genauer als ein hoher Pegel.
 :::
 
 ## Flankensteuerung (Edge-Triggering)
 
 :::: {.columns}
 ::: {.column width="46%"}
-- Reaktion nicht auf konstanten Pegel, sondern auf den Übergang
-- Steigende Flanke: $0 \rightarrow 1$
-- Fallende Flanke: $1 \rightarrow 0$
-- RISC-V / die meisten CPUs: Speichern primär bei steigender Flanke
+- Reaktion auf den Übergang, nicht auf einen dauerhaft hohen Pegel
+- Steigende Flanke: $0 \rightarrow 1$; fallende Flanke: $1 \rightarrow 0$
+- Unser D-FF-Lehrmodell übernimmt bei der steigenden Flanke
+- Das ist keine Vorschrift der RISC-V-ISA
 :::
 ::: {.column width="54%"}
 ```text
-Clock: 00000000111111110000000011111111
-              ^       ^       ^       ^
-            Rise    Fall    Rise    Fall
-(Prozessor speichert typisch nur beim Rise)
+CLK:  niedriger Pegel, steigende Flanke, hoher Pegel, fallende Flanke
+Q:    bleibt, übernimmt D nach tCQ, hält, hält
 ```
 :::
 ::::
 
 ::: notes
-Edge-Triggering: Bei konstantem CLK-Pegel passiert im Speicher nichts. Nur im Moment der steigenden Flanke öffnet der Tresor kurz, nimmt D auf und verriegelt wieder — danach hat die ALU Zeit bis zum nächsten Tick.
+Unser D-FF übernimmt bei der steigenden Flanke. Das ist die Lehrmodellannahme, keine RISC-V-ISA-Zusage. Ein hoher CLK-Pegel öffnet dieses Flip-Flop nicht dauerhaft. Ein Latch wäre pegelsensitiv und ist ein anderer Baustein. Q erscheint nach tCQ, der Clock-to-Q-Verzögerung. Zwischen den Flanken arbeitet die Kombinatorik weiter. Die ASCII-Folge aus Nullen und Einsen ersetzen wir durch diese Ereignisbeschreibung: Flanke, danach neues Q, Halten im hohen und niedrigen Pegel.
+
+Kontrollfrage: Darf D während des hohen Pegels Q sofort ändern? Nein, nicht in diesem FF-Modell. Der Baustein braucht einen Zustand für diese Übernahme.
 :::
 
 # 10. Sequenzielle Logik
 
+
+::: notes
+Nicht jede sequenzielle Schaltung ist flankengesteuert. Wir führen den Baustein mit Eingängen und Zeitbedingungen ein. Zustand bedeutet: der Ausgang hängt von der Vergangenheit ab, nicht nur von den momentanen Eingängen.
+
+Kontrollfrage: Ist jede Rückkopplung bereits ein D-FF? Nein. Der Überblick nennt Rückkopplung, Flip-Flop, Register und Zeitbedingungen.
+:::
 ## Sequenzielle Logik — Überblick
 
 - Entwurf elementarer Speicherzellen
@@ -1149,28 +1359,30 @@ graph LR
 ```
 
 ::: notes
-Aus kombinatorischen Gattern per Rückkopplung ein Gedächtnis bauen → D-Flip-Flop. Kurz: warum Overclocking scheitert (Setup/Hold).
+D-FF bedeutet D-Flip-Flop. Setup und Hold sind die Zeiten, in denen D um die Flanke stabil bleiben muss. Rückkopplung ist ein Prinzip. Eine beliebige Gatterschleife ist noch kein steuerbarer Speicher. Eine zu hohe Frequenz kann das Setup-Budget verletzen. Hold-Probleme entstehen auch bei kurzen Pfaden und Taktversatz, nicht nur durch zu schnelles Takten. Die Formeln bleiben optional.
+
+Kontrollfrage: Beseitigt langsameres Takten jedes Hold-Problem? Nein. Ein konkreter Speicher muss Setzen, Rücksetzen und Halten unterscheiden.
 :::
 
 ## Das Rückkopplungs-Konzept
 
-- Kombinatorik: Fluss Eingang → Ausgang
-- Gedächtnis: Ausgang wieder auf den eigenen Eingang zurückführen
-- Bistabile Kippstufe / Latch hält sich selbst
-- Zustand bleibt, bis ein externes Signal ihn überschreibt
+- Eine OR-Schleife kann eine Eins festhalten, sie aber nicht gezielt löschen
+- Steuerbares Beispiel: zwei gekreuzte NOR-Gatter, aktives High
+- $S=1, R=0$ setzt; $S=0, R=1$ setzt zurück; $S=R=0$ hält
+- $S=R=1$ ist in dieser NOR-Schaltung verboten
+- Ein SR-Latch ist noch kein flankengesteuertes D-Flip-Flop
 
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-graph LR
-  Eingang --> OR[OR]
-  OR --> Y[Ausgang]
-  Y -->|Rückkopplung| OR
-  style OR fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
+| $S$ | $R$ | Wirkung |
+|:---:|:---:|:--------|
+| 0 | 0 | halten |
+| 1 | 0 | setzen, $Q=1$ |
+| 0 | 1 | rücksetzen, $Q=0$ |
+| 1 | 1 | verboten |
 
 ::: notes
-OR mit Feedback: kurze 1 am Eingang → Ausgang 1 → rückgekoppelt → bleibt 1, auch wenn der Impuls weg ist. Basis aller Speicherzellen — wir abstrahieren das sofort zum D-FF.
+Die OR-Schleife hält eine einmal gesetzte Eins, kann sie aber nicht löschen. Sie ist keine allgemeine Basis aller Speicherzellen. Das steuerbare Beispiel sind zwei gekreuzte NOR-Gatter, aktives High. S gleich 1 und R gleich 0 setzt Q auf 1. S gleich 0 und R gleich 1 setzt Q auf 0. S und R gleich 0 halten. S und R gleich 1 ist verboten, weil die NOR-Schaltung dann keinen stabilen komplementären Zustand zusichert. Der Anfangswert ist nicht automatisch null. Ein SR-Latch ist pegelgesteuert und noch kein flankengesteuertes D-FF.
+
+Kontrollfrage: Kann die OR-Schleife eine Eins wieder löschen? Nein. Das D-FF bietet die einfachere Flankenschnittstelle.
 :::
 
 ## Das D-Flip-Flop (D-FF)
@@ -1184,7 +1396,9 @@ OR mit Feedback: kurze 1 am Eingang → Ausgang 1 → rückgekoppelt → bleibt 
 ![Schaltsymbol D-Flip-Flop mit D, CLK, Q und Q̄](../assets/images/d-flip-flop.svg)
 
 ::: notes
-Annahme unseres Lehrmodells: positive Taktflanke, kombinatorisches Lesen des Registerfiles und synchrones Schreiben. Das ist eine Schaltungseigenschaft, keine Vorschrift der RISC-V-ISA. Symbol: Rechteck, D links, Q rechts, Dreieck = steigende Flanke.
+D ist der Dateneingang, Q der gespeicherte Ausgang, Q quer der invertierte Ausgang. CLK mit Dreieck bedeutet Flankensteuerung. Ein zusätzlicher Inversionskreis an CLK würde die aktive Flanke umkehren; unser Symbol hat diesen Kreis nicht. Positive Flanke, kombinatorisches Lesen der Registerbank und synchrones Schreiben sind Modellannahmen, keine ISA-Pflicht. Ignoriert D heißt: außerhalb der Übernahme hält Q. Um die Flanke muss D trotzdem stabil sein.
+
+Kontrollfrage: Ändert ein Wechsel von D bei niedrigem CLK sofort Q? Nein. Ein Zeitverlauf zeigt D und Q gemeinsam.
 :::
 
 ## Das Verhalten der Kamera (Metapher)
@@ -1206,7 +1420,9 @@ Annahme unseres Lehrmodells: positive Taktflanke, kombinatorisches Lesen des Reg
 ::::
 
 ::: notes
-Kamera-Metapher prägt sich ein: Motiv ändert sich, Foto nicht — bis zum nächsten Auslöser. In Zeile 2 übernimmt $Q$ den Wert von $D$ nur an der steigenden Flanke.
+Die Kamera ist nur der Einstieg. Die Tabelle meint: solange keine aktive Flanke kommt, bleibt Q. An der Flanke wird der stabile D-Wert übernommen, sichtbar nach tCQ. Ein Klick ist keine zeitlose Aufnahme. Q gleich 0 am Anfang ist eine gesetzte Anfangsannahme, kein universeller Einschaltzustand. Danach darf sich das Motiv ändern, ohne das gespeicherte Bild zu ändern.
+
+Kontrollfrage: Ist der Einschaltwert immer 0? Nein, nur unsere Annahme. Setup und Hold legen das Stabilitätsfenster fest.
 :::
 
 ## Physikalische Limits: Setup- und Hold-Time
@@ -1226,7 +1442,9 @@ graph LR
 ```
 
 ::: notes
-Zu hoher Takt → ALU zu langsam → Setup verletzt → undefinierte Zustände / Absturz. Deshalb gibt es eine maximale sinnvolle Frequenz.
+D muss die Setup-Zeit vor der steigenden Flanke und die Hold-Zeit danach stabil bleiben. Im Zeitbild liegen diese Fenster links und rechts der Flanke. Q wechselt nach tCQ. Eine Verletzung kann einen falschen Wert oder Metastabilität erzeugen, einen vorübergehend nicht eindeutig aufgelösten Zustand. Nicht jede Verletzung ist ein sofortiger Absturz. Setup belastet der längste Datenpfad. Hold betrifft auch kurze Pfade. Ohne Taktversatz gilt als optionales Modell: die Periode ist mindestens tCQ maximal plus tPD maximal plus tSetup. Hold verlangt tCQ minimal plus tPD minimal mindestens tHold. tPD ist die kombinatorische Laufzeit. Zahlen ohne Datenblatt setzen wir nicht ein.
+
+Kontrollfrage: Darf D direkt nach der Flanke springen? Nein, erst nach der Hold-Zeit. 32 solche Bits bilden ein Register.
 :::
 
 ## Vom 1-Bit-D-FF zum 32-Bit-Register
@@ -1248,7 +1466,9 @@ graph TD
 ```
 
 ::: notes
-32 Kameras, ein gemeinsamer Auslöser — ein 32-Bit-Zustandsspeicher.
+32 D-Flip-Flops mit gemeinsamem CLK bilden ein 32-Bit-Register. D von 31 bis 0 geht nach Q von 31 bis 0. RV32I nutzt solche Wortbreiten im Kursmodell. Jedes Flip-Flop hält ein Bit. Zusammen sind es 32 Bit, ein RISC-V-Word. Die Übernahme ist die gemeinsame Sollflanke; Clock-Skew, der Taktversatz, und tCQ verhindern perfekte Gleichzeitigkeit. Die Zeichnung braucht Ausgänge, nicht nur Eingänge.
+
+Kontrollfrage: Wie viele Zustandsbits hält das Register? 32. WE entscheidet, ob die Flanke den Wert wirklich übernimmt.
 :::
 
 ## Das Write-Enable-Signal (WE)
@@ -1267,7 +1487,9 @@ if (RISING_EDGE(clock)) {
 ```
 
 ::: notes
-Sicherungshebel am Auslöser: Nur wenn die Control Unit WE = 1 setzt, überschreibt die Flanke den Inhalt.
+WE oder EN ist die Schreibfreigabe. Der Pseudocode wenn steigende Flanke und WE dann Q gleich D sonst Q halten ist Verhalten, kein C-Programm. Anfang Q gleich 0. Ohne Flanke bleibt Q 0, auch wenn D und WE eins sind. Erste Flanke mit D gleich 1 und WE gleich 1: Q wird 1 nach tCQ. Wechselt D danach auf 0 ohne Flanke, bleibt Q 1. Zweite Flanke mit WE gleich 0 hält Q auf 1. Dritte Flanke mit D gleich 0 und WE gleich 1 übernimmt 0. Eine mögliche Umsetzung ist ein Datenmultiplexer vor dem Flip-Flop: bei WE gleich 0 wird Q wieder nach D geführt. WE gattert nicht willkürlich den Taktpin. Daten und Freigabe müssen Setup und Hold erfüllen.
+
+Kontrollfrage: Hält WE gleich 0 den Takt an? Nein, es verhindert die Datenübernahme. Das Symbol fasst die Schnittstelle zusammen.
 :::
 
 ## Das abstrahierte Register-Symbol
@@ -1280,11 +1502,19 @@ Sicherungshebel am Auslöser: Nur wenn die Control Unit WE = 1 setzt, überschre
 ![Abstrahiertes Register-Symbol mit D, WE, CLK und Q](../assets/images/register-symbol.svg)
 
 ::: notes
-Ab jetzt: Viereck mit $D$, $Q$, WE und Dreieck. Innere Rückkopplungen und Setup-Zeiten bleiben im Hintergrund — wir nutzen das Register als Baustein.
+Das Symbol zeigt D, Q, CLK und WE. Der Vertrag: bei aktiver Flanke und WE gleich 1 wird D nach Q übernommen, sonst bleibt Q. Die Zeitbedingungen bleiben gültig, auch wenn die Innenschaltung verborgen ist. Der PC, Program Counter, ist ein eigener gespeicherter Adresszustand, kein zusätzliches allgemeines Register x32.
+
+Kontrollfrage: Ist der PC eines der Register x0 bis x31? Nein. Mehrere Register werden über Auswahlports nutzbar.
 :::
 
 # 11. Das Register File (Registersatz)
 
+
+::: notes
+Register File bedeutet Registerbank. Aus einem Wortzustand wird ein Satz wählbarer Operanden und Ziele. Die nächsten Folien verbinden diese Bank mit der ALU. Die Portzahl des Lehrmodells ist nicht die ISA.
+
+Kontrollfrage: Erzeugt der Name File eine Datei? Nein. Der Überblick zeigt die Schleife zur ALU.
+:::
 ## Das Register File — Überblick
 
 - Extrem schnelle „Werkbank“ der ALU
@@ -1303,26 +1533,33 @@ graph LR
 ```
 
 ::: notes
-ALU = Taschenrechner, Register File = Schreibtisch daneben. Kleiner, ultraschneller On-Chip-Speicher — jede Assembler-Rechnung liest und schreibt hier.
+Multi-Porting meint mehrere gleichzeitige Zugriffsports. x0 ist das Nullregister. Eine Softwarevariable liegt nicht fest in einem bestimmten Register. Nicht jede Instruktion liest zwei Register und schreibt eines; das gilt für den folgenden add-Fall. Zwei Leseports und ein Schreibport, 2R1W, sind unser Modell. Die Schleife ALU und Registerbank enthält einen Speicherzustand, sonst wäre das Ergebnis weg.
+
+Kontrollfrage: Liest jede Instruktion genau zwei Register? Nein. Registerbank und Hauptspeicher haben verschiedene Aufgaben.
 :::
 
 ## Was ist ein Registersatz?
 
 - RAM: groß, aber weit weg und langsam
-- ALU braucht Daten ohne Wartezeit
+- Der Registerinhalt folgt nach der Laufzeit des Auswahlnetzwerks
+- Kombinatorisches Lesen ist die Annahme unserer Registerbank, nicht jede physische Bank
 - Register File: lokales Array direkt auf dem Die
 - Adressierung per Assembler (z. B. `x5`)
 - Zwischenspeicher für intensiv genutzte Variablen
 
 ::: notes
-Physik der Distanz: RAM-Zugriff ist teuer. Register File = Werkbank — Daten einmal holen, dann schnell rechnen, ohne ständig ins Lager zu laufen.
+Ohne Wartezeit wäre falsch. Die Zugriffszeit ist modellabhängig und klein gegenüber einem einfachen Hauptspeicherbild, aber nicht null. Der Die ist das Halbleiterplättchen. Die Nummer x5 ist nicht der Inhalt und keine Byteadresse. Steht in x5 der Wert 7, sind fünf die Nummer und sieben die Daten. Welche C-Variable dort liegt, entscheidet der Compiler. Physische Entfernung ist nur ein Faktor der RAM-Latenz.
+
+Kontrollfrage: Ist x5 die Adresse 5 im RAM? Nein. Die Ports wählen zwei Operanden gleichzeitig.
 :::
 
 ## Architektur des Register Files
 
-Befehl `add x3, x1, x2` in einem Durchlauf:
+Lehrzustand `add x7, x5, x6`: $x5=7$, $x6=3$, Ziel $x7$.
 
-- Lesen: $A1$/$A2$ → $RD1$/$RD2$ · Schreiben: $A3$, $WD3$, freigegeben durch $WE3$
+- Lesen: $A1=5$, $A2=6$ liefern $RD1=7$, $RD2=3$
+- Schreiben: $A3=7$, $WD3=10$, $WE3=1$, Übernahme an der positiven Flanke
+- Fünf Bit wählen die Nummer; 32 Bit sind die Daten
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -1334,11 +1571,15 @@ graph LR
   RF --> RD2[RD2]
   WD3[WD3] --> RF
   A3[A3] --> RF
+  WE3[WE3] --> RF
+  CLK[CLK] --> RF
   style RF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
 ```
 
 ::: notes
-A1/A2 wählen die Quellregister → Daten an RD1/RD2 zur ALU. Ergebnis zurück auf WD3; A3 und Write-Enable WE3 wählen das Zielregister.
+add x7, x5, x6 mit den Lehrwerten x5 gleich 7, x6 gleich 3 und x7 anfänglich 0. A1 und A2 sind fünf Bit und wählen die Quellen, RD1 und RD2 sind 32-Bit-Lesedaten. Nach der Leselaufzeit sind das 7 und 3. Die ALU addiert zu 10. A3 gleich 7, WD3 gleich 10, WE3 gleich 1. An der positiven Flanke wird x7 zu 10. x5 und x6 bleiben. Ein Durchlauf ist hier kein allgemeines Taktversprechen, sondern die Beschreibung dieses Lehrschritts. Die Grafik zeigt A1, A2, A3, RD1, RD2, WD3, WE3 und CLK.
+
+Kontrollfrage: Ist 00111 der Datenwert 7? Nein, die Zielnummer 7. Die Leseports wählen die aktuellen Werte.
 :::
 
 ## Interner Aufbau: Lesen (kombinatorisch)
@@ -1346,7 +1587,7 @@ A1/A2 wählen die Quellregister → Daten an RD1/RD2 zur ALU. Ergebnis zurück a
 - Intern: 32 Register ($x0$–$x31$)
 - Jeder Leseausgang: großer 32-zu-1-MUX
 - 5-Bit-Adressen $A1$/$A2$ = Select
-- Lesen **ohne Takt** — asynchron/kombinatorisch
+- Der neue Wert erscheint nach der Laufzeit des Multiplexers, nicht zeitlos
 
 ```{mermaid}
 %%| fig-width: 3.5
@@ -1361,7 +1602,9 @@ graph LR
 ```
 
 ::: notes
-Sobald A1 wechselt, schaltet der MUX um — Wert fließt sofort nach RD1. Lesen ist reine Kombinatorik.
+Jeder Leseport ist ein 32-zu-1-Multiplexer. Fünf Bit an A1 oder A2 wählen eines von 32 Registern. x0 liefert dabei null, unabhängig vom Speicherversuch. Ein neuer Index erscheint nach der MUX-Laufzeit an RD1 oder RD2, nicht zeitlos. Kombinatorisches Lesen ist unsere Implementierung. Eine andere physische Bank darf anders arbeiten. Beide Leseports können verschiedene Nummern gleichzeitig wählen.
+
+Kontrollfrage: Erscheint der neue Wert im selben idealen Zeitpunkt wie der Indexwechsel? Nein, nach der Laufzeit. Beim Schreiben kommen Nummer, Daten, Freigabe und Flanke zusammen.
 :::
 
 ## Interner Aufbau: Schreiben (sequenziell)
@@ -1371,16 +1614,16 @@ Sobald A1 wechselt, schaltet der MUX um — Wert fließt sofort nach RD1. Lesen 
 - Schreiben erst bei steigender Flanke
 
 ```text
-A3 = 00101 (Register 5), WE3 = 1
-
-Reg 0 WE = 0
-...
-Reg 5 WE = 1   ← nur x5 speichert
-...
+A3 = 00111 (Nummer 7, nicht der Datenwert 7)
+WD3 = 10, WE3 = 1
+Nach der positiven Flanke: x7 = 10
+x0 wird auch bei A3 = 0 nicht beschrieben
 ```
 
 ::: notes
-Alle sehen dieselben Daten; nur das dekodierte Register hat WE = 1 und übernimmt bei der Flanke.
+Der Decoder bildet aus A3 und WE3 je Register ein Freigabesignal: WE der Stelle i ist WE3 und die Bedingung, dass A3 gleich i ist. Ist WE3 null, ist kein Ziel aktiv. Schreiben auf x0 wird unterdrückt. Beispiel: vor der Flanke sind A3 gleich 7 und WD3 gleich 10. Danach ist x7 gleich 10, alle anderen bleiben. Liest man im Kursmodell gleichzeitig das Register, das geschrieben wird, gilt der alte Wert bis zur Flanke; der neue Wert gilt danach an den Leseports nach deren Laufzeit. Das ist eine Modellfestlegung, keine ISA-Latenz.
+
+Kontrollfrage: Ändert A3 gleich 0 das Register x0? Nein. Die ISA benennt diese Register unabhängig vom Schaltbild.
 :::
 
 ## Die RISC-V-Register ($x0$–$x31$)
@@ -1394,10 +1637,12 @@ Alle sehen dieselben Daten; nur das dekodierte Register hat WE = 1 und übernimm
 | $x0$ | `zero` | hartverdrahtete 0 |
 | $x1$ | `ra` | Return Address |
 | $x2$ | `sp` | Stack Pointer |
-| $x10$–$x17$ | `a0`–`a7` | Argumente / Rückgabewerte |
+| $x10$–$x17$ | `a0`–`a7` | Argumente; einfaches Integerergebnis in `a0` |
 
 ::: notes
-Kompakte Instruktionskodierung: je 5 Bit für rs1, rs2, rd. ABI-Namen vertiefen wir im Praktikum.
+RV32I hat die Architekturregister x0 bis x31, jedes im Kurs 32 Bit, plus den PC als eigenen Zustand. rs1, rs2 und rd sind die Felder für Quell- und Zielnummern. ABI, Application Binary Interface, gibt Aliase: ra ist x1, die Rücksprungadresse, sp ist x2, der Stackzeiger, a0 bis a7 sind x10 bis x17. Ein Alias ist kein zusätzliches Register. Einfache Integerergebnisse stehen in a0, nicht in allen acht a-Registern. 32 Flip-Flops je Register sind eine mögliche Umsetzung, keine ISA-Pflicht.
+
+Kontrollfrage: Ist a0 ein 33. Register neben x10? Nein. x0 hat eine besondere Wirkung.
 :::
 
 ## Das Hardwired-Zero-Register ($x0$)
@@ -1405,18 +1650,27 @@ Kompakte Instruktionskodierung: je 5 Bit für rs1, rs2, rd. ABI-Namen vertiefen 
 - Fest auf logisch 0 verdrahtet
 - Schreiben wird ignoriert — Wert bleibt 0
 - Spart Spezialbefehle (RISC-Philosophie)
-- Beispiel „Copy“: `add x2, x1, x0` ⇒ $x2 = x1 + 0$
+- Beispiel: `add x6, x5, x0` kopiert $x5$ nach $x6$
+- `mv` ist eine Pseudoinstruktion, oft als `addi` mit Immediate 0
 
 ```asm
-add x2, x1, x0   # Kopie: x2 ← x1
+add x6, x5, x0   # x5 = 42 bleibt; x6 wird 42; x0 bleibt 0
 ```
 
 ::: notes
-Kein eigener MOVE-Befehl nötig — Addition mit Null recycelt die ALU-Hardware. Typisch RISC: wenige Instruktionen, clever genutzt.
+Jedes Lesen von x0, Alias zero, liefert null. Ein Schreibziel x0 verändert den Wert nicht. Das ist die Semantik, keine zwingende Drahtart. add x6, x5, x0 mit x5 gleich 42 schreibt 42 nach x6. x5 bleibt 42, x0 bleibt 0. mv ist eine Pseudoinstruktion, üblicherweise addi mit Immediate 0, kein fehlender MOVE in der Assemblersprache. Ein Befehl mit Ziel x0 kann bei Speicher- oder Systemwirkung trotzdem andere Effekte haben. Für diese Kopie genügt die Nullregel.
+
+Kontrollfrage: Welcher Wert steht nach der Kopie in x0? Null. Größere Daten brauchen adressierten Speicher.
 :::
 
 # 12. Speicherarchitektur
 
+
+::: notes
+Die Registerbank und der Hauptspeicher sind verschiedene Schnittstellen. Der Abschluss zeigt logische Organisation und Ressourcen. Den vollständigen Datenpfad leiten wir noch nicht her. Fetch ist das Holen einer Instruktion, Load und Store sind Datentransfers.
+
+Kontrollfrage: Liegt das Programm in x0 bis x31? Nein. Der Überblick trennt Fetch, Datenzugriff und Busressourcen.
+:::
 ## Speicherarchitektur — Überblick
 
 - Big Picture: CPU und Außenwelt (RAM)
@@ -1433,19 +1687,22 @@ graph LR
 ```
 
 ::: notes
-Register File speichert nur 32 Werte — Programme und große Arrays liegen im RAM. Zwei Anschlussschulen; im Simulator nutzen wir die eine, im PC oft die andere (bzw. Hybride).
+Code liegt nicht im allgemeinen Registersatz. RAM ist nur ein möglicher Programmspeicher. Ein gemeinsamer Adressraum und ein gemeinsamer Port sind zwei Entscheidungen. Die Kästchenkette ist ein ausdrücklich gewähltes Ein-Port-Bild, nicht jedes Von-Neumann-System. Fetch holt eine Instruktion, ein Datenzugriff überträgt einen Wert. Beide können um denselben Port konkurrieren, müssen es aber nicht.
+
+Kontrollfrage: Erzwingt ein gemeinsamer Adressraum einen Buskonflikt? Nein. Der Programmspeicher liefert Instruktionen, Datenzugriffe übertragen Werte.
 :::
 
 ## Wo liegen die Programme?
 
-- Register File: 32 Wörter — zu wenig für Code
-- Programm und große Daten: im RAM
-- RAM: byte-adressierbar, Gigabytes
-- CPU: Instruction Fetch aus dem RAM
-- Daten: Load/Store zwischen CPU und RAM
+- Der Registersatz hält Operanden, nicht das Programm
+- Instruktionen kommen aus einem adressierbaren Instruktionsspeicher
+- RAM, Flash oder ein Cache sind mögliche Umsetzungen
+- Eine Instruktionsadresse ist keine Registernummer
 
 ::: notes
-Binary landet im RAM; die CPU holt den ersten Befehl (Fetch). Load holt Daten — wieder RAM. Ständiger Ansprechpartner für Code und Daten.
+Ein Binary ist hier das ausführbare Abbild. Instruction Fetch liest eine Instruktion aus einem adressierbaren Speicher. Load liest Daten, Store schreibt Daten. Programme können im RAM, im Flash oder über einen Cache erreichbar sein. Nicht jedes Lehrbild hat Gigabytes RAM. Eine Instruktionsadresse ist keine Registernummer. Die genaue Load- und Store-Syntax folgt später.
+
+Kontrollfrage: Muss jedes Programm im RAM liegen? Nein. Ein gemeinsamer Code- und Datenadressraum ist das erste Organisationsmodell.
 :::
 
 ## Die Von-Neumann-Architektur
@@ -1467,7 +1724,9 @@ graph LR
 ```
 
 ::: notes
-Gemeinsamer Adressraum, getrennte Zugriffsports und physisch getrennte Speicher sind drei verschiedene Aussagen. Der Flaschenhals gehört zum Ein-Bus-Modell, nicht schon zum gemeinsamen Adressraum. Harvard in dieser Folie meint getrennte Ports.
+Von Neumann bezeichnet hier das Modell eines gemeinsamen Adressraums für Instruktionen und Daten. John von Neumann steht für die historische Einordnung der 1940er Jahre; die Folie hängt nicht an einem einzelnen Datum. Ein gemeinsamer Bus ist ein zusätzliches Ressourcenmodell. Der Flaschenhals entsteht, wenn Fetch und Datenzugriff denselben Port brauchen. Die Grafik ist deshalb ein Ein-Port-Modell. Zwei Ports allein machen eine Maschine nicht zur reinen Harvard-Architektur.
+
+Kontrollfrage: Konflikten Fetch und Daten immer? Nur bei gemeinsamer Ressource. Die Gegenüberstellung zeigt getrennte Bereiche.
 :::
 
 ## Die Harvard-Architektur
@@ -1487,28 +1746,35 @@ graph LR
 ```
 
 ::: notes
-Harvard in diesem Bild: getrennte Speicher und getrennte Ports. Ein gemeinsamer Adressraum wäre davon noch unabhängig.
+IM und DM bedeuten Instruction Memory und Data Memory. Reine Harvard-Organisation trennt Instruktions- und Datenadressräume. Eine modifizierte Harvard-Organisation kann getrennte Zugriffspfade bei gemeinsamem Hauptspeicher haben. Zwei Ports erlauben parallele Zugriffe, garantieren aber nicht jede Instruktionsdauer. Starre Grenzen können eine Entwurfsfolge sein, sind keine automatische ISA-Eigenschaft. Dieselbe Legende wie zuvor trennt Adressraum, Baustein und Port.
+
+Kontrollfrage: Sind zwei Ports immer reine Harvard-Architektur? Nein. Für das Labor zählt das gewählte Ripes-Modell.
 :::
 
 ## Der RISC-V-Kompromiss im Labor
 
 :::: {.columns}
 ::: {.column width="46%"}
-- Ripes: Harvard (getrennte Memories)
-- Ziel: Single-Cycle ohne Buskonflikt
+- Gewähltes Ripes-Lehrbild: getrennte Instruktions- und Datenpfade
+- Single-Cycle bedeutet hier eine native Instruktion pro Modelltakt
+- `add`: Fetch, Register lesen, ALU, Registerwriteback; Datenmemory unbenutzt
+- Load liest Datenmemory; Store schreibt Datenmemory und kein Ergebnisregister
 :::
 ::: {.column width="54%"}
 ```text
-1. Fetch (IM)
+add in einem Modelltakt:
+1. Fetch aus dem Instruktionsspeicher
 2. Register lesen
 3. ALU
-4. Store (DM)
+4. Registerwriteback, nicht Store
 ```
 :::
 ::::
 
 ::: notes
-Damit schließen wir den Kickoff: Sie haben die Bausteine für den vollständigen RISC-V-Datenpfad.
+Ripes ist der visuelle Simulator. Seine Portstruktur hängt von Version und gewähltem Prozessormodell ab; diese Fassung hat kein konkretes Modell gestartet. Single-Cycle bedeutet im Lehrmodell eine native Instruktion pro Takt, nicht vier Takte für Fetch, Lesen, ALU und Store. Ein add schreibt das Zielregister. Der Datenspeicher bleibt unbenutzt. Ein Load liest den Datenspeicher und schreibt ein Register. Ein Store schreibt den Datenspeicher und kein Ergebnisregister. Die Reihenfolge ist kausal innerhalb des Modellzyklus, keine ISA-Pflicht zur Harvard-Trennung.
+
+Kontrollfrage: Führt add einen Store aus? Nein. Das Abschlussblatt bündelt die Modelle und die Kontrollaufgaben.
 :::
 
 ## Abschlussblatt
@@ -1516,8 +1782,12 @@ Damit schließen wir den Kickoff: Sie haben die Bausteine für den vollständige
 - Begriffe: Zweierkomplement, Byte-Reihenfolge, Alignment, kombinatorisch, sequenziell.
 - Modellannahme: positive Flanke und Little Endian der Kursumgebung.
 - Typischer Fehler: C-Vergleich mit einem Bitmustervergleich von Sign-Magnitude gleichsetzen.
-- Übung: Labor 1, Zahlenrad und Speicherbytes zu `0x12345678`.
+- Übung: acht Hexziffern eines 32-Bit-Werts; Little-Endian-Byte von `0x12345678`; Volladdierer bei $A=B=C_{in}=1$.
 
 ::: notes
-Verbindliche Festlegungen stehen in `referenz/kursvertrag.md`.
+Ein RISC-V-Word hat vier Byte und acht Hexziffern. 11111011 ist ohne Lesart nicht eindeutig: unsigned 251, als 8-Bit-Zweierkomplement minus 5. Bei Little Endian liegt für 0x12345678 an der Startadresse 0x78. Unser MUX liefert bei S gleich 0, A gleich 1 und B gleich 0 den Wert 1. Der Volladdierer mit drei Einsen liefert Summe 1 und Carry 1. Ändert sich D bei hohem CLK ohne neue Flanke, bleibt Q im Flip-Flop-Modell. WE gleich 0 übernimmt nicht. Ein internes Z ist kein vorgeschriebenes RISC-V-Statusregister.
+
+Alignment betrifft die Adresse, nicht die Byteordnung. Little Endian, die positive Flanke, kombinatorisches Lesen und synchrones Schreiben sind Kursannahmen. Einheit 2 nutzt diese Register, ALU-Operationen und Zustandswechsel für die ersten Assemblerbefehle.
+
+Kontrollfrage: Welche Hexziffern hat ein Word? Acht. Damit beginnt die programmierte Nutzung der hier erklärten Bausteine.
 :::
