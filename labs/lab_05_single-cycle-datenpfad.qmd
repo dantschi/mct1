@@ -1,171 +1,262 @@
 ---
 title: "Übungsblatt 5: Der Single-Cycle-Datenpfad"
 subtitle: "Mikrocomputertechnik 1"
+format:
+  pdf:
+    papersize: a4
 ---
 
 ::: {.content-visible when-profile="solution"}
 > **Musterlösung**
 :::
 
-## Zielsetzung
+## Zielsetzung und Arbeitsweise
 
-In diesem Übungsblatt öffnen wir die Blackbox des Prozessors. Sie lernen den Ripes-Simulator kennen und analysieren, wie eine Zeile Assembler physikalisch den Stromfluss auf dem Silizium-Chip steuert. Sie identifizieren Multiplexer, lesen Steuersignale ab und verfolgen den Weg von Daten durch die ALU und den Arbeitsspeicher.
+Sie erklären die Ausführung von Registerarithmetik, Load, Store und Branch anhand von Datenwegen, Quellenauswahl und Schreibfreigaben. Teil A ist ohne Simulator lösbar und übt typische Klausurformate. Teil B überprüft Ihre Vorhersagen in Ripes.
 
-## Aufgabe 1: Ripes Onboarding und R-Type-Trace
+Teil A: etwa 60 Minuten, 50 Punkte zur Selbsteinschätzung. Teil B: etwa 25 Minuten.
 
-Starten Sie den Ripes-Simulator (Web-Version oder lokal) und stellen Sie oben links zwingend den **Single-Cycle Processor** ein.
+Es gilt das Lehrmodell aus Vorlesung 5:
 
-Geben Sie den folgenden Code in den Editor-Tab ein:
+- Basissubset: `add`, `sub`, `and`, `or`, `lw`, `sw`, `beq`; keine C-Erweiterung.
+- 32-Bit-Daten, byteadressierter Speicher, Little Endian; gültige, wortausgerichtete Adressen.
+- Register- und Speicherlesen kombinatorisch; Schreiben mit Freigabe an der steigenden Flanke.
+- `ALUSrc`: 0 wählt RD2, 1 das Immediate. `MemtoReg`: 0 wählt die ALU, 1 die Speicherlesedaten.
+- ImmGen liefert für `beq` bereits den vorzeichenerweiterten Byteoffset einschließlich Bit 0.
+- $\mathrm{PCSrc}=\mathrm{Branch}\land\mathrm{Zero}$; 0 wählt $PC+4$, 1 das Branch-Ziel.
 
-```asm
-.text
-li t0, 50
-li t1, 100
-add a0, t0, t1
-```
+X bezeichnet eine für das Ergebnis unerhebliche Auswahl. Begründen Sie Ihre Antworten; bloße Zahlen reichen bei Erklärungsaufgaben nicht aus.
 
-Klicken Sie sich im Processor-Tab mit der Clock-Taste vorwärts, bis der `add`-Befehl im Datenpfad anliegt (der PC zeigt auf den `add`-Befehl). Analysieren Sie nun die Hardware-Leitungen.
+{{< pagebreak >}}
 
-### Register File: RD1 und RD2 {.unnumbered}
+# Teil A: Papieraufgaben
 
-Welche Hexadezimal-Werte liegen an den Lese-Ports RD1 und RD2 des Register Files an? (Nutzen Sie ggf. Tooltips beim Darüberfahren mit der Maus.)
+## Aufgabe 1: Vom Maschinenwort zum Zustand (10 Punkte)
 
-### Steuersignal `ALUSrc` {.unnumbered}
+Bei $PC=\mathtt{0x100}$ liegt das Maschinenwort `0x00628533` vor. Die Register enthalten `t0 = 50`, `t1 = 100` und `a0 = 7`.
 
-Welchen Wert ($0$ oder $1$) hat das Steuersignal für den MUX vor dem B-Eingang der ALU (`ALUSrc`)? Warum muss der MUX genau so stehen?
+Die R-Type-Felder sind `funct7[31:25]`, `rs2[24:20]`, `rs1[19:15]`, `funct3[14:12]`, `rd[11:7]` und `opcode[6:0]`. Für `add` gelten `opcode = 0x33`, `funct3 = 0` und `funct7 = 0`. Registerzuordnung: `t0 = x5`, `t1 = x6`, `a0 = x10`.
 
-### Steuersignal `RegWrite` {.unnumbered}
-
-Welchen Wert hat das Steuersignal `RegWrite` am Register File? Was würde physikalisch passieren, wenn dieses Signal auf $0$ stehen würde?
-
-### Ihre Lösung {.unnumbered}
-
-*(Notieren Sie Ihre abgelesenen Signale hier.)*
+1. Decodieren Sie `rs1`, `rs2` und `rd` und notieren Sie die Assemblerinstruktion. (3 P.)
+2. Geben Sie A1, A2, A3 sowie RD1, RD2 und WD vor der nächsten Flanke an. Unterscheiden Sie Nummern und Werte. (3 P.)
+3. Nennen Sie die Änderungen an der Flanke und erklären Sie, warum `a0` unmittelbar davor noch 7 enthält. (2 P.)
+4. Unabhängiger Fall mit denselben Anfangswerten: Ersetzen Sie den Befehl durch `add t0, t0, t1`. Warum entsteht keine endlose Rückkopplung? (2 P.)
 
 ::: {.content-hidden when-profile="solution"}
-\vspace{3.5cm}
+### Ihre Lösung {.unnumbered}
+\vspace{5cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 1**
 
-RD1 und RD2:
-
-- An RD1 liegt `0x32` (Dezimal $50$ aus `t0`).
-- An RD2 liegt `0x64` (Dezimal $100$ aus `t1`).
-
-`ALUSrc`:
-
-- Das Signal `ALUSrc` steht auf $0$.
-- Der MUX muss den Wert aus dem Register File (RD2) zur ALU durchlassen, da `add` eine reine Register-Rechnung (R-Type) ist und keine Konstante aus dem ImmGen benötigt.
-
-`RegWrite`:
-
-- Das Signal `RegWrite` steht auf $1$.
-- Bei $0$ würden die berechneten Daten der ALU (`0x96` bzw. $150$) am Write-Data-Port des Register Files abprallen; `a0` würde beim Taktende nicht überschrieben.
+1. `rs1 = 5`, `rs2 = 6`, `rd = 10`; die Funktionsfelder ergeben `add a0, t0, t1`.
+2. Adressports: `A1 = 5`, `A2 = 6`, `A3 = 10`, jeweils fünf Bit. Datenports: `RD1 = 50 = 0x00000032`, `RD2 = 100 = 0x00000064`, `WD = 150 = 0x00000096`, jeweils 32 Bit.
+3. Mit `RegWrite = 1` übernimmt `a0` den Wert 150, der PC wird `0x104`. Quellregister und Datenspeicher bleiben unverändert. Vor der Flanke ist 150 nur vorbereitet; die Registerbank speichert weiterhin den alten Zustand.
+4. Der Leseport liefert zunächst den alten Wert 50. Die ALU berechnet 150, das erst an der Flanke in `t0` übernommen wird. Der flankengetriggerte Registerzustand unterbricht die kombinatorische Rückführung; anschließend wird die nächste Instruktion betrachtet.
 :::
 
-## Aufgabe 2: Der kritische Pfad (Load-Trace)
+{{< pagebreak >}}
 
-Löschen Sie den alten Code und testen Sie einen Load-Befehl:
+## Aufgabe 2: Load und Store mit negativem Offset (12 Punkte)
+
+Die folgenden zwei Instruktionen werden nacheinander ausgeführt:
 
 ```asm
-.data
-werte: .word 99, 88
-
-.text
-la s1, werte
-lw a0, 4(s1)
+# erster Befehl bei PC = 0x180
+lw a0, -4(s1)
+sw a0,  4(s1)
 ```
 
-Klicken Sie die Clock, bis der `lw`-Befehl aktiv ist.
+Anfangszustand: `s1 = 0x1004`, `a0 = 99`. Speicherwörter: `0x1000: 88`, `0x1004: 99`, `0x1008: 0x12345678`.
 
-### ImmGen {.unnumbered}
-
-Betrachten Sie den Baustein ImmGen (Immediate Generator). Aus dem 32-Bit-Befehlswort fließen Bits in dieses Bauteil. Welcher 32-Bit-Hex-Wert verlässt den ImmGen?
-
-### ALU als Adressrechner {.unnumbered}
-
-Welche Aufgabe hat die Haupt-ALU bei diesem `lw`-Befehl? Welche Hex-Adresse berechnet sie an ihrem Ausgang?
-
-### Multiplexer `MemtoReg` {.unnumbered}
-
-Betrachten Sie den Write-Back-Multiplexer ganz rechts vor dem Register File (P&H: `MemtoReg`; in Ripes oft ein 3-Wege-MUX). Auf welchen Daten-Pfad hat das Steuerwerk geschaltet und warum (ALU vs. Speicher)?
-
-### Ihre Lösung {.unnumbered}
-
-*(Notieren Sie Ihre abgelesenen Signale hier.)*
+1. Geben Sie die zwölf Offsetbits und das 32-Bit-ImmGen-Ergebnis für den Load an. (2 P.)
+2. Ergänzen Sie für beide Befehle: effektive Adresse, ALU-Operation, Quelle des zweiten ALU-Operanden und Schreibziel. (4 P.)
+3. Welcher Wert steht nach dem Load in `a0`? Welche Werte stehen nach dem Store in `a0` und den drei Speicherwörtern? (3 P.)
+4. Notieren Sie die vier Bytewerte ab `0x1008` nach dem Store und den PC nach beiden Befehlen. (2 P.)
+5. Warum gelangt beim Store der Inhalt von `a0` zum Speicher, obwohl `ALUSrc = 1` ist? (1 P.)
 
 ::: {.content-hidden when-profile="solution"}
-\vspace{3.5cm}
+### Ihre Lösung {.unnumbered}
+\vspace{6cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 2**
 
-ImmGen:
-
-- Der ImmGen extrahiert das 12-Bit-Offset aus dem Befehlswort und führt eine Vorzeichenerweiterung auf 32 Bit durch.
-- Bei `lw a0, 4(s1)` ist das Offset $+4$; der ImmGen liefert `0x00000004`.
-
-ALU als Adressrechner:
-
-- Die ALU berechnet die Ziel-RAM-Adresse (Base + Offset), keine Nutzer-Arithmetik.
-- Sie addiert die Basisadresse aus `s1` (in Ripes typischerweise `0x10000000`) mit der $4$ aus dem ImmGen.
-- Der ALU-Ausgang zeigt damit z. B. `0x10000004` (exakte Basisadresse ggf. im Memory-Tab prüfen).
-
-`MemtoReg`:
-
-- Der MUX `MemtoReg` steht auf $1$.
-- Er blockiert das Adress-Ergebnis der ALU und schaltet den Daten-Pfad aus dem RAM (Read Data) zum Register File durch, damit der Wert $88$ in `a0` landet.
+1. Zwölf Bits: `1111 1111 1100`; vorzeichenerweitert: `0xFFFFFFFC`, also $-4$.
+2. Load: $\mathtt{0x1004}-4=\mathtt{0x1000}$, ALU = ADD, Quelle B = Immediate, Schreibziel = Register `a0` mit Speicherlesedaten. Store: $\mathtt{0x1004}+4=\mathtt{0x1008}$, ALU = ADD, Quelle B = Immediate, Schreibziel = Speicherwort mit Daten aus RD2.
+3. Nach `lw` ist `a0 = 88`. Nach `sw` bleibt `a0 = 88`. Die Wörter sind dann `0x1000: 88`, `0x1004: 99`, `0x1008: 88`.
+4. In aufsteigender Adressreihenfolge: `58 00 00 00` (Hex, Little Endian). Der PC ist nach dem Load `0x184`, nach dem Store `0x188`.
+5. RD2 speist einen eigenen Speicher-Schreibdatenweg. ALUSrc wählt nur den zweiten ALU-Eingang zur Adressberechnung und trennt diesen Abzweig nicht ab.
 :::
 
-## Aufgabe 3: Der Branch-Trace (Fall-Through vs. Taken)
+{{< pagebreak >}}
 
-Löschen Sie den Code und analysieren Sie das Sprungverhalten (Branches):
+## Aufgabe 3: Branch-Entscheidung und Byteoffset (12 Punkte)
 
-```asm
-.text
-li t0, 5
-li t1, 10
-beq t0, t1, Label
-add a0, t0, t1
-Label:
-sub a0, t1, t0
-```
+Ein `beq t0, t1, ziel` liegt bei `PC = 0x200`, das Label `ziel` bei `0x20C`. Betrachten Sie zwei unabhängige Fälle: A mit `t0 = 5`, `t1 = 5`; B mit `t0 = 5`, `t1 = 6`.
 
-### Fall-Through {.unnumbered}
+1. Bestimmen Sie den Byteoffset und beide PC-Kandidaten. (3 P.)
+2. Ergänzen Sie die Tabelle. Geben Sie die ALU-Differenz als 32-Bit-Hexwort an. (4 P.)
 
-Steppen Sie bis zum `beq`-Befehl. Die Register `t0` und `t1` sind ungleich.
+| Fall | ALU-Differenz | Branch | Zero | PCSrc | PC nach der Flanke |
+|:---|:---|:---:|:---:|:---:|:---|
+| A | | | | | |
+| B | | | | | |
 
-1. Wird der Branch genommen oder nicht? (Beobachten Sie den PC und die Branch-Vergleichseinheit — Ripes hat oft **keinen** klassischen ALU-Zero+AND wie im P&H-Diagramm.)
-2. Welche Adresse (in Hex) wird bei der nächsten Taktflanke in den PC geladen?
-
-### Branch Taken {.unnumbered}
-
-Ändern Sie `li t1, 10` zu `li t1, 5`, sodass die Bedingung wahr wird. Steppen Sie wieder zum `beq`.
-
-1. Was ändert sich am PC-Verhalten?
-2. Welches Bauteil liefert die Sprungzieladresse in **Ripes** (Hinweis: oft die Haupt-ALU mit PC als Operand — nicht zwingend ein separater Branch-Addierer wie im Lehrbuchdiagramm)?
-
-### Ihre Lösung {.unnumbered}
-
-*(Notieren Sie Ihre Beobachtungen hier.)*
+3. Ein anderer Branch bei derselben PC-Adresse hat den Offset $-8$. Bestimmen Sie ImmGen-Ausgang und Zieladresse. (2 P.)
+4. Warum wird der ImmGen-Ausgang vor dem Branch-Addierer nicht noch einmal nach links geschoben? (1 P.)
+5. Unabhängiger Fall: `sub a0, t0, t1` mit gleichen Operanden bei `PC = 0x200`. Bestimmen Sie Zero, PCSrc und den neuen PC und begründen Sie den Unterschied zu Fall A. (2 P.)
 
 ::: {.content-hidden when-profile="solution"}
-\vspace{3.5cm}
+### Ihre Lösung {.unnumbered}
+\vspace{5cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung Aufgabe 3**
 
-Fall-Through ($5 \neq 10$):
+1. Der Offset ist $+12$ Byte: $\mathtt{0x20C}-\mathtt{0x200}$. Kandidaten sind `0x204` und `0x20C`, beide aus dem alten PC berechnet.
 
-- Branch wird **nicht** genommen; der PC macht linear weiter.
-- `li` assembliert typisch zu je einem `addi`; `beq` liegt bei Adresse `0x08` → nächster PC $= \mathrm{PC}+4 =$ **`0x0000000C`** (Ripes-Textsegment startet bei `0x0`).
+| Fall | ALU-Differenz | Branch | Zero | PCSrc | PC nach der Flanke |
+|:---|:---|:---:|:---:|:---:|:---|
+| A | `0x00000000` | 1 | 1 | 1 | `0x20C` |
+| B | `0xFFFFFFFF` | 1 | 0 | 0 | `0x204` |
 
-Branch Taken ($5 = 5$):
+2. Die Tabelle zeigt: Vergleich und Branch-Freigabe müssen beide wahr sein.
+3. Offset $-8$: ImmGen = `0xFFFFFFF8`, Ziel = `0x1F8`.
+4. ImmGen hat das implizite Bit 0 bereits eingefügt und liefert den fertigen Byteoffset. Ein weiterer Shift würde die Distanz verdoppeln; im ersten Beispiel entstünde irrtümlich `0x218`.
+5. Bei `sub` ist `Zero = 1`, aber `Branch = 0`. Damit $\mathrm{PCSrc}=0\land1=0$, neuer PC = `0x204`. `a0` erhält null. Zero allein löst keinen Branch aus.
+:::
 
-- Branch wird genommen; PC springt auf das Label `Label`.
-- In Ripes berechnet typischerweise die **Haupt-ALU** (mit PC als Operand) das Branch-Target — nicht der separate Branch-Addierer aus dem Patterson/Hennessy-Diagramm. Mapping siehe Vorlesung 5.
+{{< pagebreak >}}
+
+## Aufgabe 4: Steuersignale und Fehlersuche (8 Punkte)
+
+1. Ergänzen Sie die Tabelle für unser Lehrmodell. Verwenden Sie X, wenn eine Auswahl das Ergebnis nicht beeinflusst, und benennen Sie die ALU-Funktion. (4 P.)
+
+| Befehl | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch | ALU |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---|
+| `add` | | | | | | | |
+| `lw` | | | | | | | |
+| `sw` | | | | | | | |
+| `beq` | | | | | | | |
+
+2. Bei `lw a0, 4(s1)` seien `s1 = 0x1000` und das Wort an `0x1004` gleich 88. Nur `MemtoReg` steht fälschlich auf 0. Welcher Wert wird in `a0` geschrieben? (2 P.)
+3. Bei einem korrekten `sw` wird nur `MemtoReg` von 0 auf 1 geändert. Ändert das den Speicher-Schreibwert? Begründen Sie die Antwort über Datenweg und Freigabe. (2 P.)
+
+::: {.content-hidden when-profile="solution"}
+### Ihre Lösung {.unnumbered}
+\vspace{4cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 4**
+
+| Befehl | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch | ALU |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---|
+| `add` | 0 | 0 | 1 | 0 | 0 | 0 | ADD |
+| `lw` | 1 | 1 | 1 | 1 | 0 | 0 | ADD |
+| `sw` | 1 | X | 0 | 0 | 1 | 0 | ADD |
+| `beq` | 0 | X | 0 | 0 | 0 | 1 | SUB |
+
+2. `a0` erhält die ALU-Adresse `0x00001004` statt des Speicherworts `0x00000058`.
+3. Nein. MemtoReg wirkt nur am Register-Rückschreibport, dessen Freigabe beim Store null ist. Der Speicher-Schreibwert kommt direkt aus RD2. X bezeichnet eine unerhebliche Auswahl, keinen unbekannten Leitungspegel.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 5: Laufzeiten und gemeinsamer Takt (8 Punkte)
+
+Erfundene Lehrwerte, keine Messung:
+
+| Bestandteil | Verzögerung |
+|:---|:---|
+| Clock-to-Q | $0{,}2\,\mathrm{ns}$ |
+| Befehlsspeicher | $2{,}0\,\mathrm{ns}$ |
+| Registerlesen | $1{,}0\,\mathrm{ns}$ |
+| ALU | $1{,}5\,\mathrm{ns}$ |
+| Datenspeicherlesen | $1{,}8\,\mathrm{ns}$ |
+| Write-Back-MUX | $0{,}5\,\mathrm{ns}$ |
+| Setup | $0{,}3\,\mathrm{ns}$ |
+
+Annahmen: Operanden- und Steuerpfade kommen nicht später an. Alle übrigen benötigten Wege einschließlich Store und PC-Update sind nicht länger als der Load-Weg. Clock-Skew und Reserve werden vernachlässigt.
+
+1. Geben Sie den `add`- und den `lw`-Rückschreibweg an und berechnen Sie jeweils die erforderliche Zeit. (4 P.)
+2. Bestimmen Sie die kleinste gemeinsame Taktperiode und die ideale maximale Frequenz. (2 P.)
+3. Welche Taktperiode erhält ein `add` in diesem Entwurf? Bei einem `beq` laufen Zielbildung und Vergleich parallel: Werden ihre Verzögerungen addiert? Begründen Sie beide Antworten. (2 P.)
+
+::: {.content-hidden when-profile="solution"}
+### Ihre Lösung {.unnumbered}
+\vspace{4cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 5**
+
+1. `add`: PC → Befehlsspeicher → Registerlesen → ALU → Write-Back-MUX → Zielregister.
+
+   $$T_{\mathrm{add}}=0{,}2+2{,}0+1{,}0+1{,}5+0{,}5+0{,}3=5{,}5\,\mathrm{ns}$$
+
+   `lw`: derselbe Weg, zusätzlich Datenspeicherlesen zwischen ALU und Write-Back-MUX.
+
+   $$T_{\mathrm{lw}}=5{,}5+1{,}8=7{,}3\,\mathrm{ns}$$
+
+2. Unter den gegebenen Annahmen: $T_{\mathrm{clk,min}}=7{,}3\,\mathrm{ns}$; $f_{\mathrm{max}}=1/T_{\mathrm{clk,min}}\approx137\,\mathrm{MHz}$.
+3. Auch `add` erhält dieselbe gemeinsame Periode von mindestens $7{,}3\,\mathrm{ns}$. Für parallele Branch-Zweige ist die spätere Ankunft maßgeblich; die Zeiten werden nicht einfach addiert. Nach der Zusammenführung ist die nachfolgende Auswahl- und Setup-Verzögerung noch zu berücksichtigen.
+:::
+
+{{< pagebreak >}}
+
+# Teil B: Ripes-Traces
+
+## Aufgabe 6: Vorhersage und Beobachtung vergleichen
+
+Wählen Sie einen RV32-Single-Cycle-Prozessor und deaktivieren Sie C. Notieren Sie Ripes-Version und Prozessorbezeichnung. Nutzen Sie, soweit vorhanden, das erweiterte Layout und die Tooltips.
+
+Die folgenden Dateien liegen unter `beispiele/`. Ihre `li`-/`la`-Anweisungen sind Setup und gehören nicht zum Basissubset. Prüfen Sie im Disassembly, welche echten Instruktionen daraus entstehen. Verwenden Sie keine feste Schrittzahl pro Quelltextzeile und keine fest vermutete Segmentbasis.
+
+Halten Sie jeweils an, wenn der PC auf das untersuchte Label zeigt. Notieren Sie die Werte **vor Clock**, führen Sie genau einen Schritt aus und prüfen Sie den Zustand **danach**. Ein Ripes-Exit ist für diese Beobachtung nicht nötig; halten Sie vor den Exit-Anweisungen an.
+
+### A: Registerarithmetik {.unnumbered}
+
+Laden Sie `mct1_vl5_rtype_trace.s` und halten Sie bei `trace_add` an.
+
+- Welche Registerwerte und welcher ALU-Schreibwert liegen vor?
+- Welche Quelle wird zum Registerschreibport gewählt, und ist seine Freigabe aktiv?
+- Was ändert sich an `a0` und PC nach Clock?
+
+### B: Load und Store {.unnumbered}
+
+Laden Sie `mct1_vl5_load_store_trace.s`. Lesen Sie die tatsächliche Basisadresse $B$ von `werte` ab.
+
+- Bei `trace_lw`: Offset, effektive Adresse, Speicherlesewert und Registerschreibquelle notieren. Danach `a0` prüfen.
+- Bei `trace_sw`: Adresse, Speicher-Schreibdaten und Freigaben notieren. Danach beide Wörter und die vier Byte des ersten Worts prüfen.
+- Ordnen Sie beobachtete Funktionen den Lehrmodell-Signalen zu, ohne ungeprüft dieselben MUX-Portnummern vorauszusetzen.
+
+### C: Branch genommen und nicht genommen {.unnumbered}
+
+Laden Sie `mct1_vl5_branch_trace.s`. Durchlauf A nutzt `t1 = 5`, Durchlauf B `t1 = 6` bei unverändertem `t0 = 5`. Initialisieren Sie vor jedem Durchlauf neu.
+
+- Bestimmen Sie die Adressen von `trace_beq`, `not_taken` und `taken` im Disassembly.
+- Vergleichen Sie Zieloffset, Branch-Entscheidung und PC nach Clock.
+- Prüfen Sie `a0` bei `done`. Welches Ripes-Bauteil führt Vergleich und Zielrechnung aus?
+
+| Trace | PC und Befehl vor Clock | Operanden / Quellen / Freigaben | Vorhergesagt danach | Beobachtet danach |
+|:---|:---|:---|:---|:---|
+| A: add | | | | |
+| B: lw | | | | |
+| B: sw | | | | |
+| C: beq, gleich | | | | |
+| C: beq, ungleich | | | | |
+
+::: {.content-visible when-profile="solution"}
+**Musterlösung Aufgabe 6: funktionale Erwartungen**
+
+- A: `RD1 = 50 = 0x32`, `RD2 = 100 = 0x64`, ALU- und Registerschreibwert `150 = 0x96`; Registerfreigabe aktiv. Danach `a0 = 150`, PC bei `after_add`.
+- B, Load: Offset 4, Adresse $B+4$, gelesener Wert `88 = 0x58`, Rückschreibquelle Speicher. Danach `a0 = 88`.
+- B, Store: Offset 0, Adresse $B$, Daten 88 aus `a0`. Speicherfreigabe aktiv, Registerfreigabe inaktiv. Danach stehen an $B$ und $B+4$ jeweils 88; die Bytefolge am ersten Wort ist `58 00 00 00`.
+- C: Zieloffset $+12$ Byte, ohne zweiten Shift. Bei Gleichheit geht der PC zu `taken` und `a0` wird später 10. Bei Ungleichheit geht er zu `not_taken` und `a0` wird später `0xFFFFFFFF`.
+- Portnamen, MUX-Codierungen sowie Vergleichs- und Zielrechenbauteile sind anhand der verwendeten Ripes-Version zu dokumentieren.
 :::
