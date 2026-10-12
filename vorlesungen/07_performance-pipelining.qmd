@@ -1,1592 +1,868 @@
 ---
 title: "Mikrocomputertechnik 1"
-subtitle: "Einheit 7: Performance & Pipelining"
+subtitle: "Einheit 7: Performance und Pipelining"
 author: "Prof. Dr.-Ing. Daniel Klünder"
-# Vortrag:  quarto preview vorlesungen/07_performance-pipelining.qmd
-#           (Notizen nur mit Taste S)
-# Handout:  quarto render vorlesungen/07_performance-pipelining.qmd --profile handout --to pdf
-#           → _handout/vorlesungen/07_performance-pipelining.pdf
+# Vortrag: quarto preview vorlesungen/07_performance-pipelining.qmd
+# Notizen: Taste S. Skript: --profile handout --to pdf
 format: revealjs
+title-slide-attributes:
+  data-notes: |
+    Diese Einheit untersucht, wie der bekannte Datenpfad mehrere Befehle
+    zeitlich überlappen kann. Voraussetzung sind Register, Speicherzugriffe,
+    bedingte Sprünge und die Steuerung aus Einheit 1–6. Neue Begriffe werden
+    anhand von Zeitdiagrammen eingeführt. Wir trennen Programmlaufzeit,
+    Latenz eines einzelnen Befehls und Durchsatz vieler Befehle. Danach
+    sichern Weiterleitung, Wartezyklen und das Verwerfen falscher Folgearbeit
+    die bekannte Befehlswirkung. Alle angegebenen Hardwarezeiten sind
+    didaktische Annahmen. Papieraufgaben prüfen die Herleitung; Ripes dient
+    anschließend zum Vergleich mit einer ausdrücklich dokumentierten
+    Simulatorversion und Prozessorkonfiguration.
 ---
-# Performance & Pipelining
 
-
-::: notes
-Einheit 5 und 6 haben Datenpfad und Steuerwerk erklärt. Einheit 7 fragt nach der Laufzeit. Performance ist hier die überprüfbare Programmlaufzeit beziehungsweise der Durchsatz. Pipelining überlappt mehrere Befehle zeitlich. Die Lernziele sind: die CPU-Zeit rechnen, ein Zeitdiagramm lesen und einen Hazard nachvollziehen. CPU bedeutet Central Processing Unit.
-
-Kontrollfrage: Sagt ein korrektes Ergebnis allein die Laufzeit? Nein. Die nächste Folie motiviert das Fließband.
-:::
-## Fließbandarbeit im Prozessor
-
-- Herzlich willkommen zur siebten Vorlesung in Mikrocomputertechnik 1
-- Bisher: funktionierender, aber architektonisch langsamer Single-Cycle-Prozessor
-- Heute: Fließbandarbeit (Pipelining) als Architektur-Revolution
-- Mehrere Befehle gleichzeitig im Datenpfad
-- Stolpersteine: Data Hazards und Control Hazards
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  SC[Single-Cycle] -->|ineffizient| Pipe[Pipelining]
-  style Pipe fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style SC fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
+# Performance und Pipelining
 
 ::: notes
-Ein Single-Cycle-Datenpfad führt einen unterstützten Befehl in einem langen Takt aus. Der Takt wird vom längsten Pfad begrenzt. Das ist verständlich, aber nicht automatisch langsam für jede Aufgabe. Mehrere gleichzeitig bearbeitete Instruktionen sind hier nicht mehrere gleichzeitig bestätigte Ergebnisse pro Takt. Ein Data Hazard betrifft eine benötigte Datenabhängigkeit, ein Control Hazard den noch unbekannten nächsten Befehlsfluss.
+Der Single-Cycle-Datenpfad aus Einheit 5 und das Steuerwerk aus Einheit 6 erklären, wie ein unterstützter Befehl korrekt ausgeführt wird. Single Cycle bedeutet, dass jeder dieser Befehle eine vollständige Taktperiode belegt. Jetzt fragen wir, wie viel Zeit eine ganze Befehlsfolge benötigt und ob mehrere Befehle gleichzeitig unterschiedliche Teile des Datenpfads nutzen können.
 
-Kontrollfrage: Ist Single Cycle eine Sackgasse? Nein, ein einfaches Modell. Die Agenda verbindet Rechnung und Korrektheit.
+Performance bezeichnet hier die Leistung bezogen auf eine bestimmte Aufgabe: etwa eine kürzere Programmlaufzeit oder einen höheren Durchsatz. Pipelining ist die zeitliche Überlappung aufeinanderfolgender Arbeitsschritte. Diese Mikroarchitektur muss weiterhin dieselben sichtbaren Register- und Speicherergebnisse liefern wie die sequenzielle Ausführung. Die Notizen erläutern Begriffe, Modellannahmen und Beispiele als begleitendes Skript. Die zugehörige Folie darf beim Lesen danebenliegen.
 :::
 
-## Agenda für den heutigen Tag
+## Was Sie heute erklären können sollen
 
-1. Performance-Grenzen — warum Single-Cycle eine Sackgasse ist
-2. Die 5-stufige RISC-V-Pipeline — Datenpfad zersägen, Pipeline-Register
-3. Data Hazards & Forwarding — Variablen-Abhängigkeiten (RAW)
-4. Load-Use Hazards & Stalls — wenn Forwarding nicht reicht
-5. Control Hazards — Sprünge, Flushes, Branch Prediction
-6. Praxis (Ripes) — Hazards und Pipeline-Bubbles live
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  A[Single-Cycle Limit] --> B[Waschsalon]
-  B --> C[5-Stage Pipeline]
-  C --> D[Data Hazards]
-  D --> E[Control Hazards]
-  style E fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
+1. Laufzeit aus Befehlszahl, Takten und Taktperiode bestimmen
+2. Ein Pipeline-Zeitdiagramm lesen und selbst ergänzen
+3. Verfügbare Ergebnisse rechtzeitig weiterleiten
+4. Nötiges Warten von verworfener Arbeit unterscheiden
+5. Dieselbe Arbeit durch zulässiges Umsortieren beschleunigen
 
 ::: notes
-Ziele: CPU-Zeit berechnen, IF, ID, EX, MEM und WB unterscheiden, RAW erkennen, Forwarding begründen, einen Load-Use-Stall erklären und falsche Branch-Folgebefehle erkennen. IF ist Instruction Fetch, ID Instruction Decode, EX Execute, MEM Memory Access, WB Write Back. RAW bedeutet Read After Write. RISC-V ist die Befehlssatzarchitektur. Fünf Stufen sind unser Modell, keine ISA-Vorschrift. Für einfache Systeme können andere Entwurfsziele gelten.
+Die Lernziele bilden eine Argumentationskette. Zuerst brauchen wir eine messbare Größe für Geschwindigkeit. Dann zeigt ein Zeitdiagramm, weshalb Überlappung den Durchsatz erhöht. Eine Datenabhängigkeit stellt anschließend die Frage, ob ein benötigter Wert rechtzeitig vorliegt. Forwarding, auf Deutsch Weiterleitung, nutzt einen bereits verfügbaren Wert. Ein Stall hält eine Instruktion fest, wenn der Wert noch fehlt. Ein Flush verwirft jüngere Arbeit, wenn sie zu einem falschen Sprungpfad gehört.
 
-Kontrollfrage: Schreibt die ISA fünf Stufen vor? Nein. Zuerst reaktivieren wir den Single-Cycle-Ausgangspunkt.
+Instruction Scheduling bedeutet, vorhandene Befehle unter Erhaltung des Ergebnisses umzuordnen. Es ersetzt eine unproduktive Warteposition durch unabhängige Arbeit. Alle fünf Ziele sind auf Papier prüfbar; der Simulator macht die gleichen Zusammenhänge sichtbar. Sie müssen keine Kenntnisse über tiefe Pipelines, Betriebssysteme oder spezielle Compileroptimierungen mitbringen.
 :::
 
-## Rückblick: Der Single-Cycle-Datenpfad
+## Anschluss an Einheit 1–6
 
-- Bisher: jeder Befehl braucht exakt einen Taktzyklus
-- Phasen Fetch, Decode, Execute, Memory, Write-Back aneinandergereiht
-- Steuerwerk dirigiert fehlerfrei
-- Logik korrekt — Silizium-Nutzung miserabel
-- Warum verwerfen Apple, Intel und AMD dieses Design?
-
-```text
-Ein Design ist nur dann gut, wenn es nicht nur logisch korrekt,
-sondern auch effizient ist.
-```
+| Bekannt | Neue Frage |
+|:---|:---|
+| Register übernehmen Werte an der Flanke | Welche Instruktion besitzt den gespeicherten Wert? |
+| Quellenwahl und Schreibfreigabe | Wie reisen Daten und Steuerung gemeinsam? |
+| Load, Store und Branch | Wann liegen Daten und nächstes Ziel vor? |
+| Assembler und Maschinenbefehle | Welche Befehle zählen für die Laufzeit? |
 
 ::: notes
-Die fünf Bereiche Fetch, Decode, Execute, Memory und Write Back arbeiten hier noch innerhalb eines langen Zyklus für dieselbe Instruktion. Sie sind noch keine fünf getakteten Stufen. Fetch holt den Befehl, Decode liest Register und steuert, Execute rechnet, Memory greift auf Daten zu, Write Back schreibt ein Register. Einfachheit, Fläche und Energie können ebenfalls Entwurfsziele sein. Konkrete Werte behaupten wir dafür nicht.
+Die Grundlagen werden weiterverwendet, nicht voraussetzungslos ersetzt. Ein Register speichert einen Zustand an einer Taktflanke. Ein Multiplexer wählt eine Datenquelle, eine Schreibfreigabe erlaubt die Übernahme. In der Pipeline müssen diese Informationen zusätzlich der richtigen Instruktion zugeordnet bleiben.
 
-Kontrollfrage: Sind die fünf Kästen schon Pipeline-Takte? Nein. Der kritische Pfad setzt die Taktperiode.
+Load Word, kurz lw, lädt ein 32-Bit-Wort; Store Word, kurz sw, schreibt es. Ein Branch ist ein bedingter Sprung, etwa Branch if Equal, kurz beq, bei gleichen Registerwerten. Diese Wirkungen kennen Sie aus Einheit 3. Assemblertext beschreibt die Befehle symbolisch; Maschinenbefehle sind die tatsächlich codierten Instruktionen. Die bisherige Steuerung erkennt die Operation und wählt passende Wege. Neu sind deren zeitliche Überlappung und die Behandlung von Abhängigkeiten. Eine Pipeline verändert den internen Ablauf, nicht die Bedeutung einer Addition oder eines Speicherzugriffs.
 :::
 
-## Die Timing-Falle (Refresher)
+## Vereinbarung für alle Zeitdiagramme
 
-- Taktfrequenz diktiert vom kritischen Pfad
-- Ein Takt muss den längsten relevanten Signalpfad abdecken, nicht nur ein einzelnes Gatter
-- Langsamster Befehl: `lw` — nutzt alle Komponenten und setzt die Uhr
-- Fazit: extrem langer Takt drosselt die gesamte CPU
-
-```text
-Single-Cycle-Takt (kritischer Pfad):
-Load Word: |====================|  (gibt den Takt vor)
-Add:       |========|............  (wartet am Ende)
-           ^ fertig   ^ verschwendete Zeit
-```
+- Fünf Stufen, in Programmreihenfolge, höchstens ein neuer Befehl je Takt
+- Getrennte Zugriffe auf Befehls- und Datenspeicher
+- Ein Speicherzugriff braucht im Modell eine Stufe
+- Takt 1 beginnt beim Fetch der betrachteten Kernfolge
+- Gezählt wird bis zum Ende der letzten Abschlussstufe
 
 ::: notes
-Der kritische Pfad ist der längste relevante Signalweg einschließlich der Zustandsübergangsbedingungen, nicht das langsamste einzelne Gatter. lw, Load Word, durchläuft in diesem Datenpfad Befehlsspeicher, Registerlesen, ALU, Datenspeicher und Write-Back-Auswahl. ALU bedeutet Arithmetic Logic Unit. Das ist ein langer Pfad dieses Modells, kein Nachweis für jede CPU. Die Taktperiode muss diesen Weg plus den effektiven Registeroverhead aufnehmen.
+Unser Modell ist eine fünfstufige In-order-Pipeline. In order bedeutet: Befehle schreiten in Programmreihenfolge fort. Es wird höchstens eine neue Instruktion je Takt aufgenommen. Die Pipeline ist vor der betrachteten Folge leer; Anfangswerte sind schon hergestellt. Getrennte Zugriffe auf Befehle und Daten vermeiden den hier betrachteten Speicherkonflikt. Speicheradressen sind gültig und wortausgerichtet. Langsame Speicherantworten und Cachefehler werden nicht modelliert.
 
-Kontrollfrage: Reicht das langsamste Gatter als Taktgrenze? Nein. Schnellere Befehle nutzen denselben langen Takt.
+Die Basis ist RV32I, also der 32-Bit-RISC-V-Ganzzahlbefehlssatz. Die C-Erweiterung für komprimierte Instruktionen ist ausgeschaltet; betrachtete Maschinenbefehle sind vier Byte lang. Die Rechenbeispiele nutzen die in Einheit 6 ergänzte Addition mit Konstante, addi. Die Registerbank erlaubt im Kursmodell kein wirksames Schreiben und Lesen desselben Registers innerhalb desselben Takts. Diese Konvention wird beim Warten ohne Forwarding und beim gleichzeitigen Registerzugriff ausdrücklich berücksichtigt.
 :::
 
-## Ressourcen-Verschwendung
+## Vereinbarung für Abhängigkeiten und Sprünge
 
-- Was passiert bei einem schnellen Befehl wie `add`?
-- ALU und Write-Back sind nach einem Bruchteil des Takts fertig
-- Fetch/Decode/ALU liegen den Rest des Zyklus still
-- Massive Rechenleistung geht durch Warten auf die nächste Flanke verloren
+- Forwarding aus EX/MEM und MEM/WB für bereite Werte
+- Unmittelbare Load-Nutzung in EX: ein Wartezyklus
+- Branch-Entscheidung in EX, zunächst sequenzieller Fetch
+- Genommener Branch: zwei jüngere Einträge verwerfen
+- Andere Ripes-Konfigurationen können andere Zeitdiagramme haben
 
 ::: notes
-Eine kombinatorische Stufe kann nach dem Einschwingen stabil sein. Das ist nicht automatisch abgeschalteter Strom. Entscheidend ist die ungenutzte Zeit, bevor die nächste Instruktion aufgenommen wird. Die ALU rechnet in diesem Bild nur einen Teil der Periode. Dieselben qualitativen Wege wie zuvor gelten, ohne erfundene Nanosekunden.
+EX bedeutet Execute, also Rechnen; MEM bedeutet Memory Access, den Datenzugriff; WB bedeutet Write Back, den Abschluss mit gegebenenfalls Registerschreiben. EX/MEM und MEM/WB heißen die Register zwischen den jeweiligen Stufen. Sie halten Ergebnisse, die Forwarding direkt an einen jüngeren Verbraucher weiterleiten kann. Nur der jüngste passende Produzent darf den benötigten Wert liefern. Gültigkeit und Schreibwirkung müssen geprüft werden.
 
-Kontrollfrage: Liegen Fetch und Decode elektrisch still, sobald ihr Teil fertig ist? Nicht zwingend. Die Formel trennt die Stellgrößen.
+Ein Load liefert das Wort erst nach dem Datenzugriff. Benötigt der unmittelbar nächste Befehl es schon in EX, entsteht im Modell ein Wartezyklus. Ein Branch wird in EX entschieden. Bis dahin holt der Prozessor die sequenziellen Folgeinstruktionen. Ist der Sprung genommen, werden zwei jüngere Einträge ungültig. Die fünf Stufen und diese Regeln sind Mikroarchitekturentscheidungen; die Instruction Set Architecture, kurz ISA, ist die Befehlssatzarchitektur und schreibt sie nicht vor. Ripes ist ein visueller Lehrsimulator, dessen konkrete Variante im Labor dokumentiert wird.
 :::
 
-## Wie steigert man Performance?
-
-- Unbestechliche Formel der Rechnerarchitektur:
-- $\mathrm{CPU\text{-}Zeit} = \text{Befehlsanzahl} \cdot \mathrm{CPI} \cdot \text{Taktzeit}$
-- Befehlsanzahl: dynamisch ausgeführte echte Maschineninstruktionen, nicht Dateigröße oder Assemblerzeilen
-- CPI (Cycles per Instruction): mittlere Takte pro Befehl
-- Taktzeit: Dauer eines Clock-Ticks (Nanosekunden)
+# 1. Laufzeit, Latenz und Durchsatz
 
 ::: notes
-CPU-Zeit gleich N mal CPI mal Taktperiode. N ist die Anzahl dynamisch abgeschlossener Maschineninstruktionen, nicht die Quellzeilenzahl. CPI bedeutet Cycles per Instruction, mittlere Takte pro Instruktion. Die Einheiten ergeben Sekunden. CPI gleich 1 beweist allein keine hohe Leistung, weil der Takt lang sein kann. Compiler können N ändern. Zwei Systeme werden auf dieselbe Aufgabe bezogen. Schleifen erhöhen N durch Wiederholung.
+Eine korrekt arbeitende Schaltung kann für eine Aufgabe unterschiedlich viel Zeit benötigen. Ein einzelner Takt sagt wenig aus, solange wir seine Dauer und die Zahl benötigter Takte nicht kennen. Außerdem kann ein System viele Aufträge rasch hintereinander abschließen, obwohl ein einzelner Auftrag lange unterwegs ist.
 
-Kontrollfrage: Zählt eine Quellzeile als eine dynamische Instruktion? Nicht allgemein. Eine Stationsfolge führt zum Pipelineprinzip.
+Deshalb trennen wir zunächst Laufzeit der gesamten Aufgabe, Latenz eines Auftrags und Durchsatz vieler Aufträge. Die Stationsmetapher macht den Unterschied sichtbar. Danach übertragen wir ihn auf den bekannten Datenpfad und berechnen mit ausdrücklich angenommenen Stufenzeiten einen konkreten Gewinn. Diese Rechnung liefert die Grundlage dafür, später die Kosten von Wartezyklen und falschen Sprungpfaden zu bewerten.
 :::
 
-## Die Waschsalon-Metapher
-
-- Pipelining intuitiv: kurz weg von Hardware, rein in den Waschsalon
-- Vier Körbe Schmutzwäsche, vier Schritte je 30 Minuten:
-- Waschen → Trocknen → Falten → Schrank
-- Eine komplette Ladung dauert immer exakt 2 Stunden
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  W[Waschen] --> T[Trocknen]
-  T --> F[Falten]
-  F --> S[Schrank]
-  style W fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style T fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style F fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style S fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Vier Stationen brauchen im Modell je 30 Minuten. Ein Korb braucht 120 Minuten, wenn keine Zusatzzeit zwischen den Stationen anfällt. Das ist ein Lehrbild, kein gemessenes Waschsalon-Timing. Die Stationen brauchen unabhängige Kapazität, auch beim Falten. Die Latenz eines Korbs ist zwei Stunden. Die Gesamtzeit mehrerer Körbe ist noch offen.
-
-Kontrollfrage: Wie lange braucht ein Korb? Zwei Stunden. Zuerst ohne Überlappung.
-:::
-
-## Sequenzielle Arbeit (Single-Cycle)
-
-- Wie ein Single-Cycle-Prozessor wäscht:
-- Korb 1 komplett durch alle Stationen
-- Erst wenn Korb 1 im Schrank liegt, startet Korb 2
-- Vier Körbe: $4 \times 2\,\mathrm{h} = 8\,\mathrm{h}$
-- Die Waschmaschine steht fast die ganze Zeit still
-
-```text
-Timeline sequenziell:
-[ Korb 1: Waschen -> Trocknen -> Falten -> Schrank ]
-|<-------------- 2 Stunden --------------->|
-  ^ erst hier startet Korb 2
-```
-
-::: notes
-Vier Körbe mal vier Schritte mal 30 Minuten sind 480 Minuten, also acht Stunden. Jeder Korb belegt eine Station nur in seinem Abschnitt. Die übrigen Stationen warten. Das Bild ist keine Energie- oder Flächenaussage des Prozessors.
-
-Kontrollfrage: Wie viele Minuten sind vier Körbe sequenziell? 480. Überlappung startet den nächsten Korb an der freien ersten Station.
-:::
-
-## Pipelined Waschen (Fließband)
-
-- Intelligente Variante: Fließband (Pipeline)
-- Sobald Korb 1 in den Trockner wandert, geht Korb 2 in die Waschmaschine
-- Alle vier Stationen arbeiten gleichzeitig an vier Körben
-- Vier Körbe: nur noch 3,5 Stunden (statt 8)
-
-```text
-Pipelined (vereinfacht):
-Zeit:     0.5h   1.0h   1.5h   2.0h   2.5h   3.0h   3.5h
-Korb 1:   Wash   Dry    Fold   Shelf
-Korb 2:          Wash   Dry    Fold   Shelf
-Korb 3:                 Wash   Dry    Fold   Shelf
-Korb 4:                        Wash   Dry    Fold   Shelf
-```
-
-::: notes
-Sieben Halbstunden-Abschnitte: der erste Korb endet nach vier, der vierte nach sieben. Sieben mal 30 Minuten sind 3,5 Stunden. Der Gesamt-Speedup ist 8 geteilt durch 3,5, etwa 2,29. Der stationäre Durchsatz, ein Korb je 30 Minuten, ist eine andere Größe als dieser endliche Gewinn. Füllung und Leerung erklären, warum es nicht vier mal so schnell für genau vier Körbe ist.
-
-Kontrollfrage: Ist der Gesamtgewinn Faktor 4? Nein, etwa 2,29. Die nächste Folie trennt Latenz und Durchsatz.
-:::
-
-## Latenz vs. Durchsatz
-
-- Im Waschsalonmodell bleibt die Latenz eines Korbs zwei Stunden
-- Pipeline-Register und ungleiche Stufen können die Einzellatenz eines Befehls erhöhen
-- Das Lehrbeispiel später: 820 ps Single Cycle, 1350 ps Pipeline-Latenz
-- Der Durchsatz kann trotzdem steigen
-
-```text
-Latenz    = Wie lange dauert EIN Befehl von Anfang bis Ende?
-Durchsatz = Wie viele Befehle werden pro Sekunde fertiggestellt?
-```
-
-::: notes
-Im Waschsalon bleibt die Latenz eines Korbs zwei Stunden. Das gilt für dieses Modell ohne Zusatzaufwand. Pipeline-Register, ungleiche Stufen und Wartezyklen können die Einzellatenz eines Befehls erhöhen. Latenz ist die Dauer eines Auftrags, Durchsatz die Fertigstellungen pro Zeit. Das CPU-Lehrbeispiel zeigt später 820 gegen 1350 Pikosekunden.
-
-Kontrollfrage: Verkürzt Pipelining immer die Einzellatenz? Nein. Der Durchsatz wird als Nächstes quantifiziert.
-:::
-
-## Der Durchsatz (Throughput)
-
-- Magie des Pipelining: Taktrate des Outputs
-- Sequenziell: alle 2 Stunden ein fertiger Korb
-- Pipeline (voll beladen): alle 30 Minuten ein fertiger Korb
-- Durchsatz vervierfacht
-- Genau so werden Computer und Grafik flüssig
-
-::: notes
-Throughput ist der Durchsatz. Stationär kommt ein Korb je 30 Minuten statt je 120 Minuten, also die vierfache Rate. Für vier Körbe ist der Gesamt-Speedup trotzdem etwa 2,29. Computer und Grafik sind nur eine Motivation, keine vereinfachte GPU-Messung. GPU würde Graphics Processing Unit bedeuten, falls der Begriff fällt.
-
-Kontrollfrage: Ist die vierfache Rate der Gesamt-Speedup? Nein. Die Stationen werden auf den Prozessor übertragen.
-:::
-
-## Transfer auf den Prozessor
-
-- Wäschestationen → fünf RISC-V-Ausführungsphasen
-- IF: Instruction Fetch (Befehl aus dem IM)
-- ID: Instruction Decode (Decoder & Register File)
-- EX: Execute (ALU)
-- MEM: Memory (Daten-RAM)
-- WB: Write-Back (Ergebnis ins Register)
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  IF --> ID --> EX --> MEM --> WB
-  style IF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style ID fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style EX fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style MEM fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style WB fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
-
-::: notes
-IF holt aus dem Instruction Memory, kurz IM. ID liest die Registerbank, das Register File. EX nutzt die ALU. MEM kann den Datenspeicher, RAM, nutzen. WB schreibt zurück. add durchläuft MEM, ohne zwingend Daten zu lesen. Ein Store hat in WB kein Register-Write-Back. Nicht jeder Befehl nutzt in jeder Stufe jede Komponente. Fünf Stufen sind trotzdem der gemeinsame Taktplan.
-
-Kontrollfrage: Schreibt jeder WB-Eintrag ein Register? Nein. Der nächste Abschnitt setzt die Stufengrenzen um.
-:::
-
-# Die 5-stufige RISC-V-Pipeline
-
-
-::: notes
-Die fünfstufige Pipeline ist eine mögliche Mikroarchitektur für RISC-V, keine Vorschrift der ISA, der Instruction Set Architecture. Bisher war die Stationsmetapher. Jetzt werden Zeitgrenzen echte Speicherzustände. Die Frage lautet, wie Befehl, Daten und Steuerung nach jedem Takt zusammenbleiben.
-
-Kontrollfrage: Gehört IF/ID zur ISA? Nein, zum Modell. Die nächste Folie skizziert den Umbau.
-:::
-## Den Prozessor physisch umbauen
-
-- Säge ansetzen: Datenpfad in Stufen zerlegen
-- Schnellerer Takt rettet die Performance
-- Isolations-Problem: Signal-Chaos ohne Barrieren
-- Pipeline-Register als Schotten
-- Idealer Speedup: Faktor $5$
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  A[Single-Cycle] -->|zerlegen| B[5 Stufen]
-  B -->|Takt erhoehen| C[Pipeline-CPU]
-  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Ein Ideal-Speedup von 5 braucht ausgeglichene Stufen, vernachlässigbaren Overhead, lange Folgen und keine Hazards. Das ist kein garantierter Gewinn. Die Säge ist eine Metapher für eingefügte Register. Danach kommen Forwarding, Stall und Flush als neue Kontrollfunktionen. Signal-Chaos meint eine falsche zeitliche Zuordnung, nicht einen elektrischen Zusammenstoß.
-
-Kontrollfrage: Folgt Faktor 5 aus fünf Schnitten? Nein. Die fünf Bereiche werden benannt.
-:::
-
-## Den Datenpfad zersägen
-
-- Vertikale Schnitte durch den Patterson/Hennessy-Schaltplan
-- Fünf Hardware-Inseln:
-- IF: PC und Befehlsspeicher
-- ID: Register File und Control Unit
-- EX: Haupt-ALU
-- MEM: Daten-RAM
-- WB: Write-Back-MUX vor dem Register File
-
-- Registergrenzen und später Forwarding, Stall und Flush verändern die Mikroarchitektur
-- Fünf Stufen sind eine Modellentscheidung, keine RISC-V-Vorschrift
-
-::: notes
-Die Schnitte ändern die Mikroarchitektur. Pipeline-Register und später Forwarding, Stall und Flush sind zusätzliche Logik. IF enthält PC und Befehlsspeicher. Der PC, Program Counter, ist die Befehlsadresse. ID enthält Registerlesen und Steuerung. Der Schreibport derselben Registerbank liegt bei WB. EX enthält die ALU, MEM den Datenspeicher, WB die Schreibauswahl. Information ist ein Signalzustand, kein Strom, der von links nach rechts fließt.
-
-Kontrollfrage: Bleibt die Gatterlogik unverändert? Nein. Die Grenzen verändern den kritischen Pfad.
-:::
-
-## Ein viel schnellerer Takt
-
-- Der Takt folgt der längsten Stufe plus effektivem Registeroverhead
-- Lehrwerte: Single Cycle 820 ps, Pipeline-Takt 270 ps
-- Das sind Modellrechnungen, keine gemessenen 800 MHz oder 4 GHz
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Old[Single-Cycle Takt lang] --> New[Pipeline Takt kurz]
-  style New fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Old fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Die Pipeline-Taktperiode ist die längste Stufenlogik plus ein effektiver Registeroverhead von 20 Pikosekunden. Die Stufen sind 200, 100, 150, 250 und 100 Pikosekunden. Das Maximum ist 250, plus 20 ergibt 270. Der Single-Cycle-Pfad ist 800 plus 20 gleich 820. Weniger Gatter je Stufe bedeuten nicht gleiche Laufzeiten. Ein Gigahertz ist eins geteilt durch die Periode. 270 Pikosekunden sind ein Modellwert, keine gemessenen 4 Gigahertz.
-
-Kontrollfrage: Ist 270 ps gleich 4 GHz? Nein. Reine Schnittlinien speichern noch nichts.
-:::
-
-## Warum Zustandsgrenzen nötig sind
-
-- Ohne Schutz: Signal-Chaos nach dem Zersägen
-- Kombinatorik fließt ungebremst weiter
-- ALU-Ergebnis rutscht in MEM, bevor der nächste Tick kommt
-- Befehle krachen ineinander (Auffahrunfall)
-- Dicke Wände zwischen den Inseln nötig
-
-::: notes
-Ohne gespeicherte Zwischenergebnisse gibt es keine getrennten Taktzustände. Das Problem ist nicht galvanische Isolation. Eine ältere Instruktion kann den Wert 10 berechnen, während eine jüngere noch den alten Registerwert 99 gelesen hat. An der Registergrenze wird das zusammengehörige Paket übernommen, nicht ein Strom kurz geöffnet.
-
-Kontrollfrage: Öffnet die Grenze den Strom? Nein, sie speichert einen Zustand. Flip-Flop-Bänke halten dieses Paket.
-:::
-
-## Die Pipeline-Register (Barrieren)
-
-- Lösung: Pipeline-Register (Flip-Flop-Bänke)
-- Wasserdichte Schotten an den Grenzen der fünf Inseln
-- Speichern Zwischenergebnisse der vorherigen Stufe
-- Namen: IF/ID, ID/EX, EX/MEM, MEM/WB
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  IF -->|Befehl| Reg1[IF/ID]
-  Reg1 --> ID
-  ID -->|Daten| Reg2[ID/EX]
-  Reg2 --> EX
-  style Reg1 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Reg2 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style IF fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style ID fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style EX fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Ein D-Flip-Flop speichert ein Bit nach dem Taktmodell. Die vier Register heißen IF/ID, ID/EX, EX/MEM und MEM/WB. Der Schrägstrich trennt benachbarte Stufen. IF/ID übernimmt regulär an der Taktgrenze und wird bei einem Stall gehalten. Ein beispielhafter Inhalt sind Instruktion, PC-Information und Gültigkeit. Die späteren Register tragen zusätzlich Operanden, rd und Steuersignale.
-
-Kontrollfrage: Hält IF/ID nur, bis ID bereit ist? Nein, es taktet regulär. Der erste Fetch folgt im gemeinsamen Zeitmodell.
-:::
-
-## Takt 1: Fetch
-
-- Start des Fließbands im Timing-Raster
-- Instruktion 1 in IF
-- PC adressiert, IM liefert den Befehl
-- Befehl staut sich am IF/ID-Register
-- ID, EX, MEM, WB noch leer
-
-```text
-Takt 1:
-[ I1 IF ] -> [ ID - ] -> [ EX - ] -> [ MEM - ] -> [ WB - ]
-```
-
-::: notes
-Relativer Takt 1 ist der erste betrachtete Fetch. Der PC adressiert den Befehlsspeicher. Bis zum Taktende liegt die Instruktion zur Übernahme in IF/ID bereit. Die anderen Stufen sind im leeren Anfangszustand ungültig, nicht zwingend elektrisch aus. IF bedeutet Instruction Fetch, IM Instruction Memory.
-
-Kontrollfrage: Arbeiten in Takt 1 schon fünf Befehle? Nein. An der nächsten Grenze aktualisieren mehrere Register gleichzeitig.
-:::
-
-## Takt 2: Fetch & Decode
-
-- Nächster Clock-Tick öffnet kurz die Schleusen
-- Instruktion 1 rutscht nach ID (Decode, Control Unit)
-- Instruktion 2 betritt IF
-- Zwei Inseln arbeiten parallel an zwei Instruktionen
-
-```text
-Takt 2:
-[ I2 IF ] -> [ I1 ID ] -> [ EX - ] -> [ MEM - ] -> [ WB - ]
-```
-
-::: notes
-In Takt 2 wird die erste Instruktion in ID decodiert und liest Register. Die zweite wird gleichzeitig in IF geholt. Die Übernahme geschieht an der Taktgrenze, nicht indem Schleusen nacheinander öffnen. Jede Instruktion behält ihren eigenen PC. Decode liest das Befehlswort, das Register File liefert die Operanden, der Opcode ist die Befehlsklasse.
-
-Kontrollfrage: Gehören IF und ID in Takt 2 zur selben Instruktion? Nein, zu zwei verschiedenen. Nach mehreren Takten ist das Band voll.
-:::
-
-## Takt 5: Die volle Pipeline
-
-- Fließband auf Betriebstemperatur
-- Alle fünf Stufen lückenlos gefüllt
-- Instruktionen 5–1 in IF–WB
-- Ab diesem Takt: bei jedem Tick ein fertiger Befehl am Ende
-
-```text
-Takt 5 (volles Fliessband):
-[ Instr 5 (IF) ] -> [ Instr 4 (ID) ] -> [ Instr 3 (EX) ]
-  -> [ Instr 2 (MEM) ] -> [ Instr 1 (WB) ]
-```
-
-::: notes
-In Takt 5 eines idealen fortgesetzten Modells steht die älteste Instruktion in WB, die nächsten in MEM, EX, ID und IF. Ab dann kann pro Takt eine Instruktion abschließen. Ein Eintrag in WB schreibt nicht immer ein Register, zum Beispiel bei einem Store. Bei endlichen Folgen leert sich die Pipeline später wieder.
-
-Kontrollfrage: Wie viele verschiedene Instruktionen sind in Takt 5 aktiv? Fünf, wenn das Band voll und gültig ist. Ein Diagramm zeigt das über die Zeit.
-:::
-
-## Das Pipeline-Diagramm
-
-- Standardwerkzeug für komplexe Abläufe
-- X-Achse: Taktzyklen (Zeit)
-- Y-Achse: Programm-Instruktionen (oben nach unten)
-- Diagonal: Befehle wandern durch die Stufen
-
-| Befehl | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
-|--------|---|---|---|---|---|---|---|
-| `add` | IF | ID | EX | MEM | WB | | |
-| `sub` | | IF | ID | EX | MEM | WB | |
-| `lw` | | | IF | ID | EX | MEM | WB |
-
-::: notes
-Horizontal stehen die Takte, vertikal die dynamischen Instruktionen. Drei unabhängige Befehle brauchen sieben Takte bis zum Ende des letzten WB, weil 3 plus 4 gleich 7 ist. Eine Zeile zeigt die Latenz, die Diagonale die Überlappung, die WB-Spalte die Fertigstellungen. Die gezeigten Befehle müssen unabhängig sein, sonst gelten andere Zeiten.
-
-Kontrollfrage: Warum sieben und nicht fünf Takte für drei Befehle? Wegen Füllung und Leerung. Daraus folgt N plus 4.
-:::
-
-## Der ideale Durchsatz
-
-- Im Waschsalonvergleich bleibt die Latenz eines Korbs gleich
-- Eine echte Pipeline kann die Einzellatenz durch Registeroverhead erhöhen
-- Sie erhöht zuerst den Durchsatz
-- Ohne Hazards brauchen $N$ Instruktionen und 5 Stufen $N+4$ Zyklen
-- „Speedup immer 5“ gilt nicht
-
-![Lehrzeiten 820 ps und 270 ps](../assets/images/pipeline-timing-lehr.svg)
-
-::: notes
-Die Stufenlogik ist 200, 100, 150, 250 und 100 Pikosekunden. Der Overhead von 20 Pikosekunden gilt einmal je Taktpfad, nicht viermal zusätzlich auf den Single-Cycle-Weg. T single ist 820 ps, T pipe 270 ps. Fünf mal 270 ist 1350 ps Einzellatenz. Für N gleich 20 ist die Pipeline-Taktzahl 24, CPI endlich 1,2. 20 mal 820 ist 16400 ps, 24 mal 270 ist 6480 ps. Der Speedup ist etwa 2,53. ps ist eine Pikosekunde.
-
-Kontrollfrage: Ist die Einzellatenz in der Pipeline kürzer? Nein, 1350 gegen 820. Die nächste Folie erklärt den Abstand zu 5.
-:::
-
-
-## Warum der Faktor nicht 5 ist
-
-- Füllung und Leerung kosten Zyklen
-- Registeroverhead und ungleiche Stufen verlängern den Takt der längsten Stufe
-- Das Lehrbeispiel oben ergibt für $N = 20$ etwa 2,53
-- Keine unbelegte Spanne „typisch 4 bis 4,5“
-
-```{mermaid}
-%%| fig-width: 4.0
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  Ideal[Stufenvergleich] --> Real[Lehrbeispiel ca. 2,53]
-  Real --> G1[Register-Verzoegerung]
-  Real --> G2[Ungleiche Stufen]
-  style Real fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Ideal fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Füllung und Leerung kosten vier zusätzliche Takte, die Stufen sind ungleich, und der Overhead ist 20 ps. Der Grenzwert ohne Hazards ist 820 geteilt durch 270, etwa 3,04, nicht 5. Bei N gleich 1 dauert die Pipeline 1350 ps und der Single Cycle 820 ps. Der Gewinn ist das konkrete 2,53 für 20 Befehle, keine unbelegte Spanne.
-
-Kontrollfrage: Warum nicht Faktor 5? Wegen Ungleichheit, Overhead und endlicher Folge. Als Nächstes müssen die Steuersignale mitwandern.
-:::
-
-## Steuersignale in der Pipeline
-
-- Was wird aus der Control Unit (Einheit 6)?
-- Steuerwerk sitzt in ID und liest den Opcode
-- Beispiel: `MemWrite = 1` für Store
-- Problem: Schreiben erst zwei Takte später in MEM
-- Lösung: Steuersignale reisen Huckepack mit dem Befehl
-
-::: notes
-Die Control Unit in ID erzeugt die Signale des gerade decodierten Befehls. Opcode ist die Familie, nicht jede Operation. MemWrite, die Speicher-Schreibfreigabe, muss zum älteren Store gehören, der inzwischen in MEM steht. Ein Store-Paket enthält daher Freigabe, Adresse, Daten und Gültigkeit zusammen.
-
-Kontrollfrage: Darf MEM das MemWrite des gerade in ID stehenden Befehls nutzen? Nein. Der Weg führt über zwei Registergrenzen.
-:::
-
-## Das Wandern der blauen Kabel
-
-- Steuersignale in die Pipeline-Register packen
-- `MemWrite` wandert ID → ID/EX → EX/MEM
-- Erst wenn der Befehl in MEM steht, wirken die Signale am RAM
-- Aktion erst am Zielort — nicht früher
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Control[Control in ID] -->|Huckepack| Reg1[ID/EX]
-  Reg1 -->|Huckepack| Reg2[EX/MEM]
-  Reg2 -->|wirkt jetzt| RAM[(Data Memory)]
-  style Reg2 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Control fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Reg1 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style RAM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-MemWrite wandert mit Store-Daten, Adresse und Gültigkeit über ID/EX nach EX/MEM. Es ist kein unabhängig wandernder Faden. RegWrite und rd laufen später bis MEM/WB. Die Wirkung tritt in der passenden Stufe an deren Übernahme ein. rd ist die Zielregisternummer.
-
-Kontrollfrage: Darf das MemWrite eines jüngeren Befehls den älteren Store steuern? Nein. Ohne Abhängigkeiten wäre das ausreichend. Nun folgen benötigte Ergebnisse.
-:::
-
-## Die perfekte Illusion
-
-- Bisher: Hardware-Utopie — CPI ~ 1, Takt auf Höchststand
-- Fatale Annahme: alle Befehle seien unabhängig
-- Realität: Code-Zeilen brauchen ständig Daten voneinander
-- Nächster Schritt: die Gefahren (Hazards) des Fließbands
-
-```c
-/* Illusion: alles unabhaengig */
-int a = 5;
-int b = 6;
-int c = 7;
-```
-
-::: notes
-Unabhängige C-Zuweisungen kann ein Compiler vereinfachen oder entfernen. Sie sind nicht garantiert drei Maschineninstruktionen. Eine native Folge mit getrennten Zielen wäre add t0, t1, t2 und add t3, t4, t5. CPI nahe 1 gilt stationär bei langen unabhängigen Folgen, nicht wegen unabhängiger Quellzeilen allein.
-
-Kontrollfrage: Garantiert drei C-Zeilen drei Maschinenbefehle? Nein. Der nächste Abschnitt betrachtet echte Registerabhängigkeiten.
-:::
-
-# Data Hazards & Forwarding
-
-
-::: notes
-Ein Data Hazard ist das zeitliche Problem einer benötigten Datenabhängigkeit. Forwarding leitet ein bereits verfügbares Ergebnis weiter. Die ISA-Wirkung bleibt gleich. Zusätzliche Logik sichert sie trotz Überlappung.
-
-Kontrollfrage: Ändert Forwarding das sichtbare Additionsresultat? Nein, nur den Weg. Die nächste Folie baut Produzent und Konsument auf.
-:::
-## Utopie beenden
-
-- Wir betrachten echten, abhängigen Software-Code
-- Definition von Hazards (Gefahren auf dem Fließband)
-- Problem: Read-After-Write (RAW)
-- Warum Stalling die Performance wieder vernichtet
-- Lösung: Forwarding (Bypassing) als Abkürzung
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  A[Data Hazard] -->|Problem| B[Befehl 2 braucht Daten von Befehl 1]
-  A -->|Hardware-Loesung| C[Forwarding / Bypassing]
-  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-RAW bedeutet Read After Write: die jüngere Instruktion braucht den Wert, den die ältere schreiben wird. Ein Stall ist ein Wartezyklus. Er sichert die Korrektheit und senkt den Durchsatz. Er vernichtet nicht automatisch jeden Pipelinegewinn. Die Abhängigkeit steht im Programm. Forwarding und Stall sind zwei Behandlungen. Forwarding nutzt ein Ergebnis vor dem abgeschlossenen Register-Write-Back.
-
-Kontrollfrage: Ist jede RAW-Abhängigkeit ein Stall? Nein. Die Hazard-Arten werden abgegrenzt.
-:::
-
-## Was ist ein Hazard?
-
-- Situation, die verhindert, dass der nächste Befehl planmäßig im nächsten Takt starten kann
-- Das Fließband muss stottern oder korrigieren
-- Drei Kategorien:
-- Structural Hazards: zwei Befehle wollen dieselbe Hardware im selben Takt
-- Data Hazards: Abhängigkeit von noch nicht fertigen Daten
-- Control Hazards: Sprung ändert den PC, während schon falscher Code geladen ist
-
-::: notes
-Ein Hazard bedroht den korrekten Fortschritt oder den korrekten Kontrollfluss. Die Lösung kann Weiterleitung, Warten oder Verwerfen sein. Ein Structural Hazard ist ein Ressourcenkonflikt, ein Data Hazard eine Datenabhängigkeit, ein Control Hazard ein unbekannter nächster PC. Nicht jeder Data Hazard ist ein Stall.
-
-Kontrollfrage: Muss bei jedem Hazard die Pipeline stehen? Nein. Zuerst ein Ressourcenbeispiel.
-:::
-
-## Structural Hazards (Ressourcenkonflikte)
-
-- Befehl in MEM will den RAM schreiben, Befehl in IF will Code lesen
-- Gleicher Takt, ein Adress-Port — physikalischer Konflikt
-- Lösung: getrennte I/D-Speicher (modified Harvard)
-- Instruction Memory und Data Memory (bzw. getrennte L1-Caches)
-- In unserem Modell treten Structural Hazards daher praktisch nicht auf
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  CPU -->|Port 1 Code| ICache[(Instruction Cache)]
-  CPU -->|Port 2 Daten| DCache[(Data Cache)]
-  style ICache fill:#F5F5F7,stroke:#86868B,stroke-width:1.5px
-  style DCache fill:#F5F5F7,stroke:#86868B,stroke-width:1.5px
-  style CPU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
-
-::: notes
-Ein gemeinsamer einportiger Speicher kann Fetch und einen Datenzugriff im selben Takt nicht beide bedienen. Ein gemeinsamer Adressraum allein ist noch kein Konflikt, wenn getrennte Ports existieren. Getrennte L1-Instruktions- und Datencaches sind eine mögliche Lösung. L1 ist die erste Cacheebene. Harvard meint hier getrennte Zugriffspfade, nicht eine ISA-Pflicht. Die Registerbank braucht im Modell genug Lese- und Schreibports.
-
-Kontrollfrage: Erzwingt ein gemeinsamer Adressraum den Konflikt? Nein. Als Nächstes geht es um Ergebnisverfügbarkeit.
-:::
-
-## Data Hazards (Das Hauptproblem)
-
-- Entstehen durch logische Abhängigkeiten im Quellcode
-- Alltag in C: `a = b + c;` dann `d = a + e;`
-- `d` braucht das fertige `a`
-- Single-Cycle: kein Problem — Zeile 1 ist fertig, bevor Zeile 2 startet
-- Pipeline: Überhol-Problem auf dem Fließband
-
-```c
-/* Klassischer Data Hazard (RAW): */
-int a = 10 + 5;   /* schreibt a */
-int d = a + 20;   /* liest a sofort danach */
-```
-
-::: notes
-In-order behält die Programmreihenfolge. Der Konsument braucht nur einen noch nicht zurückgeschriebenen Wert. Das ist kein Überholen. Das C-Bild a gleich b plus c und d gleich a minus e ist konzeptionell, kein garantierter Compileroutput, wenn die Werte nicht konstant sind. RAW bleibt die Lesart nach einem noch ausstehenden Schreiben.
-
-Kontrollfrage: Darf der jüngere Befehl den älteren in der Reihenfolge überholen? In diesem Modell nein. Das Assemblerpaar macht Ziel und Quelle sichtbar.
-:::
-
-## Read After Write (RAW) in Assembler
-
-- C-Snippet als RISC-V: `add` gefolgt von `sub`
-- `add t0, t1, t2` speichert in `t0`
-- `sub t3, t0, t4` liest `t0` sofort
-- Konflikt: `sub` verlangt einen Wert, der noch nicht im Register File liegt
-- Schreiben erst in WB (Stufe 5), Lesen schon in ID (Stufe 2)
+## Was zählt als Befehlszahl?
+
+- Dynamisch abgeschlossene Maschineninstruktionen zählen
+- Schleifen können dieselbe Instruktion mehrfach ausführen
+- Pseudoinstruktionen können mehrere Maschinenbefehle ergeben
+- Hardware-Bubbles und verworfene Befehle zählen nicht zu $N$
 
 ```asm
-add t0, t1, t2    # t0 erst in WB (Stufe 5)
-sub t3, t0, t4    # t0 schon in ID (Stufe 2) gelesen
-```
-
-::: notes
-Lehrwerte: t1 gleich 7, t2 gleich 3, t4 gleich 4, alter t0 gleich 99. add t0, t1, t2 schreibt 10. sub t3, t0, t4 soll 6 ergeben. t0 ist x5, t1 ist x6, t3 ist x28, t4 ist x29. rd ist das Ziel, rs1 und rs2 die Quellen. Das Schreiben liegt in WB, das Lesen in ID. Forwarding kann den alten gelesenen Wert später ersetzen.
-
-Kontrollfrage: Welches Ergebnis ist richtig? 6, nicht 95. Die Zeitachse zeigt beide Befehle.
-:::
-
-## Kollision auf dem Fließband
-
-- `add` schreibt `t0` erst in Takt 5 (WB)
-- `sub` liest `t0` schon in Takt 3 (ID)
-- Katastrophe: `sub` liest veraltete Daten — falsche Rechnung
-
-| Befehl | 1 | 2 | 3 | 4 | 5 | 6 |
-|--------|---|---|---|---|---|---|
-| `add t0, t1, t2` | IF | ID | EX | MEM | WB | |
-| `sub t3, t0, t4` | | IF | ID | EX | MEM | WB |
-
-::: notes
-add liegt in IF1, ID2, EX3, MEM4, WB5. sub liegt in IF2, ID3, EX4, MEM5, WB6. Ohne Behandlung könnte sub den alten Wert 99 lesen und 95 rechnen. Das ist ein falscher Datenwert, kein elektrischer Stoß. Die Registernummer und der Datenwert sind verschieden.
-
-Kontrollfrage: Welcher falsche Wert entstünde? 95. Ein Stall könnte das Lesen verzögern.
-:::
-
-## Die naive Lösung: Stalling
-
-- Hardware erkennt die Abhängigkeit und hält an (Stall)
-- `sub` bleibt in ID, bis `add` WB abgeschlossen hat
-- Preis: typisch drei verlorene Taktzyklen (Konvention ohne Write/Read-Split im selben Takt; mit H&H-Registerfile-Hälften oft nur 2 Bubbles)
-- Der Speedup durch kürzeren Takt wird teilweise zunichtegemacht
-
-```text
-ADD:  IF ID EX MEM WB(schreibt)
-SUB:     IF .. .. .. ID(liest sicher) EX MEM WB
-             ^--- drei Takte Warten ---^
-```
-
-::: notes
-Zwei Registerlese-Konventionen bleiben getrennt. Schreibt WB und liest ID noch im selben Takt 5, startet sub in EX in Takt 6. Das sind zwei zusätzliche Takte gegenüber der idealen Folge. Kann ID den WB-Wert im selben Takt nicht nutzen, liest sub erst in Takt 6 und rechnet in Takt 7. Das sind drei zusätzliche Takte. Die gehaltene Instruktion bleibt sichtbar in ID. Das ist keine universelle Ripes-Zahl. Harris und Harris ist die Lehrbuchreferenz, falls sie genannt wird.
-
-Kontrollfrage: Ist die Stallzahl immer zwei? Nein, sie hängt von der Lese-Schreib-Konvention ab. Das ALU-Ergebnis existiert schon vor WB.
-:::
-
-## Die schlaue Lösung: Forwarding
-
-- Wann ist das `add`-Ergebnis wirklich fertig?
-- Nicht erst in WB — die ALU hat es am Ende von EX (Takt 3)
-- WB ist nur der bürokratische Speichervorgang
-- Idee: Ergebnis direkt am ALU-Ausgang abgreifen und zur nächsten ALU leiten
-- Kein Umweg über das Register File
-
-```text
-Forwarding (Bypassing):
-Nutze das Ergebnis, sobald es physikalisch fertig ist.
-Warte nicht auf Write-Back.
-```
-
-::: notes
-Forwarding, auch Bypassing, leitet das Ergebnis weiter. Am Ende von EX ist es berechnet und wird in EX/MEM übernommen. Im nächsten Zyklus kann es den jüngeren EX-Operanden versorgen. WB bestätigt danach den Registerzustand. Es ist nicht nur Bürokratie. Der Endpunkt ist Takt 3, der Verbraucher Takt 4.
-
-Kontrollfrage: Muss sub auf das Register-Write-Back warten? In diesem ALU-Fall nein. Der zusätzliche Datenpfad folgt.
-:::
-
-## Bypassing (Die Abkürzung)
-
-- Forwarding = Weiterleiten; Bypassing = Umgehen
-- Neue Kupferkabel vom EX/MEM-Ausgang zurück an den ALU-Eingang
-- MUX wählt die Abkürzung statt des (falschen) Register-Werts
-- Konflikt gelöst, ohne einen Takt zu pausieren
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph RL
-  ALU2[ALU Ergebnis EX/MEM] -->|Bypass| ALU1[ALU Eingang Befehl 2]
-  style ALU2 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style ALU1 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Der Pfad führt vom EX/MEM-Register zum Operandenmultiplexer der ALU. Gegen die Flussrichtung beschreibt nur die Lage im Bild, nicht die Zeit. Mit Ergebnis 10 und t4 gleich 4 rechnet sub korrekt 6. Der alte ID-Wert wird ersetzt. Nicht jeder Hazard ist damit gelöst.
-
-Kontrollfrage: Welches Ergebnis hat sub? 6. Ein weiter hinten liegender Produzent braucht einen zweiten Pfad.
-:::
-
-## Forwarding-Pfade im Datenpfad
-
-- Abkürzungen von allen Stellen, an denen Daten fertig werden
-- Pfad 1: EX/MEM → ALU (direkt aufeinanderfolgende Befehle)
-- Pfad 2: MEM/WB → ALU (ein unabhängiger Befehl dazwischen)
-- Neue Stränge kreuzen das Diagramm von rechts nach links
-
-::: notes
-EX/MEM liefert ein bereits berechnetes ALU-Ergebnis. MEM/WB liefert den tatsächlichen Write-Back-Wert. Bei einem Load ist das das geladene Wort, nicht die Adresse. Beide Quellen rs1 und rs2 werden geprüft. Ein direkter Vorgänger nutzt EX/MEM. Liegt eine unabhängige Instruktion dazwischen, kann MEM/WB passen. Ein Load in EX/MEM hat dort noch die Adresse.
-
-Kontrollfrage: Darf die Load-Adresse als Nutzdatum weitergereicht werden? Nein. Die Forwarding Unit entscheidet den Pfad.
-:::
-
-## Die Forwarding Unit
-
-- Neues Logiknetzwerk vor der EX-Stufe
-- Vergleicht Registernummern der Befehle auf dem Fließband
-- Frage: Ist `rd` des Vorgängers gleich `rs1`/`rs2` des aktuellen Befehls?
-- Wenn ja: MUX auf die Abkürzung schalten
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  IDEX[Aktuell rs1/rs2] --> FW((Forwarding Unit))
-  EXMEM[Vorgaenger rd] --> FW
-  FW -->|steuert MUX| ALU
-  style FW fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style IDEX fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style EXMEM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style ALU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Verglichen werden die fünf Bit der Registernummern, nicht die 32-Bit-Daten. Eingänge sind Gültigkeit, RegWrite, Ergebnisart und die Zielnummern beider Quellen. Bei zwei passenden Produzenten gewinnt der jüngere. ForwardA und ForwardB sind getrennte Ausgänge. Ein älterer MEM/WB-Wert ersetzt keinen noch nicht bereiten jüngeren Load.
-
-Kontrollfrage: Gewinnt bei zwei Treffern der ältere Wert? Nein. Die Bedingungen werden ausgeschrieben.
-:::
-
-## Die Hazard-Erkennung (Logik)
-
-- Teilbedingung für EX/MEM-Forwarding an rs1:
-- `EX/MEM` gültig, `RegWrite = 1`, `rd` ungleich `x0`, `rd` gleich benutztes `rs1`
-- Das Ergebnis muss schon der Nutzdatenwert sein, nicht nur eine Load-Adresse
-- Bei zwei Treffern hat der jüngere Produzent Vorrang
-- Analog für `rs2` und für den MEM/WB-Pfad
-
-```c
-if (vorheriger_schreibt && sein_ziel == meine_quelle) {
-    aktiviere_abkuerzung();
-}
-```
-
-::: notes
-Die EX/MEM-Teilbedingung lautet: der Produzent ist gültig, RegWrite ist 1, rd ist nicht x0, und rd entspricht der benutzten Quelle. Zusätzlich muss der Wert schon das Nutzdatum sein. Ein Load in EX/MEM erfüllt das für das Datum nicht. Der MEM/WB-Pfad prüft dasselbe für den Write-Back-Wert. Der jüngere Treffer hat Vorrang. Ein noch nicht bereiter neuerer Load darf keinen alten Wert durchlassen. Diese Logik ist Forwarding, nicht die spätere Stall-Erkennung. Die Lehrselektoren sind 00, 10 und 01.
-
-Kontrollfrage: Darf x0 einen Bypass auslösen? Nein. Die MUX-Struktur setzt die Wahl um.
-:::
-
-## MUX-Erweiterung an der ALU
-
-- Forwarding wählt den Registerdatenwert; `ALUSrc` wählt danach Register oder Immediate
-- Lehrcodes: `00` aus ID/EX, `10` aus EX/MEM, `01` aus MEM/WB; `11` unbenutzt
-- Diese Codes sind keine Ripes-Portwerte
-- Ein Store-Datum darf nicht durch den Immediate ersetzt werden
-
-::: notes
-Forwarding wählt zwischen Registerwerten. ALUSrc wählt danach, ob der zweite ALU-Eingang der weitergeleitete Registerwert oder der Immediate ist. 00 ist der aus ID/EX übernommene Registerwert, nicht pauschal Immediate. 10 ist EX/MEM, 01 ist MEM/WB. 11 ist unbenutzt. Das ist eine Lehrkonvention, kein Ripes-Code. Store-Daten bleiben ein eigener Pfad.
-
-Kontrollfrage: Ersetzt Forwarding den Immediate von addi? Nein. Der add/sub-Trace prüft den Pfad.
-:::
-
-## Trace: Data Hazard gelöst
-
-- Mit Forwarding: Zeitreise per Bypass
-- `sub` bekommt das ALU-Ergebnis rechtzeitig in seiner EX-Stufe
-- Kein Taktverlust
-
-| Befehl | 1 | 2 | 3 | 4 | 5 | 6 |
-|--------|---|---|---|---|---|---|
-| `add t0, t1, t2` | IF | ID | EX | MEM | WB | |
-| `sub t3, t0, t4` | | IF | ID | EX | MEM | WB |
-
-::: notes
-Rechtzeitige Weiterleitung ersetzt die Metapher Zeitreise. Am Ende von Takt 3 liegt 10 in EX/MEM. In Takt 4 nutzt sub diesen Wert und rechnet 6. Der alte ID-Wert wird ersetzt. Es entsteht keine zusätzliche Bubble. Beide Befehle schreiben später trotzdem ihre Register.
-
-Kontrollfrage: In welchem Takt nutzt sub die 10? In Takt 4, in EX. Der Gewinn gilt nur unter Voraussetzungen, deren Grenze folgt.
-:::
-
-## Keine Zeit verloren
-
-- Forwarding rettet den Speedup der 5-Stufen-Pipeline
-- Takt bleibt kurz; Software merkt nichts vom Trick
-- Zusammenspiel aus Datenpfad-Erweiterung und Kontroll-Logik
-- Aber: Ist Forwarding allmächtig?
-
-```text
-Performance-Check:
-Bei RAW von Rechenbefehlen: 0 Taktzyklen Verlust.
-CPI bleibt ~1.0
-```
-
-::: notes
-Null zusätzliche Verlustzyklen gelten für die gezeigte ALU-zu-ALU-Abhängigkeit mit vorhandenem Forwarding. Neue Multiplexer können den kritischen Pfad verlängern. CPI nahe 1 bleibt eine stationäre Aussage. Die endliche Füllung zählt weiterhin. Softwaretransparenz bedeutet gleiche ISA-Ergebnisse, nicht unsichtbare Elektrik.
-
-Kontrollfrage: Ist der Takt durch Forwarding garantiert gleich kurz? Nein. Loads erzeugen ihr Ergebnis später.
-:::
-
-# Load-Use Hazards & Stalls
-
-
-::: notes
-Ein Load-Use-Hazard entsteht, wenn die nächste Instruktion das geladene Wort schon in EX braucht. Hazard ist die Abhängigkeit, Stall der Wartezyklus. Das Datum ist nach MEM verfügbar, nicht schon nach der Adressrechnung. Die offene Frage ist, ob die früheste Weiterleitung rechtzeitig kommt.
-
-Kontrollfrage: Ist die Load-Adresse schon das Wort? Nein. Die Lösungen werden benannt.
-:::
-## Grenzen des Forwarding
-
-- Gefährlichster Datenkonflikt: Load-Use Hazard
-- RAM-Latenz sabotiert das Fließband
-- Zwangspause: Pipeline-Bubble (NOP)
-- Rettung durch Compiler (Instruction Scheduling)
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  A[Load-Use Hazard] -->|RAM-Latenz| B[Daten zu spaet]
-  B -->|Hardware| C[Stall / Bubble]
-  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Die bisherigen Pfade reichen nicht, weil das Wort im Modell erst nach MEM vorliegt. Eine Bubble ist ein ungültiger Pipeline-Eintrag, keine aus dem Programm geholte NOP. Ein Compiler übersetzt Quelltext. Instruction Scheduling ordnet zulässige Befehle um.
-
-Kontrollfrage: Ist eine Bubble eine addi-Instruktion aus dem Quelltext? Nein. Zuerst die zeitliche Voraussetzung des ALU-Forwardings.
-:::
-
-## Ist Forwarding unbesiegbar?
-
-- Voraussetzung: Daten existieren schon irgendwo auf dem Chip
-- Bei `add`/`sub`: Ergebnis am Ende von EX fertig
-- Nächster Befehl braucht sie in EX — Timing passt
-- Frage: Welcher Befehl liefert das Ergebnis erst nach EX?
-
-::: notes
-Bereit heißt: der Wert steht am richtigen Pfad rechtzeitig für die Verbraucherberechnung. Ein add hat sein Ergebnis am Ende von EX. Ein lw hat in EX nur die Adresse und das Wort am Ende von MEM. Adresse und Speicherwort bleiben getrennt.
-
-Kontrollfrage: Kann EX/MEM eines Loads das Wort liefern? Nein, dort liegt die Adresse. Das folgende add zeigt die Lücke.
-:::
-
-## Der Load-Use Hazard
-
-- Fataler Code: `lw` direkt gefolgt von Nutzung
-- `lw t0, 0(s1)` dann `add t3, t0, t2`
-- Daten eines `lw` erst am Ende von MEM (Stufe 4)
-- Der RAM ist träge
-
-```asm
-lw  t0, 0(s1)    # Daten erst in MEM (Takt 4)
-add t3, t0, t2   # braucht Daten schon in EX (Takt 4)
-```
-
-::: notes
-s1 zeigt auf ein Wort mit dem Lehrwert 42, t2 ist 8. lw t0, 0(s1) und add t3, t0, t2 sollen 50 ergeben. Das Wort liegt im einzykligen MEM erst am Ende von Takt 4 bereit. Der kurze EX-Takt der folgenden Addition kann es nicht mehr verarbeiten. Ein korrektes Modell wartet. Der Code ist nicht fatal.
-
-Kontrollfrage: Welches Ergebnis ist richtig? 50. Das Raster zeigt die fehlende Zeit.
-:::
-
-## Warum Forwarding hier versagt
-
-- RAM-Daten erst am Ende von Takt 4 verfügbar
-- `add` braucht sie am Anfang von Takt 4
-- Ein voller Takt zu spät
-
-| Befehl | 1 | 2 | 3 | 4 | 5 | 6 |
-|--------|---|---|---|---|---|---|
-| `lw t0, 0(s1)` | IF | ID | EX | MEM | WB | |
-| `add t3, t0, t2` | | IF | ID | EX | MEM | WB |
-
-::: notes
-Der ungehaltene Plan ist ein Fehlerfall, keine korrekte Ausführung. In Takt 4 endet das Load-MEM, während die Addition schon in EX rechnen müsste. Anfang und Ende sind vereinfachte Stufengrenzen. Es muss genug Zeit bis zur Übernahme bleiben. Eine gemeinsame MEM-und-EX-Rechnung im selben kurzen Takt wäre ein anderer, längerer kritischer Pfad.
-
-Kontrollfrage: Darf add in Takt 4 das Wort nutzen? In diesem Modell nein. Die nächste Folie grenzt die Zeitreise ein.
-:::
-
-## Forwarding rückwärts in der Zeit?
-
-- Bypass müsste vom MEM-Ausgang (Ende Takt 4) zum EX-Eingang (Anfang Takt 4)
-- Das wäre Datenrücktransport in die Vergangenheit
-- Physik verbietet es — harte Wand
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph RL
-  Ende[Daten Ende Takt 4] -->|Zeitreise?| Anfang[Daten Anfang Takt 4]
-  style Anfang fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important,stroke-dasharray: 5 5
-  style Ende fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Ein kombinatorischer Weg vom MEM-Ausgang zum EX-Eingang im selben Takt ist nicht grundsätzlich unmöglich. In diesem Timing reicht die Restzeit nicht. Ein längerer Takt wäre ein anderer Entwurf. Der Balken zeigt Datenbereitstellung am Ende von MEM und die nötige Rechen- und Setup-Zeit. Es fließen Signalzustände, kein Strom rückwärts.
-
-Kontrollfrage: Verbietet die Physik jeden MEM-nach-EX-Draht? Nein. Ein Wartezyklus hält den kurzen Takt.
-:::
-
-## Die Hardware-Lösung: Der Stall
-
-- Hazard Detection Unit greift in der ID-Stufe ein
-- `lw` fließt normal weiter nach MEM
-- Abhängiger Befehl wird in ID eingefroren (kein Wechsel nach EX)
-- PC ebenfalls eingefroren (kein neuer Fetch)
-
-```text
-Erzwungener STALL = Kaffeepause-Takt fuer das Fließband
-```
-
-::: notes
-Drei Aktionen: den PC halten, IF/ID halten und ID/EX mit einer Bubble belegen. Der Load läuft über EX/MEM und MEM/WB weiter. Der abhängige Befehl bleibt in ID. Kein neuer Fetch übernimmt eine neue Befehlsposition. Am selben PC kann weiter ein Wert anliegen.
-
-Kontrollfrage: Wird der Load eingefroren? Nein. Der leere EX-Platz heißt Bubble.
-:::
-
-## Was ist eine Pipeline-Bubble?
-
-- Lücke im Fließband, weil der Folgebefehl auf der Stelle tritt
-- EX ist einen Takt leer
-- Hardware füllt mit einer Bubble: wirkungsloser NOP
-- Bubble wandert EX → MEM → WB und tut nichts
-
-::: notes
-Eine Bubble ist ein ungültiger oder wirkungsloser Pipeline-Eintrag. Der abhängige Befehl bleibt in ID erhalten. Im Trace liegt die Bubble in EX in Takt 4, in MEM in Takt 5 und in WB in Takt 6. Eine Anzeige als nop beweist keine aus dem Programm geholte NOP. Eine echte NOP ist addi x0, x0, 0 und schreitet im PC fort.
-
-Kontrollfrage: Verschwindet add durch die Bubble? Nein, es bleibt in ID. Die Nebenwirkungen werden unterdrückt.
-:::
-
-## Hardware-Implementierung (NOP)
-
-- Control Unit nullt die Erlaubnis-Pins
-- Hazard Unit: `RegWrite = 0`, `MemWrite = 0`, `MemRead = 0`
-- Befehl darf nichts Speichern/Schreiben
-- Hardware „schläft“ einen Takt
-
-```text
-NOP in Assembler (Beispiel):
-addi x0, x0, 0
-# sinnlos, ungefährlich, wirkungslos = Bubble
-```
-
-::: notes
-Eine Hardware-Bubble kann valid gleich 0 nutzen oder Schreib-, Zugriffs- und Sprungwirkungen abschalten. Die echte NOP addi x0, x0, 0 hat das Wort 0x00000013. Ihr normaler addi-Decoder kann RegWrite setzen. x0 macht den Schreibversuch für Registerdaten wirkungslos. PC und Zähler laufen weiter. Deshalb bedeuten nicht alle Steuersignale null. Eine Bubble schläft nicht und spart nicht automatisch Strom.
-
-Kontrollfrage: Ist NOP gleich alle Signale null? Nein. Der Stall-Trace prüft die Wirkung.
-:::
-
-## Load-Use Timeline mit Stall
-
-- `add` einen Takt in der Warteposition
-- Bubble füllt die EX-Lücke
-- Danach greift klassisches Forwarding (MEM → EX)
-
-| Befehl | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
-|--------|---|---|---|---|---|---|---|
-| `lw t0, 0(s1)` | IF | ID | EX | MEM | WB | | |
-| `add t3, t0, t2` | | IF | ID | stall | EX | MEM | WB |
-
-::: notes
-lw liegt in IF1, ID2, EX3, MEM4, WB5. add liegt in IF2, ID3, gehalten in ID4, EX5, MEM6, WB7. Die Bubble liegt in EX4, MEM5 und WB6. In Takt 5 kommt 42 aus MEM/WB an die EX-Operanden. Mit t2 gleich 8 entsteht 50. t3 übernimmt 50 erst in seinem WB. Der Pfad ist die Weiterleitung nach dem Speicherzyklus, nicht eine beliebige Gleichzeitigkeit.
-
-Kontrollfrage: In welchem Takt rechnet add? In Takt 5. Der Zusatzzyklus verändert den CPI.
-:::
-
-## Der Preis des Stalls
-
-- Logisch korrekt, Performance leidet
-- CPI steigt (Bubbles verschwenden Takte)
-- Viele Arrays laden + sofort verrechnen → viele Blasen
-- Hardware am Limit — Rettung durch Software
-
-```text
-Jeder Load-Use Hazard: typisch 1 Takt Penalty
-```
-
-::: notes
-Ein zusätzlicher Takt gilt für die unmittelbar folgende EX-Nutzung bei einzykligen Speicherzugriffen und passenden Bypässen. Ein Cache-Miss kann länger dauern. Der CPI-Zuschlag ist der dynamische Load-Use-Anteil, hier zum Beispiel 0,10, also plus 0,10. Die Füllung bleibt separat. Ein Compiler findet nicht immer unabhängige Arbeit.
-
-Kontrollfrage: Kostet jeder Load einen Stall? Nur wenn der Wert sofort in EX gebraucht wird. Scheduling ordnet vorhandene Arbeit um.
-:::
-
-## Die Software-Lösung (Compiler)
-
-- Variable nach `lw` nicht sofort im nächsten Befehl nutzen
-- Compiler: Instruction Scheduling
-- Unabhängige Instruktionen zwischen `lw` und Nutzung schieben
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  A[C-Code analysieren] -->|mischen| B[Assembler-Luecke fuellen]
-  B --> C[Kein Hardware-Stall]
-  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Ein Compiler übersetzt Quellcode. Instruction Scheduling verschiebt bereits nötige und zulässige Befehle. Der verschobene Befehl darf Register, Speicher und Kontrollfluss der abhängigen Rechnung nicht zerstören. Produzent, Konsument und eine unabhängige Operation bilden die minimale Abhängigkeit.
-
-Kontrollfrage: Darf jede beliebige Instruktion in die Lücke? Nein. Ein konkretes Beispiel folgt.
-:::
-
-## Befehle umsortieren (Scheduling)
-
-- Schlecht (1 Stall):
-- `lw` / `add` (abhängig) / `sub` (unabhängig)
-- Gut (0 Bubbles):
-- `lw` / `sub` (Lücke füllen) / `add` (Daten haben Zeit)
-
-```asm
-# Bubble durch produktive Arbeit ersetzt:
-lw  t0, 0(s1)
-sub t4, t5, t6    # unabhaengig, fuellt die Luecke
-add t3, t0, t2    # Forwarding greift
-```
-
-::: notes
-Beide Folgen enthalten dieselben lw, add und die unabhängige Operation, nur in anderer Reihenfolge. Die unabhängige Operation darf die Load-Adresse und die add-Operanden nicht überschreiben. Im Modell hat die erste Folge einen Stall und die zweite keinen. Der Unterschied ist ein Zyklus, weil die Instruktionsmenge gleich bleibt.
-
-Kontrollfrage: Ist eine neue addi-Zeile derselbe Vergleich? Nein. Ein Compiler kann solche Entscheidungen unter Bedingungen automatisieren.
-:::
-
-## Die Macht des Compilers
-
-- Generierter Assembler wirkt oft vermischt und unlogisch
-- Absicht: Pipelines maximal auslasten
-- Mit `-O3` (GCC) aggressive Umsortierungen
-- Hardware und Software müssen Hand in Hand arbeiten
-
-::: notes
-GCC ist die GNU Compiler Collection. Scheduling ist nicht exklusiv an die Option -O3 gebunden. Zielarchitektur und Optimierungen entscheiden. Es entsteht nicht automatisch stallfreier Code. Die beobachtbare Wirkung muss erhalten bleiben. Ohne einen echten Compilerlauf gibt es keine gemessene Verbesserung.
-
-Kontrollfrage: Garantiert -O3 keine Bubbles? Nein. Auch korrekte Daten lösen nicht die Frage nach dem nächsten PC.
-:::
-
-# Control Hazards & Branch Prediction
-
-
-::: notes
-Ein Control Hazard ist die Unsicherheit über den korrekten nächsten Kontrollfluss. Branch Prediction ist die Vorhersage des Sprungverhaltens. Ein Branch kann zusätzlich Datenabhängigkeiten haben. Die Abschnitte sind nicht isoliert.
-
-Kontrollfrage: Ist jeder Branch nur ein Datenproblem? Nein. Die bereits geholten jüngeren Befehle motivieren die Frage.
-:::
-## Der Endgegner des Fließbands
-
-- Was passiert, wenn der PC „lügt“?
-- Falsche Fließband-Daten zerstören (Flushing)
-- Performance-Einbruch durch Sprünge
-- Moderne CPUs als Propheten: Branch Prediction
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  A[Sprung beq] -->|Entscheidung zu spaet| B[Falsche Befehle im Rohr]
-  B -->|zerstoeren| C[Flushing / Bubbles]
-  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Der PC lügt nicht. Der Fetch arbeitet, bevor das Branch-Ergebnis bekannt ist. Flush verwirft jüngere Instruktionen eines falschen Pfads. Bereits bestätigte richtige Ergebnisse bleiben. Ein Branch und zwei Nachfolgebefehle zeigen das konkreter als eine Symbolkette. Vorhersage und Korrektur gehören zusammen.
-
-Kontrollfrage: Löscht Flush jeden älteren Befehl? Nein. Der zeitliche Informationsmangel folgt.
-:::
-
-## Der Control Hazard (`beq`)
-
-- Data Hazards gemeistert — schwerster Konflikt: Kontrollfluss
-- Beispiel: `beq t0, t1, ZielLabel`
-- Single-Cycle: ALU in Takt 1, PC springt am Taktende
-- Pipeline: Fließband steht niemals still
-- Während `beq` durch die ersten Stufen kriecht, muss der PC in jedem Takt die nächste Fetch-Adresse wählen
-
-```text
-Fundamentales Problem:
-Der PC muss wissen, wo er weitergeht (Fetch), BEVOR
-die CPU verstanden hat, ob sie springen muss!
-```
-
-::: notes
-beq bedeutet Branch if Equal. Der PC ist die Befehlsadresse. Das Fließband steht bei Stalls sehr wohl. Solange kein Halt oder Redirect greift, holt das Modell sequenzielle Folgeinstruktionen. Es fehlen Bedingung und Zieladresse. Die Branch-Erkennung allein genügt nicht. Der PC der Branch-Instruktion muss bis zur Entscheidung verfügbar bleiben.
-
-Kontrollfrage: Reicht es zu wissen, dass ein Branch vorliegt? Nein. Die Entscheidung liegt im EX-Modell in einem bestimmten Takt.
-:::
-
-## Die Latenz der Entscheidung
-
-- Wann fällt die endgültige Sprungentscheidung?
-- Subtraktion `t0 - t1` in der Haupt-ALU (Stufe EX, Einheit 5)
-- Zero-Flag erst am Ende von Takt 3
-- AND vor dem PC gibt die Zieladresse erst zu Beginn von Takt 4 frei
-
-```text
-beq-Latenz:
-Takt 1: IF
-Takt 2: ID (Opcode bekannt, Bedingung noch unklar)
-Takt 3: EX (ALU rechnet, Zero am Ende)
-Takt 4: PC kann umschalten
-```
-
-::: notes
-Im EX-Modell werden Bedingung und Ziel während Takt 3 berechnet. An der Grenze zu Takt 4 kann der neue PC wirken. Ein AND-Gatter liefert den Auswahlentscheid, nicht selbst die Zieladresse. Zero ist ein internes Gleichheitssignal dieser Variante, kein ISA-Flag. In Ripes müssen Vergleichseinheit und Stufe geprüft werden. Diese Fassung hat Ripes nicht ausgeführt.
-
-Kontrollfrage: Liefert Zero die Zieladresse? Nein. Welche jüngeren Befehle sind dann falsch?
-:::
-
-## Die Fließband-Falle
-
-- Zwei Takte lang hat das Fließband blind weitergearbeitet
-- Takt 2: Fetch bei $PC+4$
-- Takt 3: Fetch bei $PC+8$
-- Takt 4: Zero = 1 — eigentlich zu `ZielLabel` springen
-- Die Befehle in IF und ID sind falsch
-
-| Befehl | 1 | 2 | 3 | 4 |
-|--------|---|---|---|---|
-| `beq` | IF | ID | EX | MEM |
-| Folge bei $PC+4$ | | IF | ID | ungültig |
-| Folge bei $PC+8$ | | | IF | ungültig |
-| Zielinstruktion | | | | IF |
-
-::: notes
-Bei einem genommenen EX-Branch werden die bis Takt 3 geholten Folgen an PC plus 4 und PC plus 8 an der Grenze zu Takt 4 ungültig. Sie dürfen in Takt 4 nicht als gültige EX- oder ID-Arbeit erscheinen. In Takt 4 beginnt die Zielinstruktion in IF. Branch-PC, Fetch-PC und Zieladresse bleiben getrennte Werte. Der Offset wird zur Adresse der Branch-Instruktion addiert, nicht zu einem schon weitergelaufenen Fetch-PC.
-
-Kontrollfrage: Steht die Folge in Takt 4 noch gültig in EX? Nein. Die Flush-Aktionen folgen.
-:::
-
-## Branch Taken: Flushing
-
-- Falsche Befehle in der Röhre müssen vernichtet werden
-- Sonst: falsche Variablen, Absturz
-- Flush: Steuersignale in IF und ID auf 0
-- Falsche Befehle werden zu harmlosen Bubbles (NOPs)
-- PC schwenkt auf Label; Fetch startet neu
-
-::: notes
-Taken bedeutet genommen. Flush invalidiert im EX-Modell IF/ID und ID/EX und setzt den Ziel-PC. Ältere Inhalte in MEM und WB bleiben. Steuersignale nur in IF und ID auf null zu setzen, beschreibt die Register nicht genau genug. Verworfene Einträge dürfen nicht schreiben und nicht noch einmal umlenken. Ein Absturz folgt daraus nicht automatisch.
-
-Kontrollfrage: Wird der Branch selbst gelöscht? Nein. Die leeren Plätze ergeben die Penalty.
-:::
-
-## Der Performance-Verlust (Penalty)
-
-- Erfolgreicher Sprung: typisch 2 Takte Branch Penalty (ohne Optimierung)
-- 15–20 % der Befehle sind Branches (If/Else, Schleifen, Calls)
-- Ständiges Flushen zerstört den Throughput
-- Nächster Schritt: Penalty in Hardware reduzieren
-
-```text
-Ein Fließband ist nur schnell, wenn es nicht stoppt.
-Jeder Flush ist ein Riss im Getriebe.
-```
-
-::: notes
-Zwei zusätzliche Takte gelten für einen genommenen Branch unter der Annahme Not Taken und EX-Auflösung. Nicht jeder Branch und nicht jede CPU hat diese Penalty. Ein illustratives Beispiel: Branch-Anteil 0,20, Taken-Anteil 0,60, Penalty 2. Der Zuschlag ist 0,24, CPI etwa 1,24. Bei einem Predictor zählt die Fehlvorhersagerate. Calls sind keine bedingten Branches. 15 bis 20 Prozent sind kein gemessener Kurswert.
-
-Kontrollfrage: Kostet ein nicht genommener Branch diese zwei Takte? In diesem Modell nein. Früheres Entscheiden kann den Verlust verkleinern.
-:::
-
-## Hardware-Optimierung: Der Komparator
-
-- Branch-Logik nach links schieben (früher entscheiden)
-- Extra-Komparator (XOR + NOR) in ID: Register vergleichen, sobald gelesen
-- Entscheidung schon in Takt 2
-- Penalty sinkt von 2 Takten auf 1 Takt
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  ID[Stufe ID] -->|Daten| XOR{XOR + NOR}
-  XOR -->|Entscheidung jetzt| PC
-  style XOR fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style ID fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style PC fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-XOR ist exklusives Oder, NOR das negierte Oder. Bitweises XOR und danach NOR kann Gleichheit prüfen. Für bne wird die Gleichheit invertiert. Ein ID-Entscheid braucht aktuelle Operanden, eine frühe Zielrechnung und genug Taktzeit. Forwarding in EX kommt für einen schon in ID benötigten Wert zu spät. Neue Stalls können entstehen. Die Penalty von einem Takt gilt nur, wenn Operanden und Ziel rechtzeitig bereitstehen.
-
-Kontrollfrage: Genügt der Komparator allein? Nein. Bei längerer Unsicherheit wird vorhergesagt.
-:::
-
-## Die ultimative Rettung: Branch Prediction
-
-- Moderne Pipelines: oft weit mehr als 5 Stufen (bis ~20)
-- Flush würde Dutzende Takte kosten
-- Lösung: Branch Prediction (Sprungvorhersage)
-- Prozessor rät spekulativ, wohin es geht, und lädt Folge-Befehle
-
-::: notes
-Branch Prediction ist die Sprungvorhersage. Richtung und Zielinformation sind verschieden. Tiefe Pipelines können höhere Fehlkosten haben. Die Penalty ist nicht einfach die Stufenzahl. Spekulativer Fetch wird geprüft und korrigiert. Herstellerfrequenzen ohne Quelle bleiben weg. Ultimativ ist diese Technik nicht.
-
-Kontrollfrage: Liefert eine Richtungsvorhersage die Zieladresse? Nein. Die einfachste Vorhersage ist der sequenzielle Pfad.
-:::
-
-## Statische Vorhersage
-
-- Simpelste Form (z. B. einfache Mikrocontroller)
-- Assume Not Taken: immer $PC+4$ nachladen
-- Richtig geraten: null Taktverlust
-- Falsch: Flush — im Schnitt oft noch Gewinn
-
-```text
-Assume Not Taken:
-Nehmen Sie an, der Sprung werde nicht genommen,
-bis der Zero-Ausgang des Vergleichers Sie eines Besseren belehrt.
-```
-
-::: notes
-Assume Not Taken nimmt PC plus 4 an, solange die C-Erweiterung aus ist. Richtig vorhergesagt bedeutet keine zusätzliche Control-Recovery in diesem Modell. Datenhazards können trotzdem warten. Bei bne ist Nichtnahme nicht einfach Zero gleich 0. Der Gewinn hängt von Taken-Rate und Penalty ab.
-
-Kontrollfrage: Ist Not Taken immer der häufigere Fall? Das ist nicht belegt. Eine Richtungsheuristik nutzt Schleifen.
-:::
-
-## Schleifen-Vorhersage (Heuristik)
-
-- Schleifenbranch bleibt rückwärts gerichtet
-- Neunmal genommen, einmal nicht genommen: dann Fall-through nach $PC+4$
-- Das letzte Mal ist kein plötzlich vorwärts gerichteter Branch
-- Zieladresse $<$ PC $\rightarrow$ Prediction Taken (Schleife)
-- Zieladresse $>$ PC $\rightarrow$ Prediction Not Taken (If/Else)
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  PC -->|Ziel kleiner| Loop[Loop: TAKEN]
-  PC -->|Ziel groesser| IfElse[If/Else: NOT TAKEN]
-  style Loop fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style IfElse fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style PC fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Backward Taken, Forward Not Taken ist eine Heuristik. Ein rückwärts gerichteter Countdown-Branch wird neunmal genommen und einmal nicht genommen. Beim letzten Mal fällt er nach PC plus 4 durch. Die Zieladresse bleibt rückwärts. Sie wird nur nicht verwendet. Ein Ziel kleiner als der PC sagt Taken vorher, ein größeres Not Taken. Ein Offset null braucht einen ausdrücklichen Default.
-
-Kontrollfrage: Wird der letzte Schleifenbranch vorwärts? Nein. Dynamische Vorhersage nutzt beobachtete Entscheidungen.
-:::
-
-## Dynamische Vorhersage (BHT)
-
-- Dynamic Branch Prediction: lernen zur Laufzeit
-- Branch History Table (BHT): Eintrag pro Sprungadresse
-- Einfachstes Modell: 1 Bit (letzte Aktion = Prediction)
-- Praxis/Vertiefung: oft 2-Bit-Saturating Counter
-- Beim Wiedersehen derselben PC-Adresse: Prediction aus der Tabelle
-
-| PC-Adresse | Letzte Aktion | Prediction heute |
-|------------|---------------|------------------|
-| `0x00400100` (`beq`) | Taken | Springen |
-| `0x00400204` (`bne`) | Not Taken | $PC+4$ |
-
-::: notes
-BHT bedeutet Branch History Table. Der Anfangszustand muss genannt werden. Im Einbitmodell ist die letzte Entscheidung die nächste Vorhersage. Mehrere PCs können denselben Index belegen. Eine Folge Taken, Taken, Taken, Not Taken erzeugt beim letzten Schritt einen Fehler, wenn vorher Taken vorhergesagt wurde. Der Zweibitzähler hat 00 stark Not Taken, 01 schwach Not Taken, 10 schwach Taken und 11 stark Taken. Taken erhöht bis 3, Not Taken verringert bis 0. Das hohe Bit entscheidet. Ein Fehler kippt aus einem starken Zustand zuerst nur die Stärke. Aus einem schwachen Zustand kann ein Ereignis die Richtung wechseln. Die Tabelle liefert keine Zieladresse. Ein BTB, Branch Target Buffer, wäre eine ergänzende Zielinformation.
-
-Kontrollfrage: Kippt ein einzelner Fehler nie die Vorhersage? Nur nicht aus einem starken Zustand. Die Bestätigung der vorläufigen Arbeit folgt.
-:::
-
-## Spekulative Ausführung
-
-- Herzstück moderner CPUs (Apple M, AMD Ryzen, Intel Core)
-- Vorhersage ist eine weitere Mikroarchitektur; eine Trefferquote wird hier nicht als Messwert behauptet
-- Fließband führt Code aus, bevor die Legalität feststeht
-- Trivia: Spectre/Meltdown hängen an Spekulation und Caches
-
-```text
-Ohne Branch Prediction würde ein 5-GHz-Prozessor
-durch ständiges Flushen nur einen Bruchteil leisten.
-```
-
-::: notes
-Spekulativ heißt: vorläufig ausführen, bevor der richtige Kontrollfluss feststeht, nicht bevor die Legalität eines Opcodes feststeht. Vorläufige Ergebnisse werden bestätigt oder verworfen. Out-of-order-Ausführung liegt außerhalb dieses Fünfstufenmodells. Falsche Pfade dürfen den Architekturzustand nicht bestätigen. Cacheinhalte können trotzdem bleiben. Spectre und Meltdown sind eine optionale Einordnung und nicht dieses Labor. Eine 5-Gigahertz-Aussage ohne Messung bleibt weg.
-
-Kontrollfrage: Darf ein verworfener Store den Speicher ändern? Als bestätigte Wirkung nein. Ripes zeigt die einfachen Hazards, nicht automatisch diese Predictor-Architektur.
-:::
-
-# Praxis: Hazards live in Ripes
-
-
-::: notes
-Ripes ist ein RISC-V-Lehrsimulator. Die Zeitmodelle sind Vorhersagen für eine konkrete Konfiguration. Drei Ziele sind Forwarding, Load-Use-Stall und Branch-Flush. Eine dynamische BHT wird nicht ungeprüft vorausgesetzt.
-
-Kontrollfrage: Zeigt jede Ripes-Version eine BHT? Das ist nicht belegt. Der Arbeitsablauf folgt.
-:::
-## Vom Papier in den Simulator
-
-- Ripes auf das 5-Stufen-Modell umstellen
-- Bypassing-Leitungen im Datenpfad finden
-- Pipeline-Bubbles bei Load-Use beobachten
-- Flushing bei Schleifen erleben
-
-::: notes
-Version, Prozessor und Layout gehören zu jeder Beobachtung. Zuerst die erwartete Stufenbelegung, dann Portwerte. Farben ergänzen Zahlen und Gültigkeit. Zwischen Versuchen wird zurückgesetzt. Eine Branch-Penalty stammt aus dem gewählten Modell, nicht ungeprüft aus dem Lehrdiagramm. Diese Fassung hat die Oberfläche nicht ausgeführt.
-
-Kontrollfrage: Beweist eine Farbe den Bypass? Nein. Die Modellwahl hat Folgen.
-:::
-
-## Ripes-Upgrade (5-Stage)
-
-- Chip-Icon oben links
-- `5-Stage Processor` wählen (Standard mit Hazard/Forwarding)
-- Mit Forwarding und Hazard-Erkennung: Standard für die Aufgaben
-- Ohne Forwarding, aber mit Erkennung: zusätzliche Stalls, Ergebnis bleibt korrekt
-- Ohne ausreichende Hazard-Behandlung: falsche Operanden
-- Ripes-5-Stage der Installation beobachten und nicht mit dem Drei-Stall-Lehrmodell vermischen
-- Processor-Tab: Datenpfad hat sich radikal verändert
-
-::: notes
-Das Standardmodell ist die fünfstufige RV32-Pipeline mit Forwarding und Hazard-Erkennung, C-Erweiterung aus. Extended zeigt mehr Steuerung. Ein Modell ohne Forwarding, aber mit Hazard-Erkennung, kann länger warten und trotzdem rechnen. Ohne ausreichende Behandlung sind falsche Ergebnisse ein Merkmal dieser Variante, kein Fehler der Standardkonfiguration. Die Menüposition ist versionsabhängig.
-
-Kontrollfrage: Darf man die Variante ohne Hazard-Erkennung als Normalfall nehmen? Nein. Register und Steuerblöcke werden identifiziert.
-:::
-
-## Das neue Wimmelbild
-
-- Vier breite Pipeline-Register (IF/ID, ID/EX, EX/MEM, MEM/WB)
-- Forwarding-Pfade: Linien von rechts zurück an die ALU-MUX
-- Hazard Unit und Forwarding Unit als eigene Boxen
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  IF -->|Reg| ID
-  ID -->|Reg| EX
-  EX -->|Reg| MEM
-  MEM -->|Reg| WB
-  MEM -.->|Bypass| EX
-  style EX fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style IF fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style ID fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style MEM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style WB fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-IF/ID, ID/EX, EX/MEM und MEM/WB sind die vier Grenzen. Die Forwarding Unit wählt Ergebnisse. Die Hazard Detection Unit erkennt nötige Wartebedingungen. Beispielports sind rd, RegWrite, der Weiterleitungswert und Hold oder Flush. Nicht jede Rückleitung ist MEM/WB. Ohne Screenshot bleibt dies ein Lehrdiagramm. Ein UI-Test liegt nicht vor.
-
-Kontrollfrage: Ist jede Rückleitung das Load-Datum? Nein. Die Historie ist die zweite Ansicht.
-:::
-
-## Das Pipeline-Tab in Ripes
-
-- Tab Pipeline: Zeit-Takt-Diagramm wie in den Folien
-- Y-Achse: Assembler-Code
-- X-Achse: Cycles
-- Blöcke IF/ID/EX/MEM/WB zeigen die Lage jedes Befehls
-
-::: notes
-Die offizielle Einführung nennt Show stage table, nicht zwingend einen Tab namens Pipeline. Während Run wird laut dieser Dokumentation keine Stufenhistorie aufgezeichnet. Clock oder ein passender Auto-Clock-Modus ist zu prüfen. Zeilen sind dynamische Maschineninstruktionen. Gehalten, gültig, Bubble und verworfen müssen an der Version abgelesen werden.
-
-Kontrollfrage: Zeichnet Run die Stage-Tabelle auf? Laut der genannten Dokumentation nein. Der erste Versuch ist eine ALU-Abhängigkeit.
-:::
-
-## Labor-Aufgabe 1: Data Hazard provozieren
-
-- Forwarding testen mit:
-
-```asm
-li  t0, 50
-li  t1, 100
-add t2, t0, t1    # Ergebnis in t2
-sub a0, t2, t0    # Abhaengigkeit von t2
-```
-
-- Clock Takt für Takt: wenn `add` in MEM und `sub` in EX
-
-::: notes
-Das Programm steht in beispiele/vl7_forwarding.s. addi t0, x0, 50 und addi t1, x0, 100 sind native Befehle. Die Kernfolge ist add t2, t0, t1 und sub a0, t2, t0. Erwartet werden t2 gleich 150 und a0 gleich 100. t0 ist x5, t1 ist x6, t2 ist x7, a0 ist x10. Die echten addi x0, x0, 0 davor und danach sind Programm-NOPs, keine Hazard-Bubbles. Der Kernzähler beginnt beim IF von add.
-
-Kontrollfrage: Ist li immer eine Instruktion? Nein, es kann expandieren. Der kritische Takt zeigt den Bypass.
-:::
-
-## Forwarding in Ripes sehen
-
-- Im kritischen Takt zum Processor-Tab
-- MUX vor dem ALU-Eingang: Forward-Steuersignal $\neq 0$?
-- Maus über Bypass-Kabel: fließt dort $150$ (`0x96`)?
-- Dann haben Sie Bypassing nachgewiesen
-
-::: notes
-Im Kernmodell ist add in Takt 4 in MEM und sub in EX. rs1 von sub braucht 150, rs2 bleibt 50. Das Ergebnis ist 100. Ein Selektor ungleich null beweist das nur zusammen mit Portname, Quelle, Datenwert und konsumierender Instruktion. Die Lehrcodes 00, 10 und 01 sind nicht die Ripes-Codes. a0 ist architektonisch erst nach dem WB von sub gleich 100.
-
-Kontrollfrage: Ist das ALU-Ergebnis schon der Registerwert? Nein. Der Load liefert sein Wort später.
-:::
-
-## Labor-Aufgabe 2: Load-Use Stall erzwingen
-
-- Daten und Code, dann:
-
-```asm
-.data
-array: .word 42
-.text
-la  s1, array
-lw  t0, 0(s1)
-add a0, t0, t0
-```
-
-- Pipeline-Tab: was passiert in Takt 4 oder 5?
-
-::: notes
-beispiele/vl7_loaduse.s legt ein Wort 42 an eine ausgerichtete Adresse. la s1, array kann mehrere Befehle erzeugen und liegt außerhalb der Kernfolge. lw t0, 0(s1) und add a0, t0, t0 ergeben t0 gleich 42 und a0 gleich 84. Beide Quellen von add brauchen das Load-Datum. Relativ: Load-EX in Takt 3, add gehalten in ID in Takt 4, add-EX in Takt 5.
-
-Kontrollfrage: Ist 0(s1) ein Immediate von vier Byte? Hier ist der Offset 0. Hold und Bubble werden getrennt.
-:::
-
-## Die NOP-Bubble identifizieren
-
-- `add` weigert sich, nach EX zu rutschen
-- Raster zeigt grauen/leeren Block: `nop` (Bubble)
-- Ein Takt Pause für den langsamen RAM
-
-::: notes
-Ein grauer Block ist nicht automatisch eine echte nop-Instruktion. IF/ID wird gehalten, ID/EX wird ungültig, der Load läuft nach MEM. Die Bubble erscheint in EX4, MEM5 und WB6. Die sichtbaren Farben prüft die verwendete Version. Der Wartezyklus folgt aus der Ergebnisverfügbarkeit, nicht aus einem pauschal langsamen RAM.
-
-Kontrollfrage: Holt die Hardware addi x0, x0, 0 als Bubble nach? Nicht als Programmbefehl. Branch verwirft statt zu halten.
-:::
-
-## Labor-Aufgabe 3: Control Hazard (Flushing)
-
-- Countdown über zehn Schritte, danach Ende:
-
-```asm
-li t0, 10
+addi t0, x0, 3
 Loop:
   addi t0, t0, -1
-  bne  t0, zero, Loop
-# hier ist t0 = 0; die Schleife ist beendet
-```
-
-- Was passiert, wenn `bne` springt und der PC zurückgeht?
-
-::: notes
-beispiele/vl7_branch.s zählt von 10 abwärts. addi t0, x0, 10 ist eine klare Maschineninstruktion. Die Schleife führt zehnmal addi und zehnmal bne aus. Neunmal wird genommen, einmal nicht. Danach ist a0 gleich 7. bne bedeutet Branch if Not Equal. Jede Iteration hat zusätzlich RAW von addi nach bne. Ein zweiter Versuch mit bereits bereiten Operanden isoliert den Kontrollfluss. Absolute Taktnummern ohne vollständigen Trace bleiben Lehrannahmen.
-
-Kontrollfrage: Wie oft wird der Branch genommen? Neunmal. Die verworfenen Einträge folgen.
-:::
-
-## Flushing in Ripes
-
-- Vordere Stufen haben Code unter der Schleife geladen
-- Ripes löscht IF/ID (durchstreichen / ungültig)
-- Falsche Befehle werden zu NOP-Bubbles — Branch Penalty live
-
-::: notes
-Die Auflösungsstufe und alle betroffenen Register prüft das gewählte Ripes-Modell. Nicht nur IF/ID zu löschen genügt als Behauptung. Ein Wrong-Path-Store darf nicht bestätigt werden. beispiele/vl7_flush.s erwartet bei Gleichheit: Speicherwort bleibt 0, t3 bleibt 0, a0 wird 7. Die verworfenen sw und addi dürfen keine bestätigte Wirkung haben. Die konkrete Penalty ist ohne UI-Test nur die Lehrmodellzahl von zwei zusätzlichen Takten. Beim letzten Not-Taken-bne der Schleife läuft der Fall-through.
-
-Kontrollfrage: Zählen verworfene Befehle als abgeschlossene Programminstruktionen? Nein. Zum Schluss wird dieselbe Arbeit umgeordnet.
-:::
-
-## Labor-Aufgabe 4: Compiler-Magie selbst gemacht
-
-- Beide Varianten enthalten dieselben drei Befehle und dieselben Endwerte
-- Nur die Reihenfolge von `addi a5, a5, 1` ändert sich
-- Ein neu erfundenes `addi` wäre ein anderes Programm
-
-```text
-Werden Sie zum Compiler: sortieren, bis keine NOPs mehr da sind.
+  bne  t0, x0, Loop
 ```
 
 ::: notes
-beispiele/vl7_schedule_a.s und vl7_schedule_b.s enthalten dieselben drei Kernbefehle. A führt lw, add, addi a5 aus. B verschiebt addi a5 zwischen lw und add. a5 ist x15 und startet bei 0. In beiden Fällen enden t0 mit 42, a0 mit 84 und a5 mit 1. A braucht im Lehrfenster acht Takte, B sieben. Eine neu eingefügte Instruktion wäre ein anderes Programm und beweist keinen Gewinn. CPI im Fenster ist 8 durch 3 gegen 7 durch 3, einschließlich Füllung. Der globale Ripes-Zähler enthält Setup und Exit.
+Die dynamische Befehlszahl $N$ zählt tatsächlich abgeschlossene Maschineninstruktionen einer betrachteten Ausführung. Eine statische Liste zählt dagegen die verschiedenen Befehlspositionen im Programm. Im RISC-V-Code setzt addi, Add Immediate, das Register t0 zunächst auf 3; x0 liefert immer null. Die Schleife verringert t0 dreimal um eins. bne, Branch if Not Equal, springt zweimal zurück, solange t0 ungleich null ist, und fällt beim dritten Vergleich durch. Es schließen daher $1+3+3=7$ Maschineninstruktionen ab. Diese Zählung beschreibt die Befehlssatzwirkung, unabhängig von der später betrachteten Pipeline. t0 ist ein temporäres Register, hier x5; Loop ist eine Sprungmarke und selbst keine Instruktion.
 
-Kontrollfrage: Darf man nur B um addi erweitern? Dann ist der Vergleich nicht mehr dasselbe Programm. Die Zusammenfassung trennt Nutzen und Kosten.
+Ein Assembler-Pseudobefehl wie la, Load Address, wird vom Assembler in echte Maschinenbefehle umgesetzt. Seine Quellzeile ist deshalb keine verlässliche Zähleinheit. Auch spekulativ geholte, später verworfene Instruktionen erhöhen $N$ nicht; sie können aber Zeit kosten. Eine Hardware-Bubble ist ein ungültiger Pipeline-Eintrag und ebenfalls kein zusätzlich abgeschlossener Programmbefehl.
 :::
 
-## Zusammenfassung Einheit 7
+## Drei Größen bestimmen die Laufzeit
 
-- Pipelining kann den Durchsatz erhöhen; die Einzellatenz hängt vom Modell ab
-- Lehrbeispiel: ein Befehl 820 ps im Single Cycle, 1350 ps in der Pipeline
-- Für 20 Befehle Speedup etwa 2,53, nicht Faktor 5
-- Forwarding, Stall, Scheduling, Flush und Prediction haben je einen eigenen Anwendungsbereich
+$$t_\mathrm{CPU}=N\cdot \mathrm{CPI}\cdot T,\qquad
+\mathrm{CPI}=\frac{C}{N},\qquad f=\frac{1}{T}$$
 
-```text
-Pipelining-Verständnis trennt Durchsatz von Einzellatenz.
-```
+- $N$: dynamisch abgeschlossene Instruktionen
+- $C$: benötigte Taktzyklen
+- $T$: Taktperiode, $f$: Taktfrequenz
+- Gleiche Aufgabe und gleiche Zählgrenzen vergleichen
 
 ::: notes
-Pipelining überlappt Instruktionen und kann den Durchsatz erhöhen. Die Einzellatenz kann steigen: 820 gegen 1350 Pikosekunden. Für 20 Befehle ist der Speedup etwa 2,53. Forwarding bedient bereite ALU-Ergebnisse. Ein Load-Use-Stall wartet auf das Wort. Scheduling verschiebt zulässige Arbeit. Flush verwirft falsche Folgebefehle. Prediction reduziert Fehlkosten nur passend zu ihrem Modell.
+CPU bedeutet Central Processing Unit, die zentrale Verarbeitungseinheit. $t_\mathrm{CPU}$ ist ihre betrachtete Ausführungszeit. $N$ ist die dynamische Zahl abgeschlossener Maschineninstruktionen. $C$ ist die Zahl der dafür benötigten Takte. CPI, ausgeschrieben Cycles per Instruction, bezeichnet die mittleren Takte pro Instruktion und ergibt sich aus $C/N$. $T$ ist die Taktperiode in Sekunden; die Taktfrequenz $f$ in Hertz ist ihr Kehrwert. Damit folgt auch unmittelbar $t_\mathrm{CPU}=C\cdot T$.
 
-Kontrollfrage: Ändert Pipelining die Latenz nie? Im Waschsalon nicht, im CPU-Lehrbeispiel schon. Die letzte Folie prüft das Verständnis.
+Im Lehrmodell zählen wir vom Beginn des ersten Fetch bis zum Ende der letzten Abschlussstufe, einschließlich Füllung, Wartezyklen und Leerung. Ein anderer Messbereich kann einen anderen mittleren CPI liefern. Höhere Frequenz allein beweist keine kürzere Laufzeit: Eine Variante mit kürzerem Takt kann mehr Takte benötigen. Änderungen der Befehlszahl, des mittleren CPI und der Periode müssen gemeinsam betrachtet werden. Bei einem System mit Betriebssystem wären Wartezeiten außerhalb dieses Prozessorausschnitts gesondert zu behandeln.
 :::
 
-## Q&A und Hands-On
+## Rechnen: Ein kürzerer Takt genügt nicht
 
-- Ripes: 5-Stage einstellen
-- Hazard-Szenarien aus den Folien nachbauen
-- Ripes fängt nicht jede falsche Modellwahl ab
-- Ergebnisse nur in der Konfiguration mit Forwarding und Hazard-Erkennung erwarten
+Didaktisches Beispiel für dieselbe Aufgabe, $N=1000$:
 
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+| Variante | CPI | Taktperiode | Laufzeit |
+|:---|:---:|:---:|:---:|
+| A | $1$ | $2\,\mathrm{ns}$ | $2\,\mathrm{\mu s}$ |
+| B | $1{,}5$ | $1\,\mathrm{ns}$ | $1{,}5\,\mathrm{\mu s}$ |
 
-graph LR
-  Theorie[Hazards] --> Labor[Ripes 5-Stage]
-  Labor --> Analyse[Bubbles und Bypasses]
-  Analyse --> Win[Verstaendnis]
-  style Win fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Theorie fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Labor fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Analyse fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
+$$S=\frac{t_A}{t_B}\approx 1{,}33$$
 
 ::: notes
-Q&A bedeutet Questions and Answers, Hands-On die praktische Übung. Durchsatz ist die Fertigstellungsrate, Latenz die Dauer eines Auftrags. Ideale fünf Stufen brauchen N plus 4 Takte. Beim Forwarding gewinnt der jüngere passende Produzent. Eine Load-Adresse ist nicht das Wort. Eine Bubble ist kein addi x0, x0, 0 aus dem Programm. Faires Scheduling behält dieselben Befehle und Ergebnisse. Die Programme liegen unter beispiele/vl7_forwarding.s, vl7_loaduse.s, vl7_branch.s, vl7_flush.s sowie vl7_schedule_a.s und vl7_schedule_b.s. Der Simulator garantiert korrekte Ergebnisse nur in der passenden Konfiguration. Die folgende Einheit wird hier nicht vorweg behauptet.
+CPI bedeutet Cycles per Instruction, die mittlere Zahl benötigter Takte je abgeschlossener Instruktion. In beiden Varianten führen wir für dieselbe Aufgabe $N=1000$ Maschineninstruktionen aus. Die angenommenen CPI-Werte enthalten bereits alle Kosten des gewählten Messbereichs. Eine Nanosekunde, ns, entspricht $10^{-9}$ Sekunden; eine Mikrosekunde, $\mu s$, entspricht $10^{-6}$ Sekunden.
 
-Kontrollfrage: Wie viele Takte braucht eine ideale Folge von N Befehlen? N plus 4. Damit sind Durchsatz, Wartezyklen und falsche Pfade unterscheidbar.
+A braucht $1000\cdot1\cdot2\,\mathrm{ns}=2000\,\mathrm{ns}=2\,\mathrm{\mu s}$. B braucht $1000\cdot1{,}5\cdot1\,\mathrm{ns}=1500\,\mathrm{ns}=1{,}5\,\mathrm{\mu s}$. Der Speedup $S$, also Beschleunigungsfaktor, ist die alte durch die neue Laufzeit: $2/1{,}5=4/3\approx1{,}33$. Obwohl der Takt doppelt so häufig läuft, ist die Aufgabe nur etwa ein Drittel schneller. Die zusätzlichen Takte dämpfen den Gewinn. Diese Werte sind eine Modellrechnung, kein Hardwarevergleich. Nun untersuchen wir, wo Überlappung die benötigte Zeit tatsächlich verkürzt.
+:::
+
+## Vier Stationen, vier Aufträge
+
+- Vier Körbe, je vier Arbeitsschritte mit 30 Minuten
+- Jede Station bearbeitet höchstens einen Korb gleichzeitig
+- Kein zusätzlicher Aufwand zwischen den Stationen
+- Ohne Überlappung: $4\cdot4\cdot30\,\mathrm{min}=8\,\mathrm{h}$
+
+::: notes
+Die Waschsalonmetapher trennt erstmals Auftragsdauer und Gesamtleistung. Ein Korb wird gewaschen, getrocknet, gefaltet und eingeordnet. Jede Station braucht als didaktische Annahme 30 Minuten und besitzt eigene Kapazität; auch Falten und Einordnen können gleichzeitig mit Waschen stattfinden. Eine Station kann währenddessen keinen zweiten Korb bearbeiten. Transportzeiten und zusätzliche Pufferkosten fehlen bewusst.
+
+Ohne Überlappung durchläuft der erste Korb alle vier Stationen, bevor der zweite beginnt. Ein Korb braucht $4\cdot30=120$ Minuten, also zwei Stunden. Vier Körbe brauchen 480 Minuten oder acht Stunden. Das ist die Latenz eines Korbs multipliziert mit der Auftragszahl. Die einzelnen Stationen warten während der übrigen Arbeitsschritte. Startet der nächste Korb dagegen, sobald die erste Station frei ist, nutzen wir mehrere Stationen gleichzeitig, ohne eine einzelne Bearbeitung kürzer zu machen.
+:::
+
+## Überlappung im Zeitdiagramm
+
+![](../assets/images/vl7-waschsalon.svg){.nostretch fig-alt="Vier Körbe durchlaufen vier Stationen überlappend in sieben Halbstunden"}
+
+::: notes
+Die horizontale Achse zeigt sieben Zeitabschnitte von jeweils 30 Minuten, also bis 3,5 Stunden. Jede Zeile beschreibt einen Korb. W steht für Waschen, T für Trocknen, F für Falten und S für das Einordnen in den Schrank. Die grauen Kästen markieren normale Bearbeitung; rote Konturen markieren die Fertigstellungen. Jeder Korb durchläuft vier aufeinanderfolgende Abschnitte. Der zweite Korb beginnt einen Abschnitt später als der erste und endet entsprechend später.
+
+Korb 1 ist nach zwei Stunden fertig, Korb 4 nach 3,5 Stunden. Damit beträgt der Beschleunigungsfaktor für genau vier Körbe $8/3{,}5\approx2{,}29$. Nach der ersten Fertigstellung endet alle 30 Minuten ein weiterer Korb. Diese stationäre Rate ist viermal so hoch wie die sequenzielle Rate von einem Korb je zwei Stunden. Für die endliche Folge beträgt der Gewinn trotzdem nur etwa 2,29, weil das Fließband zuerst gefüllt und zuletzt geleert wird.
+:::
+
+## Latenz und Durchsatz getrennt beantworten
+
+| Größe | Bedeutung | Waschsalon |
+|:---|:---|:---|
+| Latenz | Dauer eines einzelnen Auftrags | $2\,\mathrm{h}$ |
+| Stationärer Durchsatz | Abschlüsse je Zeit bei laufendem Band | $2$ Körbe je Stunde |
+| Gesamtzeit | Dauer der betrachteten Folge | $3{,}5\,\mathrm{h}$ |
+
+Eine Prozessorpipeline kann die Einzellatenz auch erhöhen.
+
+::: notes
+Latenz misst die Dauer vom Start bis zum Abschluss eines einzelnen Auftrags. Durchsatz misst die Zahl abgeschlossener Aufträge je Zeiteinheit. Stationär bedeutet hier, dass das Band gefüllt ist und fortgesetzt Aufträge eingehen. Die Gesamtzeit einer endlichen Folge enthält zusätzlich die Füllung und Leerung. Im Waschsalon braucht jeder Korb unverändert zwei Stunden; nach der Füllung kommen zwei Körbe je Stunde heraus. Vier Körbe enden nach 3,5 Stunden.
+
+Daraus folgt keine allgemeine Zusage, dass eine Prozessorpipeline die Einzellatenz unverändert lässt. Registergrenzen brauchen Zeit, und alle Stufen müssen im gemeinsamen Taktplan voranschreiten. Ungleiche Stufen führen zu Warteanteilen in kürzeren Stufen. Ein einzelner Befehl kann deshalb länger benötigen, obwohl viele Befehle insgesamt schneller fertig werden. Die nächste Rechnung quantifiziert genau diesen Unterschied für den Datenpfad.
+:::
+
+## Angenommene Laufzeiten des Datenpfads
+
+![](../assets/images/vl7-stufenzeiten.svg){.nostretch fig-alt="Stufenzeiten 200, 100, 150, 250 und 100 ps mit je 20 ps Registeroverhead"}
+
+::: notes
+Die Abbildung zeigt fünf reine Logiklaufzeiten: IF, Instruction Fetch oder Befehlsholen, 200 Pikosekunden; ID, Instruction Decode oder Decodieren und Registerlesen, 100 Pikosekunden; EX, Execute oder Rechnen, 150 Pikosekunden; MEM, Memory Access oder Datenzugriff, 250 Pikosekunden; WB, Write Back oder Rückschreiben, 100 Pikosekunden. ps bedeutet Pikosekunde, also $10^{-12}$ Sekunden. Grau zeigt Logikzeit; der rote kurze Abschnitt zeigt den effektiven Registeroverhead von 20 ps. Dieser fasst Ausgangsverzögerung und Übernahmebedingungen eines Taktpfads zusammen.
+
+Im Single-Cycle-Modell läuft der angenommene längste relevante Pfad durch alle fünf Bereiche: $200+100+150+250+100+20=820\,\mathrm{ps}$. In der Pipeline begrenzt die längste Stufe den Takt: $\max(200,100,150,250,100)+20=270\,\mathrm{ps}$. Der Registeroverhead fällt je Taktpfad an, nicht zusätzlich viermal im Single-Cycle-Takt. Alle Zahlen sind erfundene Lehrwerte. Der tatsächliche kritische Pfad ist ein vollständiger Signalweg und hängt auch von neuer Steuer- und Weiterleitungslogik ab.
+:::
+
+## Ein Befehl kann länger unterwegs sein
+
+$$L_\mathrm{single}=820\,\mathrm{ps},\qquad
+L_\mathrm{pipe}=5\cdot270\,\mathrm{ps}=1350\,\mathrm{ps}$$
+
+- Single Cycle: ein langer Takt
+- Pipeline: fünf kürzere Takte
+- Der Vorteil muss aus mehreren überlappten Befehlen entstehen
+
+::: notes
+$L$ bezeichnet die Latenz eines isolierten Befehls vom Beginn des Befehlsholens bis zum Ende seiner Abschlussstufe. Der Index single bezeichnet das Single-Cycle-Modell, pipe das Pipeline-Modell. ps bedeutet Pikosekunde. Für den angenommenen Single-Cycle-Takt von 820 ps beträgt die betrachtete Latenz 820 ps. In der fünfstufigen Pipeline benötigt derselbe Befehl ohne Wartezyklen fünf Perioden von je 270 ps, also 1350 ps.
+
+Die Pipeline erhöht hier die Einzellatenz um 530 ps. Sie muss dafür nicht fünfmal so viel Logik ausführen: Kürzere Stufen warten innerhalb ihrer gemeinsamen Periode, und Registergrenzen verursachen Aufwand. Daraus folgt nicht, dass die Pipeline insgesamt schlechter ist. Sobald weitere Befehle überlappen, kann bereits nach jedem kurzen Takt eine weitere Instruktion abschließen. Die isolierte Latenz und die stationäre Abschlussrate beantworten verschiedene Fragen.
+:::
+
+## Warum $N+4$ Takte?
+
+Für eine leere fünfstufige Pipeline ohne Zusatzzyklen:
+
+$$C=N+5-1=N+4,\qquad \mathrm{CPI}_\mathrm{endlich}=1+\frac{4}{N}$$
+
+- Erster Abschluss nach fünf Takten
+- Danach ein weiterer Abschluss je Takt
+- Füllung und Leerung gemeinsam einmal berücksichtigen
+
+::: notes
+$N$ ist die Zahl abgeschlossener Maschineninstruktionen, $C$ die dafür benötigte Taktzahl. CPI bedeutet Cycles per Instruction, mittlere Takte je Instruktion. Die erste Instruktion durchläuft fünf Stufen und endet in Takt 5. Die übrigen $N-1$ Instruktionen enden ohne Zusatzkosten jeweils einen Takt später. Insgesamt ergeben sich daher $5+(N-1)=N+4$ Takte.
+
+Man darf nicht zusätzlich vier Takte Füllung und noch einmal vier Takte Leerung addieren. Beide Randwirkungen sind bereits in dieser Gesamtzählung enthalten. Für drei Instruktionen sind es sieben Takte; für zwanzig sind es 24. Der endliche CPI beträgt $24/20=1{,}2$. Der oft genannte ideale CPI von 1 ist hier ein stationärer Grenzwert langer Folgen. Abhängigkeiten, Fehlvorhersagen und längere Speicherzugriffe würden Zusatzzyklen erzeugen; sie sind in dieser Folie ausdrücklich ausgeschlossen.
+:::
+
+## Vergleich für zwanzig Instruktionen
+
+$$t_\mathrm{single}=20\cdot820\,\mathrm{ps}=16400\,\mathrm{ps}$$
+
+$$t_\mathrm{pipe}=24\cdot270\,\mathrm{ps}=6480\,\mathrm{ps}$$
+
+$$S=\frac{16400}{6480}\approx2{,}53$$
+
+Für sehr große $N$: $S\rightarrow820/270\approx3{,}04$.
+
+::: notes
+$t$ bezeichnet die Gesamtzeit der betrachteten Folge, $S$ den Speedup oder Beschleunigungsfaktor. ps bedeutet Pikosekunde. Alle zwanzig Instruktionen schließen ab, und es gibt in dieser Rechnung keine Zusatzzyklen. Im Single-Cycle-Modell ergibt sich $20\cdot820=16400$ ps. Die anfangs leere Pipeline benötigt $20+4=24$ Takte und damit $24\cdot270=6480$ ps. Das Verhältnis ist ungefähr 2,5309 und wird auf 2,53 gerundet.
+
+Für eine allgemeine Folge lautet das Verhältnis $S(N)=N\cdot820/((N+4)\cdot270)$. Wenn $N$ sehr groß wird, wird der Randanteil $4/N$ klein. Der Grenzwert ist daher $820/270\approx3{,}04$, nicht fünf. Der Idealwert fünf bräuchte unter anderem fünf gleich lange Stufen, vernachlässigbaren Registeraufwand und eine lange Folge ohne Zusatzzyklen. Die tatsächliche Stufenzahl allein garantiert keinen solchen Gewinn.
+:::
+
+## Kurzaufgabe: Was sagt CPI allein?
+
+Zwei Ausführungen derselben Aufgabe:
+
+- A: $\mathrm{CPI}=1$, $T=820\,\mathrm{ps}$
+- B: $\mathrm{CPI}=1{,}2$, $T=270\,\mathrm{ps}$
+- Beide schließen zwanzig Instruktionen ab
+
+Welche Ausführung ist schneller? Begründen Sie Ihre Antwort.
+
+::: notes
+CPI bedeutet Cycles per Instruction, die mittlere Taktzahl pro abgeschlossener Instruktion. $T$ ist die Taktperiode, ps eine Pikosekunde. Die Aufgabe übernimmt bewusst das bisherige Zahlenmodell. Variante A ist der Single-Cycle-Fall; Variante B enthält die Füllung und Leerung der fünfstufigen Pipeline bereits in ihrem endlichen CPI.
+
+A benötigt $20\cdot1\cdot820=16400$ ps, B $20\cdot1{,}2\cdot270=6480$ ps. B ist deshalb schneller, obwohl ihr CPI größer ist. Die kleinere Taktperiode überwiegt. Wer die Füllung jetzt nochmals addiert, zählt sie doppelt. Wer nur CPI vergleicht, ignoriert die Periodendauer. Diese begründete Rechnung ist das Muster für eine Klausurantwort. Damit ist der mögliche Nutzen geklärt; nun müssen wir erklären, wie Daten und Steuerung mehrerer Instruktionen gleichzeitig korrekt zugeordnet bleiben.
+:::
+
+# 2. Die fünf Stufen und ihre Register
+
+::: notes
+Die Zeitrechnung nimmt an, dass mehrere Instruktionen gleichzeitig unterschiedliche Arbeitsschritte ausführen können. Diese Überlappung erfordert gespeicherte Zwischenzustände. Der alte Datenpfad wird deshalb durch Registergrenzen in Taktstufen geteilt.
+
+Eine Mikroarchitektur ist die konkrete interne Umsetzung eines Befehlssatzes. RISC-V schreibt die hier gewählten fünf Stufen nicht vor. Wir untersuchen, welche Werte an einer Grenze gespeichert werden und weshalb Daten, Zielregisternummer und Steuerung derselben Instruktion zusammenbleiben müssen. Erst diese Zuordnung macht die schnellere Taktfolge funktional korrekt. Danach kann ein Zeitdiagramm sowohl die Belegung jeder Stufe als auch die Lage jedes Befehls zeigen.
+:::
+
+## Aufgaben der fünf Stufen
+
+| Stufe | Aufgabe |
+|:---|:---|
+| IF — Instruction Fetch | Maschinenbefehl holen |
+| ID — Instruction Decode | Decodieren, Register lesen, Steuerung bilden |
+| EX — Execute | Rechnen, Adresse oder Branch bestimmen |
+| MEM — Memory Access | Gegebenenfalls Daten lesen oder schreiben |
+| WB — Write Back | Gegebenenfalls Register schreiben, Abschluss |
+
+::: notes
+IF, Instruction Fetch, holt den Maschinenbefehl an der Adresse des Program Counter, kurz PC. ID, Instruction Decode, erkennt die Operation, liest Quellregister und erzeugt die passenden Steuersignale. EX, Execute, führt die Rechnung aus: Eine Addition erzeugt einen Wert, ein Load oder Store eine Datenadresse, ein Branch die Sprungentscheidung und Zieladresse. MEM, Memory Access, greift bei Speicherbefehlen auf den Datenspeicher zu. WB, Write Back, schließt den Befehl ab und schreibt gegebenenfalls ein Register.
+
+Nicht jeder Befehl nutzt jede Funktion. add durchläuft MEM ohne Datenzugriff. sw hat keine Register-Schreibwirkung in WB; seine Speicherwirkung liegt in MEM. Trotzdem durchlaufen die Einträge im Modell denselben Stufenplan. WB als Abschluss zu zählen ist daher nicht gleichbedeutend mit einem aktiven Registerschreibport. Diese Unterscheidung verhindert falsche Befehlszählungen.
+:::
+
+## Register machen aus Bereichen Taktstufen
+
+![](../assets/images/vl7-registergrenzen.svg){.nostretch fig-alt="Fünf Funktionsbereiche mit vier Registergrenzen und gemeinsamem Takt"}
+
+::: notes
+Die Abbildung wird von links nach rechts gelesen. IF heißt Instruction Fetch, ID Instruction Decode, EX Execute, MEM Memory Access und WB Write Back: Befehlsholen, Decodieren, Rechnen, Datenzugriff und Rückschreiben. Die vier schmalen senkrechten Register sind IF/ID, ID/EX, EX/MEM und MEM/WB. Der Schrägstrich benennt jeweils die beiden benachbarten Stufen. Die grauen orthogonalen Pfeile zeigen vorwärts übernommene Informationspakete. Die gemeinsame Taktlinie unterhalb der Register zeigt, dass die Grenzen gleichzeitig aktualisiert werden.
+
+Ein Register besteht hier aus vielen flankengetriggerten Speicherelementen. Es hält die Ausgänge der vorherigen Stufe während der Verarbeitung in der nächsten Stufe stabil. Ohne diese Speicherung wäre das Zeichnen von fünf Bereichen noch keine Pipeline. Die Stufen sind auch keine nacheinander geöffneten Schleusen: An einer Flanke übernehmen alle freigegebenen Register ihren jeweiligen Eingangszustand.
+:::
+
+## Daten und Steuersignale gehören zusammen
+
+Für einen Store im Paket:
+
+- Zieladresse und zu schreibender Registerwert
+- `MemWrite` als Speicher-Schreibfreigabe
+- Zugehöriger Befehls-PC und Gültigkeit
+- Freigabe aus ID wandert bis zum Store in MEM
+
+::: notes
+Ein Store schreibt einen Registerwert an eine berechnete Datenadresse. MemWrite heißt Memory Write und ist die Speicher-Schreibfreigabe. ID, Instruction Decode, bildet diese Freigabe beim Decodieren. EX, Execute, berechnet die Adresse. MEM, Memory Access, benötigt die Freigabe erst zwei Stufen nach ID. Dazwischen wandert sie zusammen mit dem Befehl über ID/EX und EX/MEM. Der Befehls-PC, Program Counter, bezeichnet die Adresse dieser Instruktion und darf nicht mit der inzwischen weitergelaufenen Fetch-Adresse verwechselt werden.
+
+Für einen Registerschreiber müssen ebenso RegWrite, die Register-Schreibfreigabe, und rd, Destination Register oder Zielregisternummer, bis zum passenden Rückschreiben mitreisen. Gültigkeit kennzeichnet, ob der Eintrag überhaupt eine aktive Instruktion repräsentiert. Ein ungültiger Eintrag darf weder Register noch Speicher schreiben und keinen Sprung auslösen. Würde MEM dagegen das gerade in ID erzeugte MemWrite benutzen, könnte ein jüngerer Store den Datenweg einer älteren Addition zum Schreiben freigeben. Die zeitliche Zuordnung ist deshalb genauso wichtig wie der richtige Bitwert.
+:::
+
+## Ein Zeitdiagramm in zwei Richtungen lesen
+
+![](../assets/images/vl7-ideal-raster.svg){.nostretch fig-alt="Drei unabhängige Instruktionen durchlaufen IF bis WB in sieben Takten"}
+
+::: notes
+IF, Instruction Fetch, ID, Instruction Decode, EX, Execute, MEM, Memory Access, und WB, Write Back, sind die fünf Bearbeitungsstufen. Jede Zeile in der Abbildung steht für eine dynamische Instruktion I1, I2 oder I3. Die horizontale Achse zählt relative Takte vom ersten Fetch an. Die drei Instruktionen sind unabhängig; alle nötigen Werte sind vor dem Start bereit.
+
+Lesen Sie zunächst eine Zeile: I1 wird in Takt 1 geholt und endet nach WB in Takt 5. Ihre Latenz umfasst fünf Takte. Lesen Sie dann eine Spalte: In Takt 3 steht I1 in EX, I2 in ID und I3 in IF. Verschiedene Stufen bearbeiten verschiedene Instruktionen gleichzeitig. Die rot umrandeten WB-Felder enden in Takten 5, 6 und 7 und markieren die Abschlüsse. Drei Befehle brauchen somit sieben Takte. Eine leere Zelle bedeutet keinen Eintrag dieser Zeile; sie beweist keine elektrische Abschaltung einer Hardwarekomponente.
+:::
+
+## Drei Arten von Konflikten
+
+| Konflikt | Frage | Beispiel / Behandlung |
+|:---|:---|:---|
+| Structural Hazard | Reicht die Ressource gleichzeitig? | Ein Speicherport / getrennte Zugriffe |
+| Data Hazard | Ist der benötigte Wert bereit? | Registerabhängigkeit / Forwarding oder Stall |
+| Control Hazard | Gehört die Folge zum richtigen Pfad? | Branch / Vorhersage und Flush |
+
+::: notes
+Ein Hazard ist ein Konflikt, der den planmäßigen korrekten Fortschritt gefährdet. Structural Hazard bezeichnet einen Ressourcenkonflikt: Ein gemeinsamer einportiger Speicher kann nicht im selben Takt einen Befehl holen und ein Datenwort lesen. Getrennte Zugriffe oder passende Mehrportressourcen lösen dieses Problem. Ein gemeinsamer Adressraum allein erzwingt noch keinen solchen Konflikt.
+
+Ein Data Hazard betrifft einen benötigten Datenwert, der noch nicht regulär verfügbar ist. Forwarding leitet ihn weiter, wenn er bereits berechnet wurde; ein Stall hält den Verbraucher fest, wenn er noch fehlt. Ein Control Hazard betrifft die Unsicherheit über den nächsten Befehlsfluss, etwa bei einem bedingten Sprung. Eine Vorhersage ermöglicht vorläufigen Fetch; ein Flush verwirft falsche Folgearbeit. Nicht jeder Hazard kostet einen Wartezyklus. Unser Modell nimmt ausreichende Speicher- und Registerports an und konzentriert sich im Folgenden auf Daten- und Kontrollabhängigkeiten.
+:::
+
+# 3. Registerabhängigkeiten und Forwarding
+
+::: notes
+Die bislang gezeigten Instruktionen waren unabhängig. Nun schreibt eine ältere Instruktion einen Wert, den eine jüngere benötigt. Die Programmwirkung legt fest, welchen Wert der Leser erhalten muss. Durch Überlappung kann der Leser jedoch beginnen, bevor das reguläre Registerschreiben abgeschlossen ist.
+
+Read After Write, kurz RAW, bezeichnet diese Leser-nach-Schreiber-Abhängigkeit. Sie ist kein elektrischer Zusammenstoß. Zunächst bestimmen wir Produzent, Verbraucher und den richtigen Datenwert. Anschließend vergleichen wir Warten und Weiterleitung. Forwarding, auch Bypassing genannt, ist eine zusätzliche Datenverbindung, die ein bereits verfügbares Ergebnis vor dem regulären Registerlesen nutzbar macht.
+:::
+
+## Ein konkretes Produzent-Verbraucher-Paar
+
+Anfang: `t1 = 7`, `t2 = 3`, `t4 = 4`, alter `t0 = 99`.
+
+```asm
+add t0, t1, t2
+sub t3, t0, t4
+```
+
+$$t0=7+3=10,\qquad t3=10-4=6$$
+
+Die Quelle `t0` muss den neuen Wert liefern.
+
+::: notes
+Der RISC-V-Befehl add t0, t1, t2 addiert die Inhalte von t1 und t2 und schreibt das Ergebnis nach t0. sub t3, t0, t4 bildet danach die Differenz und schreibt t3. Die Namen t0, t1, t2, t3 und t4 bezeichnen temporäre Register, hier x5, x6, x7, x28 und x29. Ihre Anfangswerte sind ausdrücklich angegeben; die Folge ist ein isolierter Lehrausschnitt ohne Initialisierung oder Programmabschluss.
+
+t0 ist das Ziel des ersten und die erste Quelle des zweiten Befehls. Die Abhängigkeit heißt RAW, Read After Write. Die sequenzielle Wirkung verlangt zunächst $7+3=10$ und dann $10-4=6$. Verwendete sub den alten Wert 99, entstünde fälschlich 95. Wir vergleichen also keine gleichen Registernummern als Datenwerte: Die Nummer x5 identifiziert die Quelle, der benötigte Datenwert ist 10. Diese Trennung ist die Grundlage der Hardwareerkennung.
+:::
+
+## Der ungeänderte Ablauf würde zu früh lesen
+
+| Befehl | 1 | 2 | 3 | 4 | 5 | 6 |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| `add` | IF | ID | EX | MEM | WB | |
+| `sub` | | IF | ID | EX | MEM | WB |
+
+- `sub` liest in ID von Takt 3 zunächst den alten Registerwert
+- `add` schreibt erst in WB von Takt 5
+- Das Problem betrifft den Operandenwert, nicht die Befehlsreihenfolge
+
+::: notes
+IF steht für Instruction Fetch, ID für Instruction Decode, EX für Execute, MEM für Memory Access und WB für Write Back. Das Raster zeigt den ungehaltenen Stufenplan. add rechnet in EX von Takt 3 und schreibt t0 in WB von Takt 5. sub liest t0 schon in ID von Takt 3 und würde ohne weitere Behandlung in EX von Takt 4 mit dem veralteten Wert rechnen.
+
+Die Instruktionen überholen sich dabei nicht. In order bedeutet, dass die jüngere Instruktion hinter der älteren bleibt. Der Fehler entstünde allein durch zu frühen Datenzugriff. Im Zahlenbeispiel sind t0 und t3 die beteiligten temporären Register: t0 soll 10 statt 99 liefern, t3 soll 6 statt 95 erhalten. Ein korrektes Pipeline-Modell verhindert diese falsche Wirkung. Entweder wartet der Verbraucher auf das Registerschreiben, oder er erhält das bereits berechnete Ergebnis über einen zusätzlichen Weg.
+:::
+
+## Warten ohne Forwarding
+
+Im Kursmodell wird der neue Registerwert erst im Folgetakt lesbar:
+
+| Befehl | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `add` | IF | ID | EX | MEM | WB | | | | |
+| `sub` | | IF | ID | ID hält | ID hält | ID liest | EX | MEM | WB |
+
+Drei Zusatzzyklen. Bei Schreiben und Lesen im selben Takt wären es zwei.
+
+::: notes
+Forwarding heißt Weiterleitung eines Werts vor dem regulären Registerzugriff. Hier fehlt diese Verbindung; eine Hazard-Erkennung hält stattdessen den Verbraucher fest. IF ist Instruction Fetch, ID Instruction Decode, EX Execute, MEM Memory Access und WB Write Back. Im Raster bleibt sub in ID, während add weiterläuft und t0 in Takt 5 schreibt. Nach der ausdrücklich vereinbarten Registerbankkonvention kann sub den neuen Wert erst in ID von Takt 6 lesen. Es rechnet dann in Takt 7 und endet in Takt 9. Gegenüber dem ungehaltenen Abschluss in Takt 6 sind das drei Zusatzzyklen.
+
+Das ist eine Modellannahme. Eine Registerbank, die innerhalb eines Takts zuerst schreibt und danach denselben Wert liest, könnte sub bereits in ID von Takt 5 versorgen; dann wären es zwei Zusatzzyklen. Auch ein zusätzlicher Rückweg zum Registerleseeingang würde das Modell verändern. Fehlendes Forwarding bedeutet mit ausreichender Erkennung längeres Warten, nicht zwangsläufig ein falsches Ergebnis. Die nächste Frage lautet, wann das Ergebnis 10 tatsächlich erstmals bereitsteht.
+:::
+
+## Das Ergebnis existiert schon vor WB
+
+![](../assets/images/vl7-forwarding-raster.svg){.nostretch fig-alt="add berechnet 10 in EX von Takt 3, sub erhält sie in EX von Takt 4 aus EX/MEM"}
+
+::: notes
+IF, Instruction Fetch, ID, Instruction Decode, EX, Execute, MEM, Memory Access, und WB, Write Back, sind die Stufen im Zeitraster. Die obere Zeile ist add, die untere sub. Die horizontale Achse zählt relative Takte. Der rote orthogonale Pfeil verbindet die Berechnung des Ergebnisses 10 in EX von Takt 3 mit dessen Nutzung in EX von Takt 4. An der dazwischenliegenden Flanke wurde das Ergebnis im Register EX/MEM gespeichert.
+
+sub braucht nicht den alten in ID gelesenen t0-Wert zu verwenden. Ein Multiplexer vor dem Recheneingang ersetzt ihn durch den passenden weitergeleiteten Wert. Mit t4 gleich 4 berechnet sub deshalb $10-4=6$ ohne zusätzlichen Wartezyklus. t0 und t4 sind temporäre Register. Das spätere Write Back bleibt erforderlich, damit der reguläre Registerzustand stimmt. Die Weiterleitung transportiert den Wert von einer früheren Berechnung zu einer späteren; sie ist keine Rückreise in der Zeit.
+:::
+
+## Registerwerte vor dem Recheneingang
+
+![](../assets/images/vl7-forwarding-pfade.svg){.nostretch fig-alt="ID/EX, EX/MEM und MEM/WB liefern wählbare Registerwerte an einen Multiplexer vor der ALU"}
+
+::: notes
+Die Abbildung zeigt einen der Registeroperandenwege, nicht den gesamten Prozessor. ID bedeutet Instruction Decode, EX Execute, MEM Memory Access und WB Write Back. Das Register ID/EX liefert den regulär gelesenen Wert. EX/MEM hält das Ergebnis eines direkt vorausgehenden Rechenbefehls. MEM/WB hält den tatsächlichen Rückschreibwert einer weiter vorausgehenden Instruktion, bei einem Load also das geladene Wort. Die grauen orthogonalen Leitungen enden am MUX, Multiplexer, der eine Quelle auswählt. Der rote Weg hebt das direkte Forwarding hervor. ALU bedeutet Arithmetic Logic Unit, die arithmetisch-logische Recheneinheit.
+
+Das Schema gilt getrennt für die benutzten Registerquellen rs1 und rs2, Source Register 1 beziehungsweise Source Register 2. Beim zweiten Recheneingang entscheidet ALUSrc, Arithmetic Logic Unit Source, danach noch zwischen Registerwert und Immediate, der codierten Konstante. Forwarding ersetzt also keinen Immediate. Bei einem Store bleibt der zu schreibende Registerwert ein eigener Datenweg; er darf nicht mit dem Adressoffset verwechselt werden. Selektorcodes sind interne Konventionen und werden hier nicht als Ripes-Portwerte behauptet.
+:::
+
+## Wann darf ein Ergebnis weitergeleitet werden?
+
+Für jede tatsächlich benutzte Registerquelle prüfen:
+
+1. Produzent ist gültig und hat `RegWrite = 1`
+2. Sein `rd` ist ungleich `x0`
+3. Sein `rd` passt zur Quellenregisternummer
+4. Das benötigte Ergebnis ist rechtzeitig verfügbar
+5. Kein jüngerer passender Produzent hat Vorrang
+
+::: notes
+Produzent heißt die ältere Instruktion, die das Registerergebnis erzeugt. RegWrite ist die Register-Schreibfreigabe; rd bedeutet Destination Register, die Zielregisternummer. x0 ist das feste Nullregister und verwirft Registerschreibversuche. Quellenregisternummern heißen rs1 und rs2, Source Register 1 beziehungsweise Source Register 2. Verglichen werden ihre fünf Bit breiten Nummern, nicht die 32-Bit-Inhalte.
+
+Jede Bedingung verhindert einen eigenen Fehler. Ein ungültiger Eintrag oder ein Store ohne Registerschreiben liefert kein neues Registerergebnis. Ein Rechenversuch mit Ziel x0 darf dessen sichtbare Null nicht durch einen Zwischenwert ersetzen. Eine unbenutzte Feldposition, etwa die vermeintliche zweite Registerquelle eines Immediate-Befehls, darf keinen falschen Treffer auslösen. Schließlich ist Verfügbarkeit entscheidend: EX/MEM, das Register zwischen Execute und Memory Access, enthält bei einem Load erst die Adresse. Das geladene Wort liegt erst nach dem Speicherzugriff in MEM/WB, zwischen Memory Access und Write Back. Ein älterer Wert darf einen noch ausstehenden jüngeren Wert desselben Registers nicht ersetzen.
+:::
+
+## Zwei Treffer: Der jüngere Produzent gewinnt
+
+```asm
+add  t0, t1, t2    # erzeugt 10
+addi t0, t0, 1     # erzeugt 11
+sub  t3, t0, t4    # muss 11 nutzen
+```
+
+Anfang: `t1 = 7`, `t2 = 3`, `t4 = 4`.
+
+Beim `sub` in EX: `addi` in MEM, `add` in WB.
+
+::: notes
+add bildet die Summe, addi, Add Immediate, erhöht sie um die codierte Konstante 1, und sub bildet die Differenz. t0, t1, t2, t3 und t4 sind temporäre Register. Mit den angegebenen Anfangswerten schreibt add zunächst 10, addi danach 11 und sub schließlich $11-4=7$. EX steht für Execute, MEM für Memory Access und WB für Write Back.
+
+Wenn sub in Takt 5 rechnet, befindet sich addi in MEM und add in WB. Beide Zielregisternummern lauten t0. Das jüngere addi ist aber der letzte vorausgehende Schreiber in Programmreihenfolge. Sein Ergebnis 11 aus EX/MEM, dem Register zwischen Execute und Memory Access, gewinnt gegenüber dem älteren Wert 10 aus MEM/WB, zwischen Memory Access und Write Back. Das Beispiel erklärt den Vorrang nicht als Geschwindigkeitsregel, sondern als Erhaltung der sequenziellen Bedeutung. Würde der jüngere Treffer zu einem Load gehören und sein Wert noch fehlen, wäre Warten nötig; der ältere Wert wäre kein zulässiger Ersatz.
+:::
+
+## Nullregister: Ein Treffer ist noch kein Datenfluss
+
+```asm
+add t0, t1, t2
+add x0, t0, t0
+sub t3, x0, t4
+```
+
+Anfang: `t1 = 7`, `t2 = 3`, `t4 = 4`.
+
+Welche Zahl muss `sub` als ersten Operanden erhalten?
+
+::: notes
+Die drei Zeilen sind ein isolierter RISC-V-Lehrausschnitt. add t0, t1, t2 erzeugt 10. add x0, t0, t0 berechnet intern 20, doch x0 ist das architektonische Nullregister und übernimmt keine Registerdaten. sub t3, x0, t4 muss deshalb null als ersten und 4 als zweiten Operanden verwenden. Die temporären Register t0 bis t4 dienen als Datenregister, t3 als Ergebnisziel.
+
+Das Ergebnis lautet $0-4=-4$, als 32-Bit-Bitmuster 0xFFFFFFFC. Die Arithmetic Logic Unit, kurz ALU, darf intern zwar 20 anzeigen; dieser Wert ist aber keine erlaubte Quelle für einen Leser von x0. Die Bedingung rd ungleich x0, wobei rd Destination Register oder Zielregisternummer bedeutet, unterdrückt eine solche falsche Weiterleitung. Eine Übungsantwort muss daher den benötigten Wert null begründen, nicht lediglich gleiche Registernummern nennen.
+:::
+
+## Sonderfall: WB und ID im selben Takt
+
+- Zwei unabhängige Befehle zwischen Schreiber und Leser
+- Schreiber in WB, Leser gleichzeitig in ID
+- EX-Forwarding allein erreicht den Leser im Folgetakt zu spät
+- Kursmodell: einen Takt halten und danach neu lesen
+- Andere Registerbank oder zusätzlicher Lesebypass: anderes Modell
+
+::: notes
+WB bedeutet Write Back, das Registerschreiben; ID bedeutet Instruction Decode, einschließlich Registerlesen; EX bedeutet Execute, die Rechenstufe. Betrachten Sie einen Schreiber mit Fetch in Takt 1 und einen Leser mit Fetch in Takt 4. Zwei unabhängige Instruktionen liegen dazwischen. Der Schreiber ist in WB von Takt 5, der Leser in ID desselben Takts. Nach unserer Konvention liest er dort noch nicht den neu geschriebenen Wert.
+
+Ohne Halt wäre er erst in EX von Takt 6. Zu diesem Zeitpunkt steht der Schreiber nicht mehr im MEM/WB-Register zwischen Memory Access und Write Back; die beiden üblichen EX-Weiterleitungsquellen reichen allein nicht. Eine ausreichende Hazard-Erkennung hält den Leser daher einen Takt in ID und lässt ihn in Takt 6 neu lesen. Eine Registerbank mit Schreiben vor Lesen oder ein zusätzlicher Rückweg von WB nach ID würde diesen Sonderfall anders behandeln. Die ALU, Arithmetic Logic Unit, ist die Recheneinheit. Deshalb verallgemeinern wir das stallfreie unmittelbare ALU-Paar nicht auf jede Entfernung zwischen Schreiber und Leser.
+:::
+
+# 4. Load-Use, Stall und Scheduling
+
+::: notes
+Ein Load liest seinen Nutzdatenwert später als eine Registeraddition. Das in der Rechenstufe erzeugte Ergebnis ist zunächst nur die Adresse. Load Use bedeutet, dass eine folgende Instruktion den geladenen Wert benötigt. Gerade die unmittelbare Nutzung stellt unsere kurze Taktperiode vor eine Grenze.
+
+Wir unterscheiden drei Dinge: die nötige Verzögerung des Verbrauchers, den währenddessen freien Platz in der Pipeline und die Möglichkeit, diesen Platz mit unabhängiger Arbeit zu nutzen. Stall bezeichnet das Festhalten, Bubble den wirkungslosen Eintrag und Scheduling das zulässige Umsortieren vorhandener Befehle. Die Begriffe erklären verschiedene Teile desselben Ablaufs und dürfen nicht synonym verwendet werden.
+:::
+
+## Ein Load liefert zunächst nur eine Adresse
+
+Anfang: `s1` zeigt auf ein gültiges Wort mit Wert 42, `t2 = 8`.
+
+```asm
+lw  t0, 0(s1)
+add t3, t0, t2
+```
+
+- EX des Loads: Adresse aus Basis plus Offset
+- MEM des Loads: Wort aus dem Datenspeicher
+- Benötigtes Additionsergebnis: $42+8=50$
+
+::: notes
+lw bedeutet Load Word. Es lädt das 32-Bit-Wort an der Adresse $s1+0$ nach t0. s1 ist hier ein Basisregister, x9; t0, t2 und t3 sind temporäre Register. add addiert danach t0 und t2 und soll 50 nach t3 schreiben. Die Adresse ist gültig und wortausgerichtet. Der Ausschnitt zeigt nur die Kernfolge; der Anfangszustand wird als hergestellt vorausgesetzt.
+
+EX, Execute, berechnet beim Load die Datenadresse. MEM, Memory Access, liest erst anschließend das Wort 42. Der Wert im Register EX/MEM, zwischen Execute und Memory Access, ist deshalb nicht 42, sondern die Adresse. Diese Adresse an add weiterzugeben wäre ein Datenfehler. In einem einzykligen Speicherzugriff liegt das Wort am Ende der MEM-Stufe bereit. Die unmittelbar folgende Addition würde es ohne Halt schon für EX desselben Takts benötigen. Der Stufenplan muss deshalb geändert werden.
+:::
+
+## Ein Wartezyklus macht den Wert rechtzeitig nutzbar
+
+![](../assets/images/vl7-loaduse-raster.svg){.nostretch fig-alt="Load läuft weiter, add wird in ID gehalten, Bubble in EX und Weiterleitung aus MEM/WB im nächsten Takt"}
+
+::: notes
+IF, Instruction Fetch, ID, Instruction Decode, EX, Execute, MEM, Memory Access, und WB, Write Back, sind die Stufen der Abbildung. Oben läuft lw ohne Unterbrechung durch die fünf Stufen. In Takt 4 liest es das Wort 42. Die jüngere Addition steht in Takt 3 in ID und bleibt dort in Takt 4 gehalten. Das rot umrandete Haltefeld ist weiterhin dieselbe Instruktion, keine neue.
+
+Die eigene Bubble-Zeile zeigt den ungültigen Eintrag in EX von Takt 4, danach in MEM von Takt 5 und WB von Takt 6. Der orthogonale rote Pfeil führt vom nach MEM bereiten Wort zur EX-Nutzung der Addition in Takt 5. Die Quelle ist jetzt MEM/WB, das Register zwischen Memory Access und Write Back. Mit t2 gleich 8 entsteht 50, das t3 erst in seinem WB von Takt 7 übernimmt. Das Modell nutzt einen zusätzlichen Takt statt eines längeren kombinatorischen Wegs durch Speicher und Addition innerhalb derselben kurzen Periode.
+:::
+
+## Was der Stall hält und was weiterläuft
+
+An der betroffenen Taktgrenze:
+
+| Teil | Aktion |
+|:---|:---|
+| PC | Fetch-Adresse halten |
+| IF/ID | Verbraucher in ID halten |
+| ID/EX | Ungültige Bubble einsetzen |
+| EX/MEM und MEM/WB | Ältere Instruktionen weiterlaufen lassen |
+
+::: notes
+Stall heißt, den Fortschritt einer Instruktion vorübergehend zu halten. PC, Program Counter, bezeichnet hier die Fetch-Adresse. IF ist Instruction Fetch, ID Instruction Decode, EX Execute, MEM Memory Access und WB Write Back. Die Slash-Namen benennen die Register zwischen benachbarten Stufen. Beim Load-Use-Stall muss der Verbraucher in IF/ID erhalten bleiben, während nach ID/EX ein ungültiger Eintrag übernommen wird. Der PC wird nicht auf eine neue Instruktionsposition weitergeschaltet.
+
+Der ältere Load darf gerade nicht mit angehalten werden: Er muss durch EX/MEM nach MEM gelangen, damit sein Datum verfügbar wird, und danach nach MEM/WB weiterlaufen. Die Logik hält also nicht die gesamte Pipeline. An der nächsten geeigneten Flanke wird der Verbraucher freigegeben. Dass eine Fetch-Adresse weiterhin am Befehlsspeicher anliegt, widerspricht dem Halt nicht; entscheidend ist, dass kein neuer Eintrag übernommen wird. Durch Festhalten und Invalidieren zugleich entstehen keine verlorenen oder doppelt ausgeführten Programmbefehle.
+:::
+
+## Bubble ist kein zusätzlicher NOP-Befehl
+
+| Hardware-Bubble | Programm-NOP |
+|:---|:---|
+| Ungültiger / wirkungsloser Pipeline-Eintrag | `addi x0, x0, 0` |
+| Keine bestätigte Instruktion | Echter Maschinenbefehl |
+| Erhöht nicht $N$ | Zählt bei Ausführung zu $N$ |
+| Darf keine Zustandswirkung haben | PC schreitet normal fort |
+
+::: notes
+Eine Bubble ist eine Lücke im aktiven Stufenplan. Sie kann durch ein Gültigkeitsbit mit Wert null repräsentiert werden oder durch vollständig unterdrückte Zustandswirkungen. Sie darf weder Register noch Speicher ändern noch einen Sprung auslösen. $N$ ist die Zahl abgeschlossener Programminstruktionen; eine Bubble erhöht sie nicht.
+
+NOP bedeutet No Operation. Der echte RISC-V-NOP ist addi x0, x0, 0, also Add Immediate mit Ziel und Quelle x0 und Konstante null. Sein Maschinenwort lautet 0x00000013. x0 ist das Nullregister. Der normale Decoder kann eine Register-Schreibfreigabe setzen, doch x0 verwirft den Schreibversuch. Der PC, Program Counter, schreitet für diese echte Instruktion weiter, und sie zählt zur dynamischen Befehlszahl. Eine Simulatoranzeige mit dem Text nop oder einem grauen Feld beweist deshalb keine aus dem Programm geholte NOP-Instruktion. Man muss den gültigen Befehlsstrom und die Herkunft des Eintrags betrachten.
+:::
+
+## Load-Use-Erkennung prüft benutzte Quellen
+
+- In EX steht ein gültiger Load mit Ziel `rd` ungleich `x0`
+- In ID steht der mögliche Verbraucher
+- Sein tatsächlich benutztes `rs1` oder `rs2` passt zu `rd`
+- Dieser Wert wird schon in der nächsten EX-Stufe gebraucht
+
+::: notes
+IF steht für Instruction Fetch, EX für Execute und ID für Instruction Decode. Die Hazard Detection Unit, also die Erkennung nötiger Wartebedingungen, betrachtet hier den älteren Load in ID/EX und den jüngeren Eintrag in IF/ID, den Registern zwischen den benachbarten Stufen. rd bedeutet Destination Register, die Zielregisternummer; rs1 und rs2 bedeuten Source Register 1 beziehungsweise Source Register 2, die Quellregisternummern. x0 liefert stets null und ist kein wirksames Ziel für geladene Registerdaten.
+
+Nicht jede Gleichheit irgendeines Befehlsfeldes verlangt einen Stall. Bei addi wird nur eine Registerquelle verwendet; die übrigen Bits gehören zur Konstanten. Bei add werden beide Registerquellen verwendet. Wir prüfen zusätzlich, wann die Quelle gebraucht wird. Unsere Beispiele benötigen sie in der nächsten EX-Stufe. Store-Daten oder ein früher Branch-Vergleich können je nach Datenpfad andere Zeitpunkte und eigene Weiterleitungen haben. Diese Folie beschreibt die klare unmittelbar folgende EX-Nutzung, keine vollständige Hazard-Schaltung für jeden RV32I-Befehl.
+:::
+
+## Papieraufgabe: Drei Befehle eintragen
+
+Anfang: `a0` zeigt auf ein Wort mit Wert 42.
+
+```asm
+lw   t0, 0(a0)
+addi t1, t0, 1
+add  t2, t1, t1
+```
+
+- Zeichnen Sie das Raster bis zum letzten WB
+- Markieren Sie gehaltene Stufen und die Bubble
+- Benennen Sie beide Quellen des letzten `add` in EX
+
+::: notes
+lw, Load Word, lädt 42 nach t0. addi, Add Immediate, bildet daraus 43 in t1. add bildet $43+43=86$ in t2. a0 ist hier das Basisregister x10 und enthält zu Beginn die gültige wortausgerichtete Adresse. t0, t1 und t2 sind temporäre Register. IF bedeutet Instruction Fetch, ID Instruction Decode, EX Execute, MEM Memory Access und WB Write Back.
+
+Die Lösung hat acht Takte. lw liegt in IF1, ID2, EX3, MEM4 und WB5. addi liegt in IF2, ID3, gehaltenem ID4, EX5, MEM6 und WB7. add liegt in IF3, gehaltenem IF4, ID5, EX6, MEM7 und WB8. Die Bubble belegt EX4, MEM5 und WB6. In EX5 erhält addi das Load-Wort aus MEM/WB, dem Register zwischen Memory Access und Write Back. In EX6 erhält add beide Registeroperanden mit Wert 43 aus EX/MEM, zwischen Execute und Memory Access. Für die benutzte Quelle t1 liegt kein zusätzliches Problem beim gleichzeitigen Registerschreiben und Lesen vor: Der Produzent steht zu dieser Zeit in MEM, und beide Eingänge werden weitergeleitet.
+:::
+
+## Scheduling verschiebt vorhandene Arbeit
+
+Dieselben drei nötigen Befehle, `a5` startet bei null:
+
+| A: ein Load-Use-Stall | B: unabhängige Arbeit dazwischen |
+|:---|:---|
+| `lw t0, 0(s1)` | `lw t0, 0(s1)` |
+| `add a0, t0, t0` | `addi a5, a5, 1` |
+| `addi a5, a5, 1` | `add a0, t0, t0` |
+
+Ergebnisse jeweils: `t0 = 42`, `a0 = 84`, `a5 = 1`.
+
+::: notes
+Instruction Scheduling heißt, bereits benötigte Instruktionen zulässig umzuordnen. lw, Load Word, lädt aus dem Wort an der gültigen Adresse in s1 den Wert 42 nach t0. add verdoppelt diesen Wert und schreibt a0. addi, Add Immediate, erhöht den unabhängigen Zähler a5 von null auf eins. t0 ist ein temporäres Register, s1 das Basisregister, a0 das Ergebnisregister und a5 der unabhängige Zähler.
+
+In A folgt die Verdopplung unmittelbar auf den Load und muss einen Takt warten. Die vorhandene Zählererhöhung kommt erst danach. In B steht dieselbe Erhöhung zwischen Produzent und Verbraucher. Sie verändert weder s1 noch t0 noch a0 und greift nicht auf den Speicher zu. Die Verdopplung erhält den Load-Wert dann über Forwarding, Weiterleitung, aus MEM/WB, dem Register zwischen Memory Access und Write Back. Beide Varianten haben dieselben drei Maschineninstruktionen und dieselben Endwerte. Eine neue zusätzliche Zählererhöhung wäre dagegen eine Änderung der Aufgabe. Die Beispiele stehen vollständig in beispiele/vl7_schedule_a.s und vl7_schedule_b.s.
+:::
+
+## Scheduling: Wann ist die Umordnung unzulässig?
+
+```asm
+lw   t0, 0(s1)
+add  a0, t0, t0
+addi s1, s1, 4
+```
+
+Darf `addi s1, s1, 4` vor den Load rücken?
+
+::: notes
+Die RISC-V-Folge lädt mit lw, Load Word, das Wort an der bisherigen Adresse in s1 nach t0. add verdoppelt es und schreibt a0. addi, Add Immediate, erhöht anschließend die Adresse s1 um vier Byte. s1 ist ein Basisregister, t0 ein temporäres Datenregister und a0 das Ergebnisregister. Das nächste Wort darf einen anderen Wert enthalten; wir nehmen beispielsweise 42 an der bisherigen und 99 an der nächsten Adresse an.
+
+Die Erhöhung vor den Load zu verschieben wäre unzulässig: Der Load würde 99 statt 42 lesen, a0 würde 198 statt 84 erhalten. Einfügen zwischen Load und add kann dagegen unter den genannten Annahmen zulässig sein, weil der Load seine alte Adresse in EX, Execute, bereits verwendet, bevor die jüngere Erhöhung sie später zurückschreibt. Allgemein müssen Registerabhängigkeiten, mögliche Speicherüberschneidungen und der Kontrollfluss erhalten bleiben. Ein Compiler, also das Übersetzungswerkzeug von Quelltext in Maschinenbefehle, darf diese Bedingungen nicht durch vermeintlich bessere Auslastung ersetzen. Wir behaupten hier keinen tatsächlich ausgeführten Compilerlauf.
+:::
+
+# 5. Sprünge, Flush und Vorhersage
+
+::: notes
+Bisher war bekannt, welcher Befehl als Nächstes folgt. Ein bedingter Branch entscheidet dagegen erst nach einem Vergleich, ob die Ausführung an der Zieladresse oder an der sequenziellen Folgeadresse weitergeht. Der Fetch kann schon jüngere Instruktionen aufgenommen haben, bevor diese Entscheidung feststeht.
+
+Ein Control Hazard ist dieser Konflikt zwischen frühem Befehlsholen und später bekanntem Kontrollfluss. Flush heißt, jüngere Einträge eines falschen Pfads zu verwerfen. Die richtige ältere Arbeit bleibt erhalten. Wir beginnen mit bereits bereiten Vergleichswerten, damit die Sprungwirkung nicht mit einem zusätzlichen Data Hazard, also einer Datenabhängigkeit, vermischt wird. Danach berechnen wir die Zeitkosten und ordnen einfache Vorhersagen ein.
+:::
+
+## Was muss für den Branch bekannt sein?
+
+```asm
+beq t0, t1, Ziel
+```
+
+$$\mathrm{taken}=\mathrm{Branch}\land\mathrm{Zero}$$
+
+$$\mathrm{Zieladresse}=PC_\mathrm{Branch}+\mathrm{Byteoffset}$$
+
+- Vergleich und Zielrechnung in EX
+- Sonst sequenziell $PC_\mathrm{Branch}+4$
+
+::: notes
+beq bedeutet Branch if Equal, also Sprung bei gleichen Registerwerten. t0 und t1 sind temporäre Vergleichsregister. Ziel ist eine Assembler-Sprungmarke; der Assembler codiert den passenden relativen Byteoffset. EX, Execute, ist im Modell die Stufe für Vergleich und Zielrechnung. Branch ist die Freigabe für den erkannten beq. Zero zeigt an, dass die Differenz der beiden Registerwerte null ist. Das UND, $\land$, lässt den Sprung nur bei gültigem beq und Gleichheit zu. Zero ist ein internes Signal dieser Umsetzung, kein RISC-V-Statusflag.
+
+$PC_\mathrm{Branch}$ bezeichnet den Program Counter dieser Branch-Instruktion. Zu dieser Adresse wird der bereits zusammengesetzte vorzeichenerweiterte Byteoffset addiert; kein weiterer Shift folgt. Die aktuelle Fetch-Adresse kann inzwischen weitergelaufen sein und ist keine geeignete Basis. Bei Nichtnahme folgt die Adresse vier Byte nach dem Branch. Für bne, Branch if Not Equal, würde eine ausdrücklich ergänzte Vergleichssteuerung die Gleichheitsbedingung umkehren; ihre Wirkung kennen Sie bereits aus der Assembler-Vorlesung. Das folgende Flush-Beispiel verwendet nur beq.
+:::
+
+## Bis zur Entscheidung wird sequenziell geholt
+
+![](../assets/images/vl7-branch-flush.svg){.nostretch fig-alt="beq entscheidet in EX von Takt 3, zwei Folgeinstruktionen werden ungültig, Ziel startet in IF von Takt 4"}
+
+::: notes
+IF heißt Instruction Fetch, ID Instruction Decode, EX Execute, MEM Memory Access und WB Write Back. Die horizontale Achse zeigt relative Takte. beq, Branch if Equal, beginnt in IF1 und entscheidet in EX3. Seine Vergleichswerte sind vor dem Start bereit. Währenddessen werden die beiden jüngeren Instruktionen an $PC_\mathrm{Branch}+4$ und $PC_\mathrm{Branch}+8$ geholt. Der Program Counter des Branch ist die gemeinsame Bezugsadresse.
+
+Die roten Kreuze markieren das Verwerfen an der Grenze zu Takt 4, falls der Sprung genommen wird. In Takt 4 sind diese Folgeeinträge bereits ungültig; sie erscheinen nicht als gültige EX- oder ID-Arbeit. Die Zielinstruktion startet in IF4. Der Branch selbst läuft weiter nach MEM und WB; ältere Arbeit bleibt ebenfalls erhalten. Die leeren wirkungslosen Plätze entstehen durch Flush und werden nicht als zusätzliche abgeschlossene Maschineninstruktionen gezählt. Wenn der Branch nicht genommen ist, passen die sequenziellen Folgeinstruktionen bereits und es fällt hier kein Flush an.
+:::
+
+## Flush muss Zustandswirkungen verhindern
+
+Anfang: `t0 = t1 = 1`, `t2 = 77`, `t3 = 0`, Speicherwort null.
+
+```asm
+beq  t0, t1, Ziel
+sw   t2, 0(s1)
+addi t3, x0, 99
+Ziel:
+addi a0, x0, 7
+```
+
+Am Ziel abgeschlossen: Speicherwort 0, `t3 = 0`, `a0 = 7`.
+
+::: notes
+Die Kernfolge ist aus beispiele/vl7_flush.s entnommen. beq, Branch if Equal, wird genommen, weil t0 und t1 beide 1 enthalten. sw, Store Word, würde 77 in das Wort an der gültigen Adresse in s1 schreiben. addi, Add Immediate, würde t3 auf 99 setzen. Beide Instruktionen liegen jedoch im übersprungenen Pfad und dürfen keine bestätigte Wirkung haben. x0 ist das Nullregister. a0 ist das Ergebnisregister am Ziel; t0 bis t3 sind temporäre Register, s1 ist das Basisregister.
+
+Im EX-Modell, also bei Entscheidung in Execute, werden IF/ID und ID/EX, die Register nach Instruction Fetch beziehungsweise Instruction Decode, an der entscheidenden Flanke ungültig. Der falsche Store erreicht keinen gültigen Speicherzugriff; die falsche Addition erreicht kein gültiges Registerschreiben. Nach dem Rückschreiben der Zielinstruktion bleibt das Speicherwort daher null, t3 bleibt null und a0 ist 7. Ein Flush bedeutet nicht, ältere richtige Ergebnisse zu löschen oder den Prozessor zurückzusetzen. Das vollständige Programm enthält zusätzliche Initialisierung und einen Abschluss außerhalb dieser Kernzählung.
+:::
+
+## Halten und Verwerfen lösen verschiedene Probleme
+
+| Stall | Flush |
+|:---|:---|
+| Befehl gehört zur richtigen Ausführung | Jüngerer Befehl gehört zum falschen Pfad |
+| Befehl bleibt erhalten | Befehl wird ungültig |
+| Benötigte Daten noch nicht bereit | Kontrollfluss war anders als angenommen |
+| Später weiterarbeiten | Keine bestätigte Zustandswirkung |
+
+::: notes
+Ein Stall hält eine gültige Instruktion fest. Beispielsweise wartet die Addition hinter einem Load darauf, dass das geladene Wort bereitsteht. Sie muss anschließend noch ausgeführt werden. Ein Flush verwirft dagegen jüngere Instruktionen, die aufgrund einer falschen Annahme über den Kontrollfluss geholt wurden. Sie dürfen gerade nicht später als gültige Arbeit weiterlaufen.
+
+Beide Vorgänge können wirkungslose Pipeline-Einträge, sogenannte Bubbles, hinterlassen. Daraus folgt aber nicht, dass sie dasselbe tun. Beim Stall bleibt der Verbraucher gespeichert; beim Flush werden die betroffenen Einträge ungültig und der Fetch beginnt am korrekten Ziel. Wenn ein älterer Branch einen Pfad als falsch erkennt, darf ein dort liegender jüngerer Datenkonflikt die Korrektur nicht verhindern. Konkrete Prioritätslogik hängt vom Modell ab. Für die Papierbeispiele behandeln wir die Fälle getrennt und können dadurch deren Bedeutung und Zeitkosten eindeutig bestimmen.
+:::
+
+## Zwei verlorene Abschlussslots im EX-Modell
+
+Zwei gültige Instruktionen: genommener Branch und Zielinstruktion.
+
+$$C_\mathrm{ohne\ Konflikt}=2+4=6$$
+
+$$C_\mathrm{mit\ Flush}=2+4+2=8$$
+
+Nicht genommener Branch: keine zusätzliche Kontrollflusskorrektur.
+
+::: notes
+EX bedeutet Execute, die Entscheidungsstufe dieses Branch-Modells. $C$ bezeichnet die benötigte Taktzahl. Ein Branch, also bedingter Sprung, und die erste Zielinstruktion sind hier die beiden gültig abgeschlossenen Instruktionen. Der Branch beginnt in Fetch von Takt 1 und endet in Takt 5. Nach seiner Entscheidung in EX3 startet die Zielinstruktion erst in Fetch von Takt 4 und endet in Takt 8. Es sind daher acht Takte bis zum letzten Abschluss.
+
+Ohne zusätzliche Kontrollflusskosten würden zwei Instruktionen sechs Takte benötigen. Die Differenz beträgt zwei. Penalty bedeutet diese zusätzlichen Kosten, nicht die Zahl aller bisherigen Branch-Stufen. Das Ergebnis gilt für sequenziellen Fetch bis zur EX-Entscheidung, bereite Operanden und ein Ziel außerhalb der schon geholten Folge. Bei Nichtnahme passt der sequenzielle Pfad und es entstehen hier keine zusätzlichen Kontrollflusszyklen. Eine andere Entscheidungsstufe, andere Vorhersage oder Datenabhängigkeit kann andere Kosten erzeugen.
+:::
+
+## Kosten einer längeren Folge berechnen
+
+Nicht überlappende Zusatzkosten des Lehrmodells:
+
+$$C=N+4+H+2F$$
+
+$$\mathrm{CPI}=\frac{C}{N}=1+\frac{4}{N}+\frac{H}{N}+2\frac{F}{N}$$
+
+- $H$: Anzahl zusätzlicher Wartezyklen
+- $F$: Anzahl Fehlannahmen mit je zwei Korrekturzyklen
+
+::: notes
+$N$ zählt abgeschlossene Maschineninstruktionen, $C$ die Takte vom ersten Fetch bis zum letzten Abschluss einer anfangs leeren Pipeline. CPI heißt Cycles per Instruction, mittlere Takte pro Instruktion. $H$ zählt zusätzliche Wartezyklen, nicht die Zahl aller Loads oder aller Datenabhängigkeiten. $F$ zählt falsche Kontrollflussannahmen, die in diesem EX-Modell, Execute, jeweils zwei zusätzliche Takte verursachen. Bei der Annahme Not Taken, also nicht genommen, sind das die genommenen Branches.
+
+Die Formel setzt voraus, dass diese Zusatzkosten vollständig auftreten und sich nicht gegenseitig überdecken. Bei komplizierteren überlappenden Konflikten muss das tatsächliche Zeitdiagramm gezählt werden; pauschales Addieren kann sonst doppelt zählen. Der Term $4/N$ gehört zur endlichen Füllung und Leerung. In einer langen stationären Folge wird er klein. Hardware-Bubbles und verworfene Instruktionen erhöhen die Taktkosten, werden aber nicht zusätzlich in $N$ aufgenommen. Genau diese Trennung hält die Laufzeitformel konsistent.
+:::
+
+## Rechenbeispiel mit Wartezyklen und Branches
+
+Didaktische Annahmen: $N=100$, $H=10$, zwanzig Branches,
+davon zwölf genommen, sequenzieller Fetch.
+
+$$F=12,\qquad C=100+4+10+2\cdot12=138$$
+
+$$\mathrm{CPI}=1{,}38,\qquad t=138\cdot270\,\mathrm{ps}=37260\,\mathrm{ps}$$
+
+::: notes
+$N=100$ ist die Zahl abgeschlossener Instruktionen einschließlich zwanzig bedingter Branches. $H=10$ sind zehn zusätzliche Wartezyklen. Bei sequenziellem Fetch, der Not-Taken-Annahme, wird der richtige Pfad für die zwölf genommenen Branches falsch angenommen; daher ist $F=12$. Alle Vergleichsdaten sind rechtzeitig bereit, jeder falsche Pfad verursacht zwei Zusatzzyklen, und die Kosten überdecken sich nicht. Es handelt sich um didaktische Vorgaben, nicht um gemessene Häufigkeiten.
+
+$C$ ist die Gesamtzahl der Takte: $100+4+10+24=138$. CPI bedeutet Cycles per Instruction; $138/100=1{,}38$. Bei der angenommenen Periode 270 ps, Pikosekunden, ergibt sich $37260$ ps, also $37{,}26$ ns, Nanosekunden. Die Branches sind bereits in den hundert Instruktionen enthalten; sie dürfen nicht nochmals zu $N$ addiert werden. Auch die 24 verlorenen Slots sind keine zusätzlichen Programmbefehle. Eine Vorhersage könnte die Zahl $F$ ändern, würde aber weiterhin mit derselben abgeschlossenen Aufgabe verglichen.
+:::
+
+## Früher vergleichen verändert das Modell
+
+- Vergleich und Zielrechnung schon in ID
+- Mit bereiten Werten: nur eine jüngere Folgeinstruktion
+- EX-Forwarding kommt für einen ID-Vergleich zu spät
+- Neue Datenwege, mögliche Stalls und Taktgrenze mitprüfen
+
+::: notes
+ID steht für Instruction Decode, EX für Execute. Verlegt man die Branch-Entscheidung von EX nach ID, kann ein in Takt 1 geholter Branch bereits in Takt 2 entschieden werden. Bei Not-Taken-Annahme ist dann nur eine jüngere Folgeinstruktion betroffen; das Ziel kann in Fetch von Takt 3 beginnen. Unter bereiten Operanden und verfügbarer Zieladresse sinkt die zusätzliche Korrekturzeit auf einen Takt.
+
+Das ist eine alternative Mikroarchitektur, kein kostenloser Austausch einer Beschriftung. Die Vergleichswerte müssen früher verfügbar sein. Ein direkt vorhergehender Rechenbefehl produziert seinen Wert möglicherweise erst in EX desselben Takts; das übliche EX-Forwarding bedient den früheren ID-Eingang nicht automatisch. Ein zusätzlicher Komparator, also Vergleichsbaustein, braucht eigene aktuelle Daten und eine passende Zielrechnung. Außerdem kann die erweiterte ID-Logik den kritischen Pfad verlängern. Die Folie erklärt deshalb eine mögliche Optimierung unter Bedingungen und ersetzt nicht die Annahmen unserer Papierdiagramme.
+:::
+
+## Statische Vorhersage: Eine feste Regel
+
+- Not Taken: immer zunächst die sequenzielle Folge holen
+- Backward Taken, Forward Not Taken: Rückwärtssprung bevorzugen
+- Ein Schleifenbranch bleibt beim letzten Durchlauf rückwärts gerichtet
+- Richtungsvorhersage und verfügbare Zieladresse sind getrennte Fragen
+
+::: notes
+Branch Prediction bedeutet Sprungvorhersage. Statisch heißt, dass eine feste Regel statt einer laufend angepassten Verlaufstabelle verwendet wird. Not Taken nimmt an, dass der Branch nicht genommen ist; der Fetch folgt zunächst der nächsten Instruktion. Backward Taken, Forward Not Taken bedeutet: Bei negativer Zielrichtung genommen vorhersagen, bei positiver nicht genommen. Die Regel ist eine Heuristik, also eine hilfreiche Vermutung, keine Garantie.
+
+Bei einer Schleife, die von zehn auf null zählt, wird der rückwärts gerichtete bne, Branch if Not Equal, neunmal genommen und einmal nicht genommen. Beim letzten Vergleich ist die Zieladresse weiterhin rückwärts gerichtet; sie wird nur nicht verwendet. Die Ausführung läuft dann sequenziell weiter. Eine Taken-Vorhersage allein liefert dem Fetch noch keine Zieladresse. Die Zielinformation muss ebenfalls rechtzeitig vorliegen, sonst kann weitere Verzögerung entstehen. Unsere Beispiele behaupten deshalb keinen automatischen stallfreien Fetch allein durch richtiges Erraten der Richtung.
+:::
+
+## Dynamische Vorhersage: Ein Bit mit Anfangszustand
+
+Ein isolierter Branch, keine Tabellenteilung, Startvorhersage N:
+
+| Ausführung | 1 | 2 | 3 | 4 |
+|:---|:---:|:---:|:---:|:---:|
+| Tatsächlich | T | T | T | N |
+| Vorhergesagt | N | T | T | T |
+| Fehler? | ja | nein | nein | ja |
+
+Nach jeder Entscheidung wird die nächste Vorhersage aktualisiert.
+
+::: notes
+Dynamische Branch Prediction, Sprungvorhersage, nutzt den beobachteten Verlauf. Eine Branch History Table, kurz BHT, kann für eine Sprungadresse einen Richtungszustand speichern. Im ausdrücklich vereinfachten Einbitmodell ist die nächste Vorhersage gleich der letzten tatsächlichen Entscheidung. N steht für Not Taken, nicht genommen; T steht für Taken, genommen. Wir betrachten einen isolierten Branch ohne konkurrierenden Tabelleneintrag und setzen den Anfangszustand auf N.
+
+Für die tatsächliche Folge T, T, T, N lautet die Vorhersage N, T, T, T. Der erste Durchlauf ist falsch, weil das Anfangsbit N ist. Danach lernt der Zustand T und trifft zweimal. Beim letzten N ist die Vorhersage wieder falsch; anschließend wird auf N aktualisiert. Es gibt genau zwei Fehler. Ein anderes Anfangsbit ergäbe andere Kosten. Die Tabelle beschreibt Richtung, nicht Zieladresse oder eine vollständig implementierte Pipeline. Sie ist keine Behauptung über die in Ripes vorhandene Vorhersagelogik.
+:::
+
+## Vertiefung: Zwei Bit dämpfen einen Einzelwechsel
+
+![](../assets/images/vl7-zweibit-predictor.svg){.nostretch fig-alt="Vier Zustände eines saturierenden Zweibitzählers, Taken erhöht und Not Taken verringert den Zustand"}
+
+::: notes
+Der Zweibitzähler ist ein einfaches dynamisches Branch-Prediction-Modell, also eine lernende Sprungvorhersage. Die vier Zustände 00, 01, 10 und 11 entsprechen den Zahlen 0 bis 3. Bei Taken, T oder genommen, wird um eins erhöht, höchstens bis 3. Bei Not Taken, N oder nicht genommen, wird um eins vermindert, mindestens bis 0. Dieses Begrenzen nennt man Sättigung. Die Vorhersage ist N in 00 und 01 und T in 10 und 11.
+
+Die Abbildung zeigt Zustände als Kreise. Graue Pfeile laufen von links nach rechts bei T, von rechts nach links bei N; die Randnotizen kennzeichnen das Halten bei Sättigung. Rot hebt die Grenze zwischen den beiden Vorhersagerichtungen hervor. Aus stark Taken, 11, führt ein einzelnes N zunächst zu schwach Taken, 10. Die nächste Vorhersage bleibt T. Aus schwach Taken, 10, würde ein N dagegen nach 01 führen und die Richtung ändern. Ein einzelner Fehler kippt somit nicht immer und auch nicht nie die Vorhersage. Anfangszustand und tatsächliche Folge müssen für eine konkrete Rechnung angegeben werden. Diese Vertiefung ist kein vorausgesetztes Simulatorfeature.
+:::
+
+## Vorläufige Arbeit braucht eine sichere Korrektur
+
+- Früher Fetch kann sich auf eine Vorhersage stützen
+- Beim Branch wird die Annahme geprüft
+- Falsche jüngere Arbeit darf keinen Architekturzustand bestätigen
+- Trefferquote allein bestimmt die Laufzeit noch nicht
+
+::: notes
+Spekulativ bedeutet vorläufig unter einer noch ungeprüften Annahme. In unserem einfachen Pipeline-Beispiel wird bereits vor dem Branch-Vergleich sequenziell geholt. Die Annahme betrifft den Kontrollfluss, nicht die Gültigkeit des Maschinenbefehls. Trifft sie zu, ist der frühe Fetch nützlich; andernfalls wird die jüngere Arbeit verworfen.
+
+Architekturzustand heißt der vom Befehlssatz beschriebene Register- und Speicherzustand. Falsche Pfade dürfen darin keine bestätigte Wirkung hinterlassen. Größere Prozessoren können dafür zusätzliche Mechanismen benötigen; sie sind nicht Bestandteil dieses fünfstufigen Lehrmodells. Die Laufzeit hängt außer von der Trefferquote auch von der Korrekturzeit, der rechtzeitigen Zieladresse, Datenabhängigkeiten und der Taktperiode ab. Eine Richtungstabelle allein beweist daher keine gemessene Beschleunigung. Damit sind die Voraussetzungen geklärt, um Papierprognosen mit einer konkreten Simulatoransicht zu vergleichen.
+:::
+
+# 6. Vom Papier zu Ripes
+
+::: notes
+Ripes ist ein visueller Simulator für RISC-V-Prozessoren. Er kann Registerzustände, Datenpfade und Stufenbelegungen zeigen. Ein Simulatorlauf prüft jedoch immer eine bestimmte Version und ausgewählte Mikroarchitektur, nicht jede mögliche Umsetzung des Befehlssatzes.
+
+Die praktische Arbeit beginnt mit einer Vorhersage aus dem vereinbarten Modell. Danach dokumentieren Sie die tatsächliche Konfiguration und vergleichen funktionale Ergebnisse sowie relative Stufenfolgen. Unterschiede bei Menünamen, Auflösungsstufe, Registerlesen oder Weiterleitungswegen sind zu erklären. Die hier angegebenen Sollwerte sind hergeleitete Erwartungen; ein eigener Ripes-Lauf wird durch die Folien nicht behauptet.
+:::
+
+## Eine Beobachtung nachvollziehbar dokumentieren
+
+1. Version und RV32-Modell mit Forwarding und Hazard-Erkennung notieren
+2. Komprimierte Instruktionen ausschalten, vor jedem Versuch zurücksetzen
+3. Maschinenbefehle und Kernmarke identifizieren
+4. Einzelne Clock-Schritte und verfügbare Stufentabelle verwenden
+5. Datenquelle, Wert, Gültigkeit und Endzustand vergleichen
+
+::: notes
+RV32 bezeichnet ein RISC-V-Modell mit 32-Bit-Registerdaten. Forwarding heißt Ergebnisweiterleitung, Hazard-Erkennung die Behandlung nötiger Halte- oder Korrekturbedingungen. Wählen Sie eine fünfstufige Variante mit diesen Funktionen. Ohne Weiterleitung, aber mit Erkennung kann die Rechnung länger dauern und trotzdem richtig sein. Ohne ausreichende Behandlung kann sie falsche Operanden verwenden.
+
+Ripes-Versionen unterscheiden sich in Menübezeichnungen und Darstellung. Die Stufenhistorie heißt in der Dokumentation unter anderem Show stage table; zeichnen Sie sie mit einzelnen Clock-Schritten auf und prüfen Sie, ob ein Run-Modus Ihrer Version sie ebenfalls erfasst. Ein Selektorwert oder eine Farbe allein genügt nicht als Nachweis. Notieren Sie den Namen des Ports, die produzierende Instruktion, den Zahlenwert und die konsumierende Quelle. Die Marke Kern in den Repository-Programmen begrenzt die betrachtete Befehlsfolge. Initialisierung, echte Programm-NOPs und Abschluss zählen bei einer globalen Laufzeitmessung zusätzlich und dürfen nicht mit der relativen Kernrechnung vermischt werden.
+:::
+
+## Drei Kernversuche und ihre Sollwerte
+
+| Repository-Programm unter `beispiele/` | Funktionale Erwartung |
+|:---|:---|
+| `vl7_forwarding.s` | `t2 = 150`, `a0 = 100` |
+| `vl7_loaduse.s` | `t0 = 42`, `a0 = 84` |
+| `vl7_flush.s` | Speicherwort 0, `t3 = 0`, `a0 = 7` |
+
+Erst die passenden Befehle abschließen lassen, dann Registerwerte ablesen.
+
+::: notes
+Die Dateien existieren im Repository und enthalten Initialisierung, Kernfolge und Abschluss. vl7_forwarding.s initialisiert die temporären Register t0 und t1 mit 50 und 100. add schreibt 150 nach t2; sub verwendet dieses Ergebnis und schreibt $150-50=100$ nach a0. Im Lehrmodell gibt es für dieses unmittelbare Rechenpaar keinen Zusatzzyklus.
+
+vl7_loaduse.s lädt mit lw, Load Word, 42 nach t0 und verdoppelt es mit add nach a0 zu 84. Hier wird der Verbraucher einen Takt gehalten. vl7_flush.s verwendet beq, Branch if Equal, mit gleichen Werten und verwirft sw, Store Word, sowie eine Addition mit Konstante auf dem falschen Pfad. Das Datenwort und t3 bleiben null, a0 wird 7. t0 bis t3 sind temporäre Register; a0 ist das Ergebnisregister. Ein Rechenausgang ist noch kein zurückgeschriebener Registerwert. Das Ablesen erfolgt nach dem jeweiligen Write Back, dem Abschluss mit Registerschreiben. Speicherwirkungen des Store wären dagegen schon beim Datenzugriff sichtbar, wenn der Store gültig wäre.
+:::
+
+## Fairer Vergleich der Scheduling-Dateien
+
+`vl7_schedule_a.s` und `vl7_schedule_b.s`:
+
+- Gleiche drei Kerninstruktionen und gleiche Endwerte
+- Modell A: $3+4+1=8$ Takte
+- Modell B: $3+4=7$ Takte
+- Gleiche Taktperiode: Kern-Speedup $8/7\approx1{,}14$
+
+::: notes
+Instruction Scheduling bedeutet zulässiges Umsortieren vorhandener Instruktionen. Die beiden vollständigen Dateien liegen unter beispiele/. Ihre Kernfolge enthält lw, Load Word, add zur Verdopplung und addi, Add Immediate, zur Erhöhung von a5. Der Anfangszustand ist gleich: Das Speicherwort ist 42 und a5 ist null. Am Ende sind t0 gleich 42, a0 gleich 84 und a5 gleich 1; t0 ist ein temporäres Register, a0 das Ergebnisregister und a5 der unabhängige Zähler.
+
+Im anfangs leeren Lehrfenster braucht A wegen unmittelbarer Load-Nutzung acht Takte und B durch die dazwischengeschobene vorhandene Erhöhung sieben. Bei gleicher Periode ist das Laufzeitverhältnis $8/7\approx1{,}14$. CPI, Cycles per Instruction, beträgt im endlichen Kernfenster $8/3$ beziehungsweise $7/3$, einschließlich der Randkosten. Ein globaler Ripes-Zähler erfasst auch Initialisierung, echte NOPs, la-Expansion, also Load Address, und Abschluss. Man kann diese Zähler daher nicht ungeprüft als acht beziehungsweise sieben ausgeben. Die Verbesserung der Kernfolge ist eine Modellprognose, keine hier gemessene Simulatorzeit.
+:::
+
+## Selbstkontrolle vor Übung und Quiz
+
+- Welche Größe misst eine einzelne Instruktionsdauer?
+- Warum kann ein höherer CPI trotzdem zur kürzeren Laufzeit führen?
+- Welcher Wert liegt nach EX eines Loads vor?
+- Was bleibt beim Stall erhalten, was wird beim Flush ungültig?
+- Welche Bedingungen machen Scheduling zulässig?
+
+::: notes
+Die Dauer einer einzelnen Instruktion heißt Latenz. CPI bedeutet Cycles per Instruction, die mittleren Takte pro abgeschlossener Instruktion; bei gleicher Aufgabe zählt das Produkt aus Befehlszahl, CPI und Taktperiode. Ein höherer CPI kann deshalb durch eine deutlich kürzere Periode überkompensiert werden.
+
+EX, Execute, erzeugt beim Load zunächst die Datenadresse. Erst MEM, Memory Access, liefert das Wort. Beim Stall bleibt der richtige Verbraucher gespeichert; die älteren Produzenten arbeiten weiter. Beim Flush werden jüngere Einträge eines falschen Sprungpfads ungültig. Scheduling darf dieselben nötigen Instruktionen umordnen, wenn Registerwerte, Speicherzugriffe und Kontrollfluss in ihrer beobachtbaren Wirkung erhalten bleiben. Die Papieraufgaben prüfen diese Begründungen und vollständige Zeitdiagramme. Das Quiz prüft ähnliche, leicht zu verwechselnde Aussagen. Als Literatur dienen Harris und Harris, Digital Design and Computer Architecture, RISC-V Edition, sowie zur Vertiefung Patterson und Hennessy, Computer Organization and Design, RISC-V Edition. Die nächste Einheit erweitert den Blick auf Ein- und Ausgabe sowie Systemzustände.
 :::

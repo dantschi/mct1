@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="411" viewBox="0 0 1080 411" role="img" aria-label="vl7-loaduse-raster">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:26px}
+.small{font-size:22px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.reg{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1080" height="411" fill="#FFFFFF"/>
+<text x="25" y="40" class="title" text-anchor="start">Zeitdiagramm: relative Takte</text>
+<text x="310.0" y="72" class="small muted" text-anchor="middle">1</text>
+<text x="420.0" y="72" class="small muted" text-anchor="middle">2</text>
+<text x="530.0" y="72" class="small muted" text-anchor="middle">3</text>
+<text x="640.0" y="72" class="small muted" text-anchor="middle">4</text>
+<text x="750.0" y="72" class="small muted" text-anchor="middle">5</text>
+<text x="860.0" y="72" class="small muted" text-anchor="middle">6</text>
+<text x="970.0" y="72" class="small muted" text-anchor="middle">7</text>
+<text x="22" y="121" class="small" text-anchor="start">lw t0, 0(s1)</text>
+<rect x="255" y="88" width="98" height="52" rx="7" class="box"/>
+<text x="304.0" y="121" class="small" text-anchor="middle">IF</text>
+<rect x="365" y="88" width="98" height="52" rx="7" class="box"/>
+<text x="414.0" y="121" class="small" text-anchor="middle">ID</text>
+<rect x="475" y="88" width="98" height="52" rx="7" class="box"/>
+<text x="524.0" y="121" class="small" text-anchor="middle">EX</text>
+<rect x="585" y="88" width="98" height="52" rx="7" class="box"/>
+<text x="634.0" y="121" class="small" text-anchor="middle">MEM</text>
+<rect x="695" y="88" width="98" height="52" rx="7" class="box hot"/>
+<text x="744.0" y="121" class="small" text-anchor="middle">WB</text>
+<text x="22" y="203" class="small" text-anchor="start">add t3, t0, t2</text>
+<rect x="365" y="170" width="98" height="52" rx="7" class="box"/>
+<text x="414.0" y="203" class="small" text-anchor="middle">IF</text>
+<rect x="475" y="170" width="98" height="52" rx="7" class="box"/>
+<text x="524.0" y="203" class="small" text-anchor="middle">ID</text>
+<rect x="585" y="170" width="98" height="52" rx="7" class="box hot"/>
+<text x="634.0" y="203" class="small" text-anchor="middle">ID hält</text>
+<rect x="695" y="170" width="98" height="52" rx="7" class="box"/>
+<text x="744.0" y="203" class="small" text-anchor="middle">EX</text>
+<rect x="805" y="170" width="98" height="52" rx="7" class="box"/>
+<text x="854.0" y="203" class="small" text-anchor="middle">MEM</text>
+<rect x="915" y="170" width="98" height="52" rx="7" class="box hot"/>
+<text x="964.0" y="203" class="small" text-anchor="middle">WB</text>
+<text x="22" y="285" class="small" text-anchor="start">Ungültiger Eintrag</text>
+<rect x="585" y="252" width="98" height="52" rx="7" class="box hot"/>
+<text x="634.0" y="285" class="small" text-anchor="middle">Bubble</text>
+<rect x="695" y="252" width="98" height="52" rx="7" class="box"/>
+<text x="744.0" y="285" class="small" text-anchor="middle">MEM</text>
+<rect x="805" y="252" width="98" height="52" rx="7" class="box hot"/>
+<text x="854.0" y="285" class="small" text-anchor="middle">WB</text>
+<path d="M634.0 140 L634.0 154 L744.0 154 L744.0 170" class="flow" marker-end="url(#redarrow)"/>
+<text x="25" y="387" class="small" text-anchor="start">42 aus MEM/WB → add in EX von Takt 5 · der Load läuft weiter</text>
+</svg>

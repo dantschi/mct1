@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="390" viewBox="0 0 1080 390" role="img" aria-label="Registeroperand über Multiplexer an ALU mit zwei Forwarding-Quellen">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:26px}
+.small{font-size:22px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.reg{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1080" height="390" fill="#FFFFFF"/>
+<rect x="30" y="60" width="230" height="65" rx="7" class="box"/>
+<text x="145" y="101" class="title" text-anchor="middle">ID/EX</text>
+<rect x="30" y="165" width="230" height="65" rx="7" class="box"/>
+<text x="145" y="206" class="title" text-anchor="middle">EX/MEM</text>
+<rect x="30" y="270" width="230" height="65" rx="7" class="box"/>
+<text x="145" y="311" class="title" text-anchor="middle">MEM/WB</text>
+<rect x="490" y="165" width="150" height="100" rx="0" class="reg"/>
+<text x="565" y="223" class="title" text-anchor="middle">MUX</text>
+<rect x="800" y="165" width="220" height="100" rx="7" class="box"/>
+<text x="910" y="223" class="title" text-anchor="middle">ALU</text>
+<path d="M260 92 L375 92 L375 185 L490 185" class="line" marker-end="url(#arrow)"/>
+<path d="M260 197 L490 197" class="flow" marker-end="url(#redarrow)"/>
+<path d="M260 302 L375 302 L375 245 L490 245" class="line" marker-end="url(#arrow)"/>
+<path d="M640 215 L800 215" class="line" marker-end="url(#arrow)"/>
+<text x="282" y="52" class="small" text-anchor="start">Gelesener Registerwert</text>
+<text x="282" y="151" class="small" text-anchor="start">Bereites Rechenergebnis</text>
+<text x="282" y="353" class="small" text-anchor="start">Tatsächlicher Rückschreibwert, beim Load das geladene Wort</text>
+<text x="803" y="297" class="small" text-anchor="start">Ein Registeroperand</text>
+</svg>
