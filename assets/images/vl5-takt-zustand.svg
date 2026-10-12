@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="250" viewBox="0 0 1000 250" role="img" aria-labelledby="title desc"><title id="title">Eine Periode zwischen zwei steigenden Flanken</title><desc id="desc">Alter Zustand nach Flanke k, Signalausbreitung innerhalb der Periode, vorbereitete Werte vor Flanke k+1, neuer Zustand danach.</desc><style>
+.box {fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.accent {fill:#FFFFFF;stroke:#E2001A;stroke-width:2}
+.wire {fill:none;stroke:#86868B;stroke-width:2;stroke-linejoin:round;marker-end:url(#arrow)}
+.active {fill:none;stroke:#E2001A;stroke-width:2.5;stroke-linejoin:round;marker-end:url(#redarrow)}
+.control {fill:none;stroke:#86868B;stroke-width:2;stroke-dasharray:5 4;marker-end:url(#arrow)}
+.text {fill:#1D1D1F;font-family:Inter,Arial,sans-serif;font-size:22px}
+.small {fill:#1D1D1F;font-family:Inter,Arial,sans-serif;font-size:18px}
+.caption {fill:#86868B;font-family:Inter,Arial,sans-serif;font-size:18px}
+</style>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#86868B"/></marker>
+<marker id="redarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#E2001A"/></marker>
+</defs><rect width="1000" height="250" fill="#FFFFFF"/><polyline class="wire" points="45,65 175,65 175,25 420,25 420,65 720,65 720,25 970,25"/><text x="175" y="95" text-anchor="middle" class="small">Flanke k</text><text x="720" y="95" text-anchor="middle" class="small">Flanke k+1</text><rect x="35" y="125" width="250" height="80" rx="6" class="box"/><text x="160.0" y="158.0" text-anchor="middle" class="text">Alter Zustand</text><text x="160.0" y="186.0" text-anchor="middle" class="text">a0 = 7; PC = 0x100</text><rect x="320" y="125" width="330" height="80" rx="6" class="box"/><text x="485.0" y="158.0" text-anchor="middle" class="text">Kombinatorische Berechnung</text><text x="485.0" y="186.0" text-anchor="middle" class="text">WD = 150; nextPC = 0x104</text><rect x="695" y="125" width="280" height="80" rx="6" class="accent"/><text x="835.0" y="158.0" text-anchor="middle" class="text">Übernahme mit Freigabe</text><text x="835.0" y="186.0" text-anchor="middle" class="text">a0 = 150; PC = 0x104</text><text x="480" y="240" text-anchor="middle" class="caption">IF, ID, EX, ggf. MEM und WB innerhalb einer Periode</text></svg>

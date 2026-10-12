@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1050" height="310" viewBox="0 0 1050 310" role="img" aria-labelledby="title desc"><title id="title">Branch-Entscheidung nach IEC</title><desc id="desc">Branch und Zero an einem rechteckigen UND-Gatter mit Symbol &amp;. PCSrc wählt zwischen PC plus vier und dem fertigen Branch-Ziel.</desc><style>
+.box {fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.accent {fill:#FFFFFF;stroke:#E2001A;stroke-width:2}
+.wire {fill:none;stroke:#86868B;stroke-width:2;stroke-linejoin:round;marker-end:url(#arrow)}
+.active {fill:none;stroke:#E2001A;stroke-width:2.5;stroke-linejoin:round;marker-end:url(#redarrow)}
+.control {fill:none;stroke:#86868B;stroke-width:2;stroke-dasharray:5 4;marker-end:url(#arrow)}
+.text {fill:#1D1D1F;font-family:Inter,Arial,sans-serif;font-size:22px}
+.small {fill:#1D1D1F;font-family:Inter,Arial,sans-serif;font-size:18px}
+.caption {fill:#86868B;font-family:Inter,Arial,sans-serif;font-size:18px}
+</style>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#86868B"/></marker>
+<marker id="redarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#E2001A"/></marker>
+</defs><rect width="1050" height="310" fill="#FFFFFF"/><text x="40" y="210" text-anchor="start" class="text">Branch</text><text x="40" y="270" text-anchor="start" class="text">Zero</text><polyline class="wire" points="140,205 240,205"/><polyline class="wire" points="140,265 240,265"/><rect class="box" x="240" y="180" width="90" height="105"/><text x="285" y="243" text-anchor="middle" class="text">&amp;</text><polyline class="control" points="330,235 605,235 605,170"/><text x="442" y="223" text-anchor="middle" class="small">PCSrc (1 Bit)</text><rect x="25" y="20" width="300" height="55" rx="6" class="box"/><text x="175.0" y="54.5" text-anchor="middle" class="text">PC + 4</text><rect x="25" y="95" width="300" height="55" rx="6" class="box"/><text x="175.0" y="129.5" text-anchor="middle" class="text">PC + Byteoffset</text><polyline class="wire" points="325,47 480,47 480,65 545,65"/><polyline class="wire" points="325,122 480,122 480,125 545,125"/><rect x="545" y="30" width="135" height="140" rx="6" class="accent"/><text x="612.5" y="107.0" text-anchor="middle" class="text">PC-MUX</text><text x="555" y="62" text-anchor="start" class="small">0</text><text x="555" y="122" text-anchor="start" class="small">1</text><polyline class="wire" points="680,100 810,100"/><rect x="810" y="65" width="210" height="75" rx="6" class="box"/><text x="915.0" y="95.5" text-anchor="middle" class="text">nextPC</text><text x="915.0" y="123.5" text-anchor="middle" class="text">32 Bit</text></svg>

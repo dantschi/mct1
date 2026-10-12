@@ -1,114 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520" role="img" aria-label="Single-Cycle-Datenpfad (vereinfacht)">
-  <title>Single-Cycle-Datenpfad (vereinfacht nach Harris/Patterson)</title>
-  <style>
-    .box { fill: #FFFFFF; stroke: #E5E5EA; stroke-width: 2; }
-    .box-accent { fill: #FFFFFF; stroke: #E2001A; stroke-width: 2; }
-    .box-ctrl { fill: #FFFFFF; stroke: #86868B; stroke-width: 2; stroke-dasharray: 6 4; }
-    .wire { fill: none; stroke: #86868B; stroke-width: 1.5; stroke-linecap: square; stroke-linejoin: miter; }
-    .wire-ctrl { fill: none; stroke: #E2001A; stroke-width: 1.25; stroke-dasharray: 4 3; }
-    .lbl { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 13px; font-weight: 600; }
-    .pin { fill: #1D1D1F; font-family: Inter, sans-serif; font-size: 11px; font-weight: 500; }
-    .cap { fill: #86868B; font-family: Inter, sans-serif; font-size: 11px; }
-  </style>
-
-  <!-- Control Unit -->
-  <rect class="box-ctrl" x="380" y="24" width="340" height="56" rx="4"/>
-  <text class="lbl" x="550" y="50" text-anchor="middle">Control Unit (Steuerwerk)</text>
-  <text class="cap" x="550" y="68" text-anchor="middle">Lehrsubset: ALUSrc, MemtoReg, RegWrite, Branch; PCSrc = Branch UND Zero</text>
-
-  <!-- PCSrc MUX -->
-  <rect class="box-accent" x="36" y="200" width="70" height="70" rx="4"/>
-  <text class="lbl" x="71" y="232" text-anchor="middle">MUX</text>
-  <text class="pin" x="71" y="250" text-anchor="middle">PCSrc</text>
-
-  <!-- PC -->
-  <rect class="box" x="130" y="210" width="70" height="50" rx="4"/>
-  <text class="lbl" x="165" y="240" text-anchor="middle">PC</text>
-
-  <!-- +4 -->
-  <rect class="box" x="130" y="120" width="70" height="44" rx="4"/>
-  <text class="lbl" x="165" y="147" text-anchor="middle">+4</text>
-
-  <!-- Instruction Memory -->
-  <rect class="box" x="230" y="190" width="110" height="90" rx="4"/>
-  <text class="lbl" x="285" y="230" text-anchor="middle">Instr.</text>
-  <text class="lbl" x="285" y="248" text-anchor="middle">Memory</text>
-
-  <!-- Register File -->
-  <rect class="box" x="380" y="170" width="120" height="130" rx="4"/>
-  <text class="lbl" x="440" y="230" text-anchor="middle">Register</text>
-  <text class="lbl" x="440" y="248" text-anchor="middle">File</text>
-
-  <!-- ImmGen -->
-  <rect class="box" x="380" y="340" width="120" height="56" rx="4"/>
-  <text class="lbl" x="440" y="374" text-anchor="middle">ImmGen</text>
-
-  <!-- ALUSrc MUX -->
-  <rect class="box-accent" x="540" y="280" width="70" height="70" rx="4"/>
-  <text class="lbl" x="575" y="312" text-anchor="middle">MUX</text>
-  <text class="pin" x="575" y="330" text-anchor="middle">ALUSrc</text>
-
-  <!-- ALU -->
-  <rect class="box-accent" x="650" y="200" width="90" height="90" rx="4"/>
-  <text class="lbl" x="695" y="250" text-anchor="middle">ALU</text>
-
-  <!-- Data Memory -->
-  <rect class="box" x="780" y="190" width="110" height="100" rx="4"/>
-  <text class="lbl" x="835" y="235" text-anchor="middle">Data</text>
-  <text class="lbl" x="835" y="253" text-anchor="middle">Memory</text>
-
-  <!-- MemtoReg MUX -->
-  <rect class="box-accent" x="930" y="210" width="70" height="70" rx="4"/>
-  <text class="lbl" x="965" y="242" text-anchor="middle">MUX</text>
-  <text class="pin" x="965" y="260" text-anchor="middle">MemtoReg</text>
-
-  <!-- Branch adder -->
-  <rect class="box" x="650" y="100" width="90" height="50" rx="4"/>
-  <text class="lbl" x="695" y="130" text-anchor="middle">PC+Imm</text>
-
-  <!-- Wires: PCSrc out -> PC -->
-  <path class="wire" d="M 106 235 L 130 235"/>
-  <!-- PC -> Instr Mem -->
-  <path class="wire" d="M 200 235 L 230 235"/>
-  <!-- PC -> +4 -->
-  <path class="wire" d="M 165 210 L 165 164"/>
-  <!-- +4 -> PCSrc port0 -->
-  <path class="wire" d="M 130 142 L 56 142 L 56 215"/>
-  <!-- Branch target -> PCSrc port1 -->
-  <path class="wire" d="M 650 125 L 56 125 L 56 255"/>
-  <!-- Instr -> RegFile / ImmGen / Control -->
-  <path class="wire" d="M 340 235 L 380 235"/>
-  <path class="wire" d="M 360 235 L 360 368 L 380 368"/>
-  <path class="wire" d="M 285 190 L 285 52 L 380 52"/>
-  <!-- RD1 -> ALU -->
-  <path class="wire" d="M 500 200 L 620 200 L 620 230 L 650 230"/>
-  <!-- RD2 -> ALUSrc -->
-  <path class="wire" d="M 500 250 L 540 250 L 540 300 L 540 300"/>
-  <path class="wire" d="M 500 250 L 520 250 L 520 300 L 540 300"/>
-  <!-- ImmGen -> ALUSrc -->
-  <path class="wire" d="M 500 368 L 575 368 L 575 350"/>
-  <!-- ALUSrc -> ALU B -->
-  <path class="wire" d="M 610 315 L 630 315 L 630 260 L 650 260"/>
-  <!-- ALU -> Data Mem address -->
-  <path class="wire" d="M 740 245 L 780 245"/>
-  <!-- ALU -> MemtoReg -->
-  <path class="wire" d="M 740 220 L 910 220 L 910 230 L 930 230"/>
-  <!-- Data Mem read -> MemtoReg -->
-  <path class="wire" d="M 890 245 L 910 245 L 910 255 L 930 255"/>
-  <!-- RD2 bypass write data -->
-  <path class="wire" d="M 520 250 L 520 420 L 820 420 L 820 290"/>
-  <!-- MemtoReg writeback (schematic) -->
-  <path class="wire" d="M 1000 245 L 1040 245 L 1040 460 L 440 460 L 440 300"/>
-  <!-- PC -> Branch adder -->
-  <path class="wire" d="M 200 235 L 210 235 L 210 125 L 650 125"/>
-  <!-- Imm (shifted) to branch adder - from ImmGen -->
-  <path class="wire" d="M 440 340 L 440 320 L 620 320 L 620 150 L 650 150"/>
-
-  <!-- Control dashed lines (schematic) -->
-  <path class="wire-ctrl" d="M 450 80 L 71 80 L 71 200"/>
-  <path class="wire-ctrl" d="M 550 80 L 575 80 L 575 280"/>
-  <path class="wire-ctrl" d="M 650 80 L 965 80 L 965 210"/>
-
-  <text class="cap" x="550" y="500" text-anchor="middle">Vereinfachte Übersicht (ohne alle Bitbreiten/Flags)  in Ripes live nachvollziehbar</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="670" viewBox="0 0 1200 670" role="img" aria-labelledby="title desc"><title id="title">Single-Cycle-Datenpfad des MCT1-Lehrmodells</title><desc id="desc">Sieben unterstützte Instruktionen. PCSrc ist Branch UND Zero. ImmGen liefert den fertigen B-Byteoffset, ohne weiteren Shift. RD2 speist die Speicher-Schreibdaten, das ALU-Ergebnis kann den Speicher umgehen. Punkte verbinden Leitungen; Kreuzungen ohne Punkt sind getrennt.</desc><style>
+.box {fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.accent {fill:#FFFFFF;stroke:#E2001A;stroke-width:2}
+.wire {fill:none;stroke:#86868B;stroke-width:2;stroke-linejoin:round;marker-end:url(#arrow)}
+.active {fill:none;stroke:#E2001A;stroke-width:2.5;stroke-linejoin:round;marker-end:url(#redarrow)}
+.control {fill:none;stroke:#86868B;stroke-width:2;stroke-dasharray:5 4;marker-end:url(#arrow)}
+.text {fill:#1D1D1F;font-family:Inter,Arial,sans-serif;font-size:22px}
+.small {fill:#1D1D1F;font-family:Inter,Arial,sans-serif;font-size:18px}
+.caption {fill:#86868B;font-family:Inter,Arial,sans-serif;font-size:18px}
+</style>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#86868B"/></marker>
+<marker id="redarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#E2001A"/></marker>
+</defs><rect width="1200" height="670" fill="#FFFFFF"/><rect x="30" y="80" width="130" height="70" rx="6" class="box"/><text x="95.0" y="122.0" text-anchor="middle" class="text">PC</text><rect x="290" y="55" width="90" height="50" rx="6" class="box"/><text x="335.0" y="87.0" text-anchor="middle" class="text">+4</text><rect x="670" y="140" width="110" height="70" rx="6" class="box"/><text x="725.0" y="170.0" text-anchor="middle" class="small">Branch-</text><text x="725.0" y="194.0" text-anchor="middle" class="small">Addierer</text><rect x="950" y="90" width="90" height="80" rx="6" class="accent"/><text x="995.0" y="125.0" text-anchor="middle" class="small">PCSrc</text><text x="995.0" y="149.0" text-anchor="middle" class="small">MUX</text><text x="956" y="109" text-anchor="start" class="small">0</text><text x="956" y="140" text-anchor="start" class="small">1</text><rect class="box" x="800" y="235" width="70" height="50"/><text x="835" y="267" text-anchor="middle" class="text">&amp;</text><rect x="30" y="340" width="130" height="90" rx="6" class="box"/><text x="95.0" y="380.0" text-anchor="middle" class="small">Befehls-</text><text x="95.0" y="404.0" text-anchor="middle" class="small">speicher</text><rect x="290" y="330" width="160" height="130" rx="6" class="box"/><text x="370.0" y="378.0" text-anchor="middle" class="small">Registerbank</text><text x="370.0" y="402.0" text-anchor="middle" class="small">A1, A2, A3</text><text x="370.0" y="426.0" text-anchor="middle" class="small">RegWrite</text><rect x="290" y="465" width="130" height="70" rx="6" class="box"/><text x="355.0" y="507.0" text-anchor="middle" class="small">ImmGen</text><rect x="520" y="420" width="80" height="90" rx="6" class="accent"/><text x="560.0" y="460.0" text-anchor="middle" class="small">ALUSrc</text><text x="560.0" y="484.0" text-anchor="middle" class="small">MUX</text><text x="526" y="440" text-anchor="start" class="small">0</text><text x="526" y="484" text-anchor="start" class="small">1</text><rect x="670" y="340" width="110" height="90" rx="6" class="box"/><text x="725.0" y="380.0" text-anchor="middle" class="small">ALU</text><text x="725.0" y="404.0" text-anchor="middle" class="small">ALUControl</text><rect x="835" y="350" width="135" height="110" rx="6" class="box"/><text x="902.5" y="388.0" text-anchor="middle" class="small">Datenspeicher</text><text x="902.5" y="412.0" text-anchor="middle" class="small">MemRead</text><text x="902.5" y="436.0" text-anchor="middle" class="small">MemWrite</text><rect x="1040" y="420" width="90" height="90" rx="6" class="accent"/><text x="1085.0" y="460.0" text-anchor="middle" class="small">MemtoReg</text><text x="1085.0" y="484.0" text-anchor="middle" class="small">MUX</text><text x="1046" y="440" text-anchor="start" class="small">0</text><text x="1046" y="484" text-anchor="start" class="small">1</text><polyline class="wire" points="1040,125 1180,125 1180,25 15,25 15,115 30,115"/><polyline class="wire" points="160,115 220,115 220,80 290,80"/><polyline class="wire" points="380,80 900,80 900,110 950,110"/><polyline class="wire" points="220,115 220,160 670,160"/><polyline class="wire" points="780,175 915,175 915,140 950,140"/><polyline class="wire" points="90,150 90,340"/><polyline class="wire" points="160,385 250,385 250,365 290,365"/><polyline class="wire" points="250,385 250,500 290,500"/><polyline class="wire" points="450,350 670,350"/><polyline class="wire" points="450,410 470,410 470,445 520,445"/><polyline class="wire" points="420,500 490,500 490,485 520,485"/><polyline class="wire" points="600,460 635,460 635,405 670,405"/><polyline class="wire" points="780,385 835,385"/><polyline class="wire" points="805,385 805,540 1000,540 1000,445 1040,445"/><polyline class="wire" points="970,405 1020,405 1020,485 1040,485"/><polyline class="wire" points="470,410 470,570 900,570 900,460"/><polyline class="wire" points="1130,465 1160,465 1160,620 430,620 430,460"/><polyline class="wire" points="350,535 350,590 640,590 640,190 670,190"/><polyline class="control" points="745,340 745,290 780,290 780,270 800,270"/><polyline class="control" points="715,250 800,250"/><polyline class="control" points="870,260 995,260 995,170"/><circle cx="220" cy="115" r="3.5" fill="#86868B"/><circle cx="250" cy="385" r="3.5" fill="#86868B"/><circle cx="470" cy="410" r="3.5" fill="#86868B"/><circle cx="805" cy="385" r="3.5" fill="#86868B"/><text x="570" y="334" text-anchor="middle" class="small">RD1</text><text x="480" y="397" text-anchor="middle" class="small">RD2</text><text x="850" y="334" text-anchor="middle" class="small">ALU-Ergebnis</text><text x="990" y="394" text-anchor="start" class="small">Read Data</text><text x="640" y="559" text-anchor="middle" class="small">RD2 → Schreibdaten</text><text x="780" y="609" text-anchor="middle" class="small">WD → Registerbank</text><text x="190" y="375" text-anchor="middle" class="small">Instr.</text><text x="650" y="233" text-anchor="start" class="small">Branch</text><text x="752" y="315" text-anchor="start" class="small">Zero</text><text x="510" y="184" text-anchor="middle" class="small">B-Byteoffset</text><text x="1055" y="116" text-anchor="start" class="small">nextPC</text><text x="615" y="649" text-anchor="middle" class="caption">Steuerwerk: Quellenwahl, ALU-Funktion und Freigaben; Taktanschlüsse nicht eingezeichnet.</text></svg>
