@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="305" viewBox="0 0 900 305" role="img" aria-labelledby="title desc"><title id="title">Registerschreibfreigabe aus drei Klassen</title><desc id="desc">Gültig erkannte Registeroperation R, Load L und Add Immediate I führen über ein IEC-ODER-Gatter mit Symbol &gt;=1 zu RegWrite.</desc><style>
+.box{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.accent{fill:#FFFFFF;stroke:#E2001A;stroke-width:2}
+.wire{fill:none;stroke:#86868B;stroke-width:2;stroke-linejoin:round;marker-end:url(#arrow)}
+.control{fill:none;stroke:#86868B;stroke-width:2;stroke-dasharray:5 4;marker-end:url(#arrow)}
+.fault{fill:none;stroke:#E2001A;stroke-width:2.5;stroke-dasharray:5 4;marker-end:url(#redarrow)}
+.text{fill:#1D1D1F;font-family:Inter,Arial,sans-serif;font-size:23px}
+.small{fill:#1D1D1F;font-family:Inter,Arial,sans-serif;font-size:19px}
+.caption{fill:#86868B;font-family:Inter,Arial,sans-serif;font-size:18px}
+</style><defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#86868B"/></marker>
+<marker id="redarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#E2001A"/></marker>
+</defs><rect width="900" height="305" fill="#FFFFFF"/><text x="50" y="82" class="text" text-anchor="middle">R</text><text x="50" y="157" class="text" text-anchor="middle">L</text><text x="50" y="232" class="text" text-anchor="middle">I</text><polyline class="wire" points="85,75 300,75"/><polyline class="wire" points="85,150 300,150"/><polyline class="wire" points="85,225 300,225"/><rect class="box" x="300" y="35" width="130" height="230" rx="0"/><text x="365.0" y="158.0" class="text" text-anchor="middle">&gt;=1</text><polyline class="wire" points="430,150 635,150"/><rect class="accent" x="635" y="110" width="235" height="80" rx="6"/><text x="752.5" y="143.0" class="text" text-anchor="middle">RegWrite</text><text x="752.5" y="173.0" class="text" text-anchor="middle">1 Bit</text><text x="450" y="289" class="caption" text-anchor="middle">Alle Ein- und Ausgänge sind einzelne Steuerbits, keine Datenwörter.</text></svg>
