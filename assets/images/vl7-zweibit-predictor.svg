@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="390" viewBox="0 0 1000 390" role="img" aria-label="Saturierender Zweibitzähler zur Richtungsprognose">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:26px}
+.small{font-size:22px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.reg{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="390" fill="#FFFFFF"/>
+<circle cx="145" cy="180" r="62" fill="#FFFFFF" stroke="#E5E5EA" stroke-width="2"/>
+<text x="145" y="181" class="title" text-anchor="middle">00</text>
+<text x="145" y="214" class="small" text-anchor="middle">N</text>
+<text x="145" y="300" class="small" text-anchor="middle">stark N</text>
+<path d="M188 137 L188 96 L337 96 L337 137" class="line" marker-end="url(#arrow)"/>
+<text x="262.5" y="81" class="small" text-anchor="middle">T</text>
+<path d="M337 223 L337 265 L188 265 L188 223" class="line" marker-end="url(#arrow)"/>
+<text x="262.5" y="256" class="small" text-anchor="middle">N</text>
+<circle cx="380" cy="180" r="62" fill="#FFFFFF" stroke="#E5E5EA" stroke-width="2"/>
+<text x="380" y="181" class="title" text-anchor="middle">01</text>
+<text x="380" y="214" class="small" text-anchor="middle">N</text>
+<text x="380" y="300" class="small" text-anchor="middle">schwach N</text>
+<path d="M423 137 L423 96 L572 96 L572 137" class="line" marker-end="url(#arrow)"/>
+<text x="497.5" y="81" class="small" text-anchor="middle">T</text>
+<path d="M572 223 L572 265 L423 265 L423 223" class="line" marker-end="url(#arrow)"/>
+<text x="497.5" y="256" class="small" text-anchor="middle">N</text>
+<circle cx="615" cy="180" r="62" fill="#FFFFFF" stroke="#E5E5EA" stroke-width="2"/>
+<text x="615" y="181" class="title" text-anchor="middle">10</text>
+<text x="615" y="214" class="small" text-anchor="middle">T</text>
+<text x="615" y="300" class="small" text-anchor="middle">schwach T</text>
+<path d="M658 137 L658 96 L807 96 L807 137" class="line" marker-end="url(#arrow)"/>
+<text x="732.5" y="81" class="small" text-anchor="middle">T</text>
+<path d="M807 223 L807 265 L658 265 L658 223" class="line" marker-end="url(#arrow)"/>
+<text x="732.5" y="256" class="small" text-anchor="middle">N</text>
+<circle cx="850" cy="180" r="62" fill="#FFFFFF" stroke="#E5E5EA" stroke-width="2"/>
+<text x="850" y="181" class="title" text-anchor="middle">11</text>
+<text x="850" y="214" class="small" text-anchor="middle">T</text>
+<text x="850" y="300" class="small" text-anchor="middle">stark T</text>
+<path d="M498 135 L498 228" class="flow"/>
+<text x="145" y="45" class="small" text-anchor="middle">N hält 00</text>
+<text x="850" y="45" class="small" text-anchor="middle">T hält 11</text>
+<text x="25" y="360" class="small" text-anchor="start">T: Taken (genommen) · N: Not Taken · hoher Zustandsteil bestimmt die Richtung</text>
+</svg>

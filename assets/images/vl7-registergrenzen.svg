@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="340" viewBox="0 0 1080 340" role="img" aria-label="Fünf Stufen mit vier Registergrenzen und gemeinsamem Takt">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:26px}
+.small{font-size:22px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.reg{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1080" height="340" fill="#FFFFFF"/>
+<rect x="25" y="55" width="150" height="100" rx="7" class="box"/>
+<text x="100" y="92" class="title" text-anchor="middle">IF</text>
+<text x="100" y="130" class="small" text-anchor="middle">Fetch</text>
+<rect x="198" y="42" width="24" height="145" rx="0" class="reg"/>
+<text x="210" y="28" class="small" text-anchor="middle">IF/ID</text>
+<path d="M175 105 L198 105" class="line" marker-end="url(#arrow)"/>
+<path d="M222 105 L245 105" class="line" marker-end="url(#arrow)"/>
+<path d="M210 280 L210 187" class="line"/>
+<circle cx="210" cy="280" r="3" fill="#86868B"/>
+<rect x="245" y="55" width="150" height="100" rx="7" class="box"/>
+<text x="320" y="92" class="title" text-anchor="middle">ID</text>
+<text x="320" y="130" class="small" text-anchor="middle">Decode</text>
+<rect x="418" y="42" width="24" height="145" rx="0" class="reg"/>
+<text x="430" y="28" class="small" text-anchor="middle">ID/EX</text>
+<path d="M395 105 L418 105" class="line" marker-end="url(#arrow)"/>
+<path d="M442 105 L465 105" class="line" marker-end="url(#arrow)"/>
+<path d="M430 280 L430 187" class="line"/>
+<circle cx="430" cy="280" r="3" fill="#86868B"/>
+<rect x="465" y="55" width="150" height="100" rx="7" class="box"/>
+<text x="540" y="92" class="title" text-anchor="middle">EX</text>
+<text x="540" y="130" class="small" text-anchor="middle">Rechnen</text>
+<rect x="638" y="42" width="24" height="145" rx="0" class="reg"/>
+<text x="650" y="28" class="small" text-anchor="middle">EX/MEM</text>
+<path d="M615 105 L638 105" class="line" marker-end="url(#arrow)"/>
+<path d="M662 105 L685 105" class="line" marker-end="url(#arrow)"/>
+<path d="M650 280 L650 187" class="line"/>
+<circle cx="650" cy="280" r="3" fill="#86868B"/>
+<rect x="685" y="55" width="150" height="100" rx="7" class="box"/>
+<text x="760" y="92" class="title" text-anchor="middle">MEM</text>
+<text x="760" y="130" class="small" text-anchor="middle">Daten</text>
+<rect x="858" y="42" width="24" height="145" rx="0" class="reg"/>
+<text x="870" y="28" class="small" text-anchor="middle">MEM/WB</text>
+<path d="M835 105 L858 105" class="line" marker-end="url(#arrow)"/>
+<path d="M882 105 L905 105" class="line" marker-end="url(#arrow)"/>
+<path d="M870 280 L870 187" class="line"/>
+<circle cx="870" cy="280" r="3" fill="#86868B"/>
+<rect x="905" y="55" width="150" height="100" rx="7" class="box"/>
+<text x="980" y="92" class="title" text-anchor="middle">WB</text>
+<text x="980" y="130" class="small" text-anchor="middle">Abschluss</text>
+<path d="M25 280 L870 280" class="line"/>
+<text x="25" y="315" class="small" text-anchor="start">Gemeinsame Taktflanke: alle freigegebenen Register übernehmen gleichzeitig</text>
+</svg>

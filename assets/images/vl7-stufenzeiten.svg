@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="460" viewBox="0 0 1080 460" role="img" aria-label="Single-Cycle-Pfad 820 ps, Pipeline-Takt 270 ps">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:26px}
+.small{font-size:22px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.reg{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1080" height="460" fill="#FFFFFF"/>
+<text x="22" y="35" class="title" text-anchor="start">Didaktische Annahmen, keine Messwerte</text>
+<text x="22" y="92" class="small" text-anchor="start">Single Cycle</text>
+<rect x="190" y="65" width="197" height="42" rx="7" class="box"/>
+<text x="288.5" y="94" class="small" text-anchor="middle">IF</text>
+<rect x="390" y="65" width="97" height="42" rx="7" class="box"/>
+<text x="438.5" y="94" class="small" text-anchor="middle">ID</text>
+<rect x="490" y="65" width="147" height="42" rx="7" class="box"/>
+<text x="563.5" y="94" class="small" text-anchor="middle">EX</text>
+<rect x="640" y="65" width="247" height="42" rx="7" class="box"/>
+<text x="763.5" y="94" class="small" text-anchor="middle">MEM</text>
+<rect x="890" y="65" width="97" height="42" rx="7" class="box"/>
+<text x="938.5" y="94" class="small" text-anchor="middle">WB</text>
+<rect x="990" y="65" width="20" height="42" rx="0" class="box hot"/>
+<text x="1005" y="133" class="small" text-anchor="end">820 ps</text>
+<text x="22" y="187" class="small" text-anchor="start">IF</text>
+<rect x="190" y="158" width="400" height="36" rx="7" class="box"/>
+<rect x="593" y="158" width="40" height="36" rx="0" class="box hot"/>
+<text x="650" y="184" class="small" text-anchor="start">200 + 20 ps</text>
+<text x="22" y="236" class="small" text-anchor="start">ID</text>
+<rect x="190" y="207" width="200" height="36" rx="7" class="box"/>
+<rect x="393" y="207" width="40" height="36" rx="0" class="box hot"/>
+<text x="450" y="233" class="small" text-anchor="start">100 + 20 ps</text>
+<text x="22" y="285" class="small" text-anchor="start">EX</text>
+<rect x="190" y="256" width="300" height="36" rx="7" class="box"/>
+<rect x="493" y="256" width="40" height="36" rx="0" class="box hot"/>
+<text x="550" y="282" class="small" text-anchor="start">150 + 20 ps</text>
+<text x="22" y="334" class="small" text-anchor="start">MEM</text>
+<rect x="190" y="305" width="500" height="36" rx="7" class="box"/>
+<rect x="693" y="305" width="40" height="36" rx="0" class="box hot"/>
+<text x="750" y="331" class="small" text-anchor="start">250 + 20 ps</text>
+<text x="22" y="383" class="small" text-anchor="start">WB</text>
+<rect x="190" y="354" width="200" height="36" rx="7" class="box"/>
+<rect x="393" y="354" width="40" height="36" rx="0" class="box hot"/>
+<text x="450" y="380" class="small" text-anchor="start">100 + 20 ps</text>
+<text x="22" y="444" class="small" text-anchor="start">Graue Logikzeit + roter Registeroverhead · längster Taktpfad: 250 + 20 = 270 ps</text>
+</svg>
