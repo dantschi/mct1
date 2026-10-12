@@ -2,1668 +2,738 @@
 title: "Mikrocomputertechnik 1"
 subtitle: "Einheit 6: Das Steuerwerk"
 author: "Prof. Dr.-Ing. Daniel Klünder"
-# Vortrag:  quarto preview vorlesungen/06_steuerwerk.qmd
-#           (Notizen nur mit Taste S)
-# Handout:  quarto render vorlesungen/06_steuerwerk.qmd --profile handout --to pdf
-#           → _handout/vorlesungen/06_steuerwerk.pdf
+# Vortrag: quarto preview vorlesungen/06_steuerwerk.qmd
+# Notizen: Taste S. Skript: --profile handout --to pdf
 format: revealjs
+title-slide-attributes:
+  data-notes: |
+    Diese Einheit führt vom bekannten Datenpfad zur Herleitung seiner Steuerung.
+    Vorausgesetzt sind die Logikbausteine aus Einheit 1, die Befehlsformate aus
+    Einheit 2 und die Register-, Speicher- und Branch-Wirkungen aus Einheit 3–5.
+    Wir untersuchen zunächst nur gültige Befehle des vereinbarten Lehrmodells
+    und ergänzen später ausdrücklich addi, die Addition mit einer codierten
+    Konstante. Aus jeder Befehlswirkung folgen Quellenwahl, Rechenaufgabe und
+    Schreibfreigaben. Die anschließenden Papieraufgaben und Simulatorbeobachtungen
+    prüfen diese Begründungen. Die internen Signale beschreiben unsere konkrete
+    Schaltung und sind keine zusätzliche Vorschrift des RISC-V-Befehlssatzes.
 ---
+
 # Das Steuerwerk
 
+::: notes
+Einheit 5 hat erklärt, über welche Verbindungen Registerwerte, Adressen und Speicherinhalte verarbeitet werden. Jetzt klären wir, wie die passende Auswahl für den aktuellen Maschinenbefehl entsteht. Das Steuerwerk, auf Englisch Control Unit, erzeugt dafür Auswahl-, Freigabe- und Operationssignale. Ein korrektes Steuerwerk sorgt dafür, dass nur die vom Befehl verlangten Zustandsänderungen übernommen werden.
+
+Die Befehlssatzarchitektur, englisch Instruction Set Architecture und kurz ISA, beschreibt die sichtbare Befehlswirkung. Unser Steuerwerk ist dagegen Teil einer konkreten Mikroarchitektur. RISC-V legt diese interne Zerlegung nicht fest. Wir beginnen mit dem bekannten Single-Cycle-Modell, das einen unterstützten Befehl in einer Taktperiode ausführt. Die Notizen erläutern die Herleitung als begleitendes Skript; die Folien und ihre Abbildungen dürfen beim Lesen danebenliegen.
+:::
+
+## Vom vorgegebenen Signal zur begründeten Schaltung
+
+- Bisher: Welche Datenquelle und welches Schreibziel braucht der Befehl?
+- Heute: Welche Befehlsbits erzeugen die passenden Steuersignale?
+- Wahrheitstabellen aus der Befehlswirkung herleiten
+- Hauptsteuerung und konkrete Rechenoperation trennen
+- Fehler anhand bestimmter Daten und Adressen erklären
 
 ::: notes
-Einheit 5 hat den Datenpfad bereitgestellt. Einheit 6, Mikrocomputertechnik 1, bestimmt, welcher Weg und welche Zustandsänderung zu einem Maschinenbefehl gehören. Das Steuerwerk erzeugt dafür Auswahl- und Freigabesignale. Am Ende sollen Sie die Signale für add, lw, sw und beq im Lehrsubset begründen können. RISC-V schreibt diese interne Schaltung nicht vor.
+Die neue Frage setzt die vorherige Vorlesung fort. Beim Laden eines Worts mussten Sie eine Konstante zur Adressrechnung auswählen und anschließend den Speicherinhalt in ein Register übernehmen. Diese Entscheidungen waren vorgegeben. Jetzt entsteht jede Entscheidung aus der Bedeutung des aktuellen Befehls.
 
-Kontrollfrage: Steuert das Steuerwerk den Assemblertext oder Bits? Bits und daraus abgeleitete Signale. Die nächste Folie zeigt einen verdrahteten, aber noch nicht passend gesteuerten Prozessor.
+Eine Wahrheitstabelle ordnet gültigen Eingaben ihre Ausgaben zu. Sie beschreibt zunächst eine Funktion, nicht zwingend einen gespeicherten Tabelleninhalt. Wir leiten die Einträge durch Fragen nach Operanden, Rechnung und Zustandsänderung her. Anschließend übersetzen wir Teile der Tabelle in logische Verknüpfungen. Die Hauptsteuerung ordnet den Datenweg; eine zweite Steuerfunktion bestimmt die genaue Rechenoperation. Zum Abschluss prüfen wir hypothetische Fehler und vergleichen die Funktionen mit Ripes, dem visuellen RISC-V-Simulator. Reale Ströme oder Gatterlaufzeiten messen wir damit nicht.
 :::
-## Die Control Unit als Dirigent der Hardware
 
-- Herzlich willkommen zur sechsten Vorlesung in Mikrocomputertechnik 1
-- Letzte Einheit: das physikalische Rohrleitungssystem (Datenpfad)
-- Multiplexer verlegt, ALU verkabelt, Speichermodule angeschlossen
-- Das System ist ohne Steuersignale noch leblos
-- Heute: das Gehirn der CPU — die Control Unit (das Steuerwerk)
+## Voraussetzungen aus Einheit 1–5
 
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+| Bekannt | Heute weitergeführt |
+|:---|:---|
+| UND, ODER, Negation und Multiplexer | Bedingungen für Steuersignale |
+| Maschinenwort und Registerfelder | Befehlsfamilie und konkrete Operation |
+| Rechnen, Load, Store und Branch | Herleitung der Steuertabelle |
+| Wert vor / Zustand nach der Flanke | Auswahl ist noch kein Schreibzugriff |
 
-graph LR
-  Opcode[Opcode Input] -->|7 Bit| CU[Control Unit]
-  CU -->|Steuersignale| Out[MUX / Enable Pins]
-  style CU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Opcode fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Out fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+::: notes
+Einheit 1 liefert kombinatorische Logik und flankengetriggerte Zustandsspeicher. UND ist nur wahr, wenn alle Eingänge wahr sind; ODER ist wahr, sobald mindestens einer wahr ist. Negation kehrt einen logischen Wert um. Ein Multiplexer, kurz MUX, wählt aus mehreren Datenquellen genau eine aus.
+
+Einheit 2 erklärt das Maschinenwort, die codierten Registeradressen und den Unterschied zwischen Assemblertext und binärem Befehl. Einheiten 3 und 4 liefern Speicherzugriffe, Sprünge und Registerrollen. Einheit 5 verbindet diese Wirkungen mit dem Datenpfad. Sie müssen kein Karnaugh-Veitch-Diagramm, keinen Mikroprogrammentwurf und keine Pipeline kennen. Eine Pipeline würde mehrere Instruktionen überlappen und ist erst Thema von Einheit 7. Hier entwickeln wir kombinatorische Bedingungen mit den bereits bekannten Gattern und begründen ihre Wirkung an der nächsten Flanke.
+:::
+
+## Unser Modell und seine Grenzen
+
+- Ausgangspunkt: `add`, `sub`, `and`, `or`, `lw`, `sw`, `beq`
+- Gültige Befehle dieses Subsets sind zunächst vorausgesetzt
+- 32-Bit-Daten, Instruktionen ohne C-Erweiterung, Little Endian
+- Später: `addi` als ausdrücklich ergänzter Befehl
+- Keine zusätzlichen Branch-Arten oder Sprünge mit Linkwert
+
+::: notes
+Ein Subset ist eine ausgewählte Teilmenge des Befehlssatzes. Wir beginnen genau mit den sieben Operationen aus Einheit 5. Load Word, kurz lw, liest ein 32-Bit-Wort; Store Word, kurz sw, schreibt es. Branch if Equal, kurz beq, springt bei gleichen Registerwerten. Die Registeroperationen add, sub, and und or bilden Summe, Differenz, bitweises UND beziehungsweise bitweises ODER.
+
+Die C-Erweiterung für komprimierte Instruktionen bleibt ausgeschaltet; jeder betrachtete Maschinenbefehl belegt daher vier Byte. Little Endian bezeichnet die Byte-Reihenfolge eines Mehrbytewerts. Gültige, wortausgerichtete Speicheradressen und legale Codierungen der ausgewählten Befehle sind vorausgesetzt. Der Opcode allein ersetzt keine vollständige Befehlsprüfung. Später ergänzen wir Add Immediate, kurz addi, mit passender Steuerung; der benötigte Konstantenweg ist schon vorhanden. Die Behandlung nicht unterstützter Instruktionen und privilegierter Ausnahmen ist damit noch nicht implementiert.
+:::
+
+# 1. Vom Befehlswort zur Steuerfunktion
+
+::: notes
+Ein Befehlswort enthält verschiedene Arten von Information: Registeradressen, Konstanten und Kennungen der Operation. Die Steuerung muss nur diejenigen Bits zur Operationsentscheidung benutzen, die im jeweiligen Format tatsächlich diese Bedeutung haben.
+
+Zuerst trennen wir daher Befehlsfamilie und Detailoperation. Eine Familie beschreibt hier Befehle mit ähnlichem Datenweg, etwa die Registerarithmetik. Ein Opcode, ausgeschrieben Operationscode, erkennt diese Gruppe. Weitere Funktionsfelder bestimmen innerhalb der Gruppe die konkrete Operation. Diese Trennung erklärt, weshalb ein einzelner Familienerkenner weder jede Registeroperation noch jede Speicherzugriffsbreite implementiert.
+:::
+
+## Derselbe Befehl versorgt mehrere Bausteine
+
+![](../assets/images/vl6-befehlsfelder.svg){.nostretch fig-alt="Befehlsfelder verzweigen zur Registerbank, zum Immediate Generator und zur Steuerung"}
+
+::: notes
+Die Abbildung wird von oben nach unten gelesen. Das Maschinenwort liefert Registerfelder an die Registerbank, Konstantenbits an den Immediate Generator und Operationsfelder an die Steuerfunktionen. Der Immediate Generator, kurz ImmGen, setzt eine codierte Konstante zusammen und erweitert sie auf die Datenbreite. Die Pfeile zeigen Informationswege, keine zusätzlichen Taktzyklen.
+
+rs1 und rs2 bedeuten Source Register 1 und 2: Es sind die Nummern der Quellregister. rd bedeutet Destination Register und bezeichnet das Zielregister. Diese Felder sind bei den entsprechenden Formaten je fünf Bit breit. Der Opcode liegt in den Bits 6 bis 0. funct3 und funct7 sind Funktionsfelder mit drei beziehungsweise sieben Bit. Die Registeradressen bestimmen nicht, ob add oder sub ausgeführt wird. Umgekehrt sagt die Operationskennung nicht, welcher Wert gerade in einem Register steht. S- und B-Format haben kein rd-Feld; I-Format benutzt die oberen zwölf Bits als Immediate. Die Zeichnung ordnet die jeweils vorhandenen Felder ihren Aufgaben zu.
+:::
+
+## Vier Familien, vier Opcode-Werte
+
+| Unterstützte Befehle | Opcode binär | Hex | Gemeinsame Aufgabe |
+|:---|:---:|:---:|:---|
+| `add`, `sub`, `and`, `or` | `0110011` | `0x33` | Register → Rechnung → Register |
+| `lw` | `0000011` | `0x03` | Speicherwort → Register |
+| `sw` | `0100011` | `0x23` | Registerwort → Speicher |
+| `beq` | `1100011` | `0x63` | Register vergleichen → PC wählen |
+
+::: notes
+Ein Opcode, also Operationscode, ist sieben Bit breit und steht in allen hier verwendeten Formaten an derselben Stelle. Binär- und Hexdarstellung bezeichnen dieselben Bitmuster. Sie sollten die Werte wiedererkennen können; entscheidend ist jedoch die daraus begründete Aufgabe.
+
+Die erste Zeile umfasst nur unsere vier unterstützten Registeroperationen. lw heißt Load Word und lädt ein Wort in ein Register, sw heißt Store Word und speichert ein Registerwort. beq heißt Branch if Equal und wählt bei Gleichheit das Sprungziel. PC ist der Program Counter, das Register mit der Adresse des aktuellen Befehls. Andere reale Befehle können dieselben Opcodes besitzen: Weitere Loads benötigen beispielsweise eine Breiten- und Erweiterungssteuerung. Die Tabelle ist deshalb keine vollständige Beschreibung aller RISC-V-Instruktionen mit diesen Kennungen. Sie wird im Folgenden nur für die legal erkannten Befehle unseres Modells verwendet.
+:::
+
+## Opcode-Erkennung ist nicht die gesamte Decodierung
+
+- `add` und `sub` haben denselben Opcode
+- `lw` und `sw` benötigen auch die passende Wortzugriffskennung
+- `beq` benötigt die Gleichheitsbedingung seiner Befehlsart
+- Ein nicht unterstütztes Funktionsmuster ist kein Don't Care
+
+::: notes
+Decodierung bedeutet, ein Bitmuster seiner Befehlsbedeutung zuzuordnen. Ein Opcode erkennt zunächst eine Gruppe. Für eine gültige Operation müssen auch die jeweils relevanten Funktionsfelder passen. add und sub teilen den Opcode 0x33 und das dreibitige Funktionsfeld funct3 mit dem Wert 000. Das siebenbitige funct7 ist bei add 0000000 und bei sub 0100000.
+
+Bei lw und sw kennzeichnet funct3 gleich 010 den hier unterstützten Wortzugriff; bei beq steht funct3 gleich 000 für Gleichheit. Die vereinfachte Hauptsteuerung verwendet anschließend den Opcode der bereits als gültig vorausgesetzten Instruktion. Eine vollständige Implementierung müsste nicht unterstützte oder illegale Muster erkennen und behandeln. Don't Care heißt dagegen nur, dass eine bestimmte Ausgabe für eine gültige Instruktion keine beobachtbare Wirkung hat. Es erlaubt weder das Umdeuten ungültiger Befehle noch unerlaubte Schreibzugriffe. Diese Unterscheidung verhindert falsche Schlussfolgerungen aus den später reduzierten Tabellen.
+:::
+
+## Einen Opcode mit Gattern erkennen
+
+![](../assets/images/vl6-opcode-store.svg){.nostretch fig-alt="Sieben Opcode-Bits erkennen 0100011 mit Negation und einem IEC-UND-Gatter"}
+
+$$S=\overline{o_6}\land o_5\land\overline{o_4}\land\overline{o_3}\land\overline{o_2}\land o_1\land o_0$$
+
+::: notes
+Die Größen o6 bis o0 sind die einzelnen Bits des siebenbitigen Operationscodes. S ist hier das Ergebnis „Store-Opcode erkannt“. Für das Muster 0100011 müssen o5, o1 und o0 eins sein, alle übrigen genannten Bits null. Eine Negation macht aus einer erwarteten Null eine Eins am nachfolgenden UND-Eingang. Die Formel ist daher genau dann eins, wenn alle sieben Stellen mit dem gewünschten Muster übereinstimmen.
+
+Die Zeichnung zeigt links die sieben Leitungen. Rechtecke mit dem Symbol 1 und einem kleinen Ausgangskreis negieren die benötigten Bits; die übrigen Leitungen gehen direkt zum großen rechteckigen UND-Gatter mit dem Symbol &. IEC steht für International Electrotechnical Commission; die gezeigten rechteckigen Symbole entsprechen der im Kurs verwendeten Darstellung nach IEC 60617. Alle Wege sind Ein-Bit-Signale, die Leserichtung ist links nach rechts. Die Abbildung zeigt nur die Opcode-Erkennung, nicht die zusätzliche Prüfung des Wortzugriffs über funct3. S darf als Store-Freigabe erst unter der vereinbarten Voraussetzung eines gültigen sw verwendet werden. So entsteht aus einer Tabellenbedingung eine nachvollziehbare kombinatorische Schaltung.
+:::
+
+## Hauptsignale: Namen und Bitbreiten
+
+| Signalgruppe | Namen | Anzahl Bits |
+|:---|:---|:---:|
+| Quellenwahl | `ALUSrc`, `MemtoReg` | 2 |
+| Register / Speicher | `RegWrite`, `MemRead`, `MemWrite` | 3 |
+| Branch-Freigabe | `Branch` | 1 |
+| Rechenkategorie | `ALUOp` | 2 |
+
+Sieben benannte Signale, insgesamt acht Bit. `PCSrc` wird daraus abgeleitet.
+
+::: notes
+ALU bedeutet Arithmetic Logic Unit, die arithmetisch-logische Recheneinheit. ALUSrc, ALU Source, wählt ihren zweiten Operanden: null bedeutet zweites Registerwort, eins bedeutet Immediate. MemtoReg, Memory to Register, wählt den Registerschreibwert: null bedeutet ALU-Ergebnis, eins bedeutet Speicherlesedaten.
+
+RegWrite, Register Write, erlaubt das Schreiben eines Registers. MemRead, Memory Read, und MemWrite, Memory Write, steuern Lesen und Schreiben des Datenspeichers im Lehrmodell. Branch gibt die Prüfung eines beq frei. ALUOp, ALU Operation, ist eine zweibitige Rechenkategorie für die nachfolgende Detailsteuerung. Sechs Signale sind je ein Bit breit, ALUOp hat zwei Bit: Das ergibt sieben Namen und acht Leitungsbits. PCSrc, Program Counter Source, ist die Auswahl der nächsten Adresse im Program Counter und entsteht zusätzlich aus Branch und dem Vergleichsergebnis. Es ist kein achter unabhängiger Ausgang unserer Hauptsteuerung.
+:::
+
+## Die Steuerung rechnet zwischen den Flanken
+
+- Im Modell: kombinatorische Haupt- und Detailsteuerung
+- Kein eigener Ausführungstakt pro Steuerstufe
+- Neue Befehlsbits benötigen endliche Decodierlaufzeit
+- Vor der Übernahme müssen Daten und Freigaben stabil sein
+
+::: notes
+Kombinatorisch bedeutet, dass die stabilen Ausgaben nur von den aktuellen Eingaben abhängen. Unser Steuerwerk hat keinen eigenen gespeicherten Ablaufzustand. Ändert sich nach einer Taktflanke die Befehlsadresse, ändern sich anschließend Maschinenwort und Steuersignale mit endlichen Laufzeiten.
+
+Die Hauptsteuerung und die nachfolgende Detailsteuerung sind zwei logische Funktionen, keine zwei Taktzyklen. Während sich die Signale ausbreiten, können Übergangswerte auftreten. Die Modellflanke darf erst kommen, wenn die für eine Zustandsänderung benötigten Daten und Freigaben gültig sind. Die Setup-Zeit bezeichnet die erforderliche Stabilitätsdauer vor der Flanke; die Hold-Zeit die Dauer danach. Beides stammt aus den Registergrundlagen der ersten Einheit. Konkrete Nanosekunden würden eine Implementierung oder ausdrücklich vereinbarte Lehrwerte benötigen. Unsere Tabellen beschreiben die gültige Zuordnung nach dem Einschwingen und ersetzen keine Timing-Analyse.
+:::
+
+## Wahrheitstabelle, Gatter und Mikroprogramm
+
+- Wahrheitstabelle: Beschreibung einer Funktion
+- Gatter oder Nachschlagetabelle: mögliche Realisierungen
+- Mikroprogramm: gespeicherte Steuerfolgen mit Ablaufsteuerung
+- RISC-V schreibt keine dieser internen Umsetzungen vor
+
+::: notes
+Eine Wahrheitstabelle ordnet Eingabekombinationen Ausgaben zu. Sie kann mit kombinatorischen Gattern oder einer Nachschlagetabelle realisiert werden. LUT steht für Look-Up Table; ROM für Read-Only Memory, einen nur lesbaren Speicher. Eine entsprechend verwendete Tabelle kann die Steuerfunktion direkt aus ihrer Eingangsadresse liefern. Aus der Anzahl theoretischer Tabellenzeilen folgt jedoch nicht die Zahl der Gatter.
+
+Ein mikroprogrammiertes Steuerwerk benutzt gespeicherte Steuerwörter und eine Ablaufsteuerung für interne Schritte. Ein einzelner Opcode-Look-up ist daher nicht automatisch ein Mikroprogramm. ISA bedeutet Instruction Set Architecture und bezeichnet den sichtbaren Befehlssatzvertrag; RISC-V schreibt die interne Umsetzung nicht vor. Wir benutzen die Zerlegung in Haupt- und Detailsteuerung, weil sie sich verständlich herleiten und prüfen lässt. Eine garantiert kleinere Fläche oder höhere Frequenz ist daraus ohne konkreten Entwurf nicht ableitbar. Für unsere Aufgaben genügt die logische Funktion.
+:::
+
+# 2. Die Haupttabelle aus der Wirkung herleiten
+
+::: notes
+Die Bitfelder und Steuerziele sind bekannt. Nun füllen wir die Haupttabelle nicht durch Erinnern einzelner Nullen und Einsen, sondern durch die Wirkung jedes Befehls. Für jede Instruktion stellen wir dieselben fachlichen Fragen: Welche Operanden benötigt die Rechnung? Wird der Datenspeicher gelesen oder geschrieben? Soll ein Register einen neuen Wert erhalten? Ist eine Branch-Entscheidung vorgesehen?
+
+Eine Tabellenzeile ist dann korrekt, wenn diese Quellen und Freigaben zusammen die geforderte Zustandsänderung erzeugen. Mit dieser Methode lassen sich später auch zusätzliche Befehle einordnen. Die konkrete Operation der Recheneinheit wird im nächsten Abschnitt präzisiert; hier reicht zunächst die Unterscheidung zwischen fest verlangter Addition, Vergleich und Registeroperation.
+:::
+
+## Vier Fragen für jede Tabellenzeile
+
+1. Zweiter Rechenoperand: Register oder Immediate?
+2. Datenspeicher: lesen, schreiben oder unverändert lassen?
+3. Registerschreiben: erlaubt, und aus welcher Quelle?
+4. PC: sequenziell oder abhängig vom Vergleich?
+
+::: notes
+Ein Immediate ist eine im Befehl codierte Konstante. Für die Registerrechnung brauchen wir zwei gelesene Registerwerte; für eine Speicheradresse dagegen Basisregister und Offset. Diese erste Frage legt die passende Quellenauswahl fest.
+
+Anschließend prüfen wir den Datenspeicher. Lesen stellt ein Datenwort bereit, Schreiben verändert Speicherzustand, und ohne benötigten Zugriff bleiben beide Freigaben im Modell null. Ein Registerschreibwert benötigt zusätzlich die richtige Quelle, Zielnummer und Schreibfreigabe. Schließlich betrachten wir den PC, ausgeschrieben Program Counter: Er erhält normalerweise die nächste Instruktionsadresse um vier Byte weiter; bei beq kann er das Branch-Ziel erhalten. Ein Branch ist ein bedingter Sprung. Der PC ändert sich deshalb auch bei Befehlen, die keine allgemeinen Register schreiben. Diese Trennung verhindert, dass eine gesperrte Registerfreigabe irrtümlich als Stillstand des gesamten Prozessors verstanden wird.
+:::
+
+## Registeroperation: `add`, `sub`, `and`, `or`
+
+| Entscheidung | Signal | Wert |
+|:---|:---|:---:|
+| Zweites Registerwort wählen | ALUSrc | 0 |
+| Rechenergebnis zurückführen | MemtoReg | 0 |
+| Zielregister schreiben | RegWrite | 1 |
+| Datenspeicher unverändert | MemRead / MemWrite | 0 / 0 |
+| Keine Branch-Freigabe | Branch | 0 |
+
+::: notes
+ALU ist die Arithmetic Logic Unit, die arithmetisch-logische Einheit. ALUSrc bedeutet ALU Source und wählt null für das zweite Registerwort. MemtoReg, Memory to Register, führt bei null ihr Rechenergebnis zurück. RegWrite, Register Write, erlaubt dessen Übernahme an der nächsten Flanke. MemRead und MemWrite bedeuten Memory Read und Memory Write; beide bleiben null, weil die Registeroperation keinen Datenspeicherzugriff benötigt. Branch ist die Freigabe einer bedingten Sprungentscheidung und bleibt ebenfalls null.
+
+Zum Beispiel add t0, t1, t2 liest die Inhalte von t1 und t2 und schreibt ihre Summe nach t0. Die Namen sind temporäre Registeraliasnamen für x5, x6 und x7 in der Reihenfolge t0, t1, t2. Bei 7 und 3 ist der vorbereitete Schreibwert 10. sub, and und or benutzen dieselben Quellen und Schreibziele. Ihre konkrete Rechenfunktion unterscheiden wir daher getrennt von dieser gemeinsamen Tabellenzeile. Die Zeile gilt nur für die legalen Codierungen dieser vier Operationen.
+:::
+
+## `lw`: Adresse berechnen, Inhalt übernehmen
+
+| Entscheidung | Signal | Wert |
+|:---|:---|:---:|
+| Offset wählen | ALUSrc | 1 |
+| Gelesenes Wort wählen | MemtoReg | 1 |
+| Zielregister schreiben | RegWrite | 1 |
+| Nur Datenspeicher lesen | MemRead / MemWrite | 1 / 0 |
+| Keine Branch-Freigabe | Branch | 0 |
+
+::: notes
+lw heißt Load Word und lädt ein 32-Bit-Wort. Die ALU, Arithmetic Logic Unit, berechnet dafür die effektive Adresse aus Basis und Offset. ALUSrc, ALU Source, muss eins sein, damit der zweite Operand die vorzeichenerweiterte Konstante und kein Registerwert ist. MemRead, Memory Read, gibt den Lesezugriff frei; MemWrite, Memory Write, bleibt null.
+
+Beispiel: s1 enthält die Basis 0x2000, lw t0, 4(s1) soll das Wort an 0x2004 lesen, dort liegt 37. s1 ist der Registeralias x9, t0 der Alias x5. MemtoReg, Memory to Register, muss eins sein, damit der gelesene Wert 37 und nicht die Adresse zum Schreibport gelangt. RegWrite, Register Write, erlaubt die Übernahme nach t0. Branch ist null; es gibt keine bedingte Abweichung vom sequenziellen Kontrollfluss. Bis zur Flanke ist 37 nur vorbereitet. Der Datenspeicher bleibt bei diesem Load unverändert. Die Beispieladresse ist eine gültige didaktische Annahme und keine behauptete Ripes-Segmentbasis.
+:::
+
+## `sw`: Adresse und Schreibdaten getrennt
+
+| Entscheidung | Signal | Wert |
+|:---|:---|:---:|
+| Offset für die Adresse wählen | ALUSrc | 1 |
+| Kein Registerschreiben | RegWrite | 0 |
+| Nur Datenspeicher schreiben | MemRead / MemWrite | 0 / 1 |
+| Keine Branch-Freigabe | Branch | 0 |
+| Register-Rückschreibquelle unerheblich | MemtoReg | X |
+
+::: notes
+sw heißt Store Word und schreibt ein 32-Bit-Wort. Die ALU, Arithmetic Logic Unit, addiert Basis und Offset als Adresse. ALUSrc, ALU Source, wählt daher das Immediate. RD2 bedeutet Read Data 2: Dieser zweite Registerlesewert erreicht über einen getrennten Abzweig die Speicher-Schreibdaten. Er verschwindet nicht, weil die ALU eine andere Quelle wählt.
+
+Für sw t1, 4(s1) mit s1 gleich 0x2000 und t1 gleich 10 entstehen die Adresse 0x2004 und die Schreibdaten 10. s1 ist x9, t1 ist x6. MemWrite, Memory Write, erlaubt die Übernahme an der Flanke, MemRead, Memory Read, bleibt null. RegWrite, Register Write, ist null, denn das S-Format besitzt kein Zielregisterfeld. MemtoReg, Memory to Register, kann deshalb null oder eins sein; X bezeichnet diese begründete Entwurfsfreiheit. Branch bleibt null. Die Speicheradresse, der Datenwert und die Speicherfreigabe sind weiterhin verbindlich. Don't Care gilt nur für den unbenutzten Register-Rückschreibweg.
+:::
+
+## `beq`: Vergleich freigeben, nichts zurückschreiben
+
+| Entscheidung | Signal | Wert |
+|:---|:---|:---:|
+| Zwei Registerwerte vergleichen | ALUSrc | 0 |
+| Kein Register- oder Datenzugriff mit Wirkung | RegWrite / MemRead / MemWrite | 0 / 0 / 0 |
+| Branch-Prüfung freigeben | Branch | 1 |
+| Register-Rückschreibquelle unerheblich | MemtoReg | X |
+
+::: notes
+beq heißt Branch if Equal, also Sprung bei Gleichheit. ALUSrc, ALU Source, wählt das zweite Registerwort. Die ALU, Arithmetic Logic Unit, subtrahiert in unserem Lehrmodell die beiden Operanden. Ihr internes Zero-Signal ist eins, wenn das Ergebnis null und die Registerwerte gleich sind. Ein zusätzlicher Addierer bildet parallel das Sprungziel.
+
+RegWrite, Register Write, bleibt null: Die Differenz wird nicht gespeichert. MemRead und MemWrite, Memory Read und Memory Write, sind ebenfalls null. MemtoReg, Memory to Register, ist wegen der gesperrten Registerübernahme unerheblich. Branch gleich eins bedeutet nur, dass die Bedingung berücksichtigt werden darf. PCSrc, Program Counter Source, wählt erst nach Verknüpfung mit Zero den nächsten Wert des Program Counter. Bei ungleichen Registern bleibt Branch also eins, obwohl kein Sprung genommen wird. Das Signal darf nicht aus dem tatsächlichen Sprungerfolg statt aus der Befehlsart hergeleitet werden.
+:::
+
+## Auswahl und Übernahme sind verschieden
+
+![](../assets/images/vl6-auswahl-freigabe.svg){.nostretch fig-alt="MemtoReg wählt ein Datenwort, RegWrite erlaubt unabhängig davon die Registerübernahme"}
+
+::: notes
+Die Abbildung zeigt den Register-Rückschreibweg. ALU bedeutet Arithmetic Logic Unit, die arithmetisch-logische Einheit. Ihr Ergebnis und die Speicherlesedaten sind zwei 32-Bit-Quellen. MemtoReg, Memory to Register, ist das Ein-Bit-Auswahlsignal des MUX, also des Multiplexers. Er führt eine der Quellen an WD, ausgeschrieben Write Data, den Schreibdateneingang der Registerbank.
+
+Unabhängig davon steuert RegWrite, Register Write, ob diese Daten an der aktiven Flanke überhaupt übernommen werden. Die grauen durchgezogenen Linien transportieren Daten; gestrichelte Linien zeigen Steuerinformation. Bei einem add liegt beispielsweise 10 an WD und RegWrite ist eins: Das Zielregister übernimmt 10. Bei sw ist RegWrite null; auch bei gültigem WD-Wert erfolgt kein Registerschreiben. A3, die fünf Bit breite Schreibadresse, bestimmt bei erlaubtem Schreiben das Ziel; sie ist hier zugunsten der Übersicht ausgelassen. Der MUX speichert selbst keinen Zustand. Diese Trennung erklärt das Don't Care der Register-Rückschreibquelle.
+:::
+
+## Don't Care heißt nicht unbekannt oder hochohmig
+
+- X in der Tabelle: beide Auswahlwerte erfüllen dieselbe Befehlswirkung
+- Auf einer konkreten Leitung liegt dennoch ein konkreter Wert an
+- Unbekannter Simulationswert und hochohmiger Ausgang sind andere Begriffe
+- Nicht benutzte Freigaben sind verbindlich 0
+
+::: notes
+Don't Care bedeutet „für diese spezifizierte Wirkung unerheblich“. Bei gesperrtem Registerschreibport ist es gleichgültig, welche Rückschreibquelle der Multiplexer auswählt. Beide Varianten erzeugen denselben Registerzustand. X beschreibt diese Freiheit für den Entwurf; es ist kein zusätzliches Auswahlbit neben null und eins.
+
+Ein unbekannter Wert in einer Logiksimulation bedeutet dagegen, dass ein Wert nicht eindeutig bestimmt ist. Hochohmig bezeichnet einen elektrisch nicht treibenden Ausgang. Diese Begriffe erklären nicht das Tabellen-X. Insbesondere darf eine Speicher-Schreibfreigabe bei add nicht beliebig sein: Eine Eins könnte einen Speicherwert verändern und wäre daher beobachtbar. Dass ein Ausgang für das beabsichtigte Rechenergebnis nicht benötigt wird, reicht nicht als Begründung. Prüfen Sie alle betroffenen Zustandsspeicher. Die Auswahlsignale mit erlaubtem X können anschließend auf verschiedene Weise realisiert werden; Freigaben bleiben dagegen durch den Befehl eindeutig festgelegt.
+:::
+
+## Ein kleines Minimierungsbeispiel
+
+| A | B | f |
+|:---:|:---:|:---:|
+| 0 | 0 | 0 |
+| 0 | 1 | 1 |
+| 1 | 0 | 0 |
+| 1 | 1 | X |
+
+Mögliche Realisierungen: $f=\overline{A}\land B$ oder $f=B$.
+
+::: notes
+A und B sind zwei logische Eingabebits; f ist ein Ein-Bit-Ausgang. Die ersten drei Tabellenzeilen legen seine Werte fest, die letzte erlaubt entweder null oder eins. Der Überstrich bezeichnet Negation, das Dach die UND-Verknüpfung.
+
+Wählen wir im letzten Fall null, liefert die Formel „nicht A UND B“ die Folge 0, 1, 0, 0. Wählen wir dort eins, kann f direkt B sein; dann lautet die Folge 0, 1, 0, 1. Beide Funktionen erfüllen alle verbindlichen Fälle. Die zweite benötigt für diese isolierte Funktion keine zusätzliche Verknüpfung und veranschaulicht den möglichen Nutzen eines Don't Care. Dafür müssen Sie kein Karnaugh-Veitch-Diagramm beherrschen. Die Aussage ist eine logische Vereinfachung, keine Messung von Fläche, Energie oder Frequenz. Die Freiheit ist nur erlaubt, weil der Fall A gleich eins und B gleich eins ausdrücklich unerheblich ist; ein noch nicht untersuchter Fall dürfte nicht als X behandelt werden.
+:::
+
+## Zwischenstand: Quellen und Schreibfreigaben
+
+| Befehl | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| R-Typ | 0 | 0 | 1 | 0 | 0 | 0 |
+| `lw` | 1 | 1 | 1 | 1 | 0 | 0 |
+| `sw` | 1 | X | 0 | 0 | 1 | 0 |
+| `beq` | 0 | X | 0 | 0 | 0 | 1 |
+
+Die konkrete Rechenoperation fehlt noch.
+
+::: notes
+ALU ist die Arithmetic Logic Unit, die Recheneinheit. ALUSrc wählt als ALU Source Registerwort oder Immediate; MemtoReg wählt als Memory to Register Rechenergebnis oder Speicherlesedaten. RegWrite, Register Write, erlaubt die Registerübernahme. MemRead und MemWrite erlauben als Memory Read und Memory Write die jeweiligen Speicherzugriffe. Branch kennzeichnet den unterstützten bedingten Sprung.
+
+R-Typ bezeichnet hier das Registerformat für die legalen add-, sub-, and- und or-Befehle. Die Tabelle fasst die bereits hergeleiteten Quellen und Freigaben zusammen. X ist ausschließlich bei der unbenutzten Register-Rückschreibquelle erlaubt. Bei lw und sw wählen wir dieselbe Adressbildung, aber unterschiedliche Speicheraktionen. Bei Registeroperationen ist dagegen der Datenweg derselbe, obwohl add, sub, and und or verschiedene Ergebnisse berechnen. Alle Freigaben und Auswahlen sind somit noch nicht ausreichend, um eine konkrete Operation festzulegen. Diese offene Aufgabe führt zur Detailsteuerung. Die Tabelle beschreibt keine gesamte RISC-V-Implementierung und kein direkt übertragbares Ripes-Portformat.
+:::
+
+# 3. Die Rechenoperation zweistufig bestimmen
+
+::: notes
+Die bisherige Tabelle kann zwischen Registerrechnung, Speicherzugriff und Branch unterscheiden. Sie kann jedoch nicht aus dem gemeinsamen Opcode erkennen, welche Registeroperation gewünscht ist. ALU steht für Arithmetic Logic Unit, die arithmetisch-logische Einheit.
+
+Wir ergänzen eine Rechenkategorie und eine nachfolgende Übersetzung in das konkrete ALU-Kommando. Zweistufig bedeutet hier eine kombinatorische Aufgabenteilung innerhalb desselben Single-Cycle-Takts. Die erste Funktion erkennt die grobe Aufgabe, die zweite berücksichtigt gegebenenfalls weitere Funktionsbits. Diese Struktur macht die Entscheidung nachvollziehbar, ist aber keine Vorschrift der RISC-V-Befehlssatzarchitektur und keine Garantie einer höheren Geschwindigkeit.
+:::
+
+## ALUOp ist die Kategorie, ALUControl das Kommando
+
+![](../assets/images/vl6-zweistufig.svg){.nostretch fig-alt="Hauptsteuerung liefert ALUOp, Detailsteuerung kombiniert es mit Funktionsfeldern zu ALUControl"}
+
+::: notes
+In der Abbildung laufen die Operationsbits von links nach rechts. Der Opcode ist der siebenbitige Operationscode. Die Hauptsteuerung, englisch Main Control, erzeugt die bereits bekannten Quellen- und Schreibsignale sowie ALUOp. ALU bedeutet Arithmetic Logic Unit; ALUOp ist unsere zweibitige Operationskategorie. Sie wird zusammen mit relevanten Funktionsfeldern an die ALU Control, die Detailsteuerung der Recheneinheit, geführt.
+
+funct3 ist das dreibitige Funktionsfeld; funct7 das siebenbitige. Für die vereinfachte Unterscheidung zwischen bereits legal erkanntem add und sub genügt später das Instruktionsbit 30. ALUControl ist dagegen das vierbitige konkrete Kommando an die Recheneinheit. Die roten Umrandungen heben die zwei Steuerfunktionen hervor, nicht den Signalwert eins. Pfeile und Beschriftungen geben Richtung und Bitbreite an. Die beiden Boxen sind keine getakteten Pipeline-Stufen. Eine vollständige Prüfung des Befehls muss weiterhin die nicht gezeigten relevanten Bits berücksichtigen; die reduzierte Operationswahl ersetzt diese Prüfung nicht.
+:::
+
+## Drei verwendete ALUOp-Kategorien
+
+| ALUOp | Aufgabe | Im bisherigen Modell |
+|:---:|:---|:---|
+| `00` | Addition fest vorgeben | `lw`, `sw` |
+| `01` | Subtraktion fest vorgeben | `beq`-Vergleich |
+| `10` | Registeroperation über Funktionsfelder wählen | `add/sub/and/or` |
+| `11` | nicht verwendet | kein unterstützter Fall |
+
+::: notes
+ALU heißt Arithmetic Logic Unit. ALUOp, ALU Operation, enthält zwei Bit und wird hier als binäres Wort notiert: 00, 01, 10 oder 11. Diese Codierung ist eine Kurskonvention. Die führende Null ist Teil der Zweibitdarstellung, kein separates Signal.
+
+Load Word, lw, und Store Word, sw, brauchen immer eine Addition zur Adressbildung. Deshalb fordert die Hauptsteuerung 00 an, unabhängig von den Konstantenbits. Für Branch if Equal, beq, verlangt unser Modell 01, weil die Differenz der Registerwerte das interne Nullergebnis für den Gleichheitstest liefert. Bei den vier Registeroperationen bedeutet 10, dass die Detailsteuerung die Funktionsfelder auswerten muss. 11 ist nicht verwendet und keine freie Erlaubnis zum Schreiben. „Fest vorgeben“ bedeutet einen bestimmten Ausgang der kombinatorischen Funktion; es verlangt keine zusätzliche Instruktion. In Ripes kann der Branch-Vergleich über ein anderes Bauteil laufen, sodass diese Kategorie nicht als dortiger Portwert vorausgesetzt werden darf.
+:::
+
+## Vier interne ALUControl-Codes
+
+| ALUControl | Rechenfunktion |
+|:---:|:---|
+| `0000` | bitweises UND |
+| `0001` | bitweises ODER |
+| `0010` | Addition |
+| `0110` | Subtraktion |
+
+Diese vier Bit sind weder Opcode noch ALUOp.
+
+::: notes
+ALU bedeutet Arithmetic Logic Unit, die arithmetisch-logische Einheit. ALUControl ist das konkrete Steuerwort an ihre Operationsauswahl. Die Tabelle verwendet vier Bit lange Codes als interne Kurskonvention, angelehnt an das klassische Lehrbuchmodell. RISC-V schreibt diese Leitungen oder ihre Bitmuster nicht vor.
+
+Opcode heißt Operationscode und ist ein Feld im Maschinenwort. ALUOp ist dagegen die zweibitige Kategorie zwischen Haupt- und Detailsteuerung. ALUControl übersetzt diese Kategorie in die hier dargestellte Vierbitwahl. Bei Addition entsteht die Summe der Operanden, bei Subtraktion die Differenz des ersten minus des zweiten Operanden. Bitweises UND beziehungsweise ODER verknüpft je zwei Bits an derselben Position der 32-Bit-Wörter. Sie dürfen insbesondere 0110 nicht als RISC-V-Opcode von sub lesen. Der gleiche Befehl kann in einem anderen Hardwareentwurf ein anders codiertes internes Kommando erhalten und dennoch dieselbe Befehlswirkung haben.
+:::
+
+## Registeroperationen: Funktionsfelder auswerten
+
+| Operation | funct3 | funct7 | ALUControl |
+|:---|:---:|:---:|:---:|
+| `add` | `000` | `0000000` | `0010` |
+| `sub` | `000` | `0100000` | `0110` |
+| `and` | `111` | `0000000` | `0000` |
+| `or` | `110` | `0000000` | `0001` |
+
+Voraussetzung: Opcode `0110011` und `ALUOp = 10`.
+
+::: notes
+Der Opcode ist der Operationscode für die Registergruppe. funct3 und funct7 sind Funktionsfelder mit drei und sieben Bit. Die ALU, Arithmetic Logic Unit, bekommt über ALUOp zunächst die Kategorie Registeroperation. ALUControl ist anschließend das vierbitige konkrete Kommando.
+
+funct3 gleich 111 wählt in unserem Subset and, also bitweises UND; 110 wählt or, bitweises ODER. Bei 000 ist zusätzlich funct7 nötig: add hat 0000000, sub hat 0100000. Diese beiden gültigen Muster unterscheiden sich nur in Bit 30 des Instruktionsworts. Innerhalb dieser eingeschränkten Auswahl reicht das Bit daher als letzter Schalter. Es reicht nicht für beliebige Muster mit gleichem Opcode und funct3. Eine Instruktion mit einem anderen funct7 ist nicht stillschweigend add. Die Tabelle nennt deshalb die vollständigen gültigen Funktionsfelder statt einer scheinbar universellen Bit-30-Regel. Die schon hergeleiteten Quellen und Schreibfreigaben bleiben bei allen vier Zeilen gleich.
+:::
+
+## Dieselben Operanden, vier Ergebnisse
+
+Ausgangswerte: `t1 = 7`, `t2 = 3`.
+
+| Befehl | Rechnung im unteren Nibble | Ergebnis in `t0` |
+|:---|:---|:---|
+| `add t0, t1, t2` | $7+3$ | 10 |
+| `sub t0, t1, t2` | $7-3$ | 4 |
+| `and t0, t1, t2` | `0111` UND `0011` | 3 |
+| `or t0, t1, t2` | `0111` ODER `0011` | 7 |
+
+::: notes
+Die Befehle sind RISC-V-Assembleranweisungen. t0, t1 und t2 sind die temporären Registeraliasnamen x5, x6 und x7. Wir betrachten vier unabhängige Ausführungen mit denselben Quellwerten; das Ergebnis wird jeweils nach t0 geschrieben. Ein Nibble bezeichnet vier Bit. Da beide positiven Beispielwerte nur diese unteren Stellen benötigen, können wir ihre bitweisen Ergebnisse dort vollständig erkennen; die übrigen Bits sind null.
+
+Die ALU, Arithmetic Logic Unit, erhält dieselben Operanden, aber unterschiedliche ALUControl-Kommandos. Die Summe ist 10, die Differenz 4. Bei UND bleibt ein Bit nur stehen, wenn beide Operanden es besitzen: 0111 und 0011 ergeben 0011. Bei ODER genügt ein gesetztes Bit: Es entsteht 0111. Alle vier Ergebnisse werden erst mit erlaubter Registerfreigabe an der Flanke gespeichert. Diese Gegenüberstellung zeigt, weshalb die gemeinsame Haupttabellenzeile noch keine vollständige Operationsentscheidung ist.
+:::
+
+## Die vollständige Detailzuordnung unseres Subsets
+
+| ALUOp | Zusatzbedingung | ALUControl |
+|:---:|:---|:---:|
+| `00` | bereits gültiger Additionsfall | `0010` |
+| `01` | bereits gültiger `beq` | `0110` |
+| `10` | gültige `add`-Felder | `0010` |
+| `10` | gültige `sub`-Felder | `0110` |
+| `10` | gültige `and`-Felder | `0000` |
+| `10` | gültige `or`-Felder | `0001` |
+
+::: notes
+ALU steht für Arithmetic Logic Unit. ALUOp ist die zweibitige Kategorie, ALUControl das vierbitige Kommando. Die Tabelle beschreibt die Detailsteuerung für bereits gültig erkannte Befehle. Im Additionsfall 00 muss sie das Kommando 0010 liefern, bei unserem beq-Vergleich 01 das Kommando 0110.
+
+Für Kategorie 10 werden die Funktionsfelder der vorigen Tabelle benötigt. funct3 bezeichnet das dreibitige, funct7 das siebenbitige Funktionsfeld. Die gültigen add-, sub-, and- und or-Muster ergeben jeweils das konkrete Kommando. Konstantenbits von Speicherbefehlen müssen bei 00 nicht als Funktionskennung interpretiert werden: Die Aufgabe der ALU steht bereits fest. Diese Nichtauswertung ist erlaubt, weil die Instruktion schon als gültiger Additionsfall erkannt ist. Dagegen dürfen nicht unterstützte Funktionsmuster bei 10 nicht als beliebige der vier Operationen behandelt werden. Die Aufgabenteilung spart vor allem Verwechslungen beim Herleiten; eine konkrete Fläche oder Decodiergeschwindigkeit lässt sich aus dieser Tabelle allein nicht bestimmen.
+:::
+
+# 4. Transfer: das Modell um addi erweitern
+
+::: notes
+addi bedeutet Add Immediate: Addiert wird ein Registerwert mit einer codierten Konstante, das Ergebnis geht in ein Zielregister. Den Befehl kennen Sie aus Einheit 2; er gehörte bisher ausdrücklich nicht zu unserem sieben Befehle umfassenden Datenpfadmodell.
+
+Der benötigte I-Immediate-Weg und die Addition existieren bereits für den Load. Der Register-Rückschreibweg des Rechenergebnisses existiert bereits für Registerarithmetik. Deshalb kann die passende Kombination dieser Wege addi ermöglichen. Es fehlt die Erkennung des gültigen Befehls und seine korrekte Hauptsteuerzeile. Mit dieser Erweiterung erhält unser Modell acht unterstützte Operationen; daraus folgt weiterhin keine vollständige Unterstützung aller Immediate-Befehle.
+:::
+
+## addi verbindet zwei bekannte Datenwege
+
+```asm
+addi t0, t1, -5      # vorher: t1 = 7; Ergebnis: t0 = 2
 ```
 
+- Zweiter Operand: Immediate wie bei `lw`
+- Rückschreibquelle: Rechenergebnis wie bei `add`
+- Kein Datenspeicherzugriff und kein Branch
+- Opcode `0010011`, funct3 `000`
+
 ::: notes
-CPU bedeutet Central Processing Unit, der Prozessor. ALU bedeutet Arithmetic Logic Unit, die arithmetisch-logische Einheit. Ein MUX, Multiplexer, wählt einen Eingang. Der Datenpfad transportiert Werte. Der Registersatz hält Operanden. Der Speicher hält Daten. Das Steuerwerk entscheidet die Auswahlen.
+Der RISC-V-Befehl addi, Add Immediate, addiert den Inhalt von rs1 mit einer vorzeichenbehafteten zwölf Bit breiten Konstante und schreibt nach rd. rs1 bedeutet Source Register 1, rd Destination Register. t1 ist der Registeralias x6 und enthält hier 7; t0 ist x5 und soll 2 erhalten.
 
-Für add t0, t1, t2 werden zwei Register gelesen, addiert und das Ergebnis nach t0 geschrieben. Der Datenspeicher bleibt unverändert. Kein Bauteil liest den ausgeschriebenen Assemblertext. Die Dirigentenmetapher meint danach Selektor- und Freigabesignale.
-
-Kontrollfrage: Schreibt add in den Datenspeicher? Nein. Die Agenda macht daraus Lernziele.
+Opcode heißt Operationscode. Die Kennung 0010011 bezeichnet die Immediate-Rechengruppe, nicht einen Load. funct3, das dreibitige Funktionsfeld, muss für addi 000 sein. Die ALU, Arithmetic Logic Unit, bekommt 7 und den auf 32 Bit erweiterten Wert minus fünf; daraus entsteht 2. Für die Quellenwahl eignet sich der Immediate-Weg des Load Word, kurz lw. Zur Registerübernahme muss dagegen das Rechenergebnis statt eines Speicherwerts gewählt werden. Diese Kombination erklärt die Erweiterung aus bekannten Funktionen und nicht durch ein neues, auswendig zu lernendes Steuerwort.
 :::
 
-## Agenda für den heutigen Tag
+## Warum Bit 30 hier keine Subtraktion bedeutet
 
-1. Das blinde System — warum Hardware ohne Dirigent kollabiert
-2. Befehlsdecodierung — wie der Chip den Opcode interpretiert
-3. Die Haupt-Steuersignale — Hebel für den gesamten Datenpfad
-4. ALU Control — zweistufige Decodierung (`funct3` / `funct7`)
-5. Signal-Trace — die zentrale Wahrheitstabelle ausfüllen
-6. Ripes-Praxis — Vorhersage-Methode („Paper & Pencil“) im Simulator
+![](../assets/images/vl6-addi-bit30.svg){.nostretch fig-alt="Beim I-Format von addi gehört Instruktionsbit 30 zur zwölfbitigen Konstante minus fünf"}
 
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+Beispiel: `addi t0, x0, -5` → Maschinenwort `0xFFB00293`.
 
-graph LR
-  A[Bedarf] --> B[Opcode decodieren]
-  B --> C[Signale generieren]
-  C --> D[ALU Steuerung]
-  D --> E[Gesamttabelle]
-  style E fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+::: notes
+addi bedeutet Add Immediate und benutzt das I-Format. x0 ist das Architekturregister, das immer null liefert und Schreibzugriffe verwirft. t0 ist der Alias x5. Die Instruktion soll daher minus fünf in x5 erzeugen.
+
+Im Bild stehen links die zwölf Immediate-Bits 31 bis 20, danach rs1, funct3, rd und Opcode. rs1 bezeichnet Source Register 1, rd Destination Register, funct3 ein dreibitiges Funktionsfeld und Opcode den Operationscode. Minus fünf ist im zwölf Bit breiten Zweierkomplement 1111 1111 1011. Bit 30, rot umrandet, ist das zweite Bit dieses Felds und entspricht Immediate-Bit 10. Es ist in diesem Beispiel eins. Anders als im R-Format besitzt es hier keine funct7-Bedeutung. Nach der Vorzeichenerweiterung ergibt sich 0xFFFFFFFB. Der Gesamtbefehl setzt rs1 gleich null, rd gleich fünf, funct3 gleich null und Opcode gleich 0x13: Daraus folgt das Maschinenwort 0xFFB00293. Ein Blick nur auf Bit 30 würde die Additionsaufgabe irrtümlich verändern. Die korrekte Steuerung muss zuerst das Format und die Kategorie berücksichtigen.
+:::
+
+## Die neue Hauptsteuerzeile für addi
+
+| Signal | Wert |
+|:---|:---:|
+| ALUSrc | 1 |
+| MemtoReg | 0 |
+| RegWrite | 1 |
+| MemRead / MemWrite | 0 / 0 |
+| Branch | 0 |
+| ALUOp | `00` |
+
+Danach: `ALUControl = 0010`, auch bei gesetztem Bit 30.
+
+::: notes
+ALU bedeutet Arithmetic Logic Unit. ALUSrc, ALU Source, ist eins und wählt den Immediate. MemtoReg, Memory to Register, ist null und wählt das ALU-Ergebnis. RegWrite, Register Write, ist eins und erlaubt die Registerübernahme. MemRead und MemWrite, Memory Read und Memory Write, bleiben null, da addi keine Daten aus dem Speicher benötigt oder verändert. Branch ist ebenfalls null.
+
+ALUOp, unsere zweibitige Kategorie, muss 00 sein: Addition ist bereits durch den gültig erkannten addi festgelegt. ALUControl, das vierbitige Kommando, wird damit 0010. Der Inhalt von Instruktionsbit 30 hat in dieser Kategorie keine zusätzliche Operationsfunktion. Bei addi t0, t1, -5 mit t1 gleich 7 wird der vorzeichenerweiterte Immediate zum Registerwert addiert und 2 nach t0 übernommen. Die Zeile ähnelt dem Load bei ALUSrc, aber der Registerrechnung bei MemtoReg. Die erforderliche Befehlsprüfung umfasst Opcode 0x13 und funct3 000; andere Immediate-Operationen sind weiterhin außerhalb unseres Modells.
+:::
+
+## Verständnischeck: auch eine positive Konstante
+
+```asm
+addi t0, t1, 1024    # t1 = 7; instr[30] = 1
 ```
 
-::: notes
-Sechs Abschnitte: Datenpfad reaktivieren, Opcode lesen, Hauptsignale herleiten, ALU-Decodierung trennen, die Meistertabelle füllen und sie mit Ripes vergleichen. Opcode ist der Operationscode. ALU Control ist die nachgelagerte Operationswahl. Ein Signal-Trace verfolgt Werte und Freigaben eines Befehls.
-
-Die Frage ist nicht, ob Hardware ohne Dirigent kollabiert, sondern welche Auswahl und welche Schreibfreigabe korrekt sind. Ripes führt Befehle aus. Sein Single-Cycle-Datenpfad ist später mit diesem Lehrmodell zu vergleichen, nicht damit gleichzusetzen.
-
-Kontrollfrage: Ist Ripes dasselbe Schaltbild wie die Folien? Nein. Zuerst reaktivieren wir den Datenpfad aus Einheit 5.
-:::
-
-## Rückblick: Der fertige Datenpfad
-
-- Lehrmodell nach Patterson/Hennessy, nicht dasselbe Schaltbild wie Ripes
-- Register, Speicher, ALU und drei Multiplexer
-- Theoretisch ausführbar: R-Type, Load, Store, Branch
-- Datenkabel (meist 32 Bit) sind fest verdrahtet
-- Fehlendes Puzzleteil: die Steuerleitungen „von oben“
-
-![Single-Cycle-Datenpfad (vereinfacht)](../assets/images/single-cycle-datapath.svg){.nostretch}
+1. Ist die Konstante im zwölf Bit breiten Feld darstellbar?
+2. Welche ALUOp- und ALUControl-Werte gelten?
+3. Welcher Wert wird in `t0` geschrieben?
 
 ::: notes
-PC bedeutet Program Counter, die Adresse der aktuellen Instruktion im Modell. Das Register File ist die Registerbank. ImmGen, Immediate Generator, erweitert den unmittelbaren Befehlswert. Die Abbildung ist das Lehrsubset: 32-Bit-Datenpfad, unkomprimierte 32-Bit-Instruktionen, C-Erweiterung aus. Unterstützt sind add, sub, and, or, lw, sw und beq. addi folgt später. bne braucht eine zusätzliche Bedingung.
+addi heißt Add Immediate. Die Aliasnamen t0 und t1 stehen für x5 und x6; t1 liefert den Wert 7. Eine vorzeichenbehaftete zwölf Bit breite Konstante umfasst minus 2048 bis plus 2047. 1024 ist daher gültig und hat das Bitmuster 0100 0000 0000. Immediate-Bit 10 ist eins und liegt an Instruktionsbit 30, obwohl die Konstante positiv ist.
 
-Die Control Unit gibt Branch aus, nicht fertiges PCSrc. PCSrc, Program Counter Source, entsteht aus Branch und Zero. Der Store-Datenpfad führt den zweiten Registerwert zum Speicher. Der Branch-Zieladdierer ist getrennt von der ALU.
-
-Bei add fließen zwei Registerwerte in die ALU und das Ergebnis ins Zielregister. Bei lw bildet die ALU die Adresse, der Speicher liefert den Schreibwert. Die Grafik ist nicht das Ripes-Schaltbild.
-
-Kontrollfrage: Kommt PCSrc direkt aus der Main Control? Nein. Die festen Leitungen sagen noch nicht, welcher Pfad gilt.
+ALU bedeutet Arithmetic Logic Unit. Die Hauptsteuerkategorie ALUOp bleibt 00, das konkrete Kommando ALUControl bleibt 0010 für Addition. Die Recheneinheit bildet 7 plus 1024 gleich 1031; dieser Wert wird an der nächsten freigegebenen Flanke in t0 übernommen. Das Gegenbeispiel zeigt, dass ein gesetztes Bit 30 weder generell ein negatives Immediate noch eine Subtraktion bedeutet. Bei einem gültigen addi ist die Addition unabhängig davon festgelegt. Die Aufgabe lässt sich vollständig auf Papier lösen und prüft die Trennung von Feldbedeutung und zufälligem Einzelbitwert.
 :::
 
-## Der Datenpfad ist blind
+# 5. Von Tabellen zu Bedingungen und Fehlerfolgen
 
-- Kein Bauteil weiß, welchen Befehl Sie in C oder Assembler getippt haben
-- Die ALU hat keine Augen für `add t0, t1, t2`
-- Ein Multiplexer schaltet nicht, weil er einen `lw`-Befehl „merkt“
-- Jedes Bauteil wartet auf eine physikalische Spannung (1 oder 0)
-- Fehlt diese Spannung — oder ist sie falsch — kollabiert das System
+::: notes
+Für acht unterstützte Operationen sind nun alle Quellen, Schreibfreigaben und Rechenkategorien begründet. Die Tabelle kann als Spezifikation gelesen oder in kombinatorische Bedingungen übersetzt werden.
 
-```text
-Ein Multiplexer wählt einen Eingang:
-S = 0 -> Eingang A
-S = 1 -> Eingang B
-Ein falscher Selektor liefert den falschen Operanden.
-Das ist kein Kurzschluss und kein Don't Care.
+Dabei wollen wir zwei Fähigkeiten entwickeln: Gemeinsame Bedingungen erkennen und eine fehlerhafte Tabellenzeile anhand ihrer tatsächlichen Folgen untersuchen. Ein Fehler ist nicht automatisch zufälliger Inhalt oder ein garantierter Absturz. Datenweg und Ausgangszustand bestimmen, welche Adresse und welcher Wert betroffen sind. Die folgenden Beispiele sind gedachte Decoderänderungen am Lehrmodell; sie behaupten keinen Fehler eines unveränderten Simulators.
+:::
+
+## Die erweiterte Tabelle: Quellen und Freigaben
+
+| Befehl | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| R-Typ | 0 | 0 | 1 | 0 | 0 | 0 |
+| `lw` | 1 | 1 | 1 | 1 | 0 | 0 |
+| `sw` | 1 | X | 0 | 0 | 1 | 0 |
+| `beq` | 0 | X | 0 | 0 | 0 | 1 |
+| `addi` | 1 | 0 | 1 | 0 | 0 | 0 |
+
+::: notes
+Die ALU ist die Arithmetic Logic Unit. ALUSrc bedeutet ALU Source und wählt Registerwort oder Immediate. MemtoReg bedeutet Memory to Register und wählt ALU- oder Speicherwert. RegWrite, Register Write, erlaubt Registerschreiben; MemRead und MemWrite, Memory Read und Memory Write, die Speicherzugriffe. Branch gibt den beq-Vergleich für die PC-Auswahl frei.
+
+R-Typ bezeichnet hier das Registerformat für die legalen add-, sub-, and- und or-Befehle. Die neue addi-Zeile ist nun eine tatsächlich hergeleitete Erweiterung gegenüber dem ursprünglichen Subset. X bezeichnet eine für den gültigen Befehl unerhebliche Register-Rückschreibquelle. Jede andere Spalte bleibt verbindlich. Für die Speicherzugriffe lw und sw, ausgeschrieben Load Word und Store Word, sind die beiden Speicherfreigaben jeweils gegensätzlich. Diese gegenseitige Ausschließung ist eine Modellregel, keine Aussage, dass jeder reale Speicher beim gleichzeitigen Lesen und Schreiben einen elektrischen Kurzschluss erzeugt. Die Registergruppe meint weiterhin genau die vier angegebenen Operationen mit ihren gültigen Funktionsfeldern.
+:::
+
+## Die erweiterte Tabelle: Rechenaufgabe
+
+| Befehl | ALUOp | Detailentscheidung |
+|:---|:---:|:---|
+| `add/sub/and/or` | `10` | funct3 und funct7 |
+| `lw`, `sw`, `addi` | `00` | Addition steht fest |
+| `beq` | `01` | Subtraktion zum Gleichheitstest |
+
+Die Tabellen beschreiben gemeinsam dieselbe Steuerfunktion.
+
+::: notes
+ALU bedeutet Arithmetic Logic Unit, die arithmetisch-logische Einheit. ALUOp ist ihre zweibitige Aufgabenkategorie. funct3 und funct7 sind die drei beziehungsweise sieben Bit breiten Funktionsfelder zur Auswahl unserer Registeroperation. Die endgültige Vierbitwahl heißt ALUControl.
+
+Wir teilen die gesamte Haupttabelle auf zwei Folien, damit die Signalspalten lesbar bleiben. Diese Aufteilung führt keine zusätzliche zeitliche Phase ein. Für Load Word, lw, Store Word, sw, und Add Immediate, addi, wird dieselbe Addition benötigt, obwohl das Rechenergebnis unterschiedliche Aufgaben hat: Adresse bei den Speicherbefehlen, Registerwert bei addi. Branch if Equal, beq, benutzt im Lehrmodell Subtraktion zur Gleichheitsprüfung. Die Registergruppe muss dagegen die konkrete Funktion aus den gültigen Funktionsfeldern bestimmen. Quellenwahl und Rechenfunktion müssen zusammenpassen; eine korrekte Kategorie bei falsch gewähltem Operand führt weiterhin zu einer falschen Befehlswirkung.
+:::
+
+## Bedingungen aus erkannten Befehlsgruppen
+
+R: Registergruppe, L: `lw`, S: `sw`, B: `beq`, I: `addi`.
+
+$$\mathrm{RegWrite}=R\lor L\lor I$$
+
+$$\mathrm{ALUSrc}=L\lor S\lor I$$
+
+$$\mathrm{MemRead}=L,\qquad\mathrm{MemWrite}=S,\qquad\mathrm{Branch}=B$$
+
+::: notes
+R, L, S, B und I sind hier Ein-Bit-Erkennungssignale für einen gültigen Befehl unseres erweiterten Subsets. R erkennt eine der vier Registeroperationen, L Load Word, S Store Word, B Branch if Equal und I Add Immediate. Bei genau einer gültigen Instruktion ist genau eines dieser Gruppensignale eins; sie schließen sich gegenseitig aus.
+
+RegWrite heißt Register Write und darf bei Registeroperation, Load oder addi schreiben. Das ODER-Zeichen in der Formel bedeutet „mindestens eines dieser Signale ist eins“. ALUSrc bedeutet ALU Source für die Arithmetic Logic Unit und muss bei Load, Store oder addi den Immediate wählen. MemRead und MemWrite sind Memory Read und Memory Write und können direkt dem jeweiligen Gruppensignal folgen. Branch ist die Freigabe des unterstützten bedingten Sprungs. Die Formeln beziehen sich auf die hier benannten gültigen Gruppen, nicht allein auf ungeprüfte Opcode-Vergleiche. Sie sind eine mögliche logische Beschreibung unserer Tabelle. Die noch freie Rückschreibquellenauswahl behandeln wir separat.
+:::
+
+## Ein Registerschreibsignal als ODER-Schaltung
+
+![](../assets/images/vl6-regwrite-logik.svg){.nostretch fig-alt="Die erkannten Gruppen R, L und I führen über ein rechteckiges IEC-ODER-Gatter zu RegWrite"}
+
+::: notes
+Die Abbildung zeigt links die drei gültig erkannten Befehlsklassen R, L und I. R ist die Registergruppe, L steht für Load Word und I für Add Immediate. Jede Leitung trägt ein Bit. RegWrite, ausgeschrieben Register Write, ist ebenfalls ein Ein-Bit-Signal und erlaubt die Übernahme am Registerschreibport.
+
+IEC steht für International Electrotechnical Commission. Das rechteckige Gatter mit dem Symbol >=1 ist die im Kurs verwendete ODER-Darstellung nach IEC 60617. Es liefert eins, sobald wenigstens ein Eingang eins ist. Bei einem gültigen Store oder beq sind alle drei Eingänge null, weshalb kein allgemeines Register geschrieben wird. Die grauen Pfeile zeigen den Signalweg von links nach rechts; sie markieren keinen Datenworttransport und keinen gemessenen Strom. Diese Schaltung ist eine mögliche Realisierung der zuvor hergeleiteten Formel. Sie enthält weder einen gespeicherten Tabelleninhalt noch einen zusätzlichen Takt. Die konkrete Zielregisternummer und der Schreibwert kommen weiterhin aus dem Datenpfad, nicht aus diesem ODER-Gatter.
+:::
+
+## Zwei zulässige MemtoReg-Funktionen
+
+Für gültige Befehle unseres erweiterten Modells sind beide zulässig:
+
+$$\mathrm{MemtoReg}_a=L$$
+
+$$\mathrm{MemtoReg}_b=L\lor S$$
+
+Sie unterscheiden sich nur bei `sw`, wo `RegWrite = 0`.
+
+::: notes
+MemtoReg bedeutet Memory to Register und wählt den Register-Rückschreibwert. Null führt das Ergebnis der Arithmetic Logic Unit, kurz ALU, durch, eins die Speicherlesedaten. L ist das Erkennungssignal für einen gültigen Load Word; S für einen gültigen Store Word. RegWrite, Register Write, erlaubt oder sperrt die Registerübernahme.
+
+Bei L gleich eins wählen beide Funktionen den Speicher. Bei Registerarithmetik oder addi sind L und S null; beide wählen das Rechenergebnis. Beim Store ist nur S eins: Die erste Funktion liefert null, die zweite eins. RegWrite ist dabei jedoch null, weshalb keine der Quellen in ein Register übernommen wird. Bei beq liefern beide ebenfalls null und sind zulässig. Die Tabelle würde dort auch eins erlauben, aber die konkrete Funktion muss diese Freiheit nicht ausschöpfen. So können unterschiedliche interne Steuerwerte dieselbe Befehlswirkung erfüllen. Das ist auch der Grund, weshalb ein konkreter MUX-Wert im Simulator nicht einem Tabellen-X widersprechen muss.
+:::
+
+## PCSrc bleibt eine abgeleitete Entscheidung
+
+$$\mathrm{PCSrc}=\mathrm{Branch}\land\mathrm{Zero}$$
+
+| Befehl / Ergebnis | Branch | Zero | PCSrc |
+|:---|:---:|:---:|:---:|
+| `beq`, gleiche Werte | 1 | 1 | 1 |
+| `beq`, ungleiche Werte | 1 | 0 | 0 |
+| `sub`, Ergebnis null | 0 | 1 | 0 |
+
+::: notes
+PC steht für Program Counter, das Register mit der aktuellen Instruktionsadresse. PCSrc, Program Counter Source, wählt seinen nächsten Wert. Branch ist das Erkennungssignal für unseren gültigen beq, ausgeschrieben Branch if Equal. Zero ist der kombinatorische Ein-Bit-Ausgang der Arithmetic Logic Unit, kurz ALU, der ein Nullergebnis meldet.
+
+Die UND-Verknüpfung benötigt beide Einsen. Bei beq mit gleichen Registerwerten wählt der PC das vorbereitete Ziel; bei ungleichen Werten die Adresse des alten PC plus vier. Ein sub kann ebenfalls null erzeugen, hat aber Branch gleich null und löst keinen Sprung aus. Beispiel: Bei einer Branch-Adresse 0x100 und dem fertigen Byteoffset zwölf sind die Kandidaten 0x104 und 0x10C. ImmGen, der Immediate Generator, enthält das implizite Bit null im Byteoffset bereits; es folgt kein zweiter Shift. Zero ist kein gespeichertes RISC-V-Statusregister. Andere Branch-Arten erfordern zusätzliche Vergleichs- und Decodierfunktionen, die wir hier nicht ergänzt haben.
+:::
+
+## Fehlerfall: MemWrite ist bei add irrtümlich 1
+
+![](../assets/images/vl6-fehler-memwrite.svg){.nostretch fig-alt="Eine falsche Speicherfreigabe schreibt bei add die Daten 4 an die aus der Summe gebildete Adresse 0x2004"}
+
+::: notes
+Die Abbildung beschreibt eine gedachte Decoderänderung: MemWrite, Memory Write, wird bei einem add irrtümlich aktiviert. Unverändertes Ripes wird diesen Fehler nicht einfach ausführen. Die ALU, Arithmetic Logic Unit, erhält t1 gleich 0x2000 und t2 gleich 4; diese Registeraliasnamen bedeuten x6 und x7. Ihre Summe ist 0x2004.
+
+Das Ergebnis liegt zugleich auf dem Speicher-Adressweg und dem Register-Rückschreibweg. RD2, Read Data 2, trägt weiterhin den zweiten Registerwert 4 zum Speicher-Schreibdatenport. Falls 0x2004 eine gültige, beschreibbare Wortadresse im Lehrmodell ist, schreibt die falsche Freigabe dort an der nächsten Flanke das Wort 4. Gleichzeitig kann t0, der Alias x5, bei korrekter Registerfreigabe die Summe 0x2004 erhalten. Rot hebt ausschließlich die falsche Speicherfreigabe hervor. Adresse und Schreibdaten sind bestimmt, nicht zufällig. Ob ein größerer Programmablauf dadurch scheitert, hängt von der Bedeutung des überschriebenen Worts ab; ein Absturz folgt daraus nicht zwingend.
+:::
+
+## Fehlerfall: RegWrite ist bei sw irrtümlich 1
+
+```asm
+sw t1, 12(s1)       # s1 = 0x2000; t1 = 37
 ```
 
-::: notes
-Ein MUX wählt abhängig vom Selektor einen Eingang. S gleich 0 wählt A, S gleich 1 wählt B. Ein falscher Selektor liefert den falschen Operanden. Das ist keine Kollision der Daten und kein Einfrieren des Prozessors. Ein physikalisch undefinierter Eingang und ein Don't Care der späteren Tabelle sind verschieden. Logisch 0 und 1 sind die Signalwerte; konkrete Spannungen hängen vom Bauteil ab und werden hier nicht erfunden.
-
-Kontrollfrage: Kollidieren beide MUX-Eingänge auf der Ausgangsleitung? Nein, einer wird gewählt. Als Nächstes wird die zentrale Steuerung dieser Auswahlen veranschaulicht.
-:::
-
-## Die Marionetten-Metapher
-
-- Datenpfad als Marionette
-- Gelenke: Multiplexer und Write-Enable-Pins
-- Arme und Beine bewegen sich nicht von allein
-- Puppenspieler: die Control Unit
-- Kupferfäden: Steuerleitungen — im Takt gezogen, tanzt die Puppe
-
-```{mermaid}
-%%| fig-width: 4.0
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  Puppenspieler[Control Unit] -->|Faden 1| Arm[MUX ALUSrc]
-  Puppenspieler -->|Faden 2| Bein[Pin MemWrite]
-  Puppenspieler -->|Faden 3| Kopf[MUX PCSrc]
-  style Puppenspieler fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Arm fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Bein fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Kopf fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Die Marionette ist nur der Einstieg. Ein Gelenk entspricht einem MUX, der Faden einem Selektor, die Schreibfreigabe einem Enable. Für add gilt ALUSrc gleich 0, also der zweite Registerwert, RegWrite gleich 1 und MemWrite gleich 0. ALUSrc heißt ALU Source, RegWrite Register Write, MemWrite Memory Write.
-
-Kombinatorische Selektoren müssen nicht auf die Taktflanke warten. Zustandselemente übernehmen nach ihrem Taktmodell. Im Kurs ist das die aktive Flanke.
-
-Kontrollfrage: Wechselt ein MUX-Selektor erst bei der Flanke? Nicht zwingend. Die nächste Folie definiert das Steuerwerk als Schaltung.
-:::
-
-## Was ist die Control Unit?
-
-- Separate, fest verdrahtete Box aus Logikgattern auf dem Chip
-- In Architekturdiagrammen oft als Wolke oder abgerundete Box
-- Input: Teile des aktuellen 32-Bit-Befehlsworts
-- Verarbeitung: reine Kombinatorik (AND/OR-Netzwerke)
-- Output: 1-Bit- bzw. 2-Bit-Steuersignale an den Datenpfad
-
-::: notes
-Die Aussage reine Kombinatorik ohne Flip-Flops gilt für dieses Single-Cycle-Steuerwerk. Single Cycle bedeutet: ein unterstützter Befehl wird in einem Taktzyklus ausgeführt. Andere Steuerwerke können Zustand, mehrere Takte oder ein Mikroprogramm haben. Eine Box im Bild muss keine räumlich getrennte Hardware sein. Input sind Befehlsfelder, Output die benannten Steuersignale. Hardwired Logic heißt fest verdrahtete kombinatorische Logik, nicht eine RISC-V-Pflicht.
-
-Kontrollfrage: Muss jedes Steuerwerk ohne Zustand auskommen? Nein. Als Nächstes kommt die Herkunft der Eingangsbits.
-:::
-
-## Input: Woher kommen die Befehle?
-
-- Der Program Counter adressiert den Befehlsspeicher (Instruction Memory)
-- Der Speicher liefert 32 Bit (Phase: Instruction Fetch)
-- Kabelspleiß: ein Teil wandert in den Datenpfad (Register, ImmGen)
-- Ein anderer Teil wird abgezweigt in die Control Unit
-- Der Puppenspieler liest physikalisch mit, welcher Code aus dem ROM kommt
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  ROM[(Instruction Memory)] -->|32 Bit| Split{Spleiss}
-  Split -->|zu RegFile/ImmGen| Datenpfad[RegFile / ImmGen]
-  Split -->|zum Opcode| Control[Control Unit]
-  style Control fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style ROM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Datenpfad fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Der PC adressiert den Befehlsspeicher. Instruction Fetch ist das Holen des 32-Bit-Befehlsworts. Daraus werden Felder an Registerbank, ImmGen und Steuerwerk geführt. Der Befehlsspeicher muss kein ROM sein. ROM, Read-Only Memory, ist nur eine mögliche Speicherart. Ohne C-Erweiterung ist jede Basisinstruktion vier Byte. Das ganze Wort liegt an; verschiedene Blöcke lesen verschiedene Bitpositionen.
-
-Kontrollfrage: Liest das Steuerwerk das gesamte Wort als eine Zahl ohne Felder? Nein, es nutzt festgelegte Positionen. Danach betrachten wir die Ausgänge.
-:::
-
-## Output: Die blauen Steuerkabel
-
-- Auf der Ausgangsseite treten die Steuerleitungen aus
-- Für unseren RV32I-Single-Cycle-Prozessor: sieben primäre Steuersignale
-- Die meisten Signale sind 1 Bit: logischer Pegel 0 oder 1
-
-| Kategorie | Signale |
-|-----------|---------|
-| Multiplexer (Weichen) | `ALUSrc`, `MemtoReg`, Branch (für `PCSrc`) |
-| Erlaubnis (Write-Enable) | `RegWrite`, `MemWrite` |
-| Leseschutz | `MemRead` |
-| Sondertyp (2 Bit) | `ALUOp` (grobe ALU-Steuerung) |
-
-::: notes
-Sieben benannte Hauptsignale ergeben acht Steuerbits, weil ALUOp zwei Bit hat. Das gilt für unseren Lehrsubset-Datenpfad, nicht für jeden RV32I-Prozessor. ALUSrc wählt den zweiten ALU-Operanden. MemtoReg, Memory to Register, wählt den Register-Schreibwert. RegWrite gibt das Registerschreiben frei. MemRead, Memory Read, gibt im Modell den Lesezugriff frei. MemWrite gibt den Schreibzugriff frei. Branch kennzeichnet einen unterstützten bedingten Sprung, ist aber nicht die fertige Sprungentscheidung. ALUOp ist die zweibitige Kategorie, nicht das ALUControl-Wort. PCSrc ist abgeleitet, kein achter Main-Control-Ausgang.
-
-Kontrollfrage: Ist Branch der MUX-Selektor des PC? Nein, PCSrc ist Branch und Zero. Wie entstehen diese Werte zeitlich?
-:::
-
-## Kombinatorische Logik (Das Timing)
-
-- Wichtige Eigenschaft: Die Control Unit hat keinen eigenen Takt
-- Reine kombinatorische Schaltung (wie ein großer Addierer)
-- Kein Zustand, keine Flip-Flops, kein Speicher
-- Nach der Gatterlaufzeit müssen die Signale vor der Übernahmeflanke stabil sein
-- Der Datenpfad nutzt sie im Taktzyklus
-
-```c
-/* Control Unit: rein funktional, kein State */
-Steuersignale = generate_control(Instruction_Bits);
-```
-
-::: notes
-Die Uhrlosigkeit gilt für die kombinatorische Decoderfunktion, nicht für den ganzen Prozessor. Nach einer endlichen Laufzeit müssen die Steuer- und Datenwerte vor der übernehmenden Flanke stabil sein. Kurze Übergangszustände sind möglich. Der längste relevante Pfad begrenzt die zulässige Zykluszeit. Nanosekunden ohne Messung bleiben weg. Ein Pseudocode beschreibt die Funktion und ist kein Programm, das die CPU ausführt.
-
-Kontrollfrage: Stehen die Signale zeitlos fest? Nein, nach der Laufzeit. Eine Wahrheitstabelle spezifiziert die stabile Zuordnung.
-:::
-
-## Die Wahrheitstabelle (Refresher)
-
-- Kombinatorik lässt sich vollständig als Wahrheitstabelle beschreiben
-- Input-Spalten: Bit-Kombinationen der Eingabe
-- Output-Spalten: resultierende Steuersignale
-- Die Wahrheitstabelle ist der Bauplan für den Hardware-Entwurf
-- Heutige Mission: diese Matrix für unseren Prozessor ausfüllen
-
-| Input A | Input B | Output Y (AND) | Output Z (XOR) |
-|---------|---------|----------------|----------------|
-| 0 | 0 | 0 | 0 |
-| 0 | 1 | 0 | 1 |
-| $\ldots$ | $\ldots$ | $\ldots$ | $\ldots$ |
-
-::: notes
-AND ist Und, OR ist Oder, XOR ist exklusives Oder. XOR ist eins bei genau einem gesetzten Eingang, OR auch bei zwei Einsen. Die vier Fälle: 00 ergibt AND 0 und XOR 0; 01 und 10 ergeben AND 0 und XOR 1; 11 ergibt AND 1 und XOR 0. Dieselbe Tabellenidee ordnet später einen Opcode einem Steuerwort zu. Die Tabelle spezifiziert die Funktion. Sie behauptet nicht, dass ebenso viele Zeilen physisch gespeichert werden.
-
-Kontrollfrage: Ist XOR bei zwei Einsen eins? Nein. Eine solche Funktion kann verschieden implementiert werden.
-:::
-
-## Architektur-Design: LUT vs. Gatter
-
-- Methode 1: Hardwired Logic — Karnaugh-Veitch, minimierte AND/OR-Gatter; schnell, aber starr
-- Methode 2: Microcode (ROM / LUT) — Wahrheitstabelle als Look-up; Opcode als Adresse
-- RISC-V ist prädestiniert für Hardwired Logic: kleine, effiziente Chips
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Opcode[Opcode] -->|Adresse| ROM[(Microcode ROM)]
-  ROM -->|Zeile| Signale[Steuersignale]
-  Opcode2[Opcode] -->|Boolesche Formel| Gatter[Gatter-Netzwerk]
-  Gatter --> Signale2[Steuersignale]
-  style Gatter fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style ROM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Drei Konzepte: kombinatorische Gatterlogik; eine Look-up Table, kurz LUT, oder eine ROM-Abbildung; ein mikroprogrammiertes Steuerwerk mit Steuerspeicher und Ablauf für interne Schritte. Eine opcode-adressierte Tabelle allein ist noch kein Mikroprogramm. FPGA bedeutet Field-Programmable Gate Array, eine konfigurierbare Logik. Ein ASIC, Application-Specific Integrated Circuit, ist eine feste Fertigung. RISC-V schreibt keine dieser Umsetzungen vor.
-
-Kontrollfrage: Ist jede Tabelle ein Mikroprogramm? Nein. Die nächste Folie ordnet die regelmäßige Codierung als Entwurfshilfe ein.
-:::
-
-## Der RISC-V-Vorteil
-
-- x86-Implementierungen nutzen oft Mikrocode oder µOp-Zerlegung
-- Das ist eine typische Entwurfsentscheidung, kein Beweis, dass Hardwired unmöglich ist
-- Eine vollständig aufgelistete Wahrheitstabelle ist nicht die synthetisierte Fläche
-- Konkrete Gatterzahl und Timing brauchen eine Implementierung und Messung
-
-::: notes
-Unser Modell trennt Main Control und ALU Control. Die ISA, Instruction Set Architecture, schreibt diese Zerlegung nicht vor. Regelmäßige Felder erleichtern eine strukturierte Decodierung. Sie garantieren keine Chipgröße und keine Taktfrequenz. Eine vollständig aufgelistete Tabelle ist nicht die synthetisierte Fläche. x86 kann intern Micro-Operations, kurz µOps, verwenden; das macht die sichtbare ISA nicht zu diesem Lehrdecoder.
-
-Kontrollfrage: Folgt die Zweiteilung aus der RISC-V-Spezifikation? Nein. Der nächste Abschnitt sucht die relevanten Felder im Befehlswort.
-:::
-
-# Befehlsdecodierung und Opcode
-
-
-::: notes
-Eingänge und Ausgänge sind bekannt. Jetzt wird die Eingangsinformation gezielt reduziert. Der Opcode ist der Operationscode zur Familienerkennung. Die Leitfrage lautet: Welche Bits steuern die Pfadauswahl, und welche führen Operanden oder Registeradressen? Nicht jedes Bit des Befehlsworts ist ein Steuersignal.
-
-Kontrollfrage: Decodiert der Opcode allein add gegen sub? Nein. Die nächste Folie motiviert eine strukturierte statt erschöpfende Analyse.
-:::
-## Wir müssen den Befehl lesen — aber wie?
-
-- Die Control Unit muss den Befehl interpretieren
-- Müssen wirklich alle 32 Bits gleichzeitig analysiert werden?
-- Antwort liefert die Anatomie der RISC-V-Formate
-- Der 7-Bit-`opcode` als Identifikationsschild
-- Das Konzept Don’t Care ($X$) und warum es Hardware spart
-
-```{mermaid}
-%%| fig-width: 4.0
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  Inst[32-Bit Befehl] -->|Filterung| Opcode[Nur 7 Bits Opcode]
-  Opcode --> Control[Main Control Unit]
-  style Control fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Inst fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Opcode fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-2 hoch 32 ist 4 294 967 296 mögliche Bitmuster. Das ist die Größe einer naiv vollständig aufgelisteten Tabelle, nicht die Gatterzahl. Eine strukturierte Funktion wertet Felder getrennt und gemeinsame Bedingungen zusammen aus. Ein X in einer späteren Tabelle erlaubt nicht, gültigkeitsrelevante Bits zu ignorieren.
-
-Kontrollfrage: Muss ein Decoder 4 Milliarden Zeilen speichern? Nein. Die Formate zeigen, welche Felder an welcher Position stehen.
-:::
-
-## Die Anatomie des Befehls (Refresher)
-
-- Instruction Formats R, I, S, B aus Einheit 2
-- Felder wie `rs1` (Bits 19:15) oder `rd` (Bits 11:7) sind Registeradressen
-- Die Control Unit interessiert sich nicht für diese Hausnummern
-- Ob `t0` oder `s11` addiert wird: MUX-Stellungen bleiben gleich
-- Diese Bits können wir für das Steuerwerk ignorieren
-
-```text
-31          24    19    14      11      7       0
-+-------+-----+-----+-------+-----+-------------+
-| funct7| rs2 | rs1 | funct3|  rd |   opcode    |
-+-------+-----+-----+-------+-----+-------------+
-  (Detail)  (ignoriert)  (Detail)   WICHTIG!
-```
-
-::: notes
-R-Type: funct7 in 31 bis 25, rs2 in 24 bis 20, rs1 in 19 bis 15, funct3 in 14 bis 12, rd in 11 bis 7, opcode in 6 bis 0. rs bedeutet source register, rd destination register, funct Funktionsfeld. Die 15 Registerbits gelten nur für diesen R-Type. I-Type ersetzt funct7 und rs2 durch ein 12-Bit-Immediate. S- und B-Type haben kein rd. Ihre Bits 11 bis 7 tragen Immediate-Anteile. Der Immediate ist gesplittet und nicht ein zusammenhängendes Feld.
-
-Kontrollfrage: Enthält sw ein rd-Feld? Nein. In allen betrachteten Formaten liegt der Opcode an derselben Position.
-:::
-
-## Das 7-Bit-Identifikationsschild
-
-- In jedem Format an derselben Stelle: der `opcode`
-- Bits $[6:0]$ — exakt 7 Bit breit
-- Diese 7 Drähte sind der Input der Main Control Unit
-- Der Opcode sagt die Befehlsfamilie, nicht `add` vs. `sub`
-- Detailentscheidungen folgen später über `funct3` / `funct7`
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Kabel[32 Bit vom IM] --> Spleiss{Spleiss}
-  Spleiss -->|Bits 31:7| Rest[Datenpfad / ALU-Ctrl]
-  Spleiss -->|Bits 6:0| Control((Main Control))
-  style Control fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Kabel fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Rest fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Die Bits 6 bis 0 sind sieben Positionen einschließlich beider Grenzen. 2 hoch 7 ist 128 mögliche Opcode-Werte. Nicht alle werden in diesem Subset genutzt. add und sub teilen 0110011. Die konkrete Operation steht in funct3 und funct7. Nur nach dem Opcode zu entscheiden ist eine Modellwahl für die gezeigten Pfadauswahlen. Weitere Details brauchen zusätzliche Decoder.
-
-Kontrollfrage: Reicht der Opcode, um add von sub zu unterscheiden? Nein. Zuerst folgt die Familie der Register-Rechenbefehle.
-:::
-
-## Opcode: R-Type (Rechnen)
-
-- Familie: zwei Register lesen, rechnen, in ein Register schreiben (`add`, `sub`, `and`, `or`, `sll`, …)
-- Opcode (binär): `0110011`
-- Keine Konstanten nötig; RAM unbeteiligt; `RegWrite` zwingend
-
-| Bit 6 | Bit 5 | Bit 4 | Bit 3 | Bit 2 | Bit 1 | Bit 0 |
-|-------|-------|-------|-------|-------|-------|-------|
-| 0 | 1 | 1 | 0 | 0 | 1 | 1 |
-
-::: notes
-0110011 ist hexadezimal 0x33. In dieser Zeile unterstützen wir add, sub, and und or mit legalen Encodings. sll ist ein echter weiterer R-Type-Befehl, aber nicht durch die aktuelle ALU-Control-Tabelle abgedeckt. t0, t1 und t2 sind Aliase temporärer Register. Lehrwerte: t1 gleich 7, t2 gleich 3, add t0, t1, t2 schreibt 10. Die Quellen bleiben unverändert.
-
-Kontrollfrage: Deckt die Zeile jeden R-Type-Befehl ab? Nein. Load hat einen anderen Datenweg.
-:::
-
-## Opcode: Load-Familie im I-Format
-
-- Familie: Daten aus dem Arbeitsspeicher in die CPU (`lw`, `lb`, `lh`, …)
-- Opcode (binär): `0000011`
-- Immediate für Adressberechnung; RAM lesen; Write-Back aus dem RAM
-
-| Bit 6 | Bit 5 | Bit 4 | Bit 3 | Bit 2 | Bit 1 | Bit 0 |
-|-------|-------|-------|-------|-------|-------|-------|
-| 0 | 0 | 0 | 0 | 0 | 1 | 1 |
-
-::: notes
-0000011, hexadezimal 0x03, kennzeichnet Loads, nicht alle I-Type-Befehle. addi hat 0010011, also 0x13. lw bedeutet Load Word und lädt 32 Bit. lb und lh brauchen Breiten- und Erweiterungssteuerung, die nicht in der Grundmatrix steht. Die ALU bildet Basis plus vorzeichenerweiterten Offset. Die Adresse ist nicht der geladene Wert.
-
-Kontrollfrage: Hat addi denselben Opcode wie lw? Nein. Store verwendet eine ähnliche Adresse und schreibt in die andere Richtung.
-:::
-
-## Opcode: S-Type (Store)
-
-- Familie: CPU-Daten im RAM ablegen (`sw`, `sb`, `sh`)
-- Opcode (binär): `0100011`
-- Immediate für Adresse; `MemWrite` aktiv; kein `rd` → `RegWrite = 0`
-
-| Bit 6 | Bit 5 | Bit 4 | Bit 3 | Bit 2 | Bit 1 | Bit 0 |
-|-------|-------|-------|-------|-------|-------|-------|
-| 0 | 1 | 0 | 0 | 0 | 1 | 1 |
-
-::: notes
-sw bedeutet Store Word. Der Opcode ist 0100011, hexadezimal 0x23. Die Basis kommt aus rs1, die Store-Daten aus rs2, der Offset ist ein gesplitteter S-Immediate. Die ALU wählt den Immediate als zweiten Operanden. Der zweite Registerwert bleibt trotzdem am Speicher-Schreibdateneingang verfügbar. sb und sh brauchen zusätzliche Schreibmasken.
-
-Kontrollfrage: Verschwindet rs2, weil ALUSrc den Immediate wählt? Nein, es liefert die Schreibdaten. Branch verändert vor allem die nächste Befehlsadresse.
-:::
-
-## Opcode: B-Type (Branch)
-
-- Familie: bedingte Sprünge (`beq`, `bne`, `blt`, …)
-- Opcode (binär): `1100011`
-- Registervergleich; nichts schreiben; Sprungentscheidung mit ALU-Flag
-
-| Bit 6 | Bit 5 | Bit 4 | Bit 3 | Bit 2 | Bit 1 | Bit 0 |
-|-------|-------|-------|-------|-------|-------|-------|
-| 1 | 1 | 0 | 0 | 0 | 1 | 1 |
-
-::: notes
-beq bedeutet Branch if Equal, bne Branch if Not Equal, blt Branch if Less Than. Der Opcode 1100011, hexadezimal 0x63, erkennt die Familie. funct3 unterscheidet die Bedingung. Das bisherige Zero-Netz gilt für beq. bne braucht die negierte Gleichheit. blt und bltu unterscheiden signed und unsigned. Zero ist kein architektonisches Flag. RegWrite und MemWrite bleiben im Modell null. Der PC wird trotzdem aktualisiert.
-
-Kontrollfrage: Deckt Branch und Zero auch bne ab? Nein. Die Familienerkennung wird in der Main-Control-Box zusammengefasst.
-:::
-
-## Der Main-Control-Block
-
-- Blackbox konkret: exakt 7 Bit Eingang
-- Ausgang: Bündel an Kontrollsignalen
-- Signale fließen zu Multiplexern und Speicher-Pins
-- Nächste Aufgabe: Wahrheitstabelle Zeile für Zeile lösen
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Opcode[7 Bits Opcode] --> Box((Main Control Unit))
-  Box -->|1 Bit| ALUSrc
-  Box -->|1 Bit| MemtoReg
-  Box -->|1 Bit| RegWrite
-  Box -->|2 Bit| ALUOp
-  style Box fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Opcode fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Sieben Opcode-Bits gehen hinein. Hinaus gehen die sieben benannten Signale mit acht Bits. Die Box decodiert nicht sämtliche RV32I-Befehle. ALU-Detail, Speicherbreite und Branch-Bedingung brauchen zusätzliche Information. Pfeile zeigen die Richtung von Opcode zu den Signalen.
-
-Kontrollfrage: Reichen diese Ausgänge für jal? Nein, jal fehlt im Lehrsubset. Vor dem Füllen der Tabelle klären wir, wann ein Ausgang unerheblich ist.
-:::
-
-## Das Konzept Don’t Care ($X$)
-
-- Ingenieurswerkzeug: Don’t Care ($X$)
-- Beispiel: `MemtoReg` bei `sw` — Store schreibt nie ins Register File (`RegWrite = 0`)
-- Welches Kabel der MUX durchlässt, ist irrelevant
-- In die Wahrheitstabelle: $X$ statt 0 oder 1
-
-```text
-MemtoReg bei sw:
-Muss es 0 sein (ALU)?  -> Nein
-Muss es 1 sein (RAM)?  -> Nein
-Also: X (Don't Care)
-```
-
-::: notes
-Bei sw ist RegWrite gleich 0. Der Register-Schreibport übernimmt keinen Wert. Deshalb darf MemtoReg in der Tabelle 0 oder 1 sein. Beide Stellungen lassen denselben Registerzustand. X bedeutet diese Entwurfsfreiheit, nicht einen schwebenden Pegel und nicht einen abgeschalteten Draht. In der konkreten Schaltung hat der Draht trotzdem 0 oder 1. HDL, Hardware Description Language, benutzt X manchmal für einen unbekannten Simulationswert und Z für hochohmig. Das sind andere Bedeutungen.
-
-Kontrollfrage: Ist der Draht bei X elektrisch offen? Nein. Diese Freiheit kann die Minimierung erleichtern.
-:::
-
-## Warum $X$ Hardware spart
-
-- $X$ gibt dem Synthese-Tool (Quartus, Vivado) Freiheit
-- Im Karnaugh-Veitch-Diagramm: $X$ wahlweise als 1 oder 0 für große Blöcke
-- Große Blöcke → kurze Boolesche Formeln
-- Kurze Formeln → weniger Gatter, weniger Strom, höhere Taktraten
-
-```{mermaid}
-%%| fig-width: 4.0
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  X[Don't Care in Tabelle] --> KV[KV-Diagramm]
-  KV --> Formel[kürzere Formel]
-  Formel --> Silizium[Kleinerer Chip]
-  style Silizium fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style X fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style KV fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Formel fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-X kann eine Boolesche Minimierung erleichtern. Es garantiert nicht weniger Fläche, Strom oder eine höhere Taktfrequenz. Ein Karnaugh-Veitch-Diagramm ordnet Eingaben so, dass benachbarte Einsen zusammengefasst werden. Kleines Beispiel: f(00) gleich 0, f(01) gleich 1, f(10) gleich 0, f(11) gleich X. Wählt man X als 1, gilt f gleich B. Das ist Algebra, keine Messung dieses Prozessors.
-
-Kontrollfrage: Spart jedes X einen Transistor? Nicht nachweisbar ohne Synthese. Die leere Haupttabelle kann nun gefüllt werden.
-:::
-
-## Die Skelett-Tabelle
-
-- Leere Wahrheitstabelle als Arbeitsblatt
-- Vier Zeilen für die wichtigsten Opcodes
-- Spalten für die entscheidenden Steuersignale
-- Nächste Folien: Matrix durch logisches Denken füllen
-
-| Instruktion (Opcode) | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch | ALUOp1 | ALUOp0 |
-|----------------------|--------|----------|----------|---------|----------|--------|--------|--------|
-| R-Type (`0110011`) | ? | ? | ? | ? | ? | ? | ? | ? |
-| `lw` (`0000011`) | ? | ? | ? | ? | ? | ? | ? | ? |
-| `sw` (`0100011`) | ? | ? | ? | ? | ? | ? | ? | ? |
-| `beq` (`1100011`) | ? | ? | ? | ? | ? | ? | ? | ? |
-
-::: notes
-Die Spalten sind ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch und das zweibitige ALUOp. Fragezeichen bedeuten noch offen. X bedeutet begründet unerheblich. Die R-Type-Zeile meint die ausgewählten Operationen add, sub, and und or, nicht alle Encodings mit Opcode 0110011. Jede Zeile wird über Quellen, Berechnung, Ziel und Zustandsänderung hergeleitet.
-
-Kontrollfrage: Ist ein Fragezeichen dasselbe wie X? Nein. Eine Gruppierung unterstützt die Herleitung.
-:::
-
-## Die Spalten gruppieren
-
-- Output-Pins mental nach CPU-Phase ordnen
-- Execute (ALU): `ALUSrc`; `ALUOp1`/`ALUOp0` für die grobe ALU-Aufgabe
-- Memory (RAM): `MemRead`, `MemWrite`; Branch für die Sprung-Erlaubnis
-- Write-Back: `MemtoReg` und `RegWrite`
-
-```text
-Signalfluss in der CPU: von links nach rechts.
-Tabelle gedanklich in derselben Richtung ausfüllen.
-```
-
-::: notes
-EX bedeutet Execute, MEM Memory Access, WB Write Back. Das sind Funktionsabschnitte dieses Single-Cycle-Datenpfads, keine eigenen Taktzyklen und keine Pipeline. Branch gehört nicht zum Datenspeicher, sondern zur PC-Auswahl. Farben allein genügen nicht; die Gruppen sind beschriftet.
-
-Kontrollfrage: Sind EX, MEM und WB drei Takte? Hier nein. Schreib- und PC-Signale müssen präzise festgelegt werden.
-:::
-
-## Das eiserne Gesetz der Präzision
-
-- Ein Fehler in der Matrix kann das System crashen lassen
-- Beispiel: `RegWrite` bei `sw` vergessen und auf 1 gesetzt
-- Die Schreibadresse ist das Bitfeld, das im R-Format `rd` wäre
-- Bei `sw` sind das Teile des Immediate; das beschriebene Register folgt aus diesen Bits
-- Der Schreibwert ist der am Write-Data-Eingang anliegende Wert, nicht unbestimmter Abfall
-
-::: notes
-sw t1, 12(s1) trägt im S-Immediate an den Bits 11 bis 7 den Wert 01100. Ein fälschlich aktiver Register-Schreibport würde damit x12 adressieren. Das ist kein zufälliges Register. Steht MemtoReg in diesem Fehlerbild auf 0, wäre der ALU-Adresswert der Schreibwert, nicht undefinierter Inhalt. Eine ASIC-Änderung ist nicht die zwingende Folge; ein FPGA oder ein Modell kann anders geändert werden.
-
-Kontrollfrage: Sieht der Schreibport bei sw ein echtes rd? Nein. Anschließend prüfen wir jedes Signal einzeln.
-:::
-
-# Die Haupt-Steuersignale
-
-
-::: notes
-Der Abschnitt wechselt von Opcode-Familien zu Bauteilwirkungen. Für jeden Pin lautet die Frage: Welche Auswahl oder Zustandsänderung steuert er, und wann ist sein Wert beobachtbar? Die sieben Namen sind die Orientierung. Ihre Begründung folgt einzeln.
-
-Kontrollfrage: Ist ein anliegender Datenwert schon gespeichert? Nein. Die nächste Folie gruppiert die Signale.
-:::
-## Die Signale im Überblick
-
-- Jedes der sieben Steuersignale systematisch durchgehen
-- Welche Signale sind Weichen (MUX)?
-- Welche Signale sind Schreib-/Leserechte (Enable-Pins)?
-- Warum sind Don’t Cares ($X$) bei MUXen oft sinnvoll?
-- Die fatale Kollision von `MemRead` und `MemWrite`
-
-```{mermaid}
-%%| fig-width: 4.0
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  A[Steuersignale] --> B[Multiplexer]
-  A --> C[Enable Pins]
-  B -->|Pfadwahl| D[z.B. ALUSrc]
-  C -->|Erlaubt Speichern| E[z.B. RegWrite]
-  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Ein MUX wählt eine Datenquelle. Ein Enable gibt einen Zugriff frei. Branch ist eine Bedingungsfreigabe, nicht der Speicherzugriff. MemRead und MemWrite gleichzeitig sind in unserem Modell nicht die vorgesehene Kombination. Das ist eine Modellregel, keine universelle elektrische Kurzschlussgefahr.
-
-Kontrollfrage: Dürfen MemRead und MemWrite im Lehrsubset beide eins sein? Nein. Als Nächstes unterscheiden wir anliegende Daten und ihre Speicherung.
-:::
-
-## Zwei Arten von Signalen
-
-- Im Datenpfad gibt es zwei Kategorien von Steuerleitungen
-- Kategorie 1: Weichen (Multiplexer) — lenken Datenströme (z. B. `ALUSrc`)
-- Eine Weiche leitet immer weiter — auch bei Müll; sie steht auf 0 oder 1
-- Kategorie 2: Erlaubnis-Pins (Write-Enable) — verändern Speicherzustand (z. B. `RegWrite`)
-- Enable-Pins restriktiv auf 0 halten; nur bei Bedarf 1 — sonst Datenkorruption
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Control[Control Unit] -->|Kategorie 1| MUX{Multiplexer}
-  Control -->|Kategorie 2| Enable[Enable Pins]
-  style Control fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style MUX fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Enable fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Der MUX-Ausgang führt den ausgewählten Datenwert. Er ist kein Schreibport. Ein Register übernimmt den Wert erst bei erlaubter Freigabe und der Modellflanke. Ob ein Wert unerheblich ist, muss für jeden beobachtbaren Verbraucher geprüft werden, nicht nur für das Write-Back. Die Skizze trennt Datenpfad und Enable.
-
-Kontrollfrage: Verändert ein MUX-Ausgang allein den Registerzustand? Nein. ALUSrc ist das erste Auswahlbeispiel.
-:::
-
-## ALUSrc (Multiplexer 1)
-
-- 1-Bit-Signal steuert den MUX vor dem zweiten ALU-Eingang
-- 0: ALU rechnet mit Register `RD2` aus dem Register File
-- 1: ALU rechnet mit der 32-Bit-Konstante aus dem ImmGen
-- Reine Registeroperationen (`add`, `sub`, `and`) → `ALUSrc = 0`
-- Adress-Offsets (`lw`, `sw`) → `ALUSrc = 1`
-
-```text
-ALUSrc:
-R-Type  -> 0   (rs2)
-Load    -> 1   (Immediate-Offset)
-Store   -> 1   (Immediate-Offset)
-Branch  -> 0   (Register vergleichen)
-```
-
-::: notes
-ALUSrc gleich 0 wählt RD2, den zweiten gelesenen Registerdatenwert. ALUSrc gleich 1 wählt den auf 32 Bit erweiterten Immediate. add nutzt Register plus Register. lw und sw nutzen Basis plus Offset. beq nutzt im Lehrmodell die Register für den Vergleich. addi nutzt ebenfalls die Immediate-Auswahl. In Ripes ist die Branch-Struktur anders; diese 0 gilt hier für das Lehrmodell.
-
-Kontrollfrage: Welche ALUSrc-Stellung hat lw? 1. Danach wird die Quelle des Register-Schreibwerts gewählt.
-:::
-
-## MemtoReg (Multiplexer 2)
-
-- 1-Bit-Signal steuert den MUX vor dem Write-Back
-- 0: ALU-Ergebnis fließt ins Zielregister
-- 1: RAM-Daten fließen ins Zielregister
-- RAM-Daten nur beim Load (`lw`)
-- Bei R-Type muss `MemtoReg = 0` sein — sonst RAM-Schrott in der Variablen
-
-```text
-MemtoReg:
-R-Type  -> 0   (ALU-Ergebnis)
-Load    -> 1   (RAM-Daten)
-Branch  -> X   (kein Speichern)
-Store   -> X   (kein Speichern)
-```
-
-::: notes
-MemtoReg gleich 0 wählt das ALU-Ergebnis, gleich 1 den gelesenen Speicherwert. Lehrwerte: die ALU berechnet die Adresse 0x2004, der Speicher enthält dort 37. lw schreibt 37, nicht die Adresse. Ein falscher Datenwert ist ein bestimmter anderer Wert, kein Schrott. Ripes kann mehr als zwei Write-Back-Quellen haben, darunter PC plus 4.
-
-Kontrollfrage: Was schreibt lw in diesem Beispiel? 37. Ohne Registerschreiben kann die Auswahl unerheblich sein.
-:::
-
-## MemtoReg als Don’t Care ($X$)
-
-- Bei `sw` oder `beq`: nichts wird ins Register File geschrieben
-- `RegWrite = 0` — Werkbank verschlossen
-- MUX-Stellung vor dem Register File ist irrelevant
-- Signale prallen am geschlossenen Register File ab
-- In die Wahrheitstabelle: stolzes $X$
-
-```{mermaid}
-%%| fig-width: 4.0
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph RL
-  MUX{MemtoReg = X} -->|prallt ab| Reg[(Register File)]
-  RegWrite[RegWrite = 0] -.->|geschlossen| Reg
-  style RegWrite fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style MUX fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Reg fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-RegWrite gleich 0 deaktiviert den betrachteten Schreibport. Die Leseports können rs1 und rs2 weiter liefern. Die Registerbank ist nicht insgesamt geschlossen. Bei sw bleiben Adresse, Store-Daten und MemWrite relevant. MemtoReg gleich 0 und gleich 1 erzeugen denselben Registerzustand, weil nichts übernommen wird.
-
-Kontrollfrage: Dürfen die Leseports bei sw weiter Daten liefern? Ja. Die nächste Folie erklärt die Schreibfreigabe genauer.
-:::
-
-## RegWrite (Erlaubnis-Pin)
-
-- Hochkritischer Write-Enable am Register File
-- 1: Bei der nächsten positiven Taktflanke wird `rd` überschrieben
-- 0: Register File schreibgeschützt
-- Fehler hier sind für die Software katastrophal
-
-```text
-RegWrite:
-R-Type  -> 1   (Ergebnis speichern)
-Load    -> 1   (geladenes Wort speichern)
-Store   -> 0
-Branch  -> 0
-```
-
-::: notes
-RegWrite ist die Schreibfreigabe. Write Enable ist dasselbe Signal in manchen Bildern. rd ist die Zieladresse. Die positive Flanke ist die Annahme dieses Modells, keine ISA-Pflicht. x0 bleibt immer null, auch wenn rd gleich x0 ist. PC und Datenspeicher sind andere Zustandselemente. RegWrite gleich 0 blockiert sie nicht. Vor der Flanke kann das ALU-Ergebnis schon anliegen. Erst die Freigabe übernimmt es nach t0.
-
-Kontrollfrage: Setzt RegWrite gleich 0 auch den PC still? Nein. Store und Branch brauchen dieses Write-Back nicht.
-:::
-
-## Wer darf nicht schreiben?
-
-- Zwei Familien dürfen `RegWrite` nie aktivieren
-- Store (`sw`): Ziel ist der RAM; CPU-Variablen bleiben unangetastet
-- Branch (`beq`): Ziel ist der PC; keine Datenberechnung/-ladung
-- Control Unit zwingt `RegWrite` eisern auf 0
-- Ein fälschlich aktives `RegWrite` würde die Immediate-Bits als Registeradresse sehen
-
-::: notes
-S- und B-Format haben kein rd. Ein naiver Adressport sieht Immediate-Bits. Die Wirkung einer falschen Freigabe ist aus Adresse und Schreibwert bestimmbar, nicht zufällig. Bei den behandelten Stores und Branches bleibt der allgemeine Registersatz unverändert. Store ändert den Datenspeicher, Branch den PC.
-
-Kontrollfrage: Welches Register würde 01100 fälschlich wählen? x12. Nun folgen die Speicherzugriffe.
-:::
-
-## MemRead (Erlaubnis-Pin)
-
-- Erlaubnis-Pin für das Lesen aus dem Datenspeicher (RAM)
-- 1: RAM legt Bits an der ALU-Adresse auf das Lesekabel
-- 0: im Lehrmodell kein vorgesehener Lesezugriff, nicht automatisch hochohmig
-- Im Single-Cycle nur bei `lw` auf 1
-- Sonst Strom sparen: RAM nicht unnötig auslesen
-
-```text
-MemRead:
-Load         -> 1
-Alle anderen -> 0
-```
-
-::: notes
-MemRead ist die explizite Lesezugriffssteuerung des Lehrmodells. MemRead gleich 0 bedeutet hier keinen vorgesehenen Lesezugriff. Ob der Ausgang dann einen Pegel oder einen hochohmigen Zustand hat, entscheidet die konkrete Speicherimplementierung. Ripes steuert Zugriffsart und Breite oft über einen Operationsselektor, nicht zwingend über einen gleichnamigen Pin. Eine Stromersparnis ist implementationsabhängig und hier nicht gemessen.
-
-Kontrollfrage: Bedeutet MemRead gleich 0 immer den Zustand Z? Nein. Schreiben ist ein eigener Zugriff.
-:::
-
-## MemWrite (Erlaubnis-Pin)
-
-- Noch kritischerer Write-Enable am RAM
-- 1: Bei Taktflanke wird Write-Data in die RAM-Zelle geschrieben
-- 0: Schreibschutz aktiv
-- In der Basistabelle genau einmal 1: bei `sw`
-- Ein falsches `MemWrite` kann den konkret adressierten Speicherwert ändern
-
-```text
-MemWrite:
-Store        -> 1
-Alle anderen -> 0
-```
-
-::: notes
-MemWrite braucht drei getrennte Angaben: Adresse, Schreibdaten und Freigabe. Bei sw kommt die Adresse aus der ALU und der Schreibwert aus rs2. Die Übernahme folgt dem Speichertaktmodell. Ein falsches MemWrite kann den adressierten Wert ändern. Es gibt hier nicht automatisch ein Betriebssystem, das dadurch abstürzt.
-
-Kontrollfrage: Liegt der Store-Wert am ALU-Ergebnis? Nein, an rs2. Die nächste Folie legt die zulässigen Kombinationen fest.
-:::
-
-## Die Gefahr: MemRead und MemWrite
-
-- Im Lehrmodell sind `MemRead` und `MemWrite` gegenseitig ausgeschlossen
-- `MemRead = 0` bedeutet hier „nicht lesen“, nicht zwingend hochohmig
-- Ein elektrischer Kurzschluss gilt nur für ein konkret gezeigtes Busmodell
-- Speichermodule können ein definiertes Read-during-write haben; das nutzen wir nicht
-
-::: notes
-Die vier Kombinationen, zuerst MemRead dann MemWrite: 00 kein vorgesehener Zugriff, 10 lesen, 01 schreiben, 11 im Kursmodell nicht verwendet. Read-during-write realer Speicher ist eine eigene Spezifikation, kein automatischer Kurzschluss. Für lw gilt 10, für sw 01, für add und beq 00.
-
-Kontrollfrage: Welche Kombination hat sw? MemRead 0 und MemWrite 1. Die letzte Gruppe betrifft den Kontrollfluss.
-:::
-
-## Branch (Entscheidungs-Signal)
-
-- Weder direkter MUX noch Enable-Pin
-- Hilfssignal in das AND-Gatter vor dem PC
-- 1: Control Unit bestätigt — aktueller Befehl ist bedingter Sprung
-- Liefert dem AND die halbe Erlaubnis für `PCSrc`
-- Bei `add`, `lw`, `sw`: Branch = 0 — Sprung unmöglich
-
-```text
-Branch:
-beq / Branch-Familie -> 1
-Alle anderen         -> 0
-```
-
-::: notes
-Branch gleich 1 kennzeichnet einen unterstützten bedingten Sprung. Es bedeutet nicht, dass der Sprung genommen wird. PCSrc ist die Auswahl des nächsten PC. jal und jalr fehlen im Lehrsubset. Dieselbe Branch-Freigabe kann mit verschiedenen Vergleichsergebnissen verschiedenes PCSrc erzeugen.
-
-Kontrollfrage: Ist Branch gleich 1 schon das genommene Sprungziel? Nein. Die nächste Folie setzt die Gleichung zusammen.
-:::
-
-## Die PCSrc-Logik (Rückblick)
-
-- Control Unit kann die finale Sprungentscheidung nicht allein fällen
-- Registervergleich fehlt ihr — ALU-Zero als Assistent
-- Für `beq`: $\mathrm{PCSrc} = \mathrm{Branch} \land \mathrm{Zero}$
-- Beide Signale müssen 1 sein, damit der PC umgeschaltet wird
-- Andere Branches (z. B. `bne`): andere Flag-Logik (oft $\mathrm{Branch} \land \overline{\mathrm{Zero}}$)
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Control[Branch] --> AND((AND))
-  ALU[Zero-Flag] --> AND
-  AND -->|steuert PC| MUX{PCSrc MUX}
-  style AND fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Control fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style ALU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style MUX fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Für beq gilt PCSrc gleich Branch und Zero. Zero ist eins genau bei ALU-Ergebnis null. Die vier Fälle: Branch 0 und Zero 0 oder 1 lassen den Sprung ungewählt. Branch 1 und Zero 0 ergibt PCSrc 0, also PC plus 4. Branch 1 und Zero 1 ergibt PCSrc 1. Der Offset ist relativ zur aktuellen Branch-Adresse, nicht zu PC plus 4. Lehrwerte: PC gleich 0x100, Offset plus 12. Genommenes Ziel 0x10C, nicht genommen 0x104. Das sind illustrative Adressen, keine Ripes-Startadresse. bne braucht Branch und nicht Zero. Im Ripes-Single-Cycle-Modell vergleicht ein eigener Block die Register.
-
-Kontrollfrage: Wohin springt beq bei Gleichheit in diesem Beispiel? Nach 0x10C. Als Nächstes fassen wir die Signale zusammen.
-:::
-
-## Zwischenstand der Tabelle
-
-- Weichen und Enable-Pins für den Chip unter Kontrolle
-- Datenverkehr und Speicherblockaden sind spezifiziert
-- Noch offen: Was genau soll die ALU tun?
-- Main Control hat bisher nur die groben Pfade organisiert
-
-| Signal | Funktion | Bauteil |
-|--------|----------|---------|
-| `ALUSrc` | 0=Reg, 1=Imm | MUX vor ALU |
-| `MemtoReg` | 0=ALU, 1=RAM | MUX vor Write-Back |
-| `RegWrite` | 1=Schreiben | Register-File-Pin |
-| `MemRead` / `MemWrite` | 1=Aktiv | RAM-Pins |
-| `Branch` | 1=Sprungbereit | AND vor PC |
-
-::: notes
-Die Tabelle zeigt ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite und Branch. ALUOp fehlt noch. MemRead und MemWrite sind zwei Signale. Branch ist nicht der fertige PC-Selektor. Zustand ändern RegWrite, MemWrite und die PC-Fortschaltung. ALUSrc und MemtoReg wählen nur Quellen, MemtoReg aber nur beobachtbar bei RegWrite gleich 1.
-
-Kontrollfrage: Welches Signal schreibt den Datenspeicher? MemWrite. Nun wird die konkrete ALU-Operation bestimmt.
-:::
-
-## Das fehlende ALU-Signal
-
-- Warum kein simples `ALU_Addition`-Signal in der Main Control?
-- Problem: der 7-Bit-Opcode
-- `add` und `sub` teilen denselben Opcode `0110011`
-- Main Control sieht nur die Familie — nicht Plus vs. Minus
-
-```text
-; Main Control sieht nur 0110011:
-add t0, t1, t2
-sub t0, t1, t2
-and t0, t1, t2
-```
-
-::: notes
-add, sub und and können dieselben Registeroperanden und denselben Opcode 0110011 haben. Die Ergebnisse unterscheiden sich, weil funct-Felder verschieden sind. Ein einzelnes Addition-ja-nein-Signal reicht für das Subset nicht. Die Detaildecodierung ist eine Modellzerlegung, keine ISA-Vorschrift.
-
-Kontrollfrage: Haben add und and denselben Opcode? Ja. Die nächste Folie quantifiziert eine naive Eingabetabelle.
-:::
-
-## Das Problem mit R-Types
-
-- Opcode, `funct3` und `funct7` sind zusammen viele Eingangsbits
-- Eine naive Tabelle hätte $2^{17} = 131072$ Zeilen
-- Die synthetisierte Schaltung listet diese Zeilen nicht physisch auf
-- Don't-Care und die Zweistufigkeit verkleinern die Beschreibung, nicht per se die gemessene Fläche
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Input[17 Bit Input] -->|131000 Kombinationen| CPU[Gigantisches Steuerwerk]
-  style CPU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Input fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Sieben Opcode-Bits, drei funct3-Bits und sieben funct7-Bits sind 17 Bits. 2 hoch 17 ist 131072 Kombinationen einer naiv vollständigen Tabelle. Das ist nicht die physische Schaltung und kein Beleg, dass die Taktfrequenz einbricht. Nicht jede Kombination ist ein unterstützter Befehl. Strukturierte Decoder nutzen gemeinsame Bedingungen. Kosten hängen von der Umsetzung ab.
-
-Kontrollfrage: Sind 131072 Zeilen die Gatterzahl? Nein. Die nächste Zerlegung trennt Familie und Funktionsbits.
-:::
-
-# ALU Control (Zweistufige Decodierung)
-
-
-::: notes
-ALU bedeutet Arithmetic Logic Unit. Decodierung ordnet Bitmuster einer Operation zu. Die offene Frage lautet: Wie verbindet man die grobe Familie mit den feinen Funktionsbits, ohne alles in einer unübersichtlichen Tabelle zu vermischen? Die Antwort ist eine Modellzerlegung, keine ISA-Pflicht.
-
-Kontrollfrage: Schreibt RISC-V ALUOp vor? Nein. Die nächste Folie führt diese Brücke ein.
-:::
-## Teile und Herrsche
-
-- Ausweg aus der gigantischen Wahrheitstabelle
-- Delegation von Verantwortung
-- 2-Bit-Signal `ALUOp` als Brücke zwischen den Abteilungen
-- Kleine ALU Control Unit als Detail-Spezialist
-- Auswertung von `funct3` und `funct7`
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Main[Main Control] -->|ALUOp| Sub[ALU Control]
-  Sub -->|4-Bit Kommando| ALU((ALU))
-  style Main fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Sub fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style ALU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Die Main Control bildet aus dem Opcode die Kategorie ALUOp. Die ALU Control bildet daraus und aus den Funktionsbits das konkrete Kommando. Bei lw verlangt die Main Control Addition. Die ALU Control muss dann die Registerfunktionsbits nicht noch einmal als Operationsentscheid lesen. Zwei Boxen mit Bitbreiten machen die Zuständigkeit sichtbar. Eine einzige große Tabelle ist keine notwendige physische Alternative.
-
-Kontrollfrage: Muss lw die funct7-Bits der R-Types auswerten? Für die bereits erkannte Additionsaufgabe nein. Die nächste Folie zeigt die Ein- und Ausgänge.
-:::
-
-## Die Lösung: Zweistufige Kontrolle
-
-- Logik in zwei separate Boxen
-- Stufe 1 (Main Control): 7-Bit-Opcode; MUXe und Speicher; sendet `ALUOp`
-- Stufe 2 (ALU Control): nimmt `ALUOp`, liest `funct3`/`funct7`, finales ALU-Kommando
-- Zwei kleine Schaltungen sind schneller und kleiner als eine gigantische
-
-::: notes
-Zwei kleine Schaltungen sind nicht automatisch schneller oder kleiner. Eine zusätzliche Stufe kann Laufzeit beitragen. Der Nutzen hier ist eine prüfbare Zuständigkeit. ALUOp ist ein Zweibitbus. ALUControl ist das vierbitige Kurskommando. Der Weg ist Opcode, Main Control, ALUOp, ALU Control, plus getrennt zugeführte Funktionsfelder.
-
-Kontrollfrage: Ist ALUOp schon der Addierbefehl? Nein. Die nächste Folie definiert die vier Kategorien.
-:::
-
-## Das Signal ALUOp (2 Bit)
-
-- Verlässt die Main Control Richtung ALU Control
-- 2 Bit — vier grobe Zustände
-- Kategorisiert die Aufgabe der ALU
-
-| ALUOp | Bedeutung | Befehlstypen |
-|-------|-----------|--------------|
-| `00` | ALU muss addieren (unbedingt) | `lw`, `sw`, `addi` |
-| `01` | ALU muss subtrahieren (Vergleich) | `beq` |
-| `10` | ALU muss rechnen (funct lesen) | R-Type |
-| `11` | Reserve / ungenutzt | - |
-
-::: notes
-ALUOp 00 verlangt ADD für lw, sw und addi. 01 verlangt im Lehrmodell SUB für den beq-Vergleich. 10 lässt die unterstützte Registeroperation aus den funct-Feldern bestimmen. 11 ist unbenutzt. Ungültige Eingaben dürfen daraus kein beliebiges Schreiben ableiten. addi mit Immediate minus 5 hat instr[30] gleich 1, weil dieses Bit zum Immediate gehört, und muss trotzdem addieren. Das Maschinenwort addi t0, x0, minus 5 ist als 0xFFB00293 zu prüfen. Diese Fassung hat den Assembler nicht ausgeführt.
-
-Kontrollfrage: Darf Bit 30 bei addi die Subtraktion wählen? Nein. Die ALU Control übersetzt die Kategorie.
-:::
-
-## Die kleine ALU Control Unit
-
-- Eingänge: `ALUOp` (2), `funct3` (3), relevantes `funct7`-Bit (1)
-- `funct7` nur auswerten, wenn nötig (R-Type)
-- Ausgang: 4-Bit-Steuerwort in die ALU
-- Definiert die Verschaltung: Plus, Minus, AND, OR
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  ALUOp[ALUOp 2 Bit] --> Box((ALU Control))
-  F3[funct3] --> Box
-  F7[funct7 Bit30] --> Box
-  Box -->|4 Bit| ALU((ALU))
-  style Box fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style ALUOp fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style F3 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style F7 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style ALU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Die vereinfachte Box sieht sechs Bits: zwei ALUOp, drei funct3 und instr[30]. Das ersetzt nicht die Legalitätsprüfung über Opcode und vollständiges funct7. Nur bei Bedarf auswerten darf illegale Kombinationen nicht als gültige Operationen durchlassen. Der Ausgang hat vier Bits nach der Kurskonvention 0000 AND, 0001 OR, 0010 ADD und 0110 SUB.
-
-Kontrollfrage: Sind diese vier Bits RISC-V-Opcodes? Nein. Die einfachste Kategorie erzwingt Addition.
-:::
-
-## Fall 1: ALUOp = 00 (Load, Store, addi)
-
-- Chef funkt `00` — `lw` oder `sw`
-- Hardware muss Base + Offset addieren
-- ALU Control ignoriert funct-Bits ($X$)
-- Sendet hart verdrahtet ADD (`0010`) an die ALU
-
-```text
-WENN ALUOp == 00:
-  Sende ADD an die ALU
-  (funct-Felder irrelevant)
-```
-
-::: notes
-ALUOp 00 erzwingt Addition für bereits gültig erkanntes lw, sw und addi. Bei lw und sw entsteht eine Adresse, bei addi ein Registerwert. Der Immediate wird vorzeichenerweitert. Lehrwerte: Basis 0x2000 plus Offset 4 ergibt 0x2004. addi von 7 und minus 5 ergibt 2. Die funct-Felder entscheiden in dieser Kategorie nicht noch einmal die Operation.
-
-Kontrollfrage: Addiert ALUOp 00 auch bei einem gesetzten Bit 30 von addi? Ja. Kategorie 01 nutzt im Lehrmodell eine andere Funktion.
-:::
-
-## Fall 2: ALUOp = 01 (beq-Vergleich im Lehrmodell)
-
-- Chef funkt `01` — bedingter Sprung
-- Zwei Register subtrahieren, um Zero zu füttern
-- funct-Bits wieder ignoriert
-- Sendet SUB (`0110`) an die ALU
-
-```text
-WENN ALUOp == 01:
-  Sende SUB an die ALU
-  (Zero-Flag bei Gleichheit)
-```
-
-::: notes
-Der Untertitel gilt für den beq-Vergleich im Lehrmodell, nicht für jeden Branch und nicht für Ripes. 9 minus 9 ist 0, Zero wird 1. 9 minus 4 ist 5, Zero bleibt 0. Die ALU vergleicht. Ein separater Addierer bildet das Ziel PC plus Offset. In Ripes übernimmt ein eigener Vergleicher die Register. Der vollständige Decoder darf die Branch-Art nicht generell ignorieren.
-
-Kontrollfrage: Berechnet die ALU hier das Sprungziel? Im Lehrmodell nein. R-Type braucht eine funktionsabhängige Auswahl.
-:::
-
-## Fall 3: ALUOp = 10 (R-Type)
-
-- Chef funkt `10` — Detail-Arbeit
-- ALU Control erwacht und liest die funct-Felder
-- Unterscheidung: `add`, `sub`, `and`, …
-
-```text
-Opcode 0110011, ALUOp = 10
--> funct3 / funct7 scannen
-```
-
-::: notes
-funct3 und funct7 unterscheiden die unterstützten Registeroperationen. Dieselben Quellwerte können add, sub, and oder or durchlaufen. Die Pfadauswahlen bleiben gleich, das ALU-Ergebnis nicht. Erwacht ist eine Metapher und bedeutet nicht, dass alle anderen Gatter physisch abgeschaltet sind. Voraussetzung sind legale Encodings des Subsets.
-
-Kontrollfrage: Ändert or gegenüber add den Wert von ALUSrc? Nein. Zuerst wird funct3 gelesen.
-:::
-
-## funct3 als Wegweiser
-
-- Bei `ALUOp = 10` ist `funct3` der primäre Wegweiser
-- `funct3 = 111` — bitweises AND
-- `funct3 = 110` — bitweises OR
-- `funct3 = 000` — Arithmetik (Plus oder Minus?)
-- Bei `000` reicht funct3 noch nicht — nächste Stufe
-
-| ALUOp | funct3 | Aktion |
-|-------|--------|--------|
-| `10` | `111` | AND |
-| `10` | `110` | OR |
-| `10` | `000` | Plus oder Minus? → Bit 30 |
-
-::: notes
-funct3 liegt in den Bits 14 bis 12. 000 ist der Addier-/Subtrahierfall, 110 ist or, 111 ist and. Bitweise AND und OR verknüpfen gleiche Positionen. Ein kurzes Beispiel 0x0F und 0xA5 ist nur ein Ausschnitt der 32-Bit-Operation. 000 allein unterscheidet add und sub nicht. Dieselben funct3-Codes bedeuten in anderen Opcode-Familien nicht dieselbe Operation.
-
-Kontrollfrage: Reicht funct3 gleich 000 für sub? Nein. funct7 löst den Unterschied.
-:::
-
-## funct7 als letzter Schalter
-
-- Nur wenn `ALUOp = 10` und `funct3 = 000`
-- Relevant: Bit 30 der Instruktion (in `funct7`)
-- Bit 30 = 0 — `add`
-- Bit 30 = 1 — `sub`
-- Rätsel entschlüsselt
-
-```text
-add t0, t1, t2   # Bit 30 = 0  (funct7 = 0000000)
-sub t0, t1, t2   # Bit 30 = 1  (funct7 = 0100000)
-```
-
-::: notes
-add hat funct7 gleich 0000000, sub gleich 0100000. Der sichtbare Unterschied dieser beiden Encodings bei gleichen Registern ist Bit 30. Die Aussage gilt nicht für beliebige Bitmuster. Ein MUL der M-Erweiterung kann Opcode 0110011 und funct3 000 haben, aber funct7 0000001. Ein naiver Blick nur auf Bit 30 würde es fälschlich als add lesen. Bei Immediate-Befehlen ist Bit 30 kein funct7-Bit.
-
-Kontrollfrage: Darf jedes Muster mit Bit 30 gleich 0 als add gelten? Nein. Der Decoder erzeugt daraus das Kurs-Steuerwort.
-:::
-
-## Das 4-Bit-ALU-Kommando
-
-- Ergebnis der ALU Control: 4 Steuerbits in die Haupt-ALU
-- Standardcodierung nach Patterson/Hennessy
-- ALU-Hardware schaltet stur bei diesen Bitmustern
-
-| 4-Bit ALU-Kommando | Hardware-Reaktion |
-|--------------------|-------------------|
-| `0000` | bitweises AND |
-| `0001` | bitweises OR |
-| `0010` | ADDITION |
-| `0110` | SUBTRAKTION |
-
-::: notes
-Die vier Codes sind die Kurskonvention nach dem Lehrbuchmuster, nicht ein RISC-V-Standard. 0000 ist AND, 0001 OR, 0010 ADD, 0110 SUB. Eine mögliche ALU bildet SUB, indem sie den zweiten Operanden invertiert und den ersten Carry auf eins setzt. Das ist ein Implementierungsbeispiel. ALUOp und ALUControl bleiben zwei Tabellen.
-
-Kontrollfrage: Ist 0110 der Opcode von sub? Nein. Die nächste Folie fasst die Zuordnung zusammen.
-:::
-
-## Die Wahrheitstabelle der ALU Control
-
-- Matrix der Experten-Box — als Gatter verlötet
-- $X$ rettet vor unnötigen Gattern bei Load/Store/Branch
-
-| ALUOp | Bit 30 | funct3 | Bedeutung im Lehrsubset | ALU-Output |
-|-------|--------|--------|-------------------------|------------|
-| `00` | $X$ | $X$ | `lw` / `sw` / `addi`, legal erkannt | `0010` (ADD) |
-| `01` | $X$ | $X$ | `beq` im Lehrmodell | `0110` (SUB) |
-| `10` | `0` | `000` | `add`, funct7 `0000000` | `0010` (ADD) |
-| `10` | `1` | `000` | `sub`, funct7 `0100000` | `0110` (SUB) |
-| `10` | $X$ | `111` | `and`, funct7 `0000000` | `0000` (AND) |
-| `10` | $X$ | `110` | `or`, funct7 `0000000` | `0001` (OR) |
-
-::: notes
-Die Tabelle gilt für legale Eingaben des Lehrsubsets. X bei Bit 30 oder funct3 bedeutet: für diese bereits erkannte Kategorie wird das Bit nicht als weiterer Operationsentscheid gebraucht. Es ersetzt keine Prüfung des ganzen Encodings. ALUOp 00 ergibt 0010 für lw, sw und addi. 01 ergibt 0110 für beq im Lehrmodell. 10 mit funct3 000 und Bit 30 gleich 0 ist add, mit Bit 30 gleich 1 sub. funct3 111 ist and mit 0000. funct3 110 ist or mit 0001. addi t0, x0, minus 5 bleibt Addition, obwohl Bit 30 eins ist. or von 0x0F und 0xA5 ergibt im unteren Byte 0xAF. ALUOp 11 ist unbenutzt.
-
-Kontrollfrage: Welche ALUControl-Zeile hat or? 0001. Danach bewerten wir die Zerlegung als Beschreibung.
-:::
-
-## Warum zweistufig? (Effizienz)
-
-- Zwei getrennte Beschreibungen: $2^7 = 128$ und $2^6 = 64$ Eingabekombinationen
-- Das ist keine Messung von Fläche, Strom oder Takt
-- Die 6-Bit-Tabelle ersetzt keine vollständige Legalitätsprüfung
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  A[130000 Zeilen] -.->|Delegation| B[128 Zeilen]
-  B -.-> C[64 Zeilen]
-  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-2 hoch 7 ist 128, 2 hoch 6 ist 64. Zusammen sind das 192 Eingabekombinationen zweier getrennter Beschreibungen. Das ist kein Flächen- oder Taktvergleich mit 2 hoch 17. Die kleine Tabelle enthält einen reduzierten Eingang und prüft nicht jedes illegale funct7. Der Vorteil ist Übersicht, gemeinsame Regeln und nachvollziehbare Verifikation.
-
-Kontrollfrage: Beweisen 192 Zeilen einen höheren Takt? Nein. Das Zwischenfazit begrenzt, was fertig ist.
-:::
-
-## Das Steuerkonzept für unser Lehrsubset steht
-
-- Ausgewählte Pfade und sieben Hauptsignale sind spezifiziert
-- Nicht die vollständige RV32I-Implementierung
-- Als Nächstes: die Meistertabelle für add, lw, sw und beq
-
-::: notes
-Bekannt sind die ausgewählten Pfade und Steuersignale des Lehrsubsets. Eine vollständige ISA-Implementierung, ein physischer Chip und Messwerte stehen damit nicht fest. Es fehlen unter anderem weitere ALU-Operationen, Bytezugriffe, Sprünge mit Rücksprungadresse und die Behandlung nicht unterstützter Encodings. Offen bleibt die konsistente Haupttabelle.
-
-Kontrollfrage: Ist die CPU damit vollständig gebaut? Nein. Der nächste Abschnitt führt die Signale pro Instruktion zusammen.
-:::
+Zusätzlich fehlerhaft: `RegWrite = 1`, `MemtoReg = 0`.
 
-# Signal-Trace (Die Meistertabelle)
+- Speicher schreibt weiterhin 37 an `0x200C`
+- Bits 11:7 enthalten `01100`, also die Nummer 12
+- Register `x12` erhält zusätzlich den Adresswert `0x200C`
 
-
-::: notes
-Ein Trace verfolgt Daten und Signale Schritt für Schritt. Dieselbe Befehlswirkung wird in die sieben Hauptsignale übersetzt. Die Matrix gehört zum Lehrmodell. Ripes wird später funktional abgeglichen, nicht bitweise gleichgesetzt.
-
-Kontrollfrage: Ist der Trace eine Ripes-Portliste? Nein. Die nächste Folie beschreibt die Herleitungsmethode.
-:::
-## Die Meistertabelle
-
-- Alle Hebel in einer Matrix
-- Deduktiv herleiten statt auswendig lernen
-- Trace durch R-Type, Load, Store und Branch
-- Don’t Cares optimieren die Tabelle
-- Referenzblatt für die Ripes-Laborsimulation
-
-```{mermaid}
-%%| fig-width: 4.0
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  Instruktion --> Trace[Deduktiver Trace]
-  Trace --> Tabelle[Master Wahrheitstabelle]
-  style Tabelle fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Instruktion fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Trace fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Die Reihenfolge lautet: Quellen, ALU-Aufgabe, Speicherzugriff, Write-Back, PC-Änderung. Ein X braucht eine Begründung. Die Tabelle ist nicht die unveränderte Ripes-Portbelegung. Eine leere Zeile fragt: Woher kommen die Operanden, was rechnet die ALU, wer schreibt, und ändert sich der PC abweichend von plus 4?
-
-Kontrollfrage: Darf ein X ohne Begründung stehen? Nein. Das Arbeitsblatt legt die Spalten fest.
-:::
-
-## Die finale Matrix (Das Skelett)
-
-- Control-Tabelle nach Patterson/Hennessy
-- Ausfüllen durch logisches Denken, nicht auswendig
-- Vier Befehlsfamilien (Zeilen), acht Ausgangssignale (Spalten)
-- Datenpfad aus Einheit 5 im geistigen Auge behalten
-
-| Instruktion | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch | ALUOp1 | ALUOp0 |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| R-Type | ? | ? | ? | ? | ? | ? | ? | ? |
-| `lw` | ? | ? | ? | ? | ? | ? | ? | ? |
-| `sw` | ? | ? | ? | ? | ? | ? | ? | ? |
-| `beq` | ? | ? | ? | ? | ? | ? | ? | ? |
-
-::: notes
-Sieben Hauptsignale ergeben acht Bits, weil ALUOp zwei Bit hat. ALUOp1 ist das höhere, ALUOp0 das niedrige Bit. Vier Zeilengruppen sind ausgewählte Befehle, keine vollständigen Familien. R-Type meint add, sub, and und or. Die Herleitung fragt für jede Spalte nach der beobachtbaren Wirkung.
-
-Kontrollfrage: Sind es acht unabhängige Main-Control-Ausgänge? Nein, sieben Namen und acht Bits. Der erste Trace beginnt mit add.
-:::
-
-## Trace: R-Type (`add`) — ALUSrc
-
-- Zeile für R-Type (Opcode `0110011`)
-- Womit rechnet die ALU? Mit dem zweiten Register (`rs2`)
-- MUX vor der ALU schaltet das Register-Kabel durch
-- `ALUSrc = 0`
-- ImmGen bei R-Type abgeklemmt
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Reg[Register RD2] -->|0| MUX{ALUSrc = 0}
-  Imm[Immediate] -->|1| MUX
-  MUX -->|Register| ALU((ALU))
-  style MUX fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Reg fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Imm fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style ALU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-add t0, t1, t2 mit t1 gleich 7 und t2 gleich 3. rs1 und rs2 sind die Adressfelder, 7 und 3 die gelesenen Werte. ALUSrc gleich 0 wählt RD2 gleich 3. Der ImmGen muss nicht physisch abgeschaltet sein. Sein Wert wird für diesen ALU-Eingang nicht gewählt. Das Ergebnis der Addition wird 10.
-
-Kontrollfrage: Sieht die ALU die Registernummern oder die Werte? Die Werte. Das Ergebnis muss ins Zielregister.
-:::
-
-## Trace: R-Type — Speichern
-
-- Ergebnis verlässt die ALU und muss gespeichert werden
-- Schreiben wir ein Register (`rd`)? Ja → `RegWrite = 1`
-- Welches Signal speichern? Das ALU-Ergebnis
-- MemtoReg klemmt den RAM ab → `MemtoReg = 0`
-
-```text
-R-Type:
-RegWrite = 1
-MemtoReg = 0
-```
-
-::: notes
-Speichern meint hier das Register-Write-Back, nicht den Datenspeicher. MemtoReg gleich 0 führt die 10 zum Datenport von t0. RegWrite gleich 1 erlaubt die Übernahme an der Modellflanke. Der vorherige Inhalt von t0 ist beliebig, solange er vor dem Befehl nicht gelesen wird. Der Datenspeicher wird nicht beschrieben.
-
-Kontrollfrage: Welcher Wert steht nach der Flanke in t0? 10. Die übrigen Signale schließen die Zeile ab.
-:::
-
-## Trace: R-Type — RAM und ALUOp
-
-- Benutzen wir den RAM? Nein → `MemRead = 0`, `MemWrite = 0`
-- Bedingter Sprung? Nein → `Branch = 0`
-- ALU-Kommando: Entscheidung delegieren → `ALUOp = 10`
-- Erste Zeile der Meistertabelle ist komplett
-
-| Instruktion | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch | ALUOp1 | ALUOp0 |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| R-Type | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 |
-
-::: notes
-Die Zeile ist ALUSrc 0, MemtoReg 0, RegWrite 1, MemRead 0, MemWrite 0, Branch 0, ALUOp 10. RAM bedeutet Random Access Memory. Lesen und Schreiben des Datenspeichers sind aus. Branch gleich 0 wählt den sequenziellen PC-Pfad, im Modell ohne C plus 4. ALUOp 10 und die Felder von add ergeben ALUControl 0010. Der Registerzustand ändert sich, der Speicher nicht.
-
-Kontrollfrage: Welches ALUOp hat add? 10. Load verwendet Immediate und Speicher-Write-Back.
-:::
-
-## Trace: I-Type (`lw`) — ALUSrc
-
-- Load Word (Opcode `0000011`)
-- Adresse = Base + Offset → Immediate nötig
-- ALUSrc schaltet ImmGen durch
-- `ALUSrc = 1`
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Reg[Register RD2] -->|0| MUX{ALUSrc = 1}
-  Imm[Immediate Offset] -->|1| MUX
-  MUX -->|Immediate| ALU((ALU))
-  style MUX fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Reg fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Imm fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style ALU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Lehrwerte, nicht ein vorhandener Simulatorzustand: s1 gleich 0x2000, lw t0, 4(s1), Speicherwort an 0x2004 gleich 37. ALUSrc gleich 1 wählt den vorzeichenerweiterten Offset plus 4. Die ALU bildet die Adresse 0x2004. Das ist noch nicht das geladene Wort.
-
-Kontrollfrage: Was liegt nach der Addition an der Speicheradresse an? 0x2004. Der Speicher liefert nun den Inhalt.
-:::
-
-## Trace: I-Type (`lw`) — RAM
-
-- Daten auslesen? Ja → `MemRead = 1`
-- `MemWrite = 0` (Schutz)
-- Letzte Weiche: RAM-Daten zum Register → `MemtoReg = 1`
-
-```text
-lw:
-MemRead  = 1
-MemWrite = 0
-MemtoReg = 1
-```
-
-::: notes
-MemRead gleich 1 liefert in diesem Modell den Wert 37. MemWrite gleich 0 lässt den Speicher unverändert. MemtoReg gleich 1 wählt 37 statt der Adresse 0x2004. Ein Word ist hier 32 Bit. Die Lesezugriffsfreigabe ist nicht dasselbe wie ein bestimmter elektrischer Ausgangszustand. Adresse und Daten sind verschieden beschriftet.
-
-Kontrollfrage: Was darf nicht nach t0 geschrieben werden? Die Adresse 0x2004. Die Schreibfreigabe vollendet den Load.
-:::
-
-## Trace: I-Type (`lw`) — Reg und ALUOp
-
-- In `rd` schreiben? Ja → `RegWrite = 1`
-- Sprung? Nein → `Branch = 0`
-- ALU muss Adresse addieren → `ALUOp = 00`
-- Zweite Zeile steht
-
-| Instruktion | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch | ALUOp1 | ALUOp0 |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `lw` | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 |
-
-::: notes
-Die Zeile ist 1, 1, 1, 1, 0, 0, 00. RegWrite gleich 1 schreibt t0. ALUOp 00 hat die Adresse addiert. Nach der Übernahme ist t0 gleich 37. s1 und der Speicher bleiben gleich. Der PC läuft im Modell um vier Byte weiter. Wäre rd gleich x0, bliebe x0 null.
-
-Kontrollfrage: Welches MemtoReg hat lw? 1. Store teilt die Adressbildung, nicht das Register-Write-Back.
-:::
-
-## Trace: S-Type (`sw`)
-
-- Store Word (Opcode `0100011`)
-- Adresse wieder Base + Offset → `ALUSrc = 1`
-- In den RAM schreiben? Ja → `MemWrite = 1`
-- `MemRead = 0` im Modell: dieser Zugriff liest nicht
-
-```text
-sw:
-ALUSrc   = 1
-MemWrite = 1
-MemRead  = 0
-```
-
-::: notes
-sw t1, 4(s1) mit s1 gleich 0x2000, t1 gleich 10 und bisherigem Speicherinhalt 37. ALUSrc gleich 1 und ALUOp 00 erzeugen die Adresse 0x2004. Die Store-Daten 10 kommen getrennt aus rs2. MemWrite gleich 1 und MemRead gleich 0 sind die Zugriffsregeln. Beide Pfade bleiben in derselben Abbildung sichtbar.
-
-Kontrollfrage: Welcher Wert wird gespeichert? 10, nicht 37. Das nicht benötigte Write-Back erklärt das X.
-:::
-
-## Trace: S-Type (`sw`) — Don’t Cares
-
-- Werkbank-überschreiben? Nein → `RegWrite = 0`
-- MemtoReg bei geschlossener Tür wirkungslos → $X$
-- ALU wieder Adressaddition → `ALUOp = 00`
-
-| Instruktion | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch | ALUOp1 | ALUOp0 |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `sw` | 1 | $X$ | 0 | 0 | 1 | 0 | 0 | 0 |
-
-::: notes
-Die Zeile ist 1, X, 0, 0, 1, 0, 00. Nach der Übernahme enthält 0x2004 den Wert 10. Die Register bleiben unverändert. MemtoReg darf 0 oder 1 sein, weil RegWrite 0 ist. MemWrite bleibt zwingend 1. S-Type hat kein rd. Das X gilt für dieses Modell und ist keine Freiheit für die Speichersteuersignale.
-
-Kontrollfrage: Darf MemWrite hier X sein? Nein. Branch hat ebenfalls kein Register-Write-Back, ändert aber den PC anders.
-:::
-
-## Trace: B-Type (`beq`)
-
-- Branch (Opcode `1100011`)
-- Vergleich zweier Register → `ALUSrc = 0`
-- Kein Speichern in RAM oder Register File
-- `MemWrite = 0`, `MemRead = 0`, `RegWrite = 0`
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  BType[Branch] -->|0| RegWrite
-  BType -->|0| MemWrite
-  BType -->|0| MemRead
-  style BType fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style RegWrite fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style MemWrite fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style MemRead fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-RegWrite, MemRead und MemWrite sind 0. Der PC wird trotzdem aktualisiert. Zwei Fälle: gleiche Register ergeben Zero 1, ungleiche Zero 0. ALUSrc gleich 0 gilt für den SUB-Vergleich im Lehrmodell, nicht automatisch in Ripes. PC 0x100 und Offset plus 12 bleiben das Zahlenbeispiel. Enable null heißt nicht, dass kein Zustandselement weiterschaltet.
-
-Kontrollfrage: Bleibt der PC bei beq stehen? Nein. Bedingung und Freigabe bestimmen den nächsten PC.
-:::
-
-## Trace: B-Type (`beq`) — Control und $X$
-
-- Branch-Weiche vor dem PC freigeben → `Branch = 1`
-- MemtoReg wieder wirkungslos (`RegWrite = 0`) → $X$
-- ALU: zwingende Subtraktion → `ALUOp = 01`
-- Meistertabelle vollständig deduziert
-
-| Instruktion | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch | ALUOp1 | ALUOp0 |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `beq` | 0 | $X$ | 0 | 0 | 0 | 1 | 0 | 1 |
-
-::: notes
-Die Zeile des Lehrmodells ist 0, X, 0, 0, 0, 1, 01. Bei Gleichheit ist PCSrc 1 und das Ziel 0x10C. Bei Ungleichheit ist PCSrc 0 und der nächste PC 0x104. Branch bleibt in beiden Fällen 1. MemtoReg gleich X hängt an RegWrite gleich 0, nicht an der Branch-Bedingung. Der SUB-Vergleich und die Zieladdition sind getrennt.
-
-Kontrollfrage: Ist Branch bei einem nicht genommenen beq null? Nein. Die vier Zeilen werden zusammengeführt.
-:::
-
-## Die ausgefüllte Meistertabelle
-
-- Referenz des Lehrmodells, nicht eine 1:1-Porttabelle von Ripes
-- $X$ = für diese Wirkung unerheblich, kein Anzeigewert
-- Die R-Type-Zeile gilt für die unterstützten legalen Operationen add, sub, and, or
-
-| Instruktion | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch | ALUOp1 | ALUOp0 |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| R-Type | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 |
-| `lw` | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 |
-| `sw` | 1 | $X$ | 0 | 0 | 1 | 0 | 0 | 0 |
-| `beq` | 0 | $X$ | 0 | 0 | 0 | 1 | 0 | 1 |
-| `addi` | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
-
-::: notes
-Die Basiszeilen bleiben: R-Type 0,0,1,0,0,0,10; lw 1,1,1,1,0,0,00; sw 1,X,0,0,1,0,00; beq 0,X,0,0,0,1,01. addi ist die zusätzliche Zeile 1,0,1,0,0,0,00. X ist tabellarische Unerheblichkeit. Die R-Type-Zeile gilt für die legalen unterstützten Operationen. Keine Zelle ist ein Ripes-Bit gleichen Namens. Pro Zeile gilt: Quelle, Operation, Speicher, Write-Back, PC.
-
-Kontrollfrage: Welche Zeile schreibt aus dem Speicher? lw. Der Praxisteil prüft Wirkung und Simulatorstruktur.
-:::
-
-# Praxis: Signal-Analyse in Ripes
-
-
 ::: notes
-Ripes ist ein Lehrsimulator für RISC-V, nicht die Hardware dieses Lehrmodells. Die Frage lautet, wie dieselbe ISA-Wirkung bei anderen internen Pfaden erkannt wird. Nötig sind die Modellwahl, das Layout und der Beobachtungszeitpunkt vor der Taktflanke.
+sw bedeutet Store Word. Der Basisregisteralias s1 ist x9 und enthält 0x2000; t1 ist x6 und enthält 37. Die ALU, Arithmetic Logic Unit, addiert den Offset zwölf und liefert die effektive Adresse 0x200C. Die korrekte Speicher-Schreibfreigabe erlaubt dort die Übernahme von 37.
 
-Kontrollfrage: Beweist ein Ripes-Kabel unsere Tabellenbits? Es zeigt das Ripes-Modell. Der Vergleich wird ausdrücklich.
+Das S-Format hat kein rd, also kein Destination-Register-Feld. Die Bits 11 bis 7 enthalten stattdessen die unteren fünf Immediate-Bits. Zwölf ist dort 01100. Ein fest an diese Positionen angeschlossener fünfbitiger Registeradressport sieht daher die Nummer x12. RegWrite, Register Write, müsste null sein. Ist es im Gedankenexperiment fälschlich eins und MemtoReg, Memory to Register, null, wird zusätzlich das ALU-Adresswort 0x200C nach x12 geschrieben. Dieses Fehlerbild ist vollständig bestimmt. Die sonst erlaubte freie Rückschreibquellenauswahl setzt eine korrekt gesperrte Registerfreigabe voraus. Wird diese Voraussetzung verletzt, kann auch eine zuvor unerhebliche Auswahl beobachtbar werden.
 :::
-## Vom Papier in den Simulator
 
-- Dieselbe ISA-Wirkung, andere interne Pfade
-- Lehrmodell: ALU subtrahiert zum Vergleich, ein zweiter Addierer bildet das Sprungziel
-- Ripes-Single-Cycle laut `rvss.h`: separater Registervergleicher; das ALU-Ergebnis kann das Ziel liefern
-- Keine Behauptung, die Steuerbits seien identisch
+## Verständnischeck: Welche Änderung bleibt folgenlos?
 
-::: notes
-Im Lehrmodell subtrahiert die ALU zum Vergleich, und ein zweiter Addierer bildet PC plus Offset. In der offiziellen Ripes-Datei rvss.h hat der Single-Cycle-Prozessor einen separaten Branch-Vergleicher mit den beiden Registerwerten. Das ALU-Ergebnis kann das Sprungziel liefern. Die ALU-Operandenauswahl kann Register, PC und Immediate unterscheiden. Das Write-Back kann zusätzlich PC plus 4 wählen. Befehls- und Datenzugriff sind an denselben zugrunde liegenden Speicher angebunden. Dieselbe ISA-Wirkung bedeutet nicht dieselben Selektorbits. Eine 1:1-Zuordnung gleichnamiger Signale wird nicht behauptet. Diese Fassung hat die Oberfläche nicht ausgeführt.
-
-Kontrollfrage: Bedeutet Branch in Ripes automatisch ALUOp 01? Nein. Das Laborziel ist eine überprüfbare Vorhersage.
-:::
+Bei einem korrekten `sw` wird genau ein Signal geändert:
 
-## Das Ziel im Labor
+1. `MemtoReg` wechselt von 0 auf 1.
+2. `RegWrite` wechselt von 0 auf 1.
+3. `MemWrite` wechselt von 1 auf 0.
 
-- Debugger: unerklärliche Registerzustände
-- Ursache: ABI, Hardware, Tippfehler?
-- Signalleitungen während des Clock-Ticks lesen
-- Methode: Befehl ansehen → erwartete 1/0 → Linie prüfen
+Welche Änderung erhält die Befehlswirkung sicher?
 
-```text
-Ein Ingenieur klickt nicht auf Run und hofft.
-Ein Ingenieur formuliert eine These und verifiziert sie.
-```
-
 ::: notes
-ABI bedeutet Application Binary Interface. Hier genügen die Alias t0 gleich x5, t1 gleich x6 und t2 gleich x7. Ein unerwarteter Wert kommt oft von fehlender Initialisierung, falscher Instruktion, falschem Modell oder dem falschen Zeitpunkt. Vorgehen: aktuellen PC und decodierte Instruktion lesen, Wirkung vorhersagen, konkrete Ports lesen, Zustand nach genau einem Takt prüfen.
+sw heißt Store Word und muss ein Registerwort in den Datenspeicher übernehmen. MemtoReg, Memory to Register, wählt dagegen die Register-Rückschreibquelle. RegWrite, Register Write, ist bei einem korrekten Store null; MemWrite, Memory Write, ist eins.
 
-Kontrollfrage: Ist jedes dunkle Kabel ein Hardwarefehler? Nein. Zuerst wird die passende Ansicht eingeordnet.
+Nur Änderung eins erhält die spezifizierte Befehlswirkung sicher. Das Registerschreiben bleibt gesperrt, der Speicherwert kommt direkt vom zweiten Registerlesewert und nicht von MemtoReg. Änderung zwei kann ein Register überschreiben, dessen Nummer aus den Immediate-Bits stammt. Eine Ausnahme wie eine zufällig ausgewählte Nullregisteradresse rechtfertigt keine allgemeine Freigabe. Änderung drei unterbindet den vorgeschriebenen Speicherzugriff; allenfalls ein zufällig schon gleicher Speicherinhalt würde das sichtbare Endbild verdecken. Die Begründung soll die Wirkung für alle gültigen Ausgangszustände erklären und nicht nur ein günstiges Zahlenbeispiel. Diese Frage übt den Unterschied zwischen garantierter Entwurfsfreiheit und zufälligem Nichtauffallen eines Fehlers.
 :::
-
-## Wo ist die Control Unit in Ripes?
 
-- RV32 Single Cycle wählen, C-Erweiterung aus, Extended-Layout einschalten
-- Portnamen und Werte ablesen, nicht eine feste Bildschirmposition
-- Diese Fassung hat die Oberfläche nicht live geprüft; die Struktur folgt der offiziellen Quelle `rvss.h`
+# 6. Auf Papier vorhersagen, in Ripes vergleichen
 
 ::: notes
-Wählen Sie den RV32-Single-Cycle-Prozessor, schalten Sie die C-Erweiterung aus und das Extended-Layout ein. Die genauen Menünamen können sich ändern. Ports werden über Namen und Werte identifiziert, nicht über eine geschätzte Mitte des Bildschirms. Manche Steuerungen sind mehrbitige Selektoren. Ein UI-Test dieser Fassung liegt nicht vor. Die Strukturaussage stützt sich auf die genannte Quelldatei.
+Das Lehrmodell liefert eine begründete Steuertabelle. Ripes ist ein visueller RISC-V-Simulator mit eigener Mikroarchitektur. Wir vergleichen deshalb die geforderten Funktionen und Ergebnisse, nicht ungeprüft sämtliche internen Bitcodes.
 
-Kontrollfrage: Liegt die Control immer mittig oben? Das ist nicht belegt. Als Nächstes zählt der angezeigte Wert, nicht nur eine Farbe.
+Der Papierteil des Übungsblatts enthält Tabellenherleitung, Detaildecodierung, eine Boolesche Bedingung und Fehleranalyse. Boolesch bedeutet hier eine Funktion über null und eins. Die Simulatoraufgabe ergänzt Beobachtungen an vorhandenen Ports. Die verwendete Datei ist bereits im Repository vorhanden. Ihre Initialisierung und die interessierenden Maschinenbefehle lassen sich anhand von Labels unterscheiden; eine feste Anzahl Schritte pro Quelltextzeile wird nicht vorausgesetzt.
 :::
-
-## Grüne vs. graue Leitungen
-
-- Maßgeblich sind Portname, Breite und der angezeigte Wert
-- Eine 0 kann die richtige MUX-Quelle auswählen
-- $X$ aus der Tabelle ist kein dritter Anzeigewert; 0 und 1 sind bei begründetem Don’t Care beide möglich
 
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+## Was sich in Ripes unterscheiden kann
 
-graph LR
-  Control -->|1 = High| MUX{MUX schaltet}
-  Control -->|0 = Low| Pin[Enable zu]
-  style Control fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style MUX fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Pin fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
+| Funktion | Kursmodell | In der verwendeten Version prüfen |
+|:---|:---|:---|
+| Branch-Vergleich | Recheneinheit subtrahiert | eigener Registervergleicher möglich |
+| Zielbildung | zusätzlicher Addierer | Haupt-Recheneinheit möglich |
+| Register-Rückschreibquelle | Ergebnis oder Speicher | zusätzliche Linkwertquelle möglich |
+| Steueranzeige | Kursnamen und Codierung | konkrete Portnamen, Breiten, Werte |
 
 ::: notes
-Farben können eine 1 oder 0 unterstützen, ersetzen aber nicht Portname, Breite und Zahl. Eine 0 an einem MUX kann die richtige Quelle wählen und ist dann nicht inaktiv im fachlichen Sinn. X aus der Papiertabelle erscheint nicht als dritte Farbe. Zeigt der Simulator 0 oder 1, sind beide akzeptabel, wenn der Don't Care begründet ist und keine verbotene Wirkung entsteht.
+Ripes simuliert eine konkrete RISC-V-Mikroarchitektur. Zwei Schaltungen können dieselbe Befehlswirkung erfüllen, obwohl ihre inneren Bauteile unterschiedlich angeordnet sind. Ein eigener Branch-Vergleicher kann beispielsweise die Registergleichheit prüfen, während die Haupt-Recheneinheit bereits die Zieladresse berechnet. Das entspricht der Funktion unseres Lehrmodells, obwohl kein Subtraktionsergebnis an derselben Stelle sichtbar ist.
 
-Kontrollfrage: Muss ein graues Kabel ein Fehler sein? Nein. Eine initialisierte Vorhersage übt die Methode.
+Notieren Sie Version und gewählten Prozessor. Ein Rückschreib-Multiplexer, also eine Quellenauswahl, kann zusätzlich den Linkwert des alten Program Counter plus vier führen. Dieser Wert dient Sprüngen mit Rücksprungadresse und gehört nicht zum Zwei-Wege-Modell unserer Basistabelle. Mehr Eingänge können andere Auswahlcodes erfordern. Die Funktion beim Load bleibt dagegen eindeutig: Das geladene Speicherwort muss zum Registerschreibport gelangen. Farben allein belegen weder einen Bitwert noch ein Don't Care; verwenden Sie Beschriftung, Breite und angezeigten Wert.
 :::
 
-## Labor-Methode: Paper & Pencil
+## Ein Beobachtungsschritt hat ein Vorher und ein Nachher
 
-- Drei mentale Vorhersagen vor dem Klick
-- Übung 1 (`sub`): Wie leuchten `RegWrite` und `MemWrite`?
-- `RegWrite` grün (1) — ALU-Ergebnis speichern
-- `MemWrite` grau (0) — RAM unberührt
+1. RV32-Single-Cycle wählen, C deaktivieren
+2. Bei der interessierenden Maschineninstruktion anhalten
+3. Vor Clock Quellen, Rechenfunktion und Freigaben notieren
+4. Einmal Clock, dann Register, Speicher und PC prüfen
+5. Beobachtetes Portformat von der Papiertabelle trennen
 
-```text
-t1 = 9, t2 = 4
-sub t0, t1, t2
-# Erwartung im Lehrmodell: t0 = 5
-# RegWrite = 1, MemWrite = 0, ALUControl = SUB
-```
-
 ::: notes
-t1 gleich 9 und t2 gleich 4 sind gesetzte Lehrwerte. sub t0, t1, t2 schreibt 5 nach t0. t0 ist x5, t1 ist x6, t2 ist x7. Vor dem Clock werden Instruktion und stabile Steuerwerte notiert. Erwartet werden RegWrite aktiv, Speicher-Schreibfreigabe inaktiv und die Subtraktion. Die konkreten Ripes-Portcodes werden am Modell abgelesen und nicht aus der Lehrbuchtabelle erfunden. Nach dem Clock ist t0 gleich 5, der Speicher unverändert.
+RV32 bezeichnet die 32-Bit-RISC-V-Variante; Single Cycle heißt hier ein Taktzyklus pro unterstütztem Befehl. C ist die Erweiterung für komprimierte Instruktionen und bleibt für unsere Vier-Byte-Beispiele deaktiviert. Clock bezeichnet den Simulationsschritt zum nächsten Taktzustand, keine Messung realer Zeit. PC, Program Counter, ist die Adresse des aktuellen Maschinenbefehls.
 
-Kontrollfrage: Welcher Wert steht in t0? 5. Ein Load prüft eine andere Write-Back-Quelle.
+Vor Clock gehören Operanden und Freigaben zum Befehl, auf den der PC zeigt. Nach Clock können die Leitungen bereits die nächste Instruktion darstellen; lesen Sie dann den gespeicherten Zustand statt dieselbe Leitungsanzeige als vergangenes Ergebnis. Das Disassembly ist die Darstellung der echten Maschineninstruktionen. li und la sind Pseudoinstruktionen für Konstanten und Adressen und können mehrere echte Befehle erzeugen. Deshalb zählt ein Quelltextabschnitt nicht automatisch als ein Schritt. Einmalig beobachtete Farben werden nicht als versionsübergreifende Bedeutung angenommen.
 :::
 
-## Vorhersage-Übung: `lw`
+## Das vorhandene Beobachterprogramm
 
-- Übung 2 (`lw`): Stellung von `ALUSrc` und `MemtoReg`?
-- Beide MUX-Steuerungen auf 1 (grün)
-- `ALUSrc = 1`: Offset in die ALU
-- `MemtoReg = 1`: RAM-Daten ins Register
+Datei: `beispiele/vl6_mux_beobachter.s`.
 
-```text
-# Lehrwerte, nicht ein automatisch vorhandener Simulatorzustand
-# zwei Wörter ab Label daten, s1 zeigt darauf
-lw t0, 4(s1)
-# Adresse = Basis + 4, MemtoReg wählt den Speicherwert, nicht die Adresse
-```
+- Datenwort `slot` wird mit 0 angelegt
+- `la s1, slot` bereitet seine tatsächliche Adresse vor
+- Ab Label `Beobachtung` beginnt der zu untersuchende Ablauf
+- Vor `Pruefpunkt` anhalten; Exit gehört nicht zur Tabelle
 
 ::: notes
-Zwei definierte Wörter stehen ab einem Label. s1 wird mit la darauf gesetzt. la kann mehrere echte Befehle erzeugen und ist nicht der Beobachtungsschritt. lw t0, 4(s1) lädt das zweite Wort, dessen Wert von der Adresse verschieden ist. Der Offset 4 ist ein Byteoffset eines ausgerichteten Wortes. Die Vorhersage: Basis plus 4, Load-Zugriff, Speicher-Write-Back, t0 erhält den zweiten Wortinhalt. Den Ripes-Selektor zeigt das Modell.
+Das Programm ist RISC-V-Assembler für die im Kurs verwendete Ripes-Umgebung. .data und .text sind Direktiven für Daten und Instruktionen; .word legt ein 32-Bit-Wort an. slot ist ein Symbol für dessen Adresse, .align 2 fordert in diesem Kontext die Ausrichtung auf vier Byte. la, Load Address, ist eine Pseudoinstruktion und lädt diese Adresse in s1, den Registeralias x9. Es lädt nicht den Inhalt des Worts.
 
-Kontrollfrage: Ist 4 der Elementindex? Nein, der Byteoffset. Branch verlangt zusätzlich den Kontrollfluss.
+Beobachtung und Pruefpunkt sind Labels zur Orientierung. Die echte Adresse von slot wird im Simulator abgelesen und als B notiert. Ab Beobachtung verwendet die Rechnung die hier unterstützten Befehle einschließlich der neu ergänzten addi. Am Prüfpunkt folgt eine Initialisierung von a7, dem Architekturregister x17, und ecall, ein Environment Call. Die Dienstkonvention hängt vom Simulator ab und ist kein allgemeiner Vertrag für Funktionsaufrufe. Für unsere Beobachtung genügt das Anhalten vor dem Exit; sein Ablauf wird nicht als Teil des Steuerwerks erklärt.
 :::
-
-## Vorhersage-Übung: `bne`
-
-- Im Lehrmodell: Branch = 1 und PCSrc = Branch UND NOT Zero
-- In Ripes nicht als „ALU subtrahiert“ ablesen
-- Der Vergleich sitzt in einem eigenen Block; das Ziel kann über die ALU laufen
-- Ein nicht genommener Sprung ist trotzdem eine ausgeführte Branch-Instruktion
 
-```text
-# Lehrmodell-Erweiterung, kein Ripes-Portwert:
-bne t0, t1, Label
-# Branch = 1
-# genommen nur bei Ungleichheit
-```
-
-::: notes
-bne bedeutet Branch if Not Equal. Im erweiterten Lehrmodell gilt PCSrc gleich Branch und nicht Zero. In Ripes ist das nicht die Beobachtung ALU subtrahiert. Dort vergleicht ein eigener Block, und die Zielberechnung kann über die ALU laufen. Zwei Lehrfälle: gleiche Werte springen nicht, ungleiche schon. Branch bleibt 1, auch wenn der Sprung nicht genommen wird. Register und Label müssen initialisiert sein.
-
-Kontrollfrage: Ist ein nicht genommener bne untätig? Nein, die Bedingung wurde geprüft. Danach folgt eine gedachte falsche Steuerung.
-:::
+## Der Datenabschnitt des Traces
 
-## Fehleranalyse: Typo in der Matrix
+Anfang: Wort an $B$ ist 0.
 
-- Gedachte Decoderänderung, kein Fehler, den unverändertes Ripes bei `add` ausführt
-- Beispiel: `t1 = 0x2000`, `t2 = 4`, falsches `MemWrite = 1`
-- Adresse `0x2004` würde mit dem Store-Datenwert 4 beschrieben
-- `t0` kann trotzdem `0x2004` erhalten
+| Ausgeführter Befehl | Änderung nach Clock |
+|:---|:---|
+| `addi t0, x0, 5` | `t0 = 5` |
+| `add t1, t0, t0` | `t1 = 10` |
+| `sw t1, 0(s1)` | Wort an $B$ ist 10 |
+| `lw t2, 0(s1)` | `t2 = 10` |
 
 ::: notes
-Das Beispiel ist eine gedachte Änderung der Lehrsteuerung, kein Fehler, den normales add in unverändertem Ripes erzeugt. t1 gleich 0x2000 und t2 gleich 4 ergeben die ALU-Adresse 0x2004. Bei falschem MemWrite gleich 1 würde der Speicher an dieser ausgerichteten Adresse den Wert 4 aus rs2 erhalten. t0 kann gleichzeitig 0x2004 bekommen. Die Wirkung ist bestimmt, nicht zufällig. Ein Betriebssystemabsturz oder ein Kurzschluss folgt daraus nicht.
+Die Tabelle zeigt den Anfang des vorhandenen RISC-V-Assemblerprogramms. Add Immediate, addi, erzeugt fünf aus dem immer null liefernden x0 und der Konstanten. Die Aliasnamen t0, t1 und t2 bezeichnen x5, x6 und x7; s1 ist x9 mit der tatsächlichen Wortadresse B.
 
-Kontrollfrage: Welcher Speicherwert würde geschrieben? 4. Eine gültige Erweiterung ist addi.
+Danach addiert add den Wert fünf mit sich selbst und erzeugt zehn. Store Word, sw, schreibt diesen Wert an B. Load Word, lw, liest anschließend genau dieses Wort zurück. Für das Schreiben ist die Speicherfreigabe aktiv, für das Laden zusätzlich die Registerübernahme mit Speicher als Quelle. Alle Aussagen sind Vorhersagen aus der Instruktionswirkung und dem initialisierten Wort, keine Behauptung eines bereits gemessenen Simulatorlaufs. Notieren Sie vor jedem Schritt die funktional ausgewählten Quellen; vergleichen Sie danach den gespeicherten Zustand. Ein Fehler bei der Rückschreibquelle des Load wäre an einer Adresse statt des erwarteten Werts zehn im Register erkennbar.
 :::
 
-## Labor-Aufgabe 1: Transferleistung
+## Die Branches machen den Prüfpunkt eindeutig
 
-- Bisher nur reine Basis-Befehle
-- Aufgabe: Signale für `addi` (Add Immediate) herleiten
-- Tipp: liest Konstante (wie `lw`), speichert ALU-Ergebnis (wie `add`)
-- Auf Papier ausfüllen, dann in Ripes an den Kabeln prüfen
+| Aktueller Befehl | Bedingung | Folge |
+|:---|:---|:---|
+| `beq t0, t1, Falsch_angenommen` | $5=10$ ist falsch | nächste Instruktion |
+| `addi t3, x0, 1` | keine Branch-Bedingung | `t3 = 1` |
+| `beq t1, t2, Pruefpunkt` | $10=10$ ist wahr | Sprung zum Prüfpunkt |
 
-| Instruktion | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch | ALUOp1 | ALUOp0 |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `addi` | ? | ? | ? | ? | ? | ? | ? | ? |
+Dort: `t0 = 5`, `t1 = 10`, `t2 = 10`, `t3 = 1`, Speicherwort 10.
 
 ::: notes
-Die sichtbare Tabelle bleibt für die Studierenden offen. Die Lösung ist ALUSrc 1, MemtoReg 0, RegWrite 1, MemRead 0, MemWrite 0, Branch 0, ALUOp 00. Der Opcode von addi ist 0010011, funct3 gleich 000. Plus 5 und minus 5 sind beide Additionen. minus 5 wird zu 0xFFFFFFFB. instr[30] ist dabei 1 und wählt keine Subtraktion. andi und ori addieren nicht. Sie brauchen eine andere Detaildecodierung und stehen nicht in dieser einen Zeile.
+beq bedeutet Branch if Equal, also bedingter Sprung bei gleichen Registerwerten. t0 bis t3 sind die Registeraliasnamen x5 bis x7 sowie x28 für t3. Falsch_angenommen und Pruefpunkt sind Ziel-Labels. Der erste Vergleich ist bei fünf und zehn falsch, daher wird addi t3, x0, 1 ausgeführt. Add Immediate addiert die Konstante eins zum Nullregister und bereitet den Markerwert eins vor.
 
-Kontrollfrage: Welches MemtoReg hat addi? 0. Der Abgleich braucht den richtigen Zeitpunkt.
+Der zweite Vergleich prüft t1 gegen das zurückgeladene t2. Beide sind zehn, also wird zum Prüfpunkt gesprungen. Die dazwischen platzierte Instruktion mit dem Markerwert 99 wird übersprungen. In beiden beq-Fällen ist die Branch-Freigabe aktiv; nur das Vergleichsergebnis und damit die tatsächlich gewählte nächste Adresse unterscheiden sich. Der Prüfpunkt beschreibt den Zustand vor den Exit-Anweisungen. Prüfen Sie Zieladressen im Disassembly, nicht anhand einer angenommenen Segmentbasis oder einer festen Expansion der vorhergehenden Adress-Pseudoinstruktion.
 :::
 
-## Verifikation in Ripes
+## Ihr Prüfverfahren für eine unbekannte Tabellenzeile
 
-- Reset, zum markierten Maschinenbefehl gehen
-- Vor dem Clock: PC und Instruktion notieren, Steuerwerte lesen
-- Genau einen Clock ausführen, danach Register, Speicher und PC prüfen
-- Nach dem Clock können die Leitungen schon zur nächsten Instruktion gehören
-- Single Cycle hat keine eigene Control-Phase
+- Gültigen Befehl und Format feststellen
+- Operanden und Rechenfunktion bestimmen
+- Schreibziel, Schreibwert und Freigabe begründen
+- Branch-Freigabe vom Sprungerfolg trennen
+- X nur bei nachweislich unerheblicher Auswahl verwenden
 
-```text
-Gruenes Kabel am ALUSrc-MUX  -> 1 in der Tabelle
-Graues Kabel                 -> 0 in der Tabelle
-```
-
 ::: notes
-Single Cycle hat keine Pipeline-Control-Phase. Zuerst zurücksetzen und initialisieren. Vor dem Clock den PC und die Maschineninstruktion notieren und die stabilen Portwerte lesen. Dann genau einen Clock ausführen und Register, Speicher sowie den nächsten PC prüfen. Danach können die Leitungen schon zur folgenden Instruktion gehören. Bei Pseudoinstruktionen zählt das Disassembly, nicht jede Quelltextzeile als ein Befehl.
+Eine tragfähige Steueranalyse beginnt mit der Befehlsbedeutung und dem vereinbarten Modell. Die Register- und Konstantenfelder beschreiben Quellen; die Operationsfelder beschreiben die Aufgabe. Anschließend müssen der ausgewählte Datenweg und die konkrete Rechnung zusammenpassen. Erst dann ist zu prüfen, welche Zustandselemente an der Flanke einen neuen Wert übernehmen.
 
-Kontrollfrage: Dürfen Sie die Steuerwerte nach dem Clock noch dem abgeschlossenen Befehl zuordnen? Nicht ohne Prüfung. Das Programm übt mehrere Write-Back-Quellen.
+X bedeutet Don't Care, eine für diese spezifizierte Wirkung unerhebliche Auswahl. Es ist weder ein fehlender Tabellenwert noch die Erlaubnis, eine Freigabe beliebig zu setzen. Ein Branch ist eine bedingte Kontrollflussänderung: Seine Befehlsart bleibt gleich, auch wenn die Bedingung falsch ist. Das Prüfverfahren kann an der Aufgabe zur addi-Erweiterung und an den hypothetischen Fehlerfällen erneut verwendet werden. Die Tabellen sind deshalb ein begründeter Arbeitsbehelf, kein Ersatz für die Erklärung ihrer Eingangsannahmen. Das Quiz fragt diese Unterscheidungen ab, statt nur Signalnamen zu wiederholen.
 :::
-
-## Labor-Aufgabe 2: Der MUX-Beobachter
-
-- Vollständiges Programm in `beispiele/vl6_mux_beobachter.s`
-- Initialisierung, Store, Load und zwei `beq`-Ausgänge
-- Am Prüfpunkt: `t0 = 5`, `t1 = 10`, `t2 = 10`, `t3 = 1`, Speicherwort = 10
-- `$X$` nur in der Papiertabelle; der Simulator zeigt einen konkreten Wert
-- Abschluss in Ripes: Dienst 10 in `a7`, dann `ecall`
 
-```text
-Fokus auf ein einziges Bauteil hilft gegen
-Reizueberflutung im Diagramm.
-```
-
-::: notes
-Das Programm in beispiele/vl6_mux_beobachter.s initialisiert slot mit einem Wort 0. la s1, slot setzt den Zeiger. la kann mehrere Instruktionen sein. Danach: addi t0, x0, 5 schreibt 5. add t1, t0, t0 schreibt 10. sw t1, 0(s1) schreibt 10 in den Speicher, MemtoReg ist X. lw t2, 0(s1) lädt 10, MemtoReg ist 1. beq t0, t1 springt nicht, weil 5 ungleich 10 ist. addi t3, x0, 1 schreibt 1. beq t1, t2 springt, weil beide 10 sind, und überspringt addi t3, x0, 99. Am Prüfpunkt gelten t0 gleich 5, t1 gleich 10, t2 gleich 10, t3 gleich 1 und das Speicherwort 10. Die konkreten PC-Adressen kommen aus dem Disassembly, nicht aus einer erfundenen Startadresse. Der Ripes-Abschluss setzt a7 auf 10 und führt ecall aus. Das ist die Ripes-Konvention, nicht der Venus-Dienst in a0. la und ecall liegen außerhalb der sieben-Signal-Matrix.
-
-Kontrollfrage: Welchen Wert hat t3, wenn der zweite beq genommen wird? 1. Die Schlussfolie bündelt die Prüfung.
-:::
+## Vom Steuerwerk zur nächsten Vorlesung
 
-## Q&A und Hands-On
-
-- Ripes starten
-- Meistertabelle als Kompass nutzen
-- Unerwartetes Verhalten: Logik der Hardware ergründen
-- Viel Erfolg bei der Entschlüsselung des Steuerwerks
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Theorie[Matrix] -->|Wissen| Labor[Ripes]
-  Labor -->|Clock| Analyse[Signale prüfen]
-  Analyse --> Win[Verstaendnis]
-  style Win fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Theorie fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Labor fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Analyse fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
+- Datenweg und Steuerung erfüllen gemeinsam die Befehlswirkung
+- Zweistufige Decodierung bleibt hier innerhalb eines Takts
+- Unterschiedliche interne Codes können dieselbe Wirkung erzielen
+- Nächste Frage: Wie lassen sich mehrere Befehle zeitlich überlappen?
 
 ::: notes
-Q&A bedeutet Questions and Answers, Hands-On die praktische Übung. Der Weg ist Befehlsfeld, Decoder, Auswahl oder Freigabe, berechneter Wert, Zustandsänderung. Fünf Kurzantworten: Es sind sieben Signale und acht Bits. MemtoReg ist bei sw ein X, weil RegWrite 0 ist. Branch ist die Freigabe, PCSrc die fertige Auswahl. addi mit minus 5 addiert trotz Bit 30 gleich 1. Der Ripes-Branch vergleicht in einem eigenen Block, das Lehrmodell nutzt ALU-SUB. Einheit 7 behandelt Pipelining. Dort werden Execute, Memory und Write Back auf mehrere Takte verteilt. Zusätzliche Steuerfragen entstehen. Diese Folie behauptet nicht, jene Einheit schon ausgeführt zu haben.
+Die Kernerkenntnis ist die Verbindung aus Quellenwahl, Rechenfunktion und freigegebener Zustandsänderung. Eine richtig gewählte Quelle allein speichert nichts; eine Freigabe mit falschem Schreibwert speichert das Falsche. Bei der Registerarithmetik ist außerdem eine Detailentscheidung nötig, weil die gemeinsame Befehlsgruppe mehrere Operationen enthält.
 
-Kontrollfrage: Ist PCSrc ein achter Main-Control-Ausgang? Nein. Damit ist das Lehrsubset steuerbar und vom Simulator unterscheidbar.
+Unser kombinatorisches Steuerwerk erfüllt zusammen mit dem Single-Cycle-Datenpfad die Wirkung der unterstützten Befehle. Single Cycle bedeutet weiterhin eine Taktperiode je Instruktion, obwohl die Steuerfunktion in zwei logische Teile zerlegt ist. Unterschiedliche konkrete Auswahlwerte bei gesperrtem Registerschreiben dürfen dieselbe Wirkung haben. Mit dieser Grundlage können Sie Tabellen herleiten und beobachtete Schaltungen funktional vergleichen. Einheit 7 führt die Pipeline ein: Durch zusätzliche Register werden Verarbeitungstätigkeiten verschiedener Instruktionen überlappt. Dann entstehen neue Abhängigkeiten zwischen gleichzeitig bearbeiteten Befehlen. Diese Probleme sind keine Voraussetzung für die heutigen Übungen, sondern der nächste begründete Schritt.
 :::

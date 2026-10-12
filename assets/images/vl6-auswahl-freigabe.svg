@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="350" viewBox="0 0 1060 350" role="img" aria-labelledby="title desc"><title id="title">Quellenauswahl und Schreibfreigabe</title><desc id="desc">Ein Multiplexer wählt ALU-Ergebnis oder Speicherlesedaten. RegWrite sperrt unabhängig davon die Registerübernahme.</desc><style>
+.box{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.accent{fill:#FFFFFF;stroke:#E2001A;stroke-width:2}
+.wire{fill:none;stroke:#86868B;stroke-width:2;stroke-linejoin:round;marker-end:url(#arrow)}
+.control{fill:none;stroke:#86868B;stroke-width:2;stroke-dasharray:5 4;marker-end:url(#arrow)}
+.fault{fill:none;stroke:#E2001A;stroke-width:2.5;stroke-dasharray:5 4;marker-end:url(#redarrow)}
+.text{fill:#1D1D1F;font-family:Inter,Arial,sans-serif;font-size:23px}
+.small{fill:#1D1D1F;font-family:Inter,Arial,sans-serif;font-size:19px}
+.caption{fill:#86868B;font-family:Inter,Arial,sans-serif;font-size:18px}
+</style><defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#86868B"/></marker>
+<marker id="redarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#E2001A"/></marker>
+</defs><rect width="1060" height="350" fill="#FFFFFF"/><rect class="box" x="20" y="40" width="250" height="65" rx="6"/><text x="145.0" y="80.5" class="text" text-anchor="middle">ALU-Ergebnis</text><rect class="box" x="20" y="140" width="250" height="65" rx="6"/><text x="145.0" y="180.5" class="text" text-anchor="middle">Speicherlesedaten</text><rect class="accent" x="430" y="35" width="130" height="175" rx="6"/><text x="495.0" y="130.5" class="text" text-anchor="middle">MUX</text><text x="440" y="85" class="small" text-anchor="start">0</text><text x="440" y="175" class="small" text-anchor="start">1</text><polyline class="wire" points="270,72 340,72 340,90 430,90"/><polyline class="wire" points="270,172 430,172"/><polyline class="wire" points="560,123 740,123"/><text x="650" y="105" class="small" text-anchor="middle">WD (32 Bit)</text><rect class="box" x="740" y="45" width="290" height="180" rx="6"/><text x="885.0" y="128.0" class="text" text-anchor="middle">Registerbank</text><text x="885.0" y="158.0" class="text" text-anchor="middle">Übernahme an Flanke</text><polyline class="control" points="495,285 495,210"/><text x="495" y="317" class="small" text-anchor="middle">MemtoReg (1 Bit)</text><polyline class="control" points="885,285 885,225"/><text x="885" y="317" class="small" text-anchor="middle">RegWrite (1 Bit)</text><text x="500" y="18" class="caption" text-anchor="middle">0: Ergebnis; 1: Speicher</text></svg>
