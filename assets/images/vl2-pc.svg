@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="320" viewBox="0 0 1000 320" role="img" aria-label="Fortlaufende native Befehle liegen im Abstand von vier Byte">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="320" fill="#FFFFFF"/>
+<text x="25" y="40" class="title" text-anchor="start">Didaktischer Start: B = 0x1000 · RV32I ohne C</text>
+<text x="150" y="118" class="" text-anchor="middle">0x1000</text>
+<rect x="280" y="80" width="450" height="55" rx="7" class="box"/>
+<text x="505" y="117" class="" text-anchor="middle">addi t0, x0, 5</text>
+<text x="150" y="183" class="" text-anchor="middle">0x1004</text>
+<rect x="280" y="145" width="450" height="55" rx="7" class="box hot"/>
+<text x="505" y="182" class="" text-anchor="middle">addi t1, x0, 10</text>
+<text x="150" y="248" class="" text-anchor="middle">0x1008</text>
+<rect x="280" y="210" width="450" height="55" rx="7" class="box"/>
+<text x="505" y="247" class="" text-anchor="middle">add t2, t0, t1</text>
+<path d="M825 105 L825 170" class="flow" marker-end="url(#redarrow)"/>
+<path d="M825 170 L825 235" class="flow" marker-end="url(#redarrow)"/>
+<text x="860" y="145" class="small" text-anchor="start">+4</text>
+<text x="860" y="209" class="small" text-anchor="start">+4</text>
+<text x="25" y="310" class="small" text-anchor="start">PC = Adresse der betrachteten Instruktion · keine Zeit- oder Taktskala</text>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="350" viewBox="0 0 1000 350" role="img" aria-label="Zwei alte Registerwerte werden gelesen, ein Ergebnis wird geschrieben">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="350" fill="#FFFFFF"/>
+<rect x="30" y="55" width="270" height="85" rx="7" class="box"/>
+<text x="165" y="90" class="title" text-anchor="middle">rs1 = x6</text>
+<text x="165" y="124" class="small" text-anchor="middle">alter Wert 7</text>
+<rect x="360" y="55" width="270" height="85" rx="7" class="box"/>
+<text x="495" y="90" class="title" text-anchor="middle">rs2 = x7</text>
+<text x="495" y="124" class="small" text-anchor="middle">alter Wert 3</text>
+<rect x="260" y="215" width="210" height="80" rx="7" class="box"/>
+<text x="365" y="266" class="title" text-anchor="middle">Addition</text>
+<rect x="680" y="215" width="270" height="80" rx="7" class="box hot"/>
+<text x="815" y="249" class="title" text-anchor="middle">rd = x5</text>
+<text x="815" y="282" class="small" text-anchor="middle">neuer Wert 10</text>
+<path d="M165 140 L165 255 L260 255" class="line" marker-end="url(#arrow)"/>
+<path d="M495 140 L495 175 L365 175 L365 215" class="line" marker-end="url(#arrow)"/>
+<path d="M470 255 L680 255" class="flow" marker-end="url(#redarrow)"/>
+<text x="30" y="330" class="small" text-anchor="start">add x5, x6, x7 · Registerfelder wählen Speicherstellen, nicht Zahlenwerte</text>
+</svg>
