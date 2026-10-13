@@ -194,9 +194,6 @@
       margin-right: 0; 
     }
   </style>
-  <script src="../site_libs/quarto-diagram/mermaid.min.js"></script>
-  <script src="../site_libs/quarto-diagram/mermaid-init.js"></script>
-  <link href="../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
@@ -205,9 +202,9 @@
   <div class="reveal">
     <div class="slides">
 
-<section id="title-slide" class="quarto-title-block center">
+<section id="title-slide" data-notes="<p>Diese abschließende Einheit verbindet C-Kontrollstrukturen mit den bekannten Register-, Speicher- und Sprungbefehlen. Voraussetzungen sind die Inhalte aus Einheit 1–8: Datenrepräsentation, Adressrechnung, Funktionskonvention, Stack, Datenpfad, Pipeline und Geräteverträge. Wir unterscheiden manuelle Lehrübersetzung und tatsächliche Compilerausgabe. Das Abschlussprojekt ist ein Code-Schloss mit vollständig benannter Übergangstabelle, Ereigniserkennung und Anzeige. Die Notizen erläutern die Herleitung als Skript; Papieraufgaben prüfen den Lernstand. Bearbeitungszeiten sind Planungsschätzungen, und die Beispiele ersetzen keine verbindlichen Angaben zur eigentlichen Klausur.</p>" class="quarto-title-block center">
   <h1 class="title">Mikrocomputertechnik 1</h1>
-  <p class="subtitle">Einheit 9: Wrap-Up &amp; C-to-Assembly</p>
+  <p class="subtitle">Einheit 9: C, Assembler und Abschlussprojekt</p>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -219,11 +216,11 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 
 </section>
 <section>
-<section id="wrap-up-c-to-assembly" class="title-slide slide level1 center">
-<h1>Wrap-Up &amp; C-to-Assembly</h1>
+<section id="c-assembler-und-abschlussprojekt" class="title-slide slide level1 center">
+<h1>C, Assembler und Abschlussprojekt</h1>
 <aside class="notes">
-<p>Wrap-Up bedeutet Abschluss, C-to-Assembly die Verbindung von C und Assembler. Mikrocomputertechnik 1 bündelt heute Berechnung, Bedingung und ein Code-Schloss. Vorausgesetzt sind RISC-V-Befehle, Speicher und die einfache Funktions-ABI, das Application Binary Interface. Compileroptimierung und Linkerskripte werden nicht vorausgesetzt.</p>
-<p>Kontrollfrage: Ist Assembler hier das Endziel? Nein, die Verbindung zur C-Wirkung. Die offene Lücke folgt.</p>
+<p>C ist die hier betrachtete höhere Programmiersprache. Assemblertext beschreibt Maschinenoperationen symbolisch. Die letzte Einheit verbindet die Ebenen, statt einen weiteren Prozessorbaustein vorauszusetzen: Aus einer Bedingung werden Vergleiche und Sprünge, aus einem Arrayindex eine Byteadresse, und aus einer Funktion ein Ablauf nach dem bekannten Registervertrag.</p>
+<p>Das Abschlussprojekt nutzt diese Mechanismen für ein Code-Schloss. Sein gespeicherter Zustand, die Erkennung eines Eingabeereignisses und die Ausgabe einer Farbe werden getrennt entwickelt und anschließend zusammengesetzt. Die Notizen erklären Begriffe, Annahmen, Code und Rechenwege als begleitendes Skript. Manuelle Assemblerformen sind Lehrübersetzungen, keine behaupteten Compilerergebnisse. Ein Simulatorversuch muss zusätzlich die konkrete Gerätekarte berücksichtigen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -236,86 +233,18 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
           display:block!important;
       }</style></aside>
 </section>
-<section id="der-kreis-schließt-sich" class="slide level2">
-<h2>Der Kreis schließt sich</h2>
-<ul>
-<li>Herzlich willkommen zur letzten regulären Vorlesung in Mikrocomputertechnik 1</li>
-<li>Intensives Semester: Computer von Grund auf verstanden</li>
-<li>Heute: Hochsprachen (C/C++) final mit RISC-V-Assembler verbinden</li>
-<li>Theorie kurz (ca. 45 Min.), danach ca. 3 Stunden Labor</li>
-<li>Abschluss: Mini-Projekt und gezielte Klausurvorbereitung</li>
-</ul>
-<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  C[C-Code] --&gt; Comp[Compiler]
-  Comp --&gt; ASM[Assembler]
-  ASM --&gt; HW[Hardware]
-  style Comp fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style ASM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style HW fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-<aside class="notes">
-<p>Die Ebenen sind Logik, Befehlssatz, Datenpfad, Pipeline und Ein-/Ausgabe. Die einfache CPU ist ein Lehrmodell, kein vollständiger Computer. C beschreibt eine Berechnung mit Bedingung. Der Compiler, der Assembler und die Ausführungsumgebung sind getrennte Schritte. Die Kette ohne Linker und Start ist eine gekürzte Übersicht.</p>
-<p>Kontrollfrage: Läuft C-Text direkt auf der ALU? Nein. Die Agenda nennt die Arbeitsschritte.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="agenda-für-den-heutigen-tag" class="slide level2">
-<h2>Agenda für den heutigen Tag</h2>
+<section id="ziele-der-abschließenden-einheit" class="slide level2">
+<h2>Ziele der abschließenden Einheit</h2>
 <ol type="1">
-<li>Der Übersetzungsprozess — klassische C/C++-Toolchain</li>
-<li>C-to-Assembly — <code>if</code>, <code>while</code>, <code>for</code></li>
-<li>Mini-Projekt (State Machine) — Briefing in Ripes</li>
-<li>Klausurvorbereitung — Organisatorisches und Aufgabentypen</li>
-<li>Q&amp;A &amp; Labor — freies Coden und Fragen</li>
+<li>Dateien und Aufgaben der Werkzeugkette unterscheiden</li>
+<li>C-Bedingungen und Schleifen nachvollziehbar übersetzen</li>
+<li>Werte über normale Funktionsaufrufe korrekt erhalten</li>
+<li>Ereignis und Zustandsübergang getrennt entwerfen</li>
+<li>Ergebnisse durch Traces und Grenzfälle prüfen</li>
 </ol>
-<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  A[Toolchain] --&gt; B[C zu Assembler]
-  B --&gt; C[State Machine]
-  C --&gt; D[Klausur-Tipps]
-  D --&gt; E[Labor und Q&amp;A]
-  style E fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
 <aside class="notes">
-<p>Toolchain ist die abgestimmte Werkzeugkette. Kontrollfluss sind Entscheidungen und Schleifen. FSM bedeutet Finite State Machine, ein endlicher Zustandsautomat. Q&amp;A bedeutet Questions and Answers. Die Fragen lauten: welche Datei entsteht, wie wird eine Bedingung zum Sprung, wie merkt sich das Schloss den Fortschritt, und wie prüft man das an Aufgaben? Ripes zeigt das Schloss, ein Compilervergleich zeigt echten Text nur nach einem Lauf. Dieser Lauf liegt hier nicht vor.</p>
-<p>Kontrollfrage: Ist die Agenda schon die Klausur? Nein. Der Rückblick aktiviert die Grundlagen.</p>
+<p>Die Werkzeugkette, auf Englisch Toolchain, führt vom Quelltext über Übersetzung und Bindung zum für eine Umgebung bestimmten Programm. Ein Trace ist eine schrittweise Verfolgung mit angegebenem Anfangszustand. Er zeigt nicht nur einen Endwert, sondern auch den tatsächlich durchlaufenen Kontrollpfad. Grenzfälle prüfen zum Beispiel eine Schleife ohne Durchlauf oder einen ungültigen Zustandswert.</p>
+<p>Die ersten drei Ziele wiederholen Register, Sprünge, Speicher und Funktionen aus den bisherigen Einheiten. Neu ist ihre systematische Verbindung mit C und einem endlichen Zustandsautomaten. Im Projekt kommt ein bloß gehaltener Tastenzustand nicht automatisch einem neuen Ereignis gleich. Deshalb wird die Eingabe vor der Übergangsfunktion aufbereitet. Die Papieraufgaben folgen denselben Entscheidungen und verlangen jeweils eine Begründung. Die Aufgabentypen dienen der Vorbereitung; konkrete Klausurregeln werden daraus nicht abgeleitet.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -328,882 +257,41 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
-<section id="rückblick-auf-das-semester" class="slide level2">
-<h2>Rückblick auf das Semester</h2>
-<ul>
-<li>Einheit 1: Logikgatter und Transistoren</li>
-<li>Einheiten 2–4: RISC-V-Assembler und ABI</li>
-<li>Einheiten 5–6: Datenpfad und Control Unit</li>
-<li>Einheit 7: Pipelining — Durchsatz steigern</li>
-<li>Einheit 8: I/O und Syscalls — Außenwelt und OS</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb1-1"><a aria-label="1"></a>Die Blackbox Computer ist entschlüsselt.</span>
-<span id="cb1-2"><a aria-label="2"></a>Auf Hardware-Ebene bleiben keine Geheimnisse.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>Transistoren realisieren Logik. Die ISA, Instruction Set Architecture, beschreibt die beobachtbare Befehlswirkung. Die ABI ist der Softwarevertrag. Der Datenpfad führt aus, die Pipeline überlappt. I/O, Input/Output, verbindet Geräte. Ein Syscall ist ein Dienst einer Umgebung. Es bleiben keine absoluten Geheimnisse beseitigt. Cache, Betriebssystem und Plattform bleiben offen. OS bedeutet Operating System.</p>
-<p>Kontrollfrage: Ist die ISA dasselbe wie der Datenpfad? Nein. Offen ist die Übersetzung aus C.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="die-letzte-lücke" class="slide level2">
-<h2>Die letzte Lücke</h2>
-<ul>
-<li>Wochenlang Assembler in Venus und Ripes</li>
-<li>Industrie: große Programme in C, C++, Rust, …</li>
-<li>Frage: Wie wird aus <code>printf("Hallo");</code> ausführbarer Maschinencode (viele Wörter / Syscalls)?</li>
-<li>Antwort: die Toolchain (Werkzeugkette)</li>
-</ul>
-<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  C[Hochsprache C] --&gt;|Toolchain| ASM[RISC-V Assembler]
-  ASM --&gt;|Assembler-Tool| Bin[Binärcode]
-  style ASM fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style Bin fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-<aside class="notes">
-<p>printf ist eine Bibliotheksfunktion, kein RISC-V-Befehl. Eine Bibliothek und eine Laufzeit müssen den Dienst umsetzen. Bare Metal hat nicht automatisch eine Standardausgabe. Derselbe RISC-V-Text läuft nicht auf jedem Ziel ohne passende Umgebung. Heute betrachten wir C, nicht die ganze C++-Sprache. Rust ist nur ein Motiv.</p>
-<p>Kontrollfrage: Ist printf ein Opcode? Nein. Die Werkzeugkette wird zerlegt.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section></section>
-<section>
-<section id="die-toolchain" class="title-slide slide level1 center">
-<h1>Die Toolchain</h1>
-<aside class="notes">
-<p>Eine Toolchain übersetzt und baut Programme. Präprozessor, Compiler, Assembler und Linker erzeugen verschiedene Dateien. Der Host ist der Rechner, auf dem die Werkzeuge laufen. Das Ziel kann RV32 sein, auch wenn der Host kein RISC-V-Prozessor ist. RV32I ist die 32-Bit-Integerbasis.</p>
-<p>Kontrollfrage: Erzeugt ein gewöhnlicher Host-gcc automatisch RV32-Code? Nein. Ein konkreter Befehl folgt.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="der-übersetzungsprozess" class="slide level2">
-<h2>Der Übersetzungsprozess</h2>
-<ul>
-<li><code>riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32</code> erzeugt RISC-V-Code</li>
-<li>Ein nacktes <code>gcc main.c</code> auf dem Host tut das nicht</li>
-<li>Ausgabearten: Assemblertext, Objektdatei mit Relocation, gelinktes ELF</li>
-<li><code>printf</code> braucht eine passende Laufzeit; ein ELF ist kein Venus-Assemblertext</li>
-<li>Output des einen = Input des nächsten</li>
-</ul>
-<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  A[main.c] --&gt; B[Preprocessor]
-  B --&gt; C[Compiler]
-  C --&gt; D[Assembler]
-  D --&gt; E[Linker]
-  E --&gt; F[Executable]
-  style C fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style F fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-<aside class="notes">
-<p>riscv64-unknown-elf-gcc kann bei passender Toolchain RV32-Code erzeugen. -march=rv32i wählt die Basis, -mabi=ilp32 das Datenmodell mit 32-Bit-int, long und Pointer. gcc ist der Treiber der GNU Compiler Collection. -E liefert vorverarbeiteten Text, -S Assemblertext, -c ein Objekt. Ein gelinktes ELF, Executable and Linkable Format, braucht noch Laden und Start. Es ist nicht automatisch Venus-Text und kein garantiertes printf.</p>
-<p>Kontrollfrage: Ist -S schon ein startfähiges Programm? Nein. Zuerst Präprozessor und Compiler.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="preprocessor-und-2.-compiler" class="slide level2">
-<h2>1. Preprocessor und 2. Compiler</h2>
-<ul>
-<li>Preprocessor: Text-Ersetzer für <code>#...</code> (<code>#include</code>, <code>#define</code>)</li>
-<li>Header-Text wird eingefügt; Makros expandiert</li>
-<li>Compiler: Syntax/Semantik, Optimierung; Ausgabe: RISC-V-Assembler (<code>.s</code>)</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb2-1"><a aria-label="1"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb3-1"><a aria-label="1"></a>li s0<span class="op">,</span> <span class="dv">5</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>#include und Makros folgen Regeln, kein beliebiges Ersetzen. Ein Header deklariert printf, er enthält nicht automatisch dessen Maschinenkörper. int a gleich 5 als li s0, 5 ist eine Lehrzuordnung. Der Compiler kann a anders ablegen oder streichen. Ein C-Name hat keine feste Registeradresse.</p>
-<p>Kontrollfrage: Liegt jede Variable dauerhaft in s0? Nein. Der Assembler kodiert den Text.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="assembler" class="slide level2">
-<h2>3. Assembler</h2>
-<ul>
-<li>Eingabe: Text mit <code>add</code>, <code>lw</code>, <code>beq</code></li>
-<li>Ausgabe: 32-Bit-Maschinencode (Object-File <code>.o</code>)</li>
-<li>Nutzt Instruktionsformate R/I/S/B/J (Einheit 2)</li>
-<li>Noch nicht ausführbar: Adressen oft noch offen</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb4-1"><a aria-label="1"></a>Text:   add t0, t1, t2</span>
-<span id="cb4-2"><a aria-label="2"></a>Hex:    0x007302B3</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>add t0, t1, t2 ist das Wort 0x007302B3. t0 ist x5, t1 ist x6, t2 ist x7. Opcode, funct3 und funct7 bestimmen die Operation. Ein Objekt enthält Code, Daten, Symbole und gegebenenfalls Relocations, nicht nur nackte Zahlen. Die gezeigten RV32I-Instruktionen sind 32 Bit. Die C-Erweiterung wäre ein anderer Fall. Die Formatliste ohne U-Typ ist eine Auswahl.</p>
-<p>Kontrollfrage: Ist 0x007302B3 der Datenwert der Register? Nein, die Codierung. Der Linker löst offene Symbole.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="linker" class="slide level2">
-<h2>4. Linker</h2>
-<ul>
-<li>Compiler kennt die finale Adresse von <code>printf</code> oft nicht</li>
-<li><code>jal</code>/<code>lw</code>-Ziele können Lücken haben</li>
-<li>Linker: alle <code>.o</code> + Libraries (z. B. <code>libc</code>) zusammenkleben</li>
-<li>Finale Adressen eintragen</li>
-<li>Output: Executable (<code>.elf</code> / <code>.exe</code>)</li>
-</ul>
-<aside class="notes">
-<p>Ein undefiniertes Symbol kann eine Funktion in einer anderen Datei sein. Lücke ist eine Metapher. Manche lokalen Ziele kennt schon der Assembler. Der Linker verbindet kompatible Objekte und platziert Bereiche. Bei Bare Metal zählen Startcode und Speicherlayout. Ein ELF kann auch ein verschiebbares Objekt sein. Die Endung beweist keine Ausführbarkeit. Linker, Loader und Startcode sind verschieden.</p>
-<p>Kontrollfrage: Macht der Linker jedes Programm allein startfähig? Nein. Danach die Kontrollstrukturen.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section></section>
-<section>
-<section id="c-to-assembly-kontrollstrukturen" class="title-slide slide level1 center">
-<h1>C-to-Assembly: Kontrollstrukturen</h1>
-<aside class="notes">
-<p>C drückt Entscheidungen und Wiederholungen aus. RISC-V führt Registeroperationen und Sprünge aus. Die folgenden Muster sind manuelle Lehrformen, kein garantierter Compileroutput. Labels benennen Adressen.</p>
-<p>Kontrollfrage: Ist ein if ein RISC-V-Befehl? Nein. Die Grenzen der Schablone folgen.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="muster-des-compilers" class="slide level2">
-<h2>Muster des Compilers</h2>
-<ul>
-<li>Wie wird übersetzt?</li>
-<li>Rolle: Compiler-Hut aufsetzen</li>
-<li><code>if</code>, <code>while</code>, <code>for</code> - Schablonen</li>
-<li>Relevant für Klausur, Reverse Engineering, Debugging</li>
-</ul>
-<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  C_Code[C Kontrollstruktur] --&gt;|Muster| ASM[Assembler-Schablone]
-  style ASM fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style C_Code fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-<aside class="notes">
-<p>Eine Kontrollstruktur hat mehrere passende Assemblerformen. Ein Label hat keine eigene Laufzeitwirkung. Die Umkehrung einer Bedingung ist eine mögliche Anordnung. Reverse Engineering rekonstruiert Verhalten aus niedrigerer Darstellung. Debugging ist die systematische Fehlersuche. Beide Anordnungen im Bild sind keine Pflicht des Compilers.</p>
-<p>Kontrollfrage: Gibt es nur eine richtige Sprungform? Nein. Zuerst braucht eine Variable einen Ort.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="variablen-und-register" class="slide level2">
-<h2>Variablen und Register</h2>
-<ul>
-<li>Lokale Variablen: Compiler bevorzugt schnelle Register</li>
-<li>ABI: oft <code>s0</code>-<code>s11</code> für langlebige Lokale</li>
-<li>Register Pressure: Spilling auf den Stack (<code>sw</code>/<code>lw</code>)</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb5-1"><a aria-label="1"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></span>
-<span id="cb5-2"><a aria-label="2"></a><span class="dt">int</span> b <span class="op">=</span> <span class="dv">10</span><span class="op">;</span></span>
-<span id="cb5-3"><a aria-label="3"></a><span class="dt">int</span> c <span class="op">=</span> a <span class="op">+</span> b<span class="op">;</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb6-1"><a aria-label="1"></a>li s0<span class="op">,</span> <span class="dv">5</span></span>
-<span id="cb6-2"><a aria-label="2"></a>li s1<span class="op">,</span> <span class="dv">10</span></span>
-<span id="cb6-3"><a aria-label="3"></a><span class="bu">add</span> s2<span class="op">,</span> s0<span class="op">,</span> s1</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>Registerallokation wählt Orte. Register Pressure ist der Druck, wenn zu wenige Register frei sind. Spilling lagert Werte in den Speicher. Die ABI zwingt langlebige lokale Variablen nicht in s0 bis s11. a-, t- und s-Register, Speicher oder Wegfall sind möglich. Verändert eine Funktion ein s-Register, muss sie es bei normalen Aufrufen wiederherstellen. Die drei Konstanten hier sind manuell zugeordnet. Ein optimierender Compiler kann 15 direkt liefern.</p>
-<p>Kontrollfrage: Garantiert -O0 s0 für die erste Variable? Nein. Die Bedingung folgt.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="das-if-statement-c-code" class="slide level2">
-<h2>Das if-Statement (C-Code)</h2>
-<ul>
-<li>Klassisches If-Else</li>
-<li>Vergleich <code>a</code> und <code>b</code></li>
-<li>Gleich: Block 1; sonst Block 2</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb7-1"><a aria-label="1"></a><span class="dt">int</span> a <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></span>
-<span id="cb7-2"><a aria-label="2"></a><span class="dt">int</span> b <span class="op">=</span> <span class="dv">10</span><span class="op">;</span></span>
-<span id="cb7-3"><a aria-label="3"></a><span class="dt">int</span> c<span class="op">;</span></span>
-<span id="cb7-4"><a aria-label="4"></a></span>
-<span id="cb7-5"><a aria-label="5"></a><span class="cf">if</span> <span class="op">(</span>a <span class="op">==</span> b<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb7-6"><a aria-label="6"></a>    c <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
-<span id="cb7-7"><a aria-label="7"></a><span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
-<span id="cb7-8"><a aria-label="8"></a>    c <span class="op">=</span> <span class="dv">2</span><span class="op">;</span></span>
-<span id="cb7-9"><a aria-label="9"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>Der Then-Zweig und der Else-Zweig treffen sich danach. Mit a gleich 5 und b gleich 10 wird c gleich 2. Mit a gleich b wird c gleich 1. == vergleicht, = weist zu. Konstanten sind leicht lesbar, ein echter Compiler kann die Entscheidung entfernen. Für den Vergleich eignet sich eine Funktion mit Parametern.</p>
-<p>Kontrollfrage: Welches c entsteht bei Gleichheit? 1. Labels und Branches folgen.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="das-if-statement-assembler" class="slide level2">
-<h2>Das if-Statement (Assembler)</h2>
-<ul>
-<li>C: <code>a == b</code> → Assembler oft <code>bne</code> (Gegenteil)</li>
-<li>Ungleich: zum Else springen</li>
-<li>Am Ende des If-Blocks: <code>j End</code> - sonst Rutschen in Else</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb8-1"><a aria-label="1"></a>    li s0<span class="op">,</span> <span class="dv">5</span></span>
-<span id="cb8-2"><a aria-label="2"></a>    li s1<span class="op">,</span> <span class="dv">10</span></span>
-<span id="cb8-3"><a aria-label="3"></a>    bne s0<span class="op">,</span> s1<span class="op">,</span> Else_Block</span>
-<span id="cb8-4"><a aria-label="4"></a></span>
-<span id="cb8-5"><a aria-label="5"></a><span class="fu">If_Block:</span></span>
-<span id="cb8-6"><a aria-label="6"></a>    li s2<span class="op">,</span> <span class="dv">1</span></span>
-<span id="cb8-7"><a aria-label="7"></a>    j End</span>
-<span id="cb8-8"><a aria-label="8"></a></span>
-<span id="cb8-9"><a aria-label="9"></a><span class="fu">Else_Block:</span></span>
-<span id="cb8-10"><a aria-label="10"></a>    li s2<span class="op">,</span> <span class="dv">2</span></span>
-<span id="cb8-11"><a aria-label="11"></a></span>
-<span id="cb8-12"><a aria-label="12"></a><span class="fu">End:</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>In der Lehrkonvention sind s0, s1 und s2 die Werte a, b und c.&nbsp;bne springt bei Ungleichheit. Bei Gleichheit läuft der Then-Zweig weiter. j zum gemeinsamen Ende verhindert den Else-Zweig. Fehlt dieser Sprung, wird c danach mit 2 überschrieben. Ein Label ohne weitere Befehle ist nur eine Adresse. Ein vollständiges Programm braucht einen Abschluss. Gleichheit unterscheidet nicht signed und unsigned.</p>
-<p>Kontrollfrage: Was passiert ohne j zum Ende? Der Else-Zweig überschreibt c.&nbsp;Eine Schleife entsteht durch Rücksprung.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="die-while-schleife-c-code" class="slide level2">
-<h2>Die while-Schleife (C-Code)</h2>
-<ul>
-<li>Kopfgesteuert: Bedingung vor dem Körper</li>
-<li><code>i</code> hochzählen, bis 10</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb9-1"><a aria-label="1"></a><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb9-2"><a aria-label="2"></a></span>
-<span id="cb9-3"><a aria-label="3"></a><span class="cf">while</span> <span class="op">(</span>i <span class="op">&lt;</span> <span class="dv">10</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb9-4"><a aria-label="4"></a>    i<span class="op">++;</span></span>
-<span id="cb9-5"><a aria-label="5"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>Die Prüfung steht vor jedem Durchlauf. Start i gleich 0 führt den Körper zehnmal aus und prüft elfmal. Danach ist i gleich 10. Start i gleich 10 führt den Körper nicht aus. Hochzählen bis 10 bedeutet nicht, den Körper bei i gleich 10 auszuführen. Ein Compiler kann das Beispiel vereinfachen, wenn nur der Endwert zählt.</p>
-<p>Kontrollfrage: Wie oft wird bei Start 0 geprüft? Elfmal. Prüfung und Rücksprung folgen im Assembler.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="die-while-schleife-assembler" class="slide level2">
-<h2>Die while-Schleife (Assembler)</h2>
-<ul>
-<li>Label <code>While_Start</code> am Kopf</li>
-<li>C: <code>i &lt; 10</code> → Assembler oft <code>bge</code> (Abbruch)</li>
-<li>Am Ende: <code>j While_Start</code></li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb10-1"><a aria-label="1"></a>    li s0<span class="op">,</span> <span class="dv">0</span></span>
-<span id="cb10-2"><a aria-label="2"></a>    li t0<span class="op">,</span> <span class="dv">10</span></span>
-<span id="cb10-3"><a aria-label="3"></a></span>
-<span id="cb10-4"><a aria-label="4"></a><span class="fu">While_Start:</span></span>
-<span id="cb10-5"><a aria-label="5"></a>    bge s0<span class="op">,</span> t0<span class="op">,</span> While_End</span>
-<span id="cb10-6"><a aria-label="6"></a>    addi s0<span class="op">,</span> s0<span class="op">,</span> <span class="dv">1</span></span>
-<span id="cb10-7"><a aria-label="7"></a>    j While_Start</span>
-<span id="cb10-8"><a aria-label="8"></a></span>
-<span id="cb10-9"><a aria-label="9"></a><span class="fu">While_End:</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>s0 ist i, t0 die Grenze 10. bge prüft signed i größer oder gleich 10, das Gegenstück zu i kleiner 10. j führt vor die Prüfung zurück. Bei Start 0 wird der Körper ausgeführt, bei Start 10 nur die Abbruchprüfung. Unsigned-Werte bräuchten einen passenden Vergleich. t0 ist nicht über einen Unteraufruf erhalten, wenn der Vertrag das nicht sagt.</p>
-<p>Kontrollfrage: Welcher Befehl entspricht dem Abbruch? bge. Die for-Schleife benennt die Phasen.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="die-for-schleife-c-code" class="slide level2">
-<h2>Die for-Schleife (C-Code)</h2>
-<ul>
-<li>Syntaktischer Zucker für while</li>
-<li>Init, Bedingung, Inkrement in einer Zeile</li>
-<li>Beispiel: Array-Summe</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb11-1"><a aria-label="1"></a><span class="dt">int</span> sum <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb11-2"><a aria-label="2"></a><span class="dt">int</span> arr<span class="op">[</span><span class="dv">10</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span> <span class="co">/* ... */</span> <span class="op">};</span></span>
-<span id="cb11-3"><a aria-label="3"></a></span>
-<span id="cb11-4"><a aria-label="4"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">10</span><span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
-<span id="cb11-5"><a aria-label="5"></a>    sum <span class="op">=</span> sum <span class="op">+</span> arr<span class="op">[</span>i<span class="op">];</span></span>
-<span id="cb11-6"><a aria-label="6"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>Initialisierung einmal, Bedingung vor dem Körper, Update danach. Für die Werte 1 bis 10 ist die Summe 55, die Indizes sind 0 bis 9. Das unvollständige arr gleich Kommentarklammern ist kein lauffähiges Programm. Syntaktischer Zucker gilt hier als Einstieg. continue muss das Update trotzdem ausführen. Der Geltungsbereich von int i ist eine C-Regel, keine Assemblerregel.</p>
-<p>Kontrollfrage: Wird arr von 10 beschrieben? Nein, die Indizes enden bei 9. Die Phasen werden getrennt.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="die-for-schleife-assembler" class="slide level2">
-<h2>Die for-Schleife (Assembler)</h2>
-<ol type="1">
-<li>Initialisierung vor dem Label</li>
-<li>Bedingung direkt danach</li>
-<li>Body</li>
-<li>Inkrement</li>
-<li>Rücksprung</li>
-</ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb12-1"><a aria-label="1"></a>    li s0<span class="op">,</span> <span class="dv">0</span>            <span class="op">#</span> sum <span class="op">=</span> <span class="dv">0</span></span>
-<span id="cb12-2"><a aria-label="2"></a>    li s1<span class="op">,</span> <span class="dv">0</span>            <span class="op">#</span> i <span class="op">=</span> <span class="dv">0</span></span>
-<span id="cb12-3"><a aria-label="3"></a>    li t0<span class="op">,</span> <span class="dv">10</span></span>
-<span id="cb12-4"><a aria-label="4"></a>    la s2<span class="op">,</span> arr</span>
-<span id="cb12-5"><a aria-label="5"></a></span>
-<span id="cb12-6"><a aria-label="6"></a><span class="fu">For_Loop:</span></span>
-<span id="cb12-7"><a aria-label="7"></a>    bge s1<span class="op">,</span> t0<span class="op">,</span> For_End</span>
-<span id="cb12-8"><a aria-label="8"></a>    # Body<span class="op">:</span> siehe nächste Folie</span>
-<span id="cb12-9"><a aria-label="9"></a>    addi s1<span class="op">,</span> s1<span class="op">,</span> <span class="dv">1</span></span>
-<span id="cb12-10"><a aria-label="10"></a>    j For_Loop</span>
-<span id="cb12-11"><a aria-label="11"></a></span>
-<span id="cb12-12"><a aria-label="12"></a><span class="fu">For_End:</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>s0 ist die Summe, s1 der Index, s2 die Basis, t0 die Grenze. la lädt eine Adresse, nicht den Inhalt. Der Körper folgt auf der nächsten Folie. Die vollständige manuelle Summe 0 bis 4 steht in beispiele/vl9_sum_0_to_4.s und ergibt 10. Startindex 10 darf arr von 10 nicht lesen. Das ist eine mögliche Übersetzung dieser Schleife, nicht jede for-Schleife. s-Register in einer Funktion brauchen Sicherung, wenn der Vertrag das verlangt.</p>
-<p>Kontrollfrage: Ist la ein Load des ersten Elements? Nein. Der Index wird zum Byteoffset.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="arrays-arri-in-hardware" class="slide level2">
-<h2>Arrays: <code>arr[i]</code> in Hardware</h2>
-<ul>
-<li>C: <code>arr[i]</code> = i-tes Element</li>
-<li>CPU: Bytes - <code>int</code> = 4 Byte</li>
-<li>Adresse = Base + <span class="math inline">\((i \times 4)\)</span> oft als <code>slli</code> um 2</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb13-1"><a aria-label="1"></a>    slli t1<span class="op">,</span> s1<span class="op">,</span> <span class="dv">2</span>      <span class="op">#</span> i <span class="op">*</span> <span class="dv">4</span></span>
-<span id="cb13-2"><a aria-label="2"></a>    <span class="bu">add</span>  t2<span class="op">,</span> s2<span class="op">,</span> t1     <span class="op">#</span> Base <span class="op">+</span> Offset</span>
-<span id="cb13-3"><a aria-label="3"></a>    lw   t3<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>t2<span class="op">)</span></span>
-<span id="cb13-4"><a aria-label="4"></a>    <span class="bu">add</span>  s0<span class="op">,</span> s0<span class="op">,</span> t3     <span class="op">#</span> sum <span class="op">+=</span> arr<span class="op">[</span>i<span class="op">]</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>Die Adresse ist Basis plus Index mal der Elementgröße. In diesem ILP32-Modell ist int vier Byte. slli um 2 multipliziert den Offset mit 4. add bildet die effektive Adresse, lw lädt den Wert. Index 3 mit Wert 4 hat den Offset 12. Die Verschiebung prüft nicht die Grenze. Eine illustrative Adresse ist keine gemessene Simulatoradresse.</p>
-<p>Kontrollfrage: Lädt slli den Elementwert? Nein, es bildet den Offset. Die Berechnung kann eine Funktion sein.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="funktionen-abi-a0-und-ret" class="slide level2">
-<h2>Funktionen: ABI, <code>a0</code> und <code>ret</code></h2>
-<ul>
-<li>Parameter in <code>a0</code>, <code>a1</code>, … (ABI, Einheit 4)</li>
-<li>C-<code>return</code> = Wert nach <code>a0</code>, dann <code>ret</code> (Sprung über <code>ra</code>)</li>
-<li>Leaf-Beispiel unten; nicht-leaf braucht Stack-Prolog/Epilog (Klausur-Typ 2)</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb14-1"><a aria-label="1"></a><span class="dt">int</span> calc<span class="op">(</span><span class="dt">int</span> a<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb14-2"><a aria-label="2"></a>    <span class="cf">return</span> a <span class="op">*</span> <span class="dv">2</span><span class="op">;</span></span>
-<span id="cb14-3"><a aria-label="3"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb15-1"><a aria-label="1"></a># Fragment<span class="op">,</span> kein vollständiges Programm<span class="op">:</span></span>
-<span id="cb15-2"><a aria-label="2"></a><span class="fu">calc:</span></span>
-<span id="cb15-3"><a aria-label="3"></a>    slli a0<span class="op">,</span> a0<span class="op">,</span> <span class="dv">1</span></span>
-<span id="cb15-4"><a aria-label="4"></a>    <span class="cf">ret</span></span>
-<span id="cb15-5"><a aria-label="5"></a></span>
-<span id="cb15-6"><a aria-label="6"></a># Aufrufer separat<span class="op">,</span> mit Exit<span class="op">,</span> damit calc nicht per Fall<span class="op">-</span>through erneut läuft</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>Für dieses skalare Beispiel steht das Argument in a0, das Ergebnis wieder in a0, und ret springt über ra. Nicht jedes C-Ergebnis passt in a0. calc verändert kein s-Register und ruft nichts auf, deshalb kein Frame. Ein normaler call überschreibt ra. Eine Nicht-Leaf-Funktion sichert ra. Die Stackausrichtung im Standardvertrag ist 16 Byte. Testwerte 21 und minus 3 bleiben im definierten Bereich. Signed-Überlauf in C ist nicht dasselbe wie der Maschinenwrap.</p>
-<p>Kontrollfrage: Warum braucht calc keinen Stack? Es ist ein Leaf ohne s-Register. Der echte Compiler kann anders aussehen.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="compiler-output-in-echt-godbolt" class="slide level2">
-<h2>Compiler-Output in Echt (Godbolt)</h2>
-<ul>
-<li>Lehrübersetzung und Compileroutput unterscheiden</li>
-<li><code>-O0</code> verspricht keine feste Belegung von <code>s0</code>/<code>s1</code></li>
-<li><code>-O3</code> verspricht keinen bestimmten Pipelineplan</li>
-<li>Konstanten wie <code>a = 5; b = 10; c = a + b</code> können vollständig entfallen</li>
-<li>Compiler Explorer: Version, <code>-march=rv32i</code>, <code>-mabi=ilp32</code> dokumentieren</li>
-</ul>
-<aside class="notes">
-<p>Lehrcode und Compileroutput sind verschieden. -O0 garantiert keine festen s0- oder s1-Zuordnungen. Konstanten können entfallen. Optimierung hängt von Ziel, Version und Stufe ab und plant nicht ausschließlich die Pipeline. Die Datei beispiele/vl9_control.c ist die Eingabe. Ein konkreter -O0- oder -O2-Text wurde hier nicht erzeugt. Godbolt braucht -march=rv32i und -mabi=ilp32.</p>
-<p>Kontrollfrage: Muss der Compiler s0 für a wählen? Nein. Deshalb bleibt Assemblerwissen nützlich.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="warum-assembler-lernen" class="slide level2">
-<h2>Warum Assembler lernen?</h2>
-<ol type="1">
-<li>Maschinenverständnis: Caches, Stalls, Spilling</li>
-<li>Embedded: Bootloader, ISR, Treiber - C und Assembler gemischt</li>
-<li>Security / Reverse Engineering: oft nur Disassembly</li>
-</ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb16-1"><a aria-label="1"></a>Assembler ist selten für große Apps.</span>
-<span id="cb16-2"><a aria-label="2"></a>Assembler ist das Röntgengerät des Informatikers.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>Ein unerwarteter Speicherzugriff, ein ABI-Fehler oder Startcode werden im Disassembly sichtbar. Eine ISR, Interrupt Service Routine, und ein Bootloader können Assembler enthalten. Ein Treiber muss nicht in Assembler geschrieben sein. Assemblerwissen macht C nicht automatisch schneller. Messung und Zielhardware bleiben nötig. Ein Cache und ein Stall sind Beobachtungen, keine Versprechen jedes Compilers.</p>
-<p>Kontrollfrage: Schreibt man große Anwendungen in Assembler? Selten. Das Schloss wendet das Wissen an.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section></section>
-<section>
-<section id="labor-klausur" class="title-slide slide level1 center">
-<h1>Labor &amp; Klausur</h1>
-<aside class="notes">
-<p>Zwei Ziele: das Schloss verbindet Zustände, Eingaben und Ausgaben. Die Aufgaben schätzen den Lernstand. Das sind keine garantierten Klausuraufgaben ohne autorisierte Grundlage.</p>
-<p>Kontrollfrage: Ist jede Übungsaufgabe eine Klausuraufgabe? Nein. Der Ablauf der Praxis folgt.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="übergang-in-die-praxisphase" class="slide level2">
-<h2>Übergang in die Praxisphase</h2>
-<ul>
-<li>Formaler Vorlesungsteil beendet</li>
-<li>Ca. 3 Stunden Praxis</li>
-<li>Abschlussprojekt: Finite State Machine (FSM)</li>
-<li>Danach: Klausur-Formalia und Aufgabentypen</li>
-</ul>
-<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  A[Theorie] --&gt; B[FSM-Briefing]
-  B --&gt; C[Klausur-Tipps]
-  C --&gt; D[Freies Labor]
-  style D fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-<aside class="notes">
-<p>Die Anwendung braucht dokumentiertes Verhalten, Ereigniserkennung, Übergänge und LED-Farben. LED bedeutet Leuchtdiode. Die Schritte sind Vertrag, Geräte, Teilfunktionen und Tests. Drei Stunden gelten nur, wenn der Veranstaltungsplan sie bestätigt. Sie sind keine gemessene Bearbeitungszeit.</p>
-<p>Kontrollfrage: Reicht die Farbe ohne Ereignisregeln? Nein. Das Modell wird präzise.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="projekt-die-state-machine" class="slide level2">
-<h2>Projekt: Die State Machine</h2>
-<ul>
-<li>Finite State Machine (FSM): zu jedem Zeitpunkt genau ein Zustand</li>
-<li>Eingaben (Taster) → Übergänge (Transitions)</li>
-<li>Fundament: Ampeln, Spiele, Protokolle, Steuerungstechnik</li>
-</ul>
-<aside class="notes">
-<p>Eine FSM hat endlich viele Zustände, einen Speicher, Ereignisse, Übergänge und Ausgaben. Genau ein abstrakter Softwarezustand ist gemeint, keine Behauptung über jede Schaltung. Hier ist die Farbe nur vom Zustand abhängig, ein Moore-Modell. Der Zustand ist nicht der Program Counter. Dieselbe Schleife kann den Verteiler immer wieder durchlaufen.</p>
-<p>Kontrollfrage: Ist der Zustand der PC? Nein. Die Schlossregeln folgen.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="code-schloss" class="slide level2">
-<h2>Code-Schloss</h2>
-<ul>
-<li>S0 gesperrt, LED rot; S1 nach UP, LED gelb; S2 nach DOWN, LED blau; S3 offen, LED grün</li>
-<li>Sequenz der Ereignisse: UP, DOWN, RIGHT</li>
-<li>Halten erzeugt höchstens ein Ereignis; Release trennt die Drücke</li>
-<li>LEFT ist der Reset dieser Lehrvariante und führt nach S0</li>
-<li>Falsche einzelne Code-Taste setzt S0 bis S2 nach S0; S3 bleibt bis Reset offen</li>
-<li>Halten und mehrere Tasten erzeugen kein gültiges Ereignis</li>
-</ul>
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="../assets/images/fsm-code-lock.svg"></p>
-<figcaption>Zustände des Code-Schlosses</figcaption>
-</figure>
-</div>
-<p>Trace: UP, Release, DOWN, Release, RIGHT, Release führt von S0 über S1 und S2 nach S3.</p>
-<aside class="notes">
-<p>S0 ist rot 0x00FF0000, S1 gelb 0x00FFFF00, S2 blau 0x000000FF, S3 grün 0x0000FF00. RGB ist Rot, Grün, Blau. LEFT ist der Reset. Falsche einzelne Code-Tasten setzen S0 bis S2 nach S0. S3 bleibt bei UP, DOWN und RIGHT offen. Mehrere Tasten und Halten sind kein gültiges Ereignis. Der Erfolg ist UP, Freigabe, DOWN, Freigabe, RIGHT. Die Grafik zeigt die Erfolgskanten. Die vollständige Tabelle steht in der Spezifikation und in beispiele/vl9_next_state.s.</p>
-<p>Kontrollfrage: Schließt DOWN in S3 das Schloss? Nein. Der Assembler muss den Zustand wirklich schreiben.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="umsetzung-in-assembler" class="slide level2">
-<h2>Umsetzung in Assembler</h2>
-<ul>
-<li>Zustandsvariable in sicherem Register (z. B. <code>s0</code>)</li>
-<li>Endlosschleife: Turm aus <code>beq</code> zu State-Labels</li>
-<li>Im State: Arbeit (LED, Taster), dann <code>s0</code> ändern, <code>j Loop</code></li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb17-1"><a aria-label="1"></a># Unvollstaendige Skizze<span class="op">.</span> Vier Zustaende brauchen eigene Labels<span class="op">.</span></span>
-<span id="cb17-2"><a aria-label="2"></a># Default muss den Zustand wirklich auf <span class="dv">0</span> setzen<span class="op">:</span></span>
-<span id="cb17-3"><a aria-label="3"></a>    li s0<span class="op">,</span> <span class="dv">0</span></span>
-<span id="cb17-4"><a aria-label="4"></a>    j Loop</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>Die Zwei-Zustands-Skizze ist unvollständig. Vier Labels und ein ungültiger Wert sind nötig. j State_0 setzt s0 nicht auf 0. Der Default muss li s0, 0 ausführen. s0 ist bei normalen Funktionen callee-saved, aber nicht magisch sicher. Eingabe, Filter, next_state und Farbe bleiben getrennte Schritte. Ein Helfer mit call muss ra sichern. Die Funktion steht in beispiele/vl9_next_state.s.</p>
-<p>Kontrollfrage: Repariert ein Sprung auf das Label den Wert 99? Nein. Die Tests folgen.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="laboraufgabe-das-code-schloss" class="slide level2">
-<h2>Laboraufgabe: Das Code-Schloss</h2>
-<ul>
-<li>Ripes: D-Pad + LED-Matrix</li>
-<li>Geheimcode: OBEN, UNTEN, RECHTS</li>
-<li>Start: LED rot (State 0)</li>
-<li>Richtig: State 1 gelb → State 2 blau → grün (offen)</li>
-<li>Falsche einzelne Code-Taste in S0 bis S2: zurück nach S0</li>
-<li>S3 bleibt bei UP, DOWN und RIGHT offen; LEFT setzt zurück</li>
-<li>Halten erzeugt kein zweites Ereignis; mehrere Tasten kein gültiges Ereignis</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb18-1"><a aria-label="1"></a>Freigabe vor dem nächsten Druck. Halten ist kein zweites Ereignis.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>D-Pad und LED-Matrix kommen aus den Ripes-Exports, nicht aus universellen Adressen. Oben, unten, rechts ist die Folge. Start ist rot. Halten bleibt ein Ereignis. Mehrere Tasten bleiben ohne Fortschritt, auch wenn danach eine Taste noch gehalten wird. Erst volle Freigabe und ein neuer einzelner Druck zählen. Das ist keine physische Entprellung und keine Messung. Die GUI muss nicht prellen.</p>
-<p>Kontrollfrage: Rast ein gehaltener Taster durch alle Zustände? In diesem Vertrag nein. Prüfung und Übung werden getrennt.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="die-klausur-organisatorisches" class="slide level2">
-<h2>Die Klausur (Organisatorisches)</h2>
-<ul>
-<li>Schriftliche Klausur; Dauer und Hilfsmittel nur verbindlich, wenn die aktuelle Kursangabe sie bestätigt</li>
-<li>Orientierung: Reference Sheet liegt bei, Opcodes müssen nicht auswendig sitzen</li>
-</ul>
-<aside class="notes">
-<p>Dauer, Hilfsmittel und Reference Sheet sind nur verbindlich, wenn die aktuelle Kursangabe sie bestätigt. Kein Auswendiglernen ist hier eine Lernorientierung, keine Prüfungszusage. Ein Sheet hilft beim Nachschlagen, ersetzt aber nicht das Erklären eines Ablaufs. Es werden keine Termine erfunden.</p>
-<p>Kontrollfrage: Sind 90 Minuten hier verbindlich? Nur wenn die Kursstelle das sagt. Der erste Übungstyp ist der Trace.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="klausur-typ-1-code-analyse-tracing" class="slide level2">
-<h2>Klausur-Typ 1: Code-Analyse (Tracing)</h2>
-<ul>
-<li>Assembler-Snippet + Startwerte</li>
-<li>Rolle: menschlicher Simulator</li>
-<li>Frage z. B.: Wert in <code>t2</code> nach Ablauf?</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb19-1"><a aria-label="1"></a>    li t0<span class="op">,</span> <span class="dv">5</span></span>
-<span id="cb19-2"><a aria-label="2"></a>    li t1<span class="op">,</span> <span class="dv">3</span></span>
-<span id="cb19-3"><a aria-label="3"></a>    <span class="bu">sub</span> t2<span class="op">,</span> t0<span class="op">,</span> t1   <span class="op">#</span> t2 <span class="op">=</span> <span class="dv">2</span></span>
-<span id="cb19-4"><a aria-label="4"></a>    slli t2<span class="op">,</span> t2<span class="op">,</span> <span class="dv">1</span>   <span class="op">#</span> <span class="op">*</span><span class="dv">2</span></span>
-<span id="cb19-5"><a aria-label="5"></a>    # Ergebnis<span class="op">:</span> t2 <span class="op">=</span> <span class="dv">4</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>li t0, 5 und li t1, 3 setzen die Quellen. sub schreibt 2 nach t2. slli um 1 schreibt 4. Der Kommentar mal 2 gilt für diesen Wert. Unbenutzte Register sind nicht automatisch null. Ein Branch-Beispiel fragt zusätzlich, welche Zeile als Nächstes läuft. li ist ein Pseudobefehl.</p>
-<p>Kontrollfrage: Welcher Wert steht am Ende in t2? 4. Danach schreibt man selbst eine Folge.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="klausur-typ-2-code-schreiben" class="slide level2">
-<h2>Klausur-Typ 2: Code schreiben</h2>
-<ul>
-<li>Das gezeigte <code>for</code> mit <code>i &lt; 5</code> summiert 0+1+2+3+4 und ergibt 10</li>
-<li>Die Summe 1 bis 10 gleich 55 ist eine andere Aufgabe</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb20-1"><a aria-label="1"></a><span class="dt">int</span> summe <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb20-2"><a aria-label="2"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">5</span><span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
-<span id="cb20-3"><a aria-label="3"></a>    summe <span class="op">+=</span> i<span class="op">;</span></span>
-<span id="cb20-4"><a aria-label="4"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<aside class="notes">
-<p>Die sichtbare Schleife i kleiner 5 summiert 0 bis 4 und ergibt 10. Die Summe 1 bis 10 gleich 55 ist eine andere Aufgabe. beispiele/vl9_sum_0_to_4.s ist die manuelle Übersetzung, kein Compileroutput. Ein Frame ist nur nötig, wenn der Vertrag ihn verlangt. Die Phasen sind Initialisierung, Prüfung, Körper, Update und Abbruch.</p>
-<p>Kontrollfrage: Wird i gleich 5 addiert? Nein. Die Befehle werden im Datenpfad wiedererkannt.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="klausur-typ-3-hardware-datenpfad" class="slide level2">
-<h2>Klausur-Typ 3: Hardware / Datenpfad</h2>
-<ul>
-<li>Einheiten 5–6: Single-Cycle-Blockdiagramm</li>
-<li>Datenweg eines <code>lw</code> markieren</li>
-<li>Control-Zeile für z. B. <code>or</code> ausfüllen</li>
-</ul>
+<section id="bekanntes-wissen-gezielt-verbinden" class="slide level2">
+<h2>Bekanntes Wissen gezielt verbinden</h2>
 <table class="caption-top">
 <colgroup>
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
-<col style="width: 12%">
+<col style="width: 50%">
+<col style="width: 50%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Befehl</th>
-<th>ALUSrc</th>
-<th>MemtoReg</th>
-<th>RegWrite</th>
-<th>MemRead</th>
-<th>MemWrite</th>
-<th>Branch</th>
-<th>ALUOp</th>
+<th style="text-align: left;">Einheit</th>
+<th style="text-align: left;">Heute benötigt</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>or</code></td>
-<td>0</td>
-<td>0</td>
-<td>1</td>
-<td>0</td>
-<td>0</td>
-<td>0</td>
-<td>10</td>
+<td style="text-align: left;">1–3: Werte, Befehle und Speicher</td>
+<td style="text-align: left;">Masken, Vergleiche und Arrayadressen</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">4: Funktionen und Stack</td>
+<td style="text-align: left;">Argumente, Rückkehrlink und Sicherung</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">5–7: Datenpfad und Pipeline</td>
+<td style="text-align: left;">Befehlswirkung und Zeitmodell unterscheiden</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">8: Geräte und Dienste</td>
+<td style="text-align: left;">Registerkarte, Eingabesemantik und Ausgabe</td>
 </tr>
 </tbody>
 </table>
-<ul>
-<li>Main Control ist für alle R-Types gleich; <code>or</code> vs.&nbsp;<code>add</code> entscheidet die ALU Control (<code>funct3</code>)</li>
-</ul>
 <aside class="notes">
-<p>ALUSrc wählt den zweiten ALU-Eingang. MemtoReg wählt die Rückschreibquelle. RegWrite, MemRead und MemWrite sind die Freigaben. Branch kennzeichnet den Sprungpfad des Kursmodells. ALUOp 10 ist die Kurskategorie für Registeroperationen, keine ISA-Konstante. or hat dieselbe Main-Control-Zeile wie add. funct3 und funct7 unterscheiden die ALU-Operation. ALU bedeutet Arithmetic Logic Unit.</p>
-<p>Kontrollfrage: Unterscheidet die Main Control add und or? In diesem Modell nein. Die Zeitachse kommt dazu.</p>
+<p>Ein Wert und seine Adresse sind verschiedene Größen. Eine Bitmaske wählt Positionen aus, ein Sprung verändert den Kontrollfluss. Die Funktions-ABI, Application Binary Interface oder binäre Aufrufkonvention, legt Registerrollen, Stackausrichtung und Rückgaben fest. Genau diese Kenntnisse nutzen wir für die folgenden Assemblerfunktionen.</p>
+<p>Die ISA, Instruction Set Architecture oder Befehlssatzarchitektur, beschreibt die beobachtbare Befehlswirkung. Ein Datenpfad und eine Pipeline sind konkrete Mikroarchitekturen. Ein C-Programm bekommt deshalb nicht allein durch eine Registerzuordnung eine feste Laufzeit. Auch MMIO, Memory-Mapped Input/Output oder Gerätezugriff über Speicheradressen, bleibt ein Plattformvertrag. Wir verwenden für das Projekt die Geräteexports der Installation und für Rechenbeispiele ausdrücklich angegebene Werte. Optimierungstheorie, Linkerskripte und ein Betriebssystemkernel werden nicht vorausgesetzt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1216,52 +304,1080 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
-<section id="klausur-typ-4-pipelining-hazards" class="slide level2">
-<h2>Klausur-Typ 4: Pipelining &amp; Hazards</h2>
+<section id="gemeinsame-annahmen" class="slide level2">
+<h2>Gemeinsame Annahmen</h2>
 <ul>
-<li>Einheit 7: Timing-Raster IF/ID/EX/MEM/WB</li>
-<li>RAW-Hazards erkennen; Forwarding-Pfeile</li>
-<li>Unvermeidbarer Stall (Load-Use)</li>
+<li>RV32I, keine komprimierten Instruktionen in den Kernbeispielen</li>
+<li>ILP32: <code>int</code> und Zeiger je 32 Bit, Arrayelement hier vier Byte</li>
+<li>Skalare Argumente und Ergebnisse nach dem bekannten Funktionsvertrag</li>
+<li>Arrayzugriffe gültig; betrachtete vorzeichenbehaftete C-Rechnungen ohne Überlauf</li>
+<li>Lehrübersetzung, Simulatorbeobachtung und Compilerausgabe getrennt</li>
 </ul>
+<aside class="notes">
+<p>RV32I bezeichnet die 32-Bit-RISC-V-Ganzzahlbasis. Die C-Erweiterung für komprimierte Instruktionen ist ausgeschaltet; betrachtete Maschinenbefehle belegen vier Byte. Das hat nichts mit der Programmiersprache C zu tun. ILP32 benennt ein Datenmodell mit 32-Bit-int, long und Zeigern. In unseren Arraybeispielen belegt daher ein int vier Byte.</p>
+<p>ABI bedeutet Application Binary Interface, die binäre Funktionskonvention. Wir behandeln kleine Ganzzahlergebnisse in a0, Argumente ab a0 und 16-Byte-Stackausrichtung. Andere Rückgabeformen liegen außerhalb. Die Zahlenbeispiele sind so gewählt, dass C-Rechnungen mit vorzeichenbehafteten int-Werten definiert bleiben. Die Maschine rechnet dagegen mit 32-Bit-Mustern modulo <span class="math inline">\(2^{32}\)</span>. Nicht jede solche Bitoperation entspricht einer definierten C-Operation für alle Eingaben. Diese Grenzen werden bei Multiplikation, Vergleich und Arrays wieder aufgegriffen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="von-c-zu-einem-programm-für-das-ziel" class="title-slide slide level1 center">
+<h1>1. Von C zu einem Programm für das Ziel</h1>
+<aside class="notes">
+<p>Quelltext läuft nicht unmittelbar im bekannten Datenpfad. Eine Werkzeugkette bereitet ihn auf, übersetzt ihn, codiert die Maschinenbefehle und verbindet die benötigten Teile. Anschließend muss die Ausführungsumgebung das Programm laden und starten. Das sind verschiedene Aufgaben, auch wenn ein einzelner Treiberbefehl mehrere davon anstößt.</p>
+<p>Wir benutzen die klassische Trennung in Präprozessor, Compiler, Assembler und Linker. Sie ist ein verständliches Modell der Verarbeitungsschritte, keine Zusage, dass jede Implementierung vier unabhängige Prozesse startet. An den erzeugten Dateitypen erkennen Sie, welchen Stand ein Programm erreicht hat und weshalb eine Objektdatei oder ein Assemblertext noch nicht automatisch in Venus läuft.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="werkzeugkette-und-zwischenergebnisse" class="slide level2">
+<h2>Werkzeugkette und Zwischenergebnisse</h2>
+<p><img data-src="../assets/images/vl9-toolchain.svg" class="" alt="Quelltext wird vorverarbeitet, übersetzt, assembliert und mit weiteren Objekten verbunden; Laden und Start folgen separat"></p>
+<aside class="notes">
+<p>Die Abbildung beginnt oben links beim C-Text, verläuft durch die vier Werkzeugfelder von links nach rechts und endet unten rechts beim Programm. Aus C-Quelltext entsteht durch den Präprozessor ein vorverarbeiteter Text. Der Compiler prüft und übersetzt die Sprachstruktur, hier zu Assemblertext. Das Assemblerwerkzeug erzeugt ein Objekt mit Code, Daten und weiteren Informationen. Der Linker verbindet dieses Objekt mit passenden weiteren Objekten und löst ihre Beziehungen. Die grauen Felder benennen Verarbeitungsschritte; die Pfeile zeigen die Reihenfolge und die Beschriftungen die jeweiligen Zwischendateien.</p>
+<p>Die Endungen .c, .i, .s und .o kennzeichnen hier typische Zwischenergebnisse. ELF heißt Executable and Linkable Format, ein verbreitetes Format für Objekte und Programme; allein die Endung .elf beweist keine Ausführbarkeit. Laden und Starten sind anschließend eigene Aufgaben der Umgebung. Ein mit einer Toolchain erstelltes Programm braucht passende Eintrittsadresse, Speicherbelegung und gegebenenfalls Laufzeit. Venus, der Kurs-Instruktionssimulator, erwartet dagegen seinen unterstützten Assemblertext und seinen Dienstvertrag.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="den-treiber-gezielt-anhalten" class="slide level2">
+<h2>Den Treiber gezielt anhalten</h2>
+<table class="caption-top">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Option</th>
+<th style="text-align: left;">Ergebnis des betrachteten Aufrufs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>-E</code></td>
+<td style="text-align: left;">Vorverarbeiteter Text</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>-S</code></td>
+<td style="text-align: left;">Assemblertext</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>-c</code></td>
+<td style="text-align: left;">Objektdatei, noch nicht gelinkt</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ohne diese Stoppoptionen</td>
+<td style="text-align: left;">Linkschritt, falls Eingaben und Zielumgebung passen</td>
+</tr>
+</tbody>
+</table>
+<p>Compileroptionen sind kein Beweis für eine bereits erfolgreiche Ausführung.</p>
+<aside class="notes">
+<p>GCC bedeutet GNU Compiler Collection. Sein Treiber kann mehrere Verarbeitungsschritte koordinieren. -E stoppt nach der Vorverarbeitung, -S nach der Übersetzung zu Assemblertext und -c nach Erzeugung einer Objektdatei. Eine .o-Datei kann bereits Maschinenbefehle enthalten, aber noch offene Beziehungen zu Symbolen anderer Dateien besitzen.</p>
+<p>Ohne eine dieser Stoppoptionen kann der Treiber den Linker aufrufen. Auch dann fehlen bei einem unpassenden Ziel möglicherweise Bibliotheken, Startcode oder ein Speicherlayout. Die Optionen sind keine Aussage, dass der erzeugte Text oder das Programm schon im Simulator ausgeführt wurde. Ein Header wird nicht zum Programmstart, und eine Fehlermeldung des Linkers ist nicht automatisch eine falsche Syntax im C-Code. Diese Unterscheidungen helfen, einen Buildfehler der richtigen Stufe zuzuordnen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="host-und-ziel-ausdrücklich-wählen" class="slide level2">
+<h2>Host und Ziel ausdrücklich wählen</h2>
+<p>Aufrufschema bei vorhandener passender RISC-V-Toolchain:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a aria-label="1"></a><span class="ex">riscv64-unknown-elf-gcc</span> <span class="dt">\</span></span>
+<span id="cb1-2"><a aria-label="2"></a>  <span class="at">-march</span><span class="op">=</span>rv32i <span class="at">-mabi</span><span class="op">=</span>ilp32 <span class="at">-O2</span> <span class="at">-S</span> <span class="dt">\</span></span>
+<span id="cb1-3"><a aria-label="3"></a>  beispiele/vl9_control.c <span class="at">-o</span> control.s</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Ein gewöhnliches <code>gcc</code> auf dem Arbeitsrechner wählt dessen eigenes Ziel.</p>
+<aside class="notes">
+<p>Host ist der Rechner, auf dem die Werkzeuge laufen; Target ist das Ziel, für das sie Code erzeugen. GCC heißt GNU Compiler Collection. Eine entsprechend gebaute riscv64-unknown-elf-gcc-Toolchain kann auch ein RV32-Ziel unterstützen; der Name allein garantiert das nicht. -march=rv32i wählt die RISC-V-Ganzzahlbasis, -mabi=ilp32 das 32-Bit-Daten- und Aufrufmodell. -O2 wählt eine Optimierungsstufe. -S fordert Assemblertext und -o den Ausgabepfad control.s an.</p>
+<p>Die Datei beispiele/vl9_control.c existiert im Repository. Der gezeigte Aufruf ist eine Arbeitsanleitung, kein protokollierter Cross-Compiler-Lauf. Ein auf dem Host aufgerufenes gcc ohne passendes Ziel erzeugt nicht automatisch RV32-Code. Die Zeilenfortsetzung mit Rückstrich ist Shellsyntax. Auch ein korrekt erzeugter Assemblertext benötigt für Ausführung noch eine passende Umgebung. Bei einem Vergleich dokumentieren Sie Toolchainversion, Ziel und sämtliche relevanten Optionen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="deklaration-implementierung-und-offenes-symbol" class="slide level2">
+<h2>Deklaration, Implementierung und offenes Symbol</h2>
+<ul>
+<li>Ein Header kann eine Funktion deklarieren</li>
+<li>Die Implementierung kann in einem anderen Objekt liegen</li>
+<li>Der Assembler kennt nicht jede endgültige Zieladresse</li>
+<li>Relocation beschreibt noch anzupassende Stellen</li>
+<li>Der Linker verbindet kompatible Teile</li>
+</ul>
+<aside class="notes">
+<p>Eine Deklaration beschreibt, wie eine Funktion aufgerufen wird, zum Beispiel Name, Parameter und Rückgabe. Die Implementierung enthält ihre eigentliche Arbeit. Ein include der üblichen stdio.h-Deklarationen liefert deshalb nicht automatisch den Maschinenkörper von printf, der formatierten Ausgabefunktion.</p>
+<p>Ein Symbol benennt eine Funktion oder Datenposition. Ein noch undefiniertes externes Symbol kann in einem anderen Objekt bereitgestellt werden. Relocation, Relokation oder Adressanpassung, hält fest, welche codierte Stelle nach der Platzierung angepasst werden muss. Manche lokale Beziehungen kann bereits der Assembler bestimmen. Andere werden beim Linken aufgelöst. Der Linker verbindet passende Code- und Datenbereiche und kann Bibliotheken einbeziehen. Er erzeugt aber weder einen beliebigen Gerätevertrag noch automatisch eine funktionierende Ausgabe für jedes Bare-Metal-System, also ein System ohne Betriebssystem. Startcode, Bibliothek und Umgebung müssen zusammenpassen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="optimierung-erhält-verhalten-keine-feste-schablone" class="slide level2">
+<h2>Optimierung erhält Verhalten, keine feste Schablone</h2>
+<p>Vorhandene C-Funktion:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb2-1"><a aria-label="1"></a><span class="dt">int</span> constant_sum<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-2"><a aria-label="2"></a>    <span class="dt">int</span> a <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></span>
+<span id="cb2-3"><a aria-label="3"></a>    <span class="dt">int</span> b <span class="op">=</span> <span class="dv">10</span><span class="op">;</span></span>
+<span id="cb2-4"><a aria-label="4"></a>    <span class="cf">return</span> a <span class="op">+</span> b<span class="op">;</span></span>
+<span id="cb2-5"><a aria-label="5"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Das Ergebnis ist 15; eigene Register für <code>a</code> und <code>b</code> sind nicht vorgeschrieben.</p>
+<aside class="notes">
+<p>constant_sum ist eine Funktion ohne Parameter mit einer int-Rückgabe. a und b sind lokale Variablen mit den Werten fünf und zehn. Die Addition ergibt 15 und hat hier keinen vorzeichenbehafteten Überlauf. Eine Übersetzung kann die Variablen einzeln abbilden oder die konstante Rechnung zusammenfassen. Der Quelltext verlangt die Rückgabe 15, nicht zwei bestimmte Speicherorte.</p>
+<p>Registerallokation ist die Auswahl der Register für benötigte Werte. Bei hoher Registerbelastung, Register Pressure, kann Spilling Werte vorübergehend in den Speicher auslagern. Die ABI, Application Binary Interface, erzwingt nicht s0 für die erste lokale Variable. Veränderte erhaltene s-Register müssten in einer normalen Funktion allerdings restauriert werden. -O0 garantiert keine solche Registerzuordnung, -O2 oder -O3 keinen bestimmten Pipelineplan. Die Folie zeigt Quellcode aus beispiele/vl9_control.c und eine begründete mögliche Optimierung, keinen erfundenen Compileroutput.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="kontrollfluss-und-adressrechnung-übersetzen" class="title-slide slide level1 center">
+<h1>2. Kontrollfluss und Adressrechnung übersetzen</h1>
+<aside class="notes">
+<p>Die folgenden Assemblerformen sind manuelle Lehrübersetzungen. Sie sollen dieselbe beobachtbare Wirkung wie der angegebene C-Code haben, verlangen aber keine bestimmte Ausgabe eines Compilers. Wir legen die Registerrollen jeweils lokal fest und begründen Sprünge durch die zugehörige Bedingung.</p>
+<p>Ein Label ist eine Marke für eine Codeadresse, kein Befehl und keine gespeicherte Variable. Ein bedingter Sprung entscheidet, welcher Block ausgeführt wird. Eine Rückkante erzeugt Wiederholung. Für Arrays kommt zusätzlich die Umrechnung vom Elementindex zum Byteoffset hinzu. Diese drei Mechanismen reichen bereits für viele verständliche Programme und für wesentliche Teile des Abschlussprojekts.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="c-lesen-ein-kleiner-sprachschlüssel" class="slide level2">
+<h2>C lesen: Ein kleiner Sprachschlüssel</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb3-1"><a aria-label="1"></a><span class="dt">int</span> plus_one<span class="op">(</span><span class="dt">int</span> x<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-2"><a aria-label="2"></a>    <span class="cf">return</span> x <span class="op">+</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb3-3"><a aria-label="3"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><code>int</code>: hier vorzeichenbehafteter 32-Bit-Ganzzahltyp</li>
+<li><code>=</code> weist zu, <code>==</code> prüft Gleichheit</li>
+<li><code>{ ... }</code> fasst Anweisungen zu einem Block zusammen</li>
+<li><code>return</code> liefert das Ergebnis und beendet die Funktion</li>
+<li><code>p[i]</code> liest das Arrayelement mit Index <code>i</code></li>
+</ul>
+<aside class="notes">
+<p>Für die folgenden Beispiele genügt dieser kleine Ausschnitt der C-Sprache. int benennt den Ganzzahltyp, plus_one den Funktionsnamen und x den Parameter. Die Klammern hinter dem Namen enthalten die Parameterliste; die geschweiften Klammern begrenzen den Funktionskörper. return gibt das berechnete Ergebnis zurück und beendet diesen Funktionsaufruf. Mit x gleich drei entsteht hier vier. Die zuvor vereinbarte Voraussetzung eines darstellbaren Ergebnisses gilt weiterhin.</p>
+<p>Ein Semikolon beendet die gezeigte Anweisung. Das einzelne Gleichheitszeichen weist einer Variablen einen Wert zu, das doppelte prüft Gleichheit. Ein Array enthält aufeinanderfolgende Elemente gleichen Typs; sein erster Index ist null. In unseren Beispielen bezeichnet p einen Zeiger auf solche Elemente und p[i] den Wert an Position i. unsigned kennzeichnet einen vorzeichenlosen Typ, etwa für eine Länge. if, while und for werden unmittelbar mit ihren Beispielen erklärt. Ein gesonderter C-Sprachkurs wird für diese kleinen Übersetzungsmuster nicht vorausgesetzt.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="gleichheit-genau-einen-zweig-ausführen" class="slide level2">
+<h2>Gleichheit: genau einen Zweig ausführen</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb4-1"><a aria-label="1"></a><span class="dt">int</span> choose<span class="op">(</span><span class="dt">int</span> a<span class="op">,</span> <span class="dt">int</span> b<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-2"><a aria-label="2"></a>    <span class="cf">if</span> <span class="op">(</span>a <span class="op">==</span> b<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-3"><a aria-label="3"></a>        <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-4"><a aria-label="4"></a>    <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb4-5"><a aria-label="5"></a>        <span class="cf">return</span> <span class="dv">2</span><span class="op">;</span></span>
+<span id="cb4-6"><a aria-label="6"></a>    <span class="op">}</span></span>
+<span id="cb4-7"><a aria-label="7"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>a == b</code> liefert 1, sonst 2.</p>
+<aside class="notes">
+<p>choose ist eine int-Funktion mit den Parametern a und b. == prüft Gleichheit, während = eine Zuweisung wäre. Bei gleichen Werten wird eins zurückgegeben, bei verschiedenen zwei. Die beiden Zweige schließen sich aus; es wird nicht erst der eine und danach der andere ausgeführt. choose(5,5) ergibt eins, choose(5,10) zwei.</p>
+<p>Nach der normalen ABI, Application Binary Interface oder binären Aufrufkonvention, liegen diese skalaren Parameter in a0 und a1 und die Rückgabe in a0. Die Parameternamen a und b sind nicht dieselben Dinge wie die Registernamen a0 und a1, auch wenn die Namen ähnlich aussehen. Gleichheit von Bitmustern benötigt keine getrennte signed- und unsigned-Sprungvariante. Der Compiler könnte den Fall anders anordnen. Wir verwenden im nächsten Ausschnitt die umgekehrte Bedingung, damit der Gleichheitszweig ohne ersten Sprung weiterläuft.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="gleichheit-als-branch-und-gemeinsames-ende" class="slide level2">
+<h2>Gleichheit als Branch und gemeinsames Ende</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb5-1"><a aria-label="1"></a><span class="fu">choose:</span></span>
+<span id="cb5-2"><a aria-label="2"></a>    bne a0<span class="op">,</span> a1<span class="op">,</span> choose_else</span>
+<span id="cb5-3"><a aria-label="3"></a>    li  a0<span class="op">,</span> <span class="dv">1</span></span>
+<span id="cb5-4"><a aria-label="4"></a>    j   choose_end</span>
+<span id="cb5-5"><a aria-label="5"></a><span class="fu">choose_else:</span></span>
+<span id="cb5-6"><a aria-label="6"></a>    li  a0<span class="op">,</span> <span class="dv">2</span></span>
+<span id="cb5-7"><a aria-label="7"></a><span class="fu">choose_end:</span></span>
+<span id="cb5-8"><a aria-label="8"></a>    <span class="cf">ret</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Ohne den Sprung zum Ende würde auch der Else-Zweig erreicht.</p>
+<aside class="notes">
+<p>bne heißt Branch if Not Equal. Die Funktion springt bei ungleichen Parametern in a0 und a1 zum Else-Zweig. Bei Gleichheit setzt li, Load Immediate, die Rückgabe in a0 auf eins. j ist ein unbedingter Pseudobefehl ohne Rückkehrlink und überspringt die nachfolgende Zuweisung zwei. ret springt über ra, Return Address, zum normalen Aufrufer zurück. Das ist eine manuelle Funktionsübersetzung, kein vollständiges Programm mit Einstieg und Ausgabe.</p>
+<p>Die ABI, Application Binary Interface, erlaubt dieser Leaf-Funktion, also einer Funktion ohne Unteraufruf, die Argumentregister zu verändern. Sie benutzt kein erhaltenes s-Register und braucht für diesen Ablauf keinen Stackframe. Fehlt j choose_end, läuft die Ausführung bei Gleichheit anschließend in choose_else und überschreibt eins mit zwei. Dieser Fehler ist durch einen Trace mit gleichen Parametern erkennbar. Ein einziges Beispiel mit ungleichen Parametern würde ihn dagegen nicht aufdecken.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="kontrollfluss-als-gerichteter-graph" class="slide level2">
+<h2>Kontrollfluss als gerichteter Graph</h2>
+<p><img data-src="../assets/images/vl9-if-kontrollfluss.svg" class="" alt="Gleichheitsentscheidung führt entweder zum Then- oder zum Else-Block; beide treffen sich vor der Rückkehr"></p>
+<aside class="notes">
+<p>Die Abbildung zeigt einen Kontrollflussgraphen, also die möglichen Reihenfolgen von Programmblöcken. Oben steht die Prüfung der Parameterregister a0 und a1, links die Rückgabe eins bei Gleichheit und rechts die Rückgabe zwei bei Ungleichheit. In beiden Fällen wird das Ergebnis nach a0 geschrieben. Beide Wege treffen sich am gemeinsamen Ende. Die Pfeile kennzeichnen mögliche Folgeblöcke, keine Taktzahlen oder physikalischen Leitungen.</p>
+<p>Then bedeutet den bei wahrer Bedingung ausgeführten Zweig, Else den anderen. Im Graphen ist j End der unbedingte Sprung zum gemeinsamen Ende; ret bedeutet die Rückkehr zum Aufrufer. Rot hebt die Überspringkante nach dem Then-Zweig hervor. Diese Kante ist für die Anordnung nötig, bei der der Else-Block danach im Speicher steht. Der Graph macht dadurch den vorherigen fehlenden-Sprung-Fehler räumlich sichtbar. Eine andere gültige Übersetzung könnte beide Zweige unmittelbar zurückkehren lassen und hätte dann keinen gemeinsamen Endblock. Der Quelltext bestimmt die Wirkung, nicht zwingend genau diesen Graphen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="while-prüfung-vor-jedem-durchlauf" class="slide level2">
+<h2>while: Prüfung vor jedem Durchlauf</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb6-1"><a aria-label="1"></a><span class="dt">int</span> count_to_ten<span class="op">(</span><span class="dt">int</span> i<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-2"><a aria-label="2"></a>    <span class="cf">while</span> <span class="op">(</span>i <span class="op">&lt;</span> <span class="dv">10</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-3"><a aria-label="3"></a>        i<span class="op">++;</span></span>
+<span id="cb6-4"><a aria-label="4"></a>    <span class="op">}</span></span>
+<span id="cb6-5"><a aria-label="5"></a>    <span class="cf">return</span> i<span class="op">;</span></span>
+<span id="cb6-6"><a aria-label="6"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Start 0: zehn Körperausführungen und elf Prüfungen.</p>
+<aside class="notes">
+<p>count_to_ten ist eine int-Funktion mit Anfangsparameter i. Die Bedingung i kleiner zehn wird vor dem Körper geprüft. i++ erhöht i um eins. Bei Start null wird für die Werte null bis neun erhöht; die letzte Prüfung mit i gleich zehn beendet die Schleife. Damit entstehen zehn Körperausführungen, aber elf Bedingungsprüfungen. Die Rückgabe ist zehn.</p>
+<p>Bei Start zehn oder zwölf gibt es keinen Körperdurchlauf; die Rückgabe bleibt zehn beziehungsweise zwölf. Ein while-Körper wird also nicht zwingend einmal ausgeführt. Die Werte bleiben in diesen Beispielen im definierten int-Bereich. Ein optimierender Compiler könnte diese Wirkung ohne eine tatsächlich durchlaufene Zählschleife herstellen. Die folgende manuelle Übersetzung behält die Schritte bewusst bei, damit Prüfung, Rückkante und Abbruch nachvollziehbar sind.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="while-die-abbruchbedingung-invertieren" class="slide level2">
+<h2>while: Die Abbruchbedingung invertieren</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb7-1"><a aria-label="1"></a><span class="fu">count_to_ten:</span></span>
+<span id="cb7-2"><a aria-label="2"></a>    li t0<span class="op">,</span> <span class="dv">10</span></span>
+<span id="cb7-3"><a aria-label="3"></a><span class="fu">count_test:</span></span>
+<span id="cb7-4"><a aria-label="4"></a>    bge a0<span class="op">,</span> t0<span class="op">,</span> count_end</span>
+<span id="cb7-5"><a aria-label="5"></a>    addi a0<span class="op">,</span> a0<span class="op">,</span> <span class="dv">1</span></span>
+<span id="cb7-6"><a aria-label="6"></a>    j count_test</span>
+<span id="cb7-7"><a aria-label="7"></a><span class="fu">count_end:</span></span>
+<span id="cb7-8"><a aria-label="8"></a>    <span class="cf">ret</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>a0 enthält den Parameter i und anschließend die skalare Rückgabe nach der ABI, Application Binary Interface. t0 ist ein temporäres Register mit der Grenze zehn. li, Load Immediate, ist ein Pseudobefehl. bge, Branch if Greater or Equal, prüft vorzeichenbehaftet, ob der Abbruchfall i größer oder gleich zehn vorliegt. addi, Add Immediate, erhöht a0 um eins. j springt zur Kopfprüfung zurück; ret kehrt über ra, Return Address, zurück.</p>
+<p>Die Marken count_test und count_end bezeichnen Adressen. Bei Start null wird bge elfmal geprüft; bei Start zwölf wird der Körper vollständig übersprungen. Diese Funktion ruft keine andere auf und verändert kein erhaltenes s-Register. Der temporäre Grenzwert t0 bleibt deshalb für diesen Ablauf verfügbar. Würde man im Körper einen Unteraufruf ergänzen, müsste man seine möglichen Änderungen von t0 neu berücksichtigen. Die Form ist keine Garantie einer tatsächlichen Compilerübersetzung.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="signed-und-unsigned-sind-unterschiedliche-vergleiche" class="slide level2">
+<h2>signed und unsigned sind unterschiedliche Vergleiche</h2>
+<p>Das Bitmuster <code>0xFFFFFFFF</code>:</p>
 <table class="caption-top">
 <thead>
 <tr class="header">
-<th>Befehl</th>
-<th>1</th>
-<th>2</th>
-<th>3</th>
-<th>4</th>
-<th>5</th>
-<th>6</th>
-<th>7</th>
+<th style="text-align: left;">Betrachtung</th>
+<th style="text-align: center;">Wert</th>
+<th style="text-align: left;">Vergleich mit 10</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>lw t0, 0(a0)</code></td>
-<td>IF</td>
-<td>ID</td>
-<td>EX</td>
-<td>MEM</td>
-<td>WB</td>
-<td></td>
-<td></td>
+<td style="text-align: left;">Vorzeichenbehaftet</td>
+<td style="text-align: center;"><span class="math inline">\(-1\)</span></td>
+<td style="text-align: left;">kleiner</td>
 </tr>
 <tr class="even">
-<td><code>add t1, t0, t0</code></td>
-<td></td>
-<td>IF</td>
-<td>ID</td>
-<td>ID gehalten</td>
-<td>EX</td>
-<td>MEM</td>
-<td>WB</td>
+<td style="text-align: left;">Vorzeichenlos</td>
+<td style="text-align: center;"><span class="math inline">\(4294967295\)</span></td>
+<td style="text-align: left;">größer</td>
+</tr>
+</tbody>
+</table>
+<p><code>bge</code> und <code>bgeu</code> prüfen unterschiedliche Ordnungen.</p>
+<aside class="notes">
+<p>Signed bedeutet vorzeichenbehaftet, unsigned vorzeichenlos. Das 32-Bit-Muster 0xFFFFFFFF ist als Zweierkomplement minus eins, als vorzeichenlose Zahl 4294967295. Gegen zehn ist es deshalb im ersten Fall kleiner und im zweiten größer. bge, Branch if Greater or Equal, verwendet die vorzeichenbehaftete Ordnung; bgeu, Branch if Greater or Equal Unsigned, die vorzeichenlose.</p>
+<p>Bei count_to_ten mit dem int-Anfangswert minus eins muss die Schleife bis zehn laufen. Eine Ersetzung durch bgeu würde sofort abbrechen und die Wirkung ändern. Ein explizit vorzeichenloser Index mit gegebener Grenze benötigt dagegen eine passende unsigned-Prüfung. Gleichheit ist hiervon nicht betroffen, weil dieselben Bitmuster verglichen werden. Die Interpretation wird vom jeweiligen Datentyp und der Aufgabe bestimmt; ein Register trägt dafür kein automatisch mitgespeichertes C-Typkennzeichen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="for-vier-phasen-auseinanderhalten" class="slide level2">
+<h2>for: Vier Phasen auseinanderhalten</h2>
+<p><img data-src="../assets/images/vl9-schleifenphasen.svg" class="" alt="Initialisierung erfolgt einmal, Prüfung entscheidet über Körper und Ende, Update führt zur nächsten Prüfung zurück"></p>
+<aside class="notes">
+<p>Die Abbildung zeigt eine kopfgesteuerte Schleife von links nach rechts mit einer Rückkante unter den vier Phasen. Zuerst wird einmal initialisiert. Dann entscheidet die Bedingung, ob der Körper ausgeführt wird oder die Schleife endet. Nach dem Körper folgt das Update und die Rückkante zur erneuten Prüfung. Rot markiert den wiederholten Weg. Die Pfeile beschreiben Kontrollfluss, keine Pipeline-Takte.</p>
+<p>Ein for mit Initialisierung, Bedingung und Update kann in diesem einfachen Fall durch entsprechend angeordneten while-Code dargestellt werden. Dabei müssen die genauen Sprachregeln erhalten bleiben. Insbesondere muss ein continue, also das vorzeitige Fortsetzen des nächsten Durchlaufs, bei for noch das Update erreichen. Einfach an einen while-Kopf zu springen wäre nicht für jeden solchen Fall gleichwertig. Wir übersetzen zunächst eine Folge ohne continue und können dadurch die vier Phasen eindeutig zuordnen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="summe-von-null-bis-vier" class="slide level2">
+<h2>Summe von null bis vier</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb8-1"><a aria-label="1"></a><span class="dt">int</span> sum_0_to_4<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-2"><a aria-label="2"></a>    <span class="dt">int</span> sum <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb8-3"><a aria-label="3"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">5</span><span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb8-4"><a aria-label="4"></a>        sum <span class="op">+=</span> i<span class="op">;</span></span>
+<span id="cb8-5"><a aria-label="5"></a>    <span class="op">}</span></span>
+<span id="cb8-6"><a aria-label="6"></a>    <span class="cf">return</span> sum<span class="op">;</span></span>
+<span id="cb8-7"><a aria-label="7"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<p><span class="math display">\[0+1+2+3+4=10\]</span></p>
+<aside class="notes">
+<p>sum_0_to_4 ist eine Funktion ohne Parameter. sum beginnt bei null. i beginnt ebenfalls bei null und ist im Schleifenbereich gültig. Vor jedem Körperdurchlauf wird i kleiner fünf geprüft. sum += i addiert den aktuellen Index; danach erhöht i++ den Index. Die addierten Werte sind null, eins, zwei, drei und vier, nicht fünf. Alle Zwischenwerte liegen im definierten int-Bereich.</p>
+<p>Die Summe entwickelt sich zu 0, 1, 3, 6 und 10. Die Prüfung findet sechsmal statt, der Körper fünfmal. Die entsprechende vorhandene manuelle Assemblerfunktion steht in beispiele/vl9_sum_0_to_4.s. Eine Summe der Werte eins bis zehn mit Ergebnis 55 wäre eine andere Aufgabenstellung. Der Funktionsname, die Grenze und die tatsächlich addierten Werte helfen, solche ähnlich aussehenden Aufgaben sicher auseinanderzuhalten.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="arrayindex-wird-zum-byteoffset" class="slide level2">
+<h2>Arrayindex wird zum Byteoffset</h2>
+<p><img data-src="../assets/images/vl9-arrayadresse.svg" class="" alt="Fünf int-Wörter ab 0x2000, Index 3 liegt zwölf Byte weiter an 0x200C"></p>
+<p><span class="math display">\[A_i=B+4i,\qquad 0\leq i&lt;n\]</span></p>
+<aside class="notes">
+<p><span class="math inline">\(B\)</span> ist die Arraybasis, <span class="math inline">\(i\)</span> der Elementindex, <span class="math inline">\(n\)</span> die Anzahl vorhandener Elemente und <span class="math inline">\(A_i\)</span> die Adresse des ausgewählten int-Worts. Im vereinbarten ILP32-Modell, mit 32-Bit-int, long und Zeigern, benötigt ein int vier Byte. p bezeichnet den Zeiger auf das erste Arrayelement. Die Abbildung zeigt die angenommenen Werte 10, 20, 30, 40 und 50 an aufsteigenden wortausgerichteten Adressen ab 0x2000.</p>
+<p>Der rote Rahmen hebt Index drei hervor; die übrigen grauen Felder zeigen seine Nachbarelemente. Index drei hat den Byteoffset <span class="math inline">\(3\cdot4=12\)</span> und die Adresse 0x200C; dort steht der Wert 40. Index vier liegt bei 0x2010. Die Adresse 0x2014 liegt eine Position hinter dem Array und darf nicht als sechstes Element geladen werden. Adresse, Offset und gelesener Wert sind verschiedene Größen. Die Positionsrechnung setzt gültigen Index, passendes Objekt und keine unzulässige Adressrechnung voraus. Ein Shift um zwei prüft diese Voraussetzungen nicht von selbst.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="arraysumme-in-c-grenze-vor-dem-lesen" class="slide level2">
+<h2>Arraysumme in C: Grenze vor dem Lesen</h2>
+<p>Vorhandene Funktion aus <code>beispiele/vl9_control.c</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode numberSource c number-lines code-with-copy"><code class="sourceCode c"><span id="cb9-1"><a aria-label="1"></a><span class="dt">int</span> sum_array<span class="op">(</span><span class="dt">const</span> <span class="dt">int</span> <span class="op">*</span>p<span class="op">,</span> <span class="dt">unsigned</span> <span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb9-2"><a aria-label="2"></a>    <span class="dt">int</span> sum <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb9-3"><a aria-label="3"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> i<span class="op">;</span></span>
+<span id="cb9-4"><a aria-label="4"></a>    <span class="cf">for</span> <span class="op">(</span>i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb9-5"><a aria-label="5"></a>        sum <span class="op">+=</span> p<span class="op">[</span>i<span class="op">];</span></span>
+<span id="cb9-6"><a aria-label="6"></a>    <span class="op">}</span></span>
+<span id="cb9-7"><a aria-label="7"></a>    <span class="cf">return</span> sum<span class="op">;</span></span>
+<span id="cb9-8"><a aria-label="8"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>p ist ein Zeiger auf das erste int-Element des Arrays. const bedeutet hier, dass die Funktion die Elemente nicht über diesen Zeiger verändert. n ist die Anzahl vorhandener Elemente und unsigned int ein vorzeichenloser Ganzzahltyp. Auch i, der Index, ist vorzeichenlos. Die lokale vorzeichenbehaftete Variable sum wird vor der Schleife auf null gesetzt. Im vereinbarten ILP32-Modell haben int, long und Zeiger 32 Bit.</p>
+<p>Die Initialisierung i gleich null erfolgt einmal. Vor jedem Zugriff wird i kleiner n geprüft, nach jedem Körperdurchlauf wird i um eins erhöht. sum += p[i] liest das ausgewählte Element und addiert es zum bisherigen Summenwert. return liefert die Summe zurück. Für n gleich null wird kein Element gelesen. Die Funktion benötigt n gültige Elemente und darstellbare vorzeichenbehaftete Zwischensummen; sie prüft die tatsächliche Objektgröße nicht selbst. Der folgende Assemblerkörper bildet einen einzigen erfolgreichen Durchlauf ab. Die vollständige Übersetzung muss zusätzlich Initialisierung, Grenzvergleich, Rückkante und Rückgabe enthalten.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="der-körper-einer-arraysumme" class="slide level2">
+<h2>Der Körper einer Arraysumme</h2>
+<p>Lehrrollen: <code>t0</code> Basis, <code>t1</code> Index, <code>t2</code> Summe.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb10-1"><a aria-label="1"></a>slli t3<span class="op">,</span> t1<span class="op">,</span> <span class="dv">2</span></span>
+<span id="cb10-2"><a aria-label="2"></a><span class="bu">add</span>  t4<span class="op">,</span> t0<span class="op">,</span> t3</span>
+<span id="cb10-3"><a aria-label="3"></a>lw   t5<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>t4<span class="op">)</span></span>
+<span id="cb10-4"><a aria-label="4"></a><span class="bu">add</span>  t2<span class="op">,</span> t2<span class="op">,</span> t5</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Länge vorher prüfen; der Shift allein verhindert keinen Zugriff außerhalb.</p>
+<aside class="notes">
+<p>slli heißt Shift Left Logical Immediate. Die Verschiebung des gültigen Index t1 um zwei bildet den Byteoffset t3. add addiert ihn zur Basis t0 und schreibt die effektive Adresse nach t4. lw, Load Word, liest das dortige vier Byte breite Wort nach t5. Die zweite Addition erhöht die laufende Summe t2. t0 bis t5 sind temporäre Register; ihre Zuordnung ist hier eine bewusste Lehrentscheidung.</p>
+<p>Für Index drei am Array ab 0x2000 entsteht der Offset zwölf, die Adresse 0x200C und das gelesene Wort 40. Die Speicherladung liefert nicht den Offset. Dieser Ausschnitt ist nur der Körper einer vorher geprüften Schleife, nicht die ganze Funktion. Die komplette Lehrfunktion liegt in beispiele/vl9_sum_array.s. Ihre C-Entsprechung in vl9_control.c verlangt n gültige Elemente und Zwischenadditionen ohne signed-Überlauf. Die Folge enthält außerdem eine unmittelbare Datenabhängigkeit nach dem Load; daraus kann im Pipeline-Modell ein Stall entstehen, obwohl die funktionale Summe richtig bleibt.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="grenze-null-länge-und-c-gültigkeit" class="slide level2">
+<h2>Grenze, Null-Länge und C-Gültigkeit</h2>
+<p>Für <code>sum_array(p, n)</code>:</p>
+<ul>
+<li><code>n = 0</code>: kein Zugriff, Ergebnis null</li>
+<li>Fünf gültige Werte 10, 20, 30, 40, 50: Ergebnis 150</li>
+<li>Index immer kleiner als die vorhandene Länge</li>
+<li>Jede betrachtete vorzeichenbehaftete Zwischenaddition muss definiert sein</li>
+</ul>
+<aside class="notes">
+<p>sum_array ist die Funktion aus beispiele/vl9_control.c. p zeigt auf die Elemente, n ist eine vorzeichenlose Länge, sum die vorzeichenbehaftete int-Summe und i der vorzeichenlose Index. Für n gleich null ist die Kopfbedingung sofort falsch und p wird nicht dereferenziert, also kein Element über den Zeiger gelesen. Für die fünf genannten Werte sind die Zwischenstände 10, 30, 60, 100 und 150.</p>
+<p>Ein vorzeichenbehafteter C-Überlauf hat undefiniertes Verhalten. Dass ein RISC-V-add einen 32-Bit-Wert modulo <span class="math inline">\(2^{32}\)</span> bildet, rechtfertigt daher keine Gleichsetzung für beliebige Eingaben. Auch die benötigten Adressen müssen innerhalb des vorhandenen Arrays liegen. Ein Compiler kann unter den Sprachvoraussetzungen optimieren. Die manuelle Übersetzung ist für die benannten gültigen Fälle gedacht; sie stellt keine automatische Grenzprüfung für beliebige Zeiger und Längen bereit.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="kurzaufgabe-den-ersten-fehler-suchen" class="slide level2">
+<h2>Kurzaufgabe: Den ersten Fehler suchen</h2>
+<p>Lehrfragment eines If-Else mit Ergebnis in <code>a0</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb11-1"><a aria-label="1"></a>bne a0<span class="op">,</span> a1<span class="op">,</span> Else</span>
+<span id="cb11-2"><a aria-label="2"></a>li  a0<span class="op">,</span> <span class="dv">1</span></span>
+<span id="cb11-3"><a aria-label="3"></a><span class="fu">Else:</span></span>
+<span id="cb11-4"><a aria-label="4"></a>li  a0<span class="op">,</span> <span class="dv">2</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Welcher Test zeigt den Fehler, und welche Kante fehlt?</p>
+<aside class="notes">
+<p>a0 und a1 sind die beiden Parameterregister; nach dem Fragment soll a0 das Ergebnis enthalten. bne bedeutet Branch if Not Equal. Bei Ungleichheit wird Else direkt erreicht und zwei geschrieben. Dieser Test allein würde einen korrekten Eindruck erwecken. Bei Gleichheit läuft dagegen zunächst li, Load Immediate, mit eins und danach ebenfalls die Zuweisung zwei. Der Endwert ist fälschlich zwei.</p>
+<p>Zwischen der ersten Zuweisung und Else fehlt ein unbedingter Sprung zu einem gemeinsamen Ende, oder alternativ eine direkte Rückkehr aus dem Gleichheitszweig. Der geeignete Gegenbeispieltest lautet etwa a0 gleich fünf und a1 gleich fünf. Der erwartete Wert ist eins. Ein nachvollziehbarer Trace benennt hier die erste abweichende Kontrollkante statt nur festzustellen, dass der Endwert falsch ist. Das Fragment enthält absichtlich weder Funktionsmarke noch ret; es dient ausschließlich der Fehleranalyse.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="funktionen-und-aufrufkonvention" class="title-slide slide level1 center">
+<h1>3. Funktionen und Aufrufkonvention</h1>
+<aside class="notes">
+<p>Die bisherigen Muster beschreiben einzelne Kontrollstrukturen. Sobald eine Funktion eine andere aufruft, muss zusätzlich klar sein, welche Werte einen Aufruf überleben und wohin die aufgerufene Funktion zurückkehrt. Die Aufrufkonvention, Application Binary Interface oder ABI, legt diese Schnittstelle zwischen getrennt übersetzten Funktionen fest.</p>
+<p>Die Beispiele setzen die Konvention aus Einheit 8 voraus: a0 bis a7 dienen der Parameterübergabe, a0 enthält hier das skalare Ergebnis, ra, Return Address, die Rücksprungadresse und sp, Stack Pointer, den Stackzeiger. Wir beginnen mit einer Blattfunktion ohne weitere Aufrufe. Anschließend kommt ein Aufruf hinzu, bei dem die Rücksprungadresse gesichert werden muss. Diese Unterscheidung erklärt den Stackframe aus dem tatsächlichen Bedarf.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="blattfunktion-kein-aufruf-kein-frame-nötig" class="slide level2">
+<h2>Blattfunktion: Kein Aufruf, kein Frame nötig</h2>
+<p>C-Lehrbeispiel: <code>int calc(int a) { return a * 2; }</code></p>
+<p>Manuell für gültige C-Eingaben übersetzt:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb12-1"><a aria-label="1"></a><span class="fu">calc:</span></span>
+<span id="cb12-2"><a aria-label="2"></a>    slli a0<span class="op">,</span> a0<span class="op">,</span> <span class="dv">1</span></span>
+<span id="cb12-3"><a aria-label="3"></a>    <span class="cf">ret</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Beispiel: <code>a = -3</code> → Ergebnis <code>-6</code></p>
+<aside class="notes">
+<p>Eine Blattfunktion ruft keine weitere Funktion auf. Im gewählten Application Binary Interface, ABI, kommt der Parameter a in a0 an und das skalare Ergebnis wird in a0 zurückgegeben. slli bedeutet Shift Left Logical Immediate und verschiebt um die konstante Bitanzahl eins. Für das Beispiel minus drei entsteht das 32-Bit-Muster von minus sechs. ret ist ein Pseudobefehl für die Rückkehr über ra, Return Address, das Register mit der Rücksprungadresse.</p>
+<p>Die gezeigte Funktion verändert keine callee-saved Register, benötigt keinen lokalen Speicher und überschreibt ra nicht durch einen weiteren Aufruf. Deshalb braucht sie hier keinen Stackframe. Die Gleichheit zum vorzeichenbehafteten C-Ausdruck gilt nur, wenn das mathematische Doppelte als int darstellbar ist: im vereinbarten 32-Bit-Modell von <span class="math inline">\(-2^{30}\)</span> bis <span class="math inline">\(2^{30}-1\)</span> einschließlich. Außerhalb dieses Bereichs hat die C-Multiplikation undefiniertes Verhalten, während die Maschinenverschiebung weiterhin ein Bitmuster liefert. Dies ist ein manuelles Lehrbeispiel, keine Ausgabe eines ausgeführten Compilers.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="ein-weiterer-aufruf-verändert-ra" class="slide level2">
+<h2>Ein weiterer Aufruf verändert <code>ra</code></h2>
+<p>Lehrfunktion <code>double_plus_one(a) = calc(a) + 1</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb13-1"><a aria-label="1"></a><span class="fu">double_plus_one:</span></span>
+<span id="cb13-2"><a aria-label="2"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="op">-</span><span class="dv">16</span></span>
+<span id="cb13-3"><a aria-label="3"></a>    sw   ra<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb13-4"><a aria-label="4"></a>    <span class="cf">call</span> calc</span>
+<span id="cb13-5"><a aria-label="5"></a>    addi a0<span class="op">,</span> a0<span class="op">,</span> <span class="dv">1</span></span>
+<span id="cb13-6"><a aria-label="6"></a>    lw   ra<span class="op">,</span> <span class="dv">12</span><span class="op">(</span><span class="kw">sp</span><span class="op">)</span></span>
+<span id="cb13-7"><a aria-label="7"></a>    addi <span class="kw">sp</span><span class="op">,</span> <span class="kw">sp</span><span class="op">,</span> <span class="dv">16</span></span>
+<span id="cb13-8"><a aria-label="8"></a>    <span class="cf">ret</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>calc</code> ist die Blattfunktion der vorherigen Folie.</p>
+<aside class="notes">
+<p>double_plus_one erhält ihren Parameter und liefert ihr Ergebnis in a0 gemäß dem Application Binary Interface, ABI. addi bedeutet Add Immediate und verändert zunächst sp, Stack Pointer, um minus 16. sw, Store Word, sichert die eingehende Rücksprungadresse ra, Return Address, zwölf Byte oberhalb dieses neuen Stackzeigers. call ist ein Pseudobefehl für einen Funktionsaufruf und schreibt eine neue Rücksprungadresse nach ra. Ohne Sicherung wäre die Rückkehr zum ursprünglichen Aufrufer verloren.</p>
+<p>calc verdoppelt den Parameter und kehrt zur Addition eins zurück. Mit minus drei als Eingabe entsteht minus fünf, mit 21 entsteht 43. lw, Load Word, holt danach die ursprüngliche Rücksprungadresse zurück. Der Stackzeiger wird vollständig wiederhergestellt, bevor ret zum Aufrufer springt. Die reservierten 16 Byte halten die vereinbarte Stackausrichtung ein, obwohl nur vier Byte Nutzdaten gespeichert werden. Der Ausschnitt definiert double_plus_one vollständig und setzt die bereits gezeigte calc-Funktion voraus; beide zusammen stehen in beispiele/vl9_calls.s. Beide C-Zwischenresultate müssen darstellbar sein.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="stackframe-als-adressrechnung" class="slide level2">
+<h2>Stackframe als Adressrechnung</h2>
+<p><img data-src="../assets/images/vl9-aufruf-stack.svg" style="width:88.0%" alt="Stack wächst von 0x2000 nach 0x1FF0, ra liegt als Wort bei 0x1FFC"></p>
+<p>Vier Byte für <code>ra</code>, insgesamt 16 Byte reserviert.</p>
+<aside class="notes">
+<p>sp bedeutet Stack Pointer und zeigt vor dem Aufruf in diesem Zahlenbeispiel auf 0x2000. Der Stack wächst zu kleineren Adressen. addi, Add Immediate, verändert hier den Stackzeiger. Nach der Subtraktion von 16 Byte, hexadezimal 0x10, steht sp auf 0x1FF0. Die Speicheradresse des gesicherten ra, Return Address, ergibt sich aus dem neuen sp plus zwölf Byte, also 0x1FFC. sw, Store Word, speichert den Registerwert an dieser Adresse. Ein Wort belegt die vier Byte 0x1FFC bis 0x1FFF.</p>
+<p>Die Abbildung zeigt Adressen von oben nach unten zunehmend. Der rote Rahmen markiert den belegten Bereich für die Rücksprungadresse, die grauen Felder die übrigen reservierten Byte. Diese dienen hier nur dazu, einen 16-Byte-Frame zu bilden. Das konkrete Adressbeispiel ist ein Lehrmodell, kein gemessener Speicherstand. Für die Rückkehr müssen der gespeicherte ra-Wert und der ursprüngliche Stackzeiger wiederhergestellt werden. Die Funktionsschnittstelle legt keine feste Adresse 0x2000 fest; erforderlich sind ein gültiger Stackbereich und die passende Ausrichtung.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="welche-werte-überleben-einen-aufruf" class="slide level2">
+<h2>Welche Werte überleben einen Aufruf?</h2>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Registergruppe</th>
+<th>Verantwortung bei einem normalen Funktionsaufruf</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>a0–a7</code>, <code>t0–t6</code></td>
+<td>Aufrufer sichert noch benötigte Werte</td>
+</tr>
+<tr class="even">
+<td><code>s0–s11</code></td>
+<td>Aufgerufene Funktion erhält eingehende Werte</td>
+</tr>
+<tr class="odd">
+<td><code>ra</code></td>
+<td>Verschachtelter Aufruf überschreibt Rücksprungadresse</td>
+</tr>
+<tr class="even">
+<td><code>sp</code></td>
+<td>Bei Rückkehr wiederherstellen, Ausrichtung beachten</td>
+</tr>
+</tbody>
+</table>
+<p>Beispiel: Ein Zähler in <code>t0</code> ist nach <code>call calc</code> nicht zugesichert.</p>
+<aside class="notes">
+<p>Die Registergruppen sind Teil des Application Binary Interface, ABI, also der vereinbarten Binärschnittstelle für normale Funktionsaufrufe. a bezeichnet Argumentregister, t temporäre Register und s gesicherte Register. Die erste Gruppe ist caller-saved: Wer ihren alten Inhalt nach dem Aufruf noch braucht, muss ihn vorher sichern. Dass die konkrete calc-Funktion nur a0 verändert, ist keine allgemeine Zusicherung für andere Implementierungen.</p>
+<p>Die s-Register sind callee-saved. Eine aufgerufene Funktion darf sie benutzen, muss aber vor ihrer Rückkehr die eingehenden Werte wiederherstellen. ra steht für Return Address und sp für Stack Pointer. Der gezeigte Stackframe sichert ra, weil ein weiterer Aufruf diese Adresse überschreibt. Für einen Schleifenzähler, der mehrere Aufrufe überleben muss, kommt beispielsweise ein korrekt gesichertes s-Register oder ein Stackplatz infrage. Diese Regeln betreffen normale Aufrufe. Aus ihnen folgt keine allgemeine Registererhaltung für ecall, den umgebungsabhängigen Systemdienst aus Einheit 8.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="funktion-programmeinstieg-und-dauerbetrieb" class="slide level2">
+<h2>Funktion, Programmeinstieg und Dauerbetrieb</h2>
+<ul>
+<li><code>ret</code> benötigt eine gültige Rücksprungadresse</li>
+<li>Ein Programmeinstieg braucht eine passende Laufzeitumgebung</li>
+<li>Ein Systemdienst über <code>ecall</code> folgt der jeweiligen Umgebung</li>
+<li>Das Code-Schloss läuft dauerhaft in seiner Hauptschleife</li>
+</ul>
+<aside class="notes">
+<p>ret ist eine Rückkehr über ra, Return Address. Eine isolierte Funktion ist deshalb noch kein vollständiges Programm: Ein Aufrufer muss Parameter, gegebenenfalls einen Stack und eine gültige Rücksprungadresse bereitstellen. Ein vom Linker erzeugtes Programm benötigt außerdem einen passenden Einstieg und gegebenenfalls Initialisierung durch die Laufzeitumgebung.</p>
+<p>ecall heißt Environment Call. Welche Dienstnummern und Register damit verbunden sind, hängt vom Ausführungssystem ab. In der im Kurs verwendeten Venus-Konvention stehen beispielsweise die Dienstnummer in a0 und ein Argument in a1. Diese Konvention ist weder eine Eigenschaft des RISC-V-Befehlssatzes noch automatisch für Ripes gültig. Das folgende Ripes-Projekt beendet sich bewusst nicht durch ret oder einen Systemdienst, sondern wiederholt Eingabelesen, Zustandsberechnung und Anzeige. Seine Hilfsfunktionen sind Blattfunktionen; der Einstieg selbst kehrt nicht zu einem Aufrufer zurück. Dadurch benötigt diese konkrete Struktur keine Sicherung einer eingehenden Rücksprungadresse.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="abschlussprojekt-code-schloss" class="title-slide slide level1 center">
+<h1>4. Abschlussprojekt: Code-Schloss</h1>
+<aside class="notes">
+<p>Das Abschlussprojekt verbindet die Kontrollstrukturen dieser Einheit mit den Ein- und Ausgaben aus Einheit 8. Ein D-Pad, Directional Pad, liefert vier Richtungstasten; eine LED-Matrix zeigt den Zustand durch die Farbe eines Pixels. LED bedeutet Light Emitting Diode. Die Bedienregel ist bewusst klein genug, um sie vollständig mit einer Tabelle und kurzen Tests zu prüfen.</p>
+<p>Zunächst beschreiben wir das gewünschte Verhalten ohne Speicheradressen oder Register. Danach übersetzen wir Rohwerte in Ereignisse und erst dann Ereignisse in Zustandsübergänge. Diese Reihenfolge hilft, einen falschen Übergang von einem falsch erkannten Tastendruck zu unterscheiden. Das Programm ist ein Lehrmodell für eine endliche Zustandsmaschine und kein Sicherheitskonzept für ein reales Türschloss.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="vier-zustände-und-eine-klare-bedienregel" class="slide level2">
+<h2>Vier Zustände und eine klare Bedienregel</h2>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Zustand</th>
+<th>Anzeige</th>
+<th>Fortschritt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>S0</td>
+<td>Rot</td>
+<td>Geschlossen, erwartet UP</td>
+</tr>
+<tr class="even">
+<td>S1</td>
+<td>Gelb</td>
+<td>UP erkannt, erwartet DOWN</td>
+</tr>
+<tr class="odd">
+<td>S2</td>
+<td>Blau</td>
+<td>UP und DOWN erkannt, erwartet RIGHT</td>
+</tr>
+<tr class="even">
+<td>S3</td>
+<td>Grün</td>
+<td>Offen, bleibt bis LEFT offen</td>
+</tr>
+</tbody>
+</table>
+<p><code>LEFT</code> setzt jeden Zustand auf S0 zurück.</p>
+<p>Falsche einzelne Codetaste in S0–S2 → S0.</p>
+<aside class="notes">
+<p>Die Zustände S0 bis S3 beschreiben den bisher erreichten Fortschritt der Eingabefolge UP, DOWN, RIGHT. Die Anzeige verwendet Rot, Gelb, Blau und Grün, damit dieser Fortschritt beobachtbar ist. LEFT ist unabhängig vom aktuellen Fortschritt eine Rücksetztaste. In S3 verändern UP, DOWN und RIGHT den offenen Zustand nicht; nur LEFT schließt wieder.</p>
+<p>Eine falsche einzelne Codetaste in S0, S1 oder S2 verwirft den bisherigen Fortschritt. Beispielsweise führt S1 mit erneutem UP nach S0 und nicht nach S1. Ein fehlendes Eingabeereignis verändert einen gültigen Zustand nicht. Mehrere Tasten gelten nicht als gültige einzelne Codetaste; sie erzeugen gemäß der folgenden Eingaberegel kein Ereignis. Die Zustandsmaschine soll also keine Priorität aus der Reihenfolge der Speicherzugriffe ableiten. Diese Regeln sind die gemeinsame Spezifikation für Vorlesung, Übung, Quiz und das vollständige Lehrprogramm.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="zustandsgraph-erfolgsweg-und-rücksetzen" class="slide level2">
+<h2>Zustandsgraph: Erfolgsweg und Rücksetzen</h2>
+<p><img data-src="../assets/images/vl9-schloss-zustaende.svg" style="width:92.0%" alt="UP, DOWN, RIGHT führen über vier Zustände zum offenen Schloss, LEFT führt zurück"></p>
+<p>Die vollständige Tabelle ergänzt die übrigen Fälle.</p>
+<aside class="notes">
+<p>Der Graph zeigt die vier Zustände des Code-Schlosses als Knoten. Die roten Kanten markieren die erfolgreiche Folge UP, DOWN, RIGHT von S0 über S1 und S2 nach S3. Die graue Rücksetzlinie führt mit LEFT von den drei späteren Zuständen nach S0. Auch LEFT in S0 führt wieder nach S0; diese Selbstkante ist aus Platzgründen im Hinweis beschrieben. Die Farbnamen über den Zuständen bezeichnen die Ausgabe, die rote Kantenfarbe selbst kennzeichnet den Erfolgsweg und ist keine zusätzliche Anzeigefarbe.</p>
+<p>Ein Zustandsgraph kann bei vielen Selbst- und Rückkanten unübersichtlich werden. Deshalb stellt diese Abbildung bewusst die Orientierung bereit, während die nächste Folie alle Übergänge tabellarisch festlegt. Insbesondere fehlen hier die Rückkehr bei einer falschen einzelnen Codetaste und die Selbstübergänge ohne Ereignis. Man darf die ausgelassenen Fälle nicht als beliebige Implementierungsfreiheit interpretieren.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="vollständige-übergangstabelle" class="slide level2">
+<h2>Vollständige Übergangstabelle</h2>
+<p>Ereignisse: 0 keines, 1 UP, 2 DOWN, 3 RIGHT, 4 RESET durch LEFT.</p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Aktueller Zustand</th>
+<th style="text-align: right;">0</th>
+<th style="text-align: right;">1</th>
+<th style="text-align: right;">2</th>
+<th style="text-align: right;">3</th>
+<th style="text-align: right;">4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>S0</td>
+<td style="text-align: right;">S0</td>
+<td style="text-align: right;">S1</td>
+<td style="text-align: right;">S0</td>
+<td style="text-align: right;">S0</td>
+<td style="text-align: right;">S0</td>
+</tr>
+<tr class="even">
+<td>S1</td>
+<td style="text-align: right;">S1</td>
+<td style="text-align: right;">S0</td>
+<td style="text-align: right;">S2</td>
+<td style="text-align: right;">S0</td>
+<td style="text-align: right;">S0</td>
+</tr>
+<tr class="odd">
+<td>S2</td>
+<td style="text-align: right;">S2</td>
+<td style="text-align: right;">S0</td>
+<td style="text-align: right;">S0</td>
+<td style="text-align: right;">S3</td>
+<td style="text-align: right;">S0</td>
+</tr>
+<tr class="even">
+<td>S3</td>
+<td style="text-align: right;">S3</td>
+<td style="text-align: right;">S3</td>
+<td style="text-align: right;">S3</td>
+<td style="text-align: right;">S3</td>
+<td style="text-align: right;">S0</td>
+</tr>
+</tbody>
+</table>
+<p>Ungültiger Zustandswert → S0, auch ohne Ereignis.</p>
+<aside class="notes">
+<p>Die Tabelle beschreibt eine endliche Zustandsmaschine, englisch Finite State Machine, kurz FSM. Die Zeile ist der aktuelle Zustand, die Spalte das bereits erkannte Ereignis und der Eintrag der Folgezustand. Das Ereignis null bedeutet keine neue gültige Einzeltaste. Die Ereigniscodes sind eine Softwareschnittstelle und nicht die Bitpositionen der späteren Rohmaske.</p>
+<p>Jeder gültige Zustand hat für jedes Ereignis genau einen Folgezustand. Die erste Spalte erhält den Zustand, die letzte setzt ihn zurück. Die drei mittleren Spalten bilden den Erfolgsweg beziehungsweise die beschriebenen Fehlerfälle. S3 bleibt bei Codetasten offen. Ein beschädigter Zustand, beispielsweise der Zahlenwert 99, wird unabhängig vom Ereignis nach S0 korrigiert. Dieser Zusatzfall steht außerhalb der vier Tabellenzeilen, gehört aber zur Implementierung. Entscheidend ist, das Ergebnis tatsächlich in das Zustandsregister zu schreiben; ein Sprung zu einer Marke namens S0 allein verändert noch keine gespeicherten Daten.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="rohwerte-einmal-pro-abfrage-lesen" class="slide level2">
+<h2>Rohwerte einmal pro Abfrage lesen</h2>
+<p>D-Pad-Register relativ zur exportierten Basisadresse:</p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Taste</th>
+<th style="text-align: right;">Wortoffset</th>
+<th style="text-align: right;">Bit in unserer Rohmaske</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>UP</td>
+<td style="text-align: right;">0 Byte</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td>DOWN</td>
+<td style="text-align: right;">4 Byte</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td>LEFT</td>
+<td style="text-align: right;">8 Byte</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr class="even">
+<td>RIGHT</td>
+<td style="text-align: right;">12 Byte</td>
+<td style="text-align: right;">8</td>
+</tr>
+</tbody>
+</table>
+<p>Alle vier Register jeweils einmal lesen und daraus eine Maske bilden.</p>
+<aside class="notes">
+<p>Das D-Pad, Directional Pad, ist das Eingabegerät des Ripes-Projekts. Seine Register werden über Memory-Mapped Input/Output, MMIO, also Speicheradressen für Ein- und Ausgabe, gelesen. Ein Wort ist hier vier Byte breit. Die Tabelle nennt relative Offsets, keine universellen Basisadressen. Für die konkrete Installation müssen Geräte eingerichtet und die exportierten Symbole geprüft werden.</p>
+<p>Der im Kurs dokumentierte Ripes-Quellstand meldet eine gehaltene Taste oder einen seit dem letzten Lesen erfassten Druck. Das Lesen löscht den gespeicherten Druckindikator. Deshalb liest die Hilfsfunktion jedes Richtungsregister genau einmal pro Abfrage, verwendet dessen niedrigstes Bit und kombiniert die vier Ergebnisse zu einer Rohmaske. Ein vorher erfasster kurzer Druck kann dadurch sichtbar werden. Die vier nacheinander ausgeführten Lesezugriffe bilden jedoch keine atomare Aufnahme aller Tasten zum exakt gleichen Zeitpunkt. Die Bedienregel bezieht sich auf die so gewonnene Abfragegruppe. Das konkrete Geräteverhalten muss am installierten Ripes überprüft werden.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="rohmaske-ist-noch-kein-ereignis" class="slide level2">
+<h2>Rohmaske ist noch kein Ereignis</h2>
+<p><img data-src="../assets/images/vl9-eingabe-ereignis.svg" style="width:92.0%" alt="Freigabe und Einzelmaskenprüfung erzeugen aus Rohwerten akzeptierte Ereignisse"></p>
+<p>Mehrere gesetzte Bits: kein Ereignis, aber Gruppe verbraucht.</p>
+<aside class="notes">
+<p>Die Abbildung trennt drei Größen: Rohmaske, Eingabefreigabe und Ereignis. Die roten Pfeile zeigen ihren Datenfluss von links nach rechts. Die Rohmaske entsteht aus den vier Geräteabfragen. Die Freigabe merkt sich, ob eine vollständig leere Abfragegruppe seit der letzten Betätigung erkannt wurde. Erst dann erzeugt eine neue nichtleere Gruppe gegebenenfalls ein Ereignis. Die Zuordnung lautet Rohmaske eins zu UP-Ereignis eins, zwei zu DOWN-Ereignis zwei, acht zu RIGHT-Ereignis drei und vier zu RESET-Ereignis vier. Die Zahlen acht und drei zeigen besonders deutlich, dass beide Codierungen verschieden sind.</p>
+<p>Beim Start ist die Freigabe geschlossen. Eine leere Gruppe öffnet sie. Die erste nichtleere Gruppe schließt sie wieder, auch wenn mehrere Bits gesetzt sind und deshalb kein Ereignis entsteht. Ein verbleibender Einzelwert nach einem Mehrfachdruck wird damit nicht nachträglich als neue Betätigung gewertet. Erst vollständiges Loslassen, in Form einer leeren Abfragegruppe, erlaubt das nächste Ereignis. Dies verhindert Mehrfachwertung beim Halten; es ist keine Zusicherung einer physikalischen Entprellung.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="beispieltrace-drücken-und-loslassen" class="slide level2">
+<h2>Beispieltrace: Drücken und Loslassen</h2>
+<p><img data-src="../assets/images/vl9-schloss-trace.svg" style="width:94.0%" alt="Neun Abfragegruppen zeigen Rohmasken, Ereignisse und Fortschritt bis zum Rücksetzen"></p>
+<p>Jede Spalte ist eine Abfragegruppe, keine feste Zeitdauer.</p>
+<aside class="notes">
+<p>Der Trace beginnt mit S0 und einer geschlossenen Eingabefreigabe. Die erste Rohmaske null öffnet die Freigabe. Danach erzeugt die Maske eins das UP-Ereignis und führt nach S1. Ein weiterer Wert eins bei gehaltener Taste erzeugt kein neues Ereignis; S1 bleibt erhalten. Erst null gibt die nächste Betätigung frei. Auf die Maske zwei folgt damit DOWN und S2. Nach erneutem null führt die Maske acht zu RIGHT und S3. Nach einer weiteren leeren Gruppe führt vier zu RESET und S0.</p>
+<p>Die Zeilen zeigen die Rohmaske, das abgeleitete Ereignis und den Zustand nach der Verarbeitung. Die Werte gehören jeweils zu derselben Abfragegruppe. Der rote Rahmen markiert die drei gültigen Codeereignisse und das Rücksetzen. Eine Ausführungsgeschwindigkeit wird nicht behauptet. Bei einer Mehrfachmaske wie drei wären UP und DOWN gemeinsam beobachtet worden. Sie würde kein Ereignis auslösen und müsste vollständig verschwinden, bevor eine neue gültige Einzeltaste verarbeitet werden kann.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="reine-übergangsfunktion" class="slide level2">
+<h2>Reine Übergangsfunktion</h2>
+<p><code>beispiele/vl9_next_state.s</code></p>
+<ul>
+<li>Eingabe: <code>a0</code> Zustand, <code>a1</code> Ereignis</li>
+<li>Ausgabe: <code>a0</code> Folgezustand</li>
+<li>Keine Gerätezugriffe, keine Ausgabe, kein Stackframe</li>
+<li>Ungültigen Zustand zuerst erkennen</li>
+</ul>
+<p>Fragment des Anfangs:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb14-1"><a aria-label="1"></a>li   t0<span class="op">,</span> <span class="dv">3</span></span>
+<span id="cb14-2"><a aria-label="2"></a>bgtu a0<span class="op">,</span> t0<span class="op">,</span> next_zero</span>
+<span id="cb14-3"><a aria-label="3"></a>li   t0<span class="op">,</span> <span class="dv">4</span></span>
+<span id="cb14-4"><a aria-label="4"></a>beq  a1<span class="op">,</span> t0<span class="op">,</span> next_zero</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<aside class="notes">
+<p>Die vollständige manuelle Funktion next_state steht in der genannten Datei. Sie setzt die Übergangstabelle um und kann unabhängig vom Gerät geprüft werden. a0 und a1 sind gemäß dem Application Binary Interface, ABI, die Parameterregister; a0 wird anschließend zum Ergebnisregister. t0 ist ein temporäres Register. Der Ereignisparameter muss einen gültigen Code von null bis vier enthalten.</p>
+<p>bgtu bedeutet Branch if Greater Than Unsigned und ist ein Pseudobefehl für einen vorzeichenlosen Größer-Vergleich. Jeder 32-Bit-Zustandswert außerhalb null bis drei wird damit nach next_zero geleitet; auch das Bitmuster für minus eins liegt vorzeichenlos außerhalb des Bereichs. beq bedeutet Branch if Equal und prüft anschließend Ereignis vier, RESET. Der gezeigte Anfang ist ausdrücklich ein Fragment, keine vollständige Funktion. Die Datei enthält auch alle anderen Tabellenfälle und Rückkehrbefehle. Die Funktion verwendet nur temporäre und Argumentregister, ruft keine weitere Funktion auf und braucht deshalb keinen Stackframe.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="vollständiges-ripes-lehrprogramm" class="slide level2">
+<h2>Vollständiges Ripes-Lehrprogramm</h2>
+<p><code>beispiele/vl9_code_lock.s</code> enthält:</p>
+<ol type="1">
+<li>Dauernde Hauptschleife und Freigabemerker</li>
+<li><code>read_sample</code>: vier Gerätewerte → Rohmaske</li>
+<li><code>next_state</code>: Zustand und Ereignis → Folgezustand</li>
+<li><code>state_colour</code>: Zustand → RGB-Wort</li>
+</ol>
+<p>Geräte: ein D-Pad und eine LED-Matrix, erstes Pixel.</p>
+<aside class="notes">
+<p>Die Datei enthält das vollständige manuelle Ripes-Lehrprogramm einschließlich aller Hilfsfunktionen. RGB bedeutet Red, Green, Blue; das verwendete LED-Gerät, Light Emitting Diode, erwartet im dokumentierten Kursstand ein Farbwort 0x00RRGGBB. Ein Store Word schreibt es in das erste Pixel der über die Symbole adressierten LED-Matrix. Die Symbolnamen D_PAD_0_BASE und LED_MATRIX_0_BASE müssen zu den eingerichteten Geräten passen.</p>
+<p>Die Hauptschleife hält den Zustand in s0, die beiden Basisadressen in s1 und s2 und die Freigabe in s3. Diese gesicherten Register überleben die normalen Funktionsaufrufe gemäß dem Application Binary Interface, ABI. Die Blattfunktionen verändern sie nicht. Da die Hauptschleife nie zum ursprünglichen Einstieg zurückkehrt, braucht sie dessen Rücksprungadresse nicht zu sichern. Alle Hilfsfunktionen kehren jeweils über die durch call gesetzte Adresse zurück. Das Programm ist als vollständige Lehrvorlage bereitgestellt, nicht als Bericht über einen ausgeführten Ripes-Lauf. Die Übung enthält die konkreten Geräteprüfungen und Solltraces für diesen Lauf.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="zustandsberechnung-muss-gespeichert-werden" class="slide level2">
+<h2>Zustandsberechnung muss gespeichert werden</h2>
+<p>Teil der Hauptschleife:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb15-1"><a aria-label="1"></a><span class="fu">update:</span></span>
+<span id="cb15-2"><a aria-label="2"></a>    mv   a0<span class="op">,</span> s0</span>
+<span id="cb15-3"><a aria-label="3"></a>    <span class="cf">call</span> next_state</span>
+<span id="cb15-4"><a aria-label="4"></a>    mv   s0<span class="op">,</span> a0</span>
+<span id="cb15-5"><a aria-label="5"></a>    <span class="cf">call</span> state_colour</span>
+<span id="cb15-6"><a aria-label="6"></a>    sw   a0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>s2<span class="op">)</span></span>
+<span id="cb15-7"><a aria-label="7"></a>    j    main_loop</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Auch bei Ereignis 0 wird <code>next_state</code> aufgerufen.</p>
+<aside class="notes">
+<p>s0 ist das gesicherte Register mit dem aktuellen Zustand, s2 die Basisadresse der LED-Matrix. LED bedeutet Light Emitting Diode. a0 enthält vor dem ersten Aufruf den Zustand, a1 bereits das erkannte Ereignis. mv bedeutet Move und ist ein Pseudobefehl für die Registerkopie. call ruft die reine Übergangsfunktion auf; diese liefert ihren Folgezustand gemäß dem Application Binary Interface, ABI, in a0. Die zweite Kopie schreibt ihn tatsächlich nach s0.</p>
+<p>state_colour erhält denselben Folgezustand in a0 und ersetzt ihn durch das RGB-Farbwort, Red, Green, Blue. sw bedeutet Store Word und schreibt vier Byte zum ersten Pixel an Offset null. j ist ein unbedingter Sprung zur nächsten Abfrage. Der Ausschnitt setzt die übrige Hauptschleife und die Hilfsfunktionen aus beispiele/vl9_code_lock.s voraus. Er wird auch ohne neues Ereignis durchlaufen. So kann ein beschädigter Zustandswert wie 99 in S0 zurückgeführt werden. Ohne die Rückkopie nach s0 würde zwar eine Funktion null zurückgeben, der nächste Durchlauf aber erneut mit dem alten Wert arbeiten.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="tests-aus-der-spezifikation-ableiten" class="slide level2">
+<h2>Tests aus der Spezifikation ableiten</h2>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Test</th>
+<th>Erwartung</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>UP, DOWN, RIGHT mit Freigabe dazwischen</td>
+<td>S0 → S1 → S2 → S3</td>
+</tr>
+<tr class="even">
+<td>UP halten</td>
+<td>Nur erster gültiger Druck zählt</td>
+</tr>
+<tr class="odd">
+<td>Mehrfachdruck, dann nur eine Taste gehalten</td>
+<td>Kein neues Ereignis</td>
+</tr>
+<tr class="even">
+<td>S1 und neuer UP-Druck</td>
+<td>S0</td>
+</tr>
+<tr class="odd">
+<td>S3 und neuer DOWN-Druck</td>
+<td>S3</td>
+</tr>
+<tr class="even">
+<td>LEFT in jedem Zustand</td>
+<td>S0</td>
+</tr>
+<tr class="odd">
+<td>Zustandswert 99, kein Ereignis</td>
+<td>S0 wird gespeichert</td>
 </tr>
 </tbody>
 </table>
 <aside class="notes">
-<p>IF, ID, EX, MEM und WB sind die fünf Stufen des Lehrmodells. RAW bedeutet Read After Write. Der Load-Wert steht erst nach MEM bereit. In Takt 4 bleibt add in ID, eine Bubble liegt in EX. In Takt 5 kommt der Wert aus MEM/WB nach EX. Beide Operanden von add t1, t0, t0 brauchen ihn. Unvermeidbar gilt nur in diesem Modell. Die Bubble ist kein zusätzlicher Programmbefehl.</p>
-<p>Kontrollfrage: Reicht Forwarding im selben Takt wie MEM? Hier nein. Die vier Typen bilden den Übungsplan.</p>
+<p>Die Tabelle ist eine Sammlung von Sollfällen, keine Behauptung über bereits ausgeführte Simulatorversuche. Zwischen zwei gültigen neuen Betätigungen muss jeweils eine vollständig leere Abfragegruppe liegen. Auch LEFT kann erst dann als neues Ereignis entstehen. Die Übergangsfunktion selbst kennt diese Freigaberegel nicht; sie sieht nur den bereits aufbereiteten Ereigniscode.</p>
+<p>Ein geeigneter Testbericht enthält daher neben dem sichtbaren Farbwechsel die Rohmaske, den Ereigniscode und den Zustand. Bei UP halten sollte die Rohmaske wiederholt eins sein, aber nur beim ersten freigegebenen Auftreten Ereignis eins entstehen. Bei einem Mehrfachdruck muss auch der Übergang zu einer noch gehaltenen einzelnen Taste ereignislos bleiben. Für den Zusatzfall 99 genügt keine grüne oder rote Anzeige als alleiniger Nachweis: Es ist ausdrücklich zu prüfen, dass das Zustandsregister anschließend null enthält. Diese Tests unterscheiden Fehler der Eingabeerkennung, der Übergangstabelle und der Speicherung.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="rückblick-eine-anweisung-durch-alle-ebenen" class="title-slide slide level1 center">
+<h1>5. Rückblick: Eine Anweisung durch alle Ebenen</h1>
+<aside class="notes">
+<p>Das Projekt verwendet bekannte Maschinenanweisungen für Registerkopien, Vergleiche und Speicherzugriffe. Zum Abschluss verbinden wir diese Anweisungen erneut mit dem Hardwaremodell aus den Einheiten 5 bis 7. Die Befehlssatzarchitektur, Instruction Set Architecture oder ISA, beschreibt ihre sichtbare Wirkung. Datenpfad und Steuerwerk legen fest, wie unser Lehrprozessor diese Wirkung hervorbringt.</p>
+<p>Wir betrachten dafür eine Load-Anweisung und eine direkt folgende Addition. Auf Programmebene geht es um eine Datenabhängigkeit, im Datenpfad um Quellen und Ziele und in der Pipeline um den Zeitpunkt der Verfügbarkeit. Die Wiederholung führt keine neue Prozessorarchitektur ein. Sie macht sichtbar, wie die verschiedenen Kursthemen beim Lesen und Prüfen eines Programms zusammenwirken.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1274,18 +1390,120 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
-<section id="tipps-zur-vorbereitung" class="slide level2">
-<h2>Tipps zur Vorbereitung</h2>
+<section id="hauptsteuerung-des-bekannten-teilmodells" class="slide level2">
+<h2>Hauptsteuerung des bekannten Teilmodells</h2>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Signal</th>
+<th style="text-align: right;"><code>lw</code></th>
+<th style="text-align: right;"><code>sw</code></th>
+<th style="text-align: right;"><code>beq</code></th>
+<th style="text-align: right;"><code>add/sub/and/or</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>RegWrite</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td>ALUSrc</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td>MemRead</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td>MemWrite</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td>MemtoReg</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">X</td>
+<td style="text-align: right;">X</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td>Branch</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td>ALUOp</td>
+<td style="text-align: right;">00</td>
+<td style="text-align: right;">00</td>
+<td style="text-align: right;">01</td>
+<td style="text-align: right;">10</td>
+</tr>
+</tbody>
+</table>
+<p><code>X</code>: Wert ohne Einfluss auf das Ergebnis in diesem Fall.</p>
+<aside class="notes">
+<p>Diese Tabelle wiederholt die Hauptsteuerung des eingeschränkten Einzyklusmodells aus den Einheiten 5 und 6. RegWrite aktiviert das Schreiben eines Registers. ALUSrc wählt für den zweiten Eingang der Arithmetic Logic Unit, ALU, zwischen Registerwert und Immediate. MemRead und MemWrite aktivieren Datenlesen beziehungsweise Datenschreiben. MemtoReg wählt beim Rückschreiben Speicherwert oder ALU-Ergebnis. Branch kennzeichnet den bedingten Sprung und ALUOp ist die zweibittige Kategorie für die weitere ALU-Steuerung.</p>
+<p>Bei lw, Load Word, addiert die ALU Basis und Offset, liest den Speicher und schreibt das gelesene Wort in ein Register. sw, Store Word, berechnet ebenfalls eine Adresse, schreibt aber kein Register. Deshalb ist MemtoReg dort ohne Einfluss und als X markiert. X darf nicht als Erlaubnis für einen unbeabsichtigten Speicherzugriff verstanden werden; MemWrite ist eindeutig festgelegt. ALUOp gleich 10 fasst die vier genannten Registeroperationen zusammen. Deren Unterscheidung erfolgt durch die separate ALU-Steuerung mit Funktionsfeldern. Diese internen Steuercodes sind keine RISC-V-Opcodewerte und decken nicht sämtliche Befehle des Projekts ab.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="load-use-wert-ist-erst-nach-mem-verfügbar" class="slide level2">
+<h2>Load-Use: Wert ist erst nach MEM verfügbar</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb16-1"><a aria-label="1"></a>lw  t0<span class="op">,</span> <span class="dv">0</span><span class="op">(</span>a0<span class="op">)</span></span>
+<span id="cb16-2"><a aria-label="2"></a><span class="bu">add</span> t1<span class="op">,</span> t0<span class="op">,</span> t0</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<p><img data-src="../assets/images/vl9-loaduse.svg" style="width:90.0%" alt="Load in MEM Takt 4, gehaltene Decode-Stufe und Addition mit Forwarding in Takt 5"></p>
+<p>Lehrmodell mit Forwarding: ein Stall, insgesamt sieben Takte.</p>
+<aside class="notes">
+<p>lw bedeutet Load Word und liest das Wort an der Adresse in a0 nach t0. add benötigt diesen Wert unmittelbar für beide Operanden und schreibt nach t1. Eine Read-After-Write-Abhängigkeit liegt vor: Der Verbraucher liest einen Wert, den die ältere Anweisung erst erzeugen muss.</p>
+<p>Die Pipeline verwendet die fünf Stufen IF, Instruction Fetch, ID, Instruction Decode mit Registerlesen, EX, Execute, MEM, Memory Access, und WB, Write Back. Im Kursmodell gibt es Forwarding von EX/MEM und MEM/WB sowie einen Load-Use-Stall. lw hat seine Daten erst am Ende von MEM in Takt vier. Ohne Pause läge EX der Addition ebenfalls in Takt vier und damit zu früh. Der rote Rahmen markiert die gehaltene ID-Stufe, der rote Pfeil die Weiterleitung zum Verbraucher. Die Addition bleibt deshalb einen Takt in ID; in EX entsteht eine Bubble ohne architektonische Schreibwirkung. In Takt fünf wird der Speicherwert von MEM/WB zu beiden Eingängen der ALU, Arithmetic Logic Unit, weitergeleitet. Zwei Anweisungen benötigen ideal sechs Takte vom leeren bis zum geleerten Prozessor, mit diesem Stall sieben. Das Beispiel benötigt keinen gleichzeitigen Registerbankschreib- und -lesezugriff auf dasselbe Register.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="fehleranalyse-die-erste-abweichung-eingrenzen" class="slide level2">
+<h2>Fehleranalyse: Die erste Abweichung eingrenzen</h2>
+<p>Bei einer falschen Anzeige prüfen Sie der Reihe nach:</p>
 <ol type="1">
-<li>Alte Laborblätter ohne Vorlage neu lösen; Venus Step nutzen</li>
-<li>Godbolt: kleine C-Snippets, <code>-O0</code>, Sprünge analysieren</li>
-<li>Lerngruppen: erklären, warum <code>MemtoReg</code> bei <code>sw</code> Don’t Care (<span class="math inline">\(X\)</span>) ist</li>
+<li>Stimmen Basisadresse, Offset und gelesene Rohmaske?</li>
+<li>Entsteht das passende einzelne Ereignis?</li>
+<li>Liefert die Übergangstabelle den erwarteten Zustand?</li>
+<li>Wird das Ergebnis in <code>s0</code> gespeichert?</li>
+<li>Passt das Farbwort zum Zustand und LED-Gerät?</li>
 </ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource text number-lines code-with-copy"><code class="sourceCode"><span id="cb21-1"><a aria-label="1"></a>Wie Mathematik: Durchlesen reicht nicht.</span>
-<span id="cb21-2"><a aria-label="2"></a>Sie müssen Code tippen.</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>Zuerst selbst lösen, dann im passenden Simulator prüfen und die erste Abweichung suchen. Godbolt braucht Ziel rv32i und ABI ilp32. Ein Hostcompiler ist kein RV32-Beleg. Bei sw ist MemtoReg ein Don’t Care, weil RegWrite 0 das Rückschreiben verhindert. X ist tabellarisch unerheblich, kein zufälliger Pegel.</p>
-<p>Kontrollfrage: Warum ist MemtoReg bei sw egal? Weil kein Register geschrieben wird. Danach die Rückmeldung zur Veranstaltung.</p>
+<p>Die Prüfreihenfolge folgt dem Datenfluss und kann bei einem konkreten Solltrace abgearbeitet werden. MMIO bedeutet Memory-Mapped Input/Output, also Ein- und Ausgabe über Speicheradressen. Eine falsche Basisadresse oder ein falscher Offset kann bereits die Rohmaske verfälschen. Die Eingabefreigabe entscheidet danach, ob eine nichtleere Gruppe ein neues Ereignis darstellt.</p>
+<p>Erst wenn dieses Ereignis korrekt ist, lohnt der Vergleich mit der Zustandsübergangstabelle. s0 ist das gesicherte Register, in dem die Hauptschleife den Fortschritt speichert. Ein korrekt berechnetes Ergebnis ist wirkungslos, wenn es nicht dorthin kopiert wird. Abschließend werden Zustand und RGB-Farbwort, Red, Green, Blue, sowie das Format des LED-Geräts, Light Emitting Diode, verglichen. Bei jeder Stufe wird ein erwarteter Zwischenwert dem beobachteten gegenübergestellt. Ein Testbericht sollte den ersten Unterschied benennen und nach einer Korrektur auch die angrenzenden Fälle prüfen, etwa Halten und Mehrfachdruck.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1298,15 +1516,19 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
-<section id="feedback-evaluation" class="slide level2">
-<h2>Feedback &amp; Evaluation</h2>
+<section id="transferaufgaben-für-papier-und-simulator" class="slide level2">
+<h2>Transferaufgaben für Papier und Simulator</h2>
 <ul>
-<li>Evaluation nur über den tatsächlichen Hochschulweg; Anonymität nur, wenn das Verfahren sie zusichert</li>
-<li>QR-Code und Link nicht erfinden, wenn sie hier nicht vorliegen</li>
+<li>C-Bedingung in passende Vergleichsrichtung übersetzen</li>
+<li>Arrayadresse und Schleifenanzahl begründen</li>
+<li>Stackadresse und Registerverantwortung berechnen</li>
+<li>Eingabetrace mit Übergangstabelle vervollständigen</li>
+<li>Einen Load-Use-Stall im bekannten Modell einzeichnen</li>
 </ul>
+<p>Übungsblatt 9 enthält Aufgaben und getrennte Musterlösungen.</p>
 <aside class="notes">
-<p>Hilfreich sind konkrete Folien, zu schnelle Übergänge und fehlende Laborvoraussetzungen. Anonymität gilt nur, wenn das Verfahren sie zusichert. Ein QR-Code, Quick Response, oder Link wird hier nicht erfunden. Es wird nichts automatisch abgesendet.</p>
-<p>Kontrollfrage: Ist jede Evaluation anonym? Nur wenn das Verfahren das sagt. Der Abschluss bündelt das Modell.</p>
+<p>Diese Aufgaben greifen ausschließlich die im Kurs eingeführten Modelle auf. Bei C-Kontrollfluss zählen die Bedeutung der Bedingung und die Richtung der Sprungkante. Bei Arrays gehören Elementgröße, gültiger Indexbereich und tatsächlicher Speicherzugriff zusammen. Beim Stack ist die Adresse aus dem veränderten Stackzeiger zu berechnen; außerdem muss begründet werden, welcher Wert einen Aufruf überleben soll.</p>
+<p>Für einen Eingabetrace werden Rohmaske und Freigabe zuerst in Ereignisse übersetzt. Danach liefert die Zustandstabelle den neuen Fortschritt. Eine Pipelinezeichnung braucht eine klare Stufenlegende und die vereinbarten Weiterleitungspfade. Diese Aufgaben können ohne Simulator bearbeitet werden und eignen sich zur Vorbereitung auf vergleichbare Klausuraufgaben. Die konkrete Prüfungsgestaltung wird dadurch nicht festgelegt. Die praktische Aufgabe ergänzt das Papiermodell durch einen dokumentierten Ripes-Lauf mit den Geräten der eigenen Installation.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1319,66 +1541,18 @@ graph LR
           display:block!important;
       }</style></aside>
 </section>
-<section id="das-war-mikrocomputertechnik-1" class="slide level2">
-<h2>Das war Mikrocomputertechnik 1</h2>
-<ul>
-<li>Fundamentaler Meilenstein erreicht</li>
-<li>Computer als klare, logische Maschine</li>
-<li>Später in C/Java/Python: physikalische Konsequenzen im Blick</li>
-<li>Danke für Mitarbeit - viel Erfolg in der Klausur</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb22-1"><a aria-label="1"></a># Offizieller Ausstieg <span class="op">(</span>Venus<span class="op">-</span>ABI<span class="op">,</span> nicht Ripes<span class="op">-</span>MMIO<span class="op">):</span></span>
-<span id="cb22-2"><a aria-label="2"></a>li a0<span class="op">,</span> <span class="dv">10</span></span>
-<span id="cb22-3"><a aria-label="3"></a>ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="das-sollten-sie-jetzt-erklären-können" class="slide level2">
+<h2>Das sollten Sie jetzt erklären können</h2>
+<ol type="1">
+<li>Welche Datei erzeugt jede Stufe der Werkzeugkette?</li>
+<li>Warum braucht <code>a == b</code> eine passende Abzweigung?</li>
+<li>Wann benötigt eine Funktion einen Stackframe?</li>
+<li>Warum sind Rohmaske und Ereignis verschieden?</li>
+<li>Wie verbindet eine Speicheranweisung Software und Datenpfad?</li>
+</ol>
 <aside class="notes">
-<p>Erreicht sind Hochsprache, Befehlssatz, Datenpfad, ABI und Gerätevertrag, nicht jede Rechnerfrage. Der Venus-Exit mit a0 gleich 10 gilt für diesen Dienstvertrag. Das Schloss bleibt eine Endlosschleife, weil die Aufgabe das so definiert. Ripes kann trotzdem Environment Calls. Der symbolische Ausstieg ist nicht das Schloss-Ende.</p>
-<p>Kontrollfrage: Muss das Schloss ecall 10 ausführen? Nein. Die letzte Folie nennt prüfbare Ergebnisse.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="qa-und-hands-on" class="slide level2">
-<h2>Q&amp;A und Hands-On</h2>
-<ul>
-<li>Restliche Zeit: Ihnen</li>
-<li>Ripes: Code-Schloss (FSM)</li>
-<li>Dozent zum Debuggen und für Klausurfragen da</li>
-<li>Labor ist eröffnet</li>
-</ul>
-<div class="cell" data-reveal="true" data-fig-width="3.5" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Ende[Theorie] --&gt; Code[Ripes]
-  Code --&gt; Safe[State Machine]
-  Safe --&gt; Fragen[Klausur Q&amp;A]
-  Fragen --&gt; Win[Erfolg]
-  style Win fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Ende fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style Code fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style Safe fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-  style Fragen fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px !important
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-<aside class="notes">
-<p>Prüfbar sind eine begründete C-Übersetzung, das Schloss nach der Tabelle, ein Control-Wert und der Load-Use-Stall. choose liefert 1 bei Gleichheit, sonst 2. constant_sum liefert 15, die Variablen können optimiert verschwinden. count_to_ten von 0 und von 10 liefert 10, von 12 liefert 12. Die Arraysumme von 1 bis 10 ist 55, bei Länge 0 ist sie 0. next_state von Zustand 99 liefert 0. S3 und DOWN bleibt 3. Ein Sprung ohne Schreiben repariert 99 nicht. Eine verbleibende Taste einer Mehrfachgruppe ist kein neuer Druck. Es wird keine Folgevorlesung erfunden.</p>
-<p>Kontrollfrage: Was liefert die Summe 0 bis 4? 10. Damit sind Quelltext, Zustand und beobachtbare Farbe verbunden.</p>
+<p>Die Werkzeugkette führt vom präprozessierten C-Text über Assemblertext und Objektdatei zum verknüpften Programm. Die Objektdatei kann noch offene Symbole und Relokationen enthalten; der Programmeinstieg braucht außerdem eine passende Umgebung. Ein Vergleich in C muss durch einen Maschinenvergleich mit der richtigen Vorzeicheninterpretation und einer vollständigen Kontrollflussstruktur umgesetzt werden.</p>
+<p>Ein Stackframe entsteht aus konkretem Speicher- und Sicherungsbedarf, etwa der durch einen weiteren Aufruf überschriebenen Rücksprungadresse. Rohmasken beschreiben die beobachteten Tastenbits, Ereignisse dagegen die gemäß Freigaberegel akzeptierte neue Betätigung. Eine Speicheranweisung berechnet im Datenpfad eine Adresse, aktiviert den richtigen Speicherzugriff und führt gegebenenfalls Daten zu einem Zielregister zurück. Diese Antworten verbinden die bisherigen Einheiten. Die zusätzliche Notizspur erläutert Begriffe, Voraussetzungen, Beispiele und Lösungen so, dass das PDF-Handout auch als begleitendes Skript gelesen werden kann.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;

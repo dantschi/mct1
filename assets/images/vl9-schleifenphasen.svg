@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="320" viewBox="0 0 1000 320" role="img" aria-label="Vier Phasen einer For-Schleife">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="320" fill="#FFFFFF"/>
+<rect x="30" y="110" width="190" height="70" rx="7" class="box"/>
+<text x="125.0" y="155" class="title" text-anchor="middle">Initialisieren</text>
+<rect x="310" y="110" width="170" height="70" rx="7" class="box"/>
+<text x="395.0" y="155" class="title" text-anchor="middle">Prüfen</text>
+<rect x="570" y="110" width="160" height="70" rx="7" class="box"/>
+<text x="650.0" y="155" class="title" text-anchor="middle">Körper</text>
+<rect x="810" y="110" width="160" height="70" rx="7" class="box"/>
+<text x="890.0" y="155" class="title" text-anchor="middle">Ändern</text>
+<path d="M220 145 L310 145" class="flow" marker-end="url(#redarrow)"/>
+<path d="M480 145 L570 145" class="flow" marker-end="url(#redarrow)"/>
+<path d="M730 145 L810 145" class="flow" marker-end="url(#redarrow)"/>
+<text x="515" y="125" class="small" text-anchor="middle">wahr</text>
+<path d="M890 180 L890 260 L395 260 L395 180" class="flow" marker-end="url(#redarrow)"/>
+<text x="665" y="298" class="small" text-anchor="middle">nächste Iteration</text>
+<path d="M395 110 L395 45 L620 45" class="line" marker-end="url(#arrow)"/>
+<text x="515" y="28" class="small" text-anchor="middle">falsch</text>
+<text x="680" y="54" class="title" text-anchor="start">Ende</text>
+</svg>
