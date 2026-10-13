@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="370" viewBox="0 0 1000 370" role="img" aria-label="Bit 3 maskieren: 1101 UND 1000 ergibt 1000">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:26px}
+.small{font-size:22px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="370" fill="#FFFFFF"/>
+<text x="25" y="35" class="title" text-anchor="start">Ein Eingang aus vier Bits: SW3 = Bit 3</text>
+<text x="395" y="75" class="small muted" text-anchor="middle">3</text>
+<text x="535" y="75" class="small muted" text-anchor="middle">2</text>
+<text x="675" y="75" class="small muted" text-anchor="middle">1</text>
+<text x="815" y="75" class="small muted" text-anchor="middle">0</text>
+<text x="25" y="138" class="" text-anchor="start">Rohwort 13</text>
+<rect x="340" y="100" width="110" height="55" rx="7" class="box"/>
+<text x="395" y="137" class="title" text-anchor="middle">1</text>
+<rect x="480" y="100" width="110" height="55" rx="7" class="box"/>
+<text x="535" y="137" class="title" text-anchor="middle">1</text>
+<rect x="620" y="100" width="110" height="55" rx="7" class="box"/>
+<text x="675" y="137" class="title" text-anchor="middle">0</text>
+<rect x="760" y="100" width="110" height="55" rx="7" class="box"/>
+<text x="815" y="137" class="title" text-anchor="middle">1</text>
+<text x="25" y="218" class="" text-anchor="start">Maske 8</text>
+<rect x="340" y="180" width="110" height="55" rx="7" class="box"/>
+<text x="395" y="217" class="title" text-anchor="middle">1</text>
+<rect x="480" y="180" width="110" height="55" rx="7" class="box"/>
+<text x="535" y="217" class="title" text-anchor="middle">0</text>
+<rect x="620" y="180" width="110" height="55" rx="7" class="box"/>
+<text x="675" y="217" class="title" text-anchor="middle">0</text>
+<rect x="760" y="180" width="110" height="55" rx="7" class="box"/>
+<text x="815" y="217" class="title" text-anchor="middle">0</text>
+<text x="25" y="298" class="" text-anchor="start">Ergebnis 8</text>
+<rect x="340" y="260" width="110" height="55" rx="7" class="box hot"/>
+<text x="395" y="297" class="title" text-anchor="middle">1</text>
+<rect x="480" y="260" width="110" height="55" rx="7" class="box"/>
+<text x="535" y="297" class="title" text-anchor="middle">0</text>
+<rect x="620" y="260" width="110" height="55" rx="7" class="box"/>
+<text x="675" y="297" class="title" text-anchor="middle">0</text>
+<rect x="760" y="260" width="110" height="55" rx="7" class="box"/>
+<text x="815" y="297" class="title" text-anchor="middle">0</text>
+</svg>

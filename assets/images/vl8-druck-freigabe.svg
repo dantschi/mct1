@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="380" viewBox="0 0 1080 380" role="img" aria-label="Druck nur beim Übergang zählen, dann auf Freigabe warten">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:26px}
+.small{font-size:22px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1080" height="380" fill="#FFFFFF"/>
+<circle cx="260" cy="175" r="95" fill="#FFFFFF" stroke="#E5E5EA" stroke-width="2"/>
+<text x="260" y="165" class="" text-anchor="middle">Warten auf</text>
+<text x="260" y="201" class="title" text-anchor="middle">Druck</text>
+<circle cx="800" cy="175" r="95" fill="#FFFFFF" stroke="#E5E5EA" stroke-width="2"/>
+<text x="800" y="165" class="" text-anchor="middle">Warten auf</text>
+<text x="800" y="201" class="title" text-anchor="middle">Freigabe</text>
+<text x="260" y="42" class="small" text-anchor="middle">p = 0: bleiben</text>
+<text x="800" y="42" class="small" text-anchor="middle">p = 1: bleiben</text>
+<path d="M355 175 L705 175" class="flow" marker-end="url(#redarrow)"/>
+<text x="530" y="145" class="small" text-anchor="middle">p = 1: Zähler + 1</text>
+<path d="M800 270 L800 310 L260 310 L260 270" class="line" marker-end="url(#arrow)"/>
+<text x="530" y="344" class="small" text-anchor="middle">p = 0: wieder bereit</text>
+<text x="25" y="375" class="small" text-anchor="start">Anfang: Warten auf Druck · p ist der gelesene Pegel</text>
+</svg>
