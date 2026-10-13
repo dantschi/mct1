@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="430" viewBox="0 0 1100 430" role="img" aria-label="Adresse wählt RAM oder Gerät, Lesedaten kommen zurück">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:26px}
+.small{font-size:22px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1100" height="430" fill="#FFFFFF"/>
+<rect x="30" y="100" width="220" height="150" rx="7" class="box"/>
+<text x="140" y="180" class="title" text-anchor="middle">CPU</text>
+<rect x="380" y="85" width="240" height="195" rx="7" class="box"/>
+<text x="500" y="170" class="title" text-anchor="middle">Adress-</text>
+<text x="500" y="205" class="title" text-anchor="middle">decoder</text>
+<rect x="800" y="60" width="240" height="80" rx="7" class="box"/>
+<text x="920" y="110" class="title" text-anchor="middle">RAM</text>
+<rect x="800" y="250" width="240" height="80" rx="7" class="box hot"/>
+<text x="920" y="299" class="title" text-anchor="middle">Geräteregister</text>
+<path d="M250 140 L380 140" class="line" marker-end="url(#arrow)"/>
+<text x="265" y="120" class="small" text-anchor="start">Anfrage</text>
+<path d="M620 110 L800 110" class="line" marker-end="url(#arrow)"/>
+<path d="M620 230 L710 230 L710 290 L800 290" class="line" marker-end="url(#arrow)"/>
+<path d="M1040 100 L1070 100 L1070 380 L140 380 L140 250" class="line" marker-end="url(#arrow)"/>
+<path d="M1040 290 L1070 290" class="line"/>
+<circle cx="1070" cy="290" r="4" fill="#86868B"/>
+<text x="270" y="360" class="small" text-anchor="start">Lesedaten des ausgewählten Ziels</text>
+</svg>

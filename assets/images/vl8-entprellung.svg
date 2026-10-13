@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="380" viewBox="0 0 1080 380" role="img" aria-label="Elf Proben und stabiler Zustand nach drei gleichen Proben">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:26px}
+.small{font-size:22px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1080" height="380" fill="#FFFFFF"/>
+<text x="25" y="45" class="title" text-anchor="start">Vereinfachter Filter: drei gleiche Proben</text>
+<text x="240" y="87" class="small muted" text-anchor="middle">1</text>
+<rect x="210" y="110" width="61" height="48" rx="7" class="box"/>
+<text x="240" y="143" class="" text-anchor="middle">0</text>
+<text x="316" y="87" class="small muted" text-anchor="middle">2</text>
+<rect x="286" y="110" width="61" height="48" rx="7" class="box"/>
+<text x="316" y="143" class="" text-anchor="middle">1</text>
+<text x="392" y="87" class="small muted" text-anchor="middle">3</text>
+<rect x="362" y="110" width="61" height="48" rx="7" class="box"/>
+<text x="392" y="143" class="" text-anchor="middle">0</text>
+<text x="468" y="87" class="small muted" text-anchor="middle">4</text>
+<rect x="438" y="110" width="61" height="48" rx="7" class="box"/>
+<text x="468" y="143" class="" text-anchor="middle">1</text>
+<text x="544" y="87" class="small muted" text-anchor="middle">5</text>
+<rect x="514" y="110" width="61" height="48" rx="7" class="box"/>
+<text x="544" y="143" class="" text-anchor="middle">1</text>
+<text x="620" y="87" class="small muted" text-anchor="middle">6</text>
+<rect x="590" y="110" width="61" height="48" rx="7" class="box"/>
+<text x="620" y="143" class="" text-anchor="middle">1</text>
+<text x="696" y="87" class="small muted" text-anchor="middle">7</text>
+<rect x="666" y="110" width="61" height="48" rx="7" class="box"/>
+<text x="696" y="143" class="" text-anchor="middle">0</text>
+<text x="772" y="87" class="small muted" text-anchor="middle">8</text>
+<rect x="742" y="110" width="61" height="48" rx="7" class="box"/>
+<text x="772" y="143" class="" text-anchor="middle">1</text>
+<text x="848" y="87" class="small muted" text-anchor="middle">9</text>
+<rect x="818" y="110" width="61" height="48" rx="7" class="box"/>
+<text x="848" y="143" class="" text-anchor="middle">0</text>
+<text x="924" y="87" class="small muted" text-anchor="middle">10</text>
+<rect x="894" y="110" width="61" height="48" rx="7" class="box"/>
+<text x="924" y="143" class="" text-anchor="middle">0</text>
+<text x="1000" y="87" class="small muted" text-anchor="middle">11</text>
+<rect x="970" y="110" width="61" height="48" rx="7" class="box"/>
+<text x="1000" y="143" class="" text-anchor="middle">0</text>
+<text x="25" y="142" class="small" text-anchor="start">Rohproben</text>
+<text x="25" y="240" class="small" text-anchor="start">Stabiler</text>
+<text x="25" y="270" class="small" text-anchor="start">Zustand</text>
+<text x="185" y="227" class="small muted" text-anchor="start">1</text>
+<text x="185" y="282" class="small muted" text-anchor="start">0</text>
+<path d="M210 275 L590 275 L590 220 L970 220 L970 275 L1031 275" class="line"/>
+<circle cx="590" cy="220" r="4" fill="#E2001A"/>
+<text x="600" y="204" class="small" text-anchor="start">ein Druckereignis</text>
+<text x="25" y="342" class="small" text-anchor="start">Stabiler Anfangszustand: 0 · Annahme 1 bei Probe 6, Freigabe bei Probe 11</text>
+</svg>

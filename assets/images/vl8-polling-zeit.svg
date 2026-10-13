@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="400" viewBox="0 0 1080 400" role="img" aria-label="Periodisches Polling mit 5 ms Abstand">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:26px}
+.small{font-size:22px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1080" height="400" fill="#FFFFFF"/>
+<path d="M220 65 L220 300" class="line" stroke-dasharray="5 6"/>
+<text x="220" y="340" class="small" text-anchor="middle">0</text>
+<path d="M600 65 L600 300" class="line" stroke-dasharray="5 6"/>
+<text x="600" y="340" class="small" text-anchor="middle">5</text>
+<path d="M980 65 L980 300" class="line" stroke-dasharray="5 6"/>
+<text x="980" y="340" class="small" text-anchor="middle">10</text>
+<text x="25" y="140" class="small" text-anchor="start">Gehalten</text>
+<text x="25" y="245" class="small" text-anchor="start">Kurzer Puls</text>
+<text x="195" y="116" class="small muted" text-anchor="start">1</text>
+<text x="195" y="161" class="small muted" text-anchor="start">0</text>
+<text x="195" y="221" class="small muted" text-anchor="start">1</text>
+<text x="195" y="266" class="small muted" text-anchor="start">0</text>
+<path d="M220 155 L486.0 155 L486.0 110 L980 110" class="line"/>
+<path d="M220 260 L676 260 L676 215 L828 215 L828 260 L980 260" class="line"/>
+<circle cx="486.0" cy="110" r="4" fill="#E2001A"/>
+<circle cx="600" cy="110" r="4" fill="#E2001A"/>
+<text x="486.0" y="93" class="small" text-anchor="middle">3,5</text>
+<path d="M486.0 177 L600 177" class="flow" marker-end="url(#redarrow)"/>
+<text x="491.0" y="203" class="small" text-anchor="start">1,5 ms</text>
+<text x="25" y="380" class="small" text-anchor="start">Abfragen bei 0, 5, 10 ms · Zeit in ms · reines Pegelregister</text>
+</svg>
