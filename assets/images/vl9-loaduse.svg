@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="355" viewBox="0 0 1000 355" role="img" aria-label="Load-Use-Pipeline mit einer gehaltenen ID und Weiterleitung">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="355" fill="#FFFFFF"/>
+<text x="10" y="44" class="title" text-anchor="start">Takt</text>
+<text x="260" y="44" class="title" text-anchor="middle">1</text>
+<text x="365" y="44" class="title" text-anchor="middle">2</text>
+<text x="470" y="44" class="title" text-anchor="middle">3</text>
+<text x="575" y="44" class="title" text-anchor="middle">4</text>
+<text x="680" y="44" class="title" text-anchor="middle">5</text>
+<text x="785" y="44" class="title" text-anchor="middle">6</text>
+<text x="890" y="44" class="title" text-anchor="middle">7</text>
+<text x="15" y="110" class="title" text-anchor="start">lw</text>
+<text x="15" y="185" class="title" text-anchor="start">add</text>
+<rect x="217" y="70" width="86" height="60" rx="7" class="box"/>
+<text x="260" y="110" class="title" text-anchor="middle">IF</text>
+<rect x="322" y="70" width="86" height="60" rx="7" class="box"/>
+<text x="365" y="110" class="title" text-anchor="middle">ID</text>
+<rect x="427" y="70" width="86" height="60" rx="7" class="box"/>
+<text x="470" y="110" class="title" text-anchor="middle">EX</text>
+<rect x="532" y="70" width="86" height="60" rx="7" class="box"/>
+<text x="575" y="110" class="title" text-anchor="middle">MEM</text>
+<rect x="637" y="70" width="86" height="60" rx="7" class="box"/>
+<text x="680" y="110" class="title" text-anchor="middle">WB</text>
+<rect x="322" y="145" width="86" height="60" rx="7" class="box"/>
+<text x="365" y="185" class="title" text-anchor="middle">IF</text>
+<rect x="427" y="145" width="86" height="60" rx="7" class="box"/>
+<text x="470" y="185" class="title" text-anchor="middle">ID</text>
+<rect x="532" y="145" width="86" height="60" rx="7" class="box hot"/>
+<text x="575" y="185" class="title" text-anchor="middle">ID*</text>
+<rect x="637" y="145" width="86" height="60" rx="7" class="box"/>
+<text x="680" y="185" class="title" text-anchor="middle">EX</text>
+<rect x="742" y="145" width="86" height="60" rx="7" class="box"/>
+<text x="785" y="185" class="title" text-anchor="middle">MEM</text>
+<rect x="847" y="145" width="86" height="60" rx="7" class="box"/>
+<text x="890" y="185" class="title" text-anchor="middle">WB</text>
+<path d="M618 130 L618 137 L680 137 L680 145" class="flow" marker-end="url(#redarrow)"/>
+<text x="10" y="270" class="small" text-anchor="start">Takt 4: ID gehalten, Bubble in EX</text>
+<text x="10" y="310" class="small" text-anchor="start">Takt 5: MEM/WB → beide ALU-Eingänge; Ergebnis 84</text>
+</svg>

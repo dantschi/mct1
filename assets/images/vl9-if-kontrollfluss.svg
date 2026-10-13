@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="350" viewBox="0 0 1000 350" role="img" aria-label="If-Else mit gemeinsamer Rückkehr">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="350" fill="#FFFFFF"/>
+<rect x="360" y="15" width="280" height="60" rx="7" class="box"/>
+<text x="500" y="55" class="title" text-anchor="middle">a0 = a1?</text>
+<rect x="120" y="140" width="250" height="70" rx="7" class="box"/>
+<text x="245" y="185" class="title" text-anchor="middle">a0 ← 1</text>
+<rect x="630" y="140" width="250" height="70" rx="7" class="box"/>
+<text x="755" y="185" class="title" text-anchor="middle">a0 ← 2</text>
+<rect x="360" y="285" width="280" height="50" rx="7" class="box"/>
+<text x="500" y="320" class="title" text-anchor="middle">ret</text>
+<path d="M360 45 L245 45 L245 140" class="flow" marker-end="url(#redarrow)"/>
+<text x="145" y="105" class="small" text-anchor="start">gleich</text>
+<path d="M640 45 L755 45 L755 140" class="line" marker-end="url(#arrow)"/>
+<text x="775" y="105" class="small" text-anchor="start">ungleich</text>
+<path d="M245 210 L245 310 L360 310" class="flow" marker-end="url(#redarrow)"/>
+<text x="260" y="261" class="small" text-anchor="start">j End</text>
+<path d="M755 210 L755 310 L640 310" class="line" marker-end="url(#arrow)"/>
+<text x="660" y="261" class="small" text-anchor="start">Fall-through</text>
+</svg>
