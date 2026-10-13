@@ -1,4 +1,5 @@
-# Masken und grosse Konstanten. Statisch geprueft.
+# Masken und große Konstanten; Modellvorhersagen vor dem Exit-Dienst.
+# Kurs-Venus: a0=10 beendet das Programm. li ist eine Pseudoinstruktion.
 # s1=5, s2=0x85, s3=0xFFFFFF5A, s4=2048, s5=50000
 # s8 = 0x12345ABC AND 0xFFF = 0xABC
 # s-Register hier nur im Hauptprogramm, keine Funktionskonvention.

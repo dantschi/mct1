@@ -1,4 +1,5 @@
-# Shifts, RV32I. Statisch geprueft.
+# Schiebeoperationen in RV32I; Modellvorhersagen vor dem Exit-Dienst.
+# Kurs-Venus: a0=10 beendet das Programm.
 # t0=-3=0xFFFFFFFD, sra/srai um 1 -> 0xFFFFFFFE = -2
 # srl um 1 -> 0x7FFFFFFE
 # sll mit Register 32: effektive Weite 0, t6 bleibt -3

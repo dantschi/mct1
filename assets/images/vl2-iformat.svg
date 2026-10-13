@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="260" viewBox="0 0 1000 260" role="img" aria-label="vl2-iformat">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="260" fill="#FFFFFF"/>
+<text x="200.0" y="55" class="small muted" text-anchor="middle">31:20</text>
+<rect x="20" y="80" width="360" height="100" rx="0" class="box hot"/>
+<text x="200.0" y="139" class="title" text-anchor="middle">imm[11:0]</text>
+<text x="455.0" y="55" class="small muted" text-anchor="middle">19:15</text>
+<rect x="380" y="80" width="150" height="100" rx="0" class="box"/>
+<text x="455.0" y="139" class="title" text-anchor="middle">rs1</text>
+<text x="575.0" y="55" class="small muted" text-anchor="middle">14:12</text>
+<rect x="530" y="80" width="90" height="100" rx="0" class="box"/>
+<text x="575.0" y="139" class="title" text-anchor="middle">f3</text>
+<text x="695.0" y="55" class="small muted" text-anchor="middle">11:7</text>
+<rect x="620" y="80" width="150" height="100" rx="0" class="box"/>
+<text x="695.0" y="139" class="title" text-anchor="middle">rd</text>
+<text x="875.0" y="55" class="small muted" text-anchor="middle">6:0</text>
+<rect x="770" y="80" width="210" height="100" rx="0" class="box hot"/>
+<text x="875.0" y="139" class="title" text-anchor="middle">opcode</text>
+<text x="25" y="230" class="small" text-anchor="start">12 + 5 + 3 + 5 + 7 = 32 Bit · f3 bedeutet funct3</text>
+</svg>

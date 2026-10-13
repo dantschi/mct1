@@ -1,6 +1,9 @@
-# Musterloesung Folie 80. Venus: a0 Dienst, a1 Druckwert, Ende a0=10.
-# Haltepunkt Ergebnis_pruefen VOR addi a1: t4=15, t5=5, t6=10.
-# Statisch geprueft, nicht in Venus ausgefuehrt.
+# Musterlösung zur Gleichung in Vorlesung 2 und Laboraufgabe 7.
+# Kurs-Venus: a0 Dienst, a1 Druckwert, Ende a0=10.
+# Prüfpunkt Ergebnis_pruefen VOR addi a1: t4=15, t5=5, t6=10.
+# Varianten (A,B,C,D): (0,0,0,0) -> 0, (5,1,10,2) -> -6,
+# (-5,10,3,2) -> 0. Nach Änderungen neu assemblieren und starten.
+# Die angegebenen Werte sind Modellvorhersagen, keine Venus-Messung.
 
     .text
     .globl main

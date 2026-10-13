@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="370" viewBox="0 0 1000 370" role="img" aria-label="Zwei Zwischensummen bilden die Eingänge der Subtraktion">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="370" fill="#FFFFFF"/>
+<text x="175" y="45" class="small" text-anchor="middle">A = 5 · B = 10</text>
+<rect x="30" y="70" width="290" height="100" rx="7" class="box"/>
+<text x="175" y="110" class="title" text-anchor="middle">Addition</text>
+<text x="175" y="149" class="small" text-anchor="middle">t4 = 15</text>
+<text x="785" y="45" class="small" text-anchor="middle">C = 3 · D = 2</text>
+<rect x="640" y="70" width="290" height="100" rx="7" class="box"/>
+<text x="785" y="110" class="title" text-anchor="middle">Addition</text>
+<text x="785" y="149" class="small" text-anchor="middle">t5 = 5</text>
+<rect x="330" y="245" width="340" height="90" rx="7" class="box hot"/>
+<text x="500" y="282" class="title" text-anchor="middle">Subtraktion: t4 − t5</text>
+<text x="500" y="316" class="small" text-anchor="middle">t6 = Y = 10</text>
+<path d="M175 170 L175 290 L330 290" class="line" marker-end="url(#arrow)"/>
+<path d="M785 170 L785 290 L670 290" class="line" marker-end="url(#arrow)"/>
+<text x="25" y="365" class="small" text-anchor="start">Eingaberegister t0–t3 bleiben erhalten · Pfeile tragen 32-Bit-Werte</text>
+</svg>
