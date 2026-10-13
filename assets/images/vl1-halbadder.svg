@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="380" viewBox="0 0 1000 380" role="img" aria-label="Halbaddierer aus XOR und UND ohne Leitungskreuzung">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="380" fill="#FFFFFF"/>
+<rect x="430" y="20" width="150" height="110" rx="7" class="gate"/>
+<text x="505" y="86" class="title" text-anchor="middle">=1</text>
+<rect x="430" y="240" width="150" height="110" rx="7" class="gate"/>
+<text x="505" y="306" class="title" text-anchor="middle">&amp;</text>
+<text x="30" y="174" class="" text-anchor="start">A</text>
+<path d="M70 165 L150 165" class="line"/>
+<circle cx="150" cy="165" r="4" fill="#86868B"/>
+<path d="M150 165 L150 50 L430 50" class="line"/>
+<path d="M150 165 L150 300 L430 300" class="line"/>
+<text x="260" y="174" class="" text-anchor="start">B</text>
+<path d="M300 165 L350 165" class="line"/>
+<circle cx="350" cy="165" r="4" fill="#86868B"/>
+<path d="M350 165 L350 90 L430 90" class="line"/>
+<path d="M350 165 L350 270 L430 270" class="line"/>
+<path d="M580 75 L880 75" class="line" marker-end="url(#arrow)"/>
+<text x="920" y="84" class="title" text-anchor="start">S</text>
+<path d="M580 295 L880 295" class="line" marker-end="url(#arrow)"/>
+<text x="900" y="304" class="title" text-anchor="start">Cout</text>
+</svg>

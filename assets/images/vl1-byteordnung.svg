@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="365" viewBox="0 0 1000 365" role="img" aria-label="Byteordnung von 0x12345678 an aufsteigenden Adressen">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="365" fill="#FFFFFF"/>
+<text x="220" y="35" class="title" text-anchor="middle">Little Endian</text>
+<text x="730" y="35" class="title" text-anchor="middle">Big Endian</text>
+<text x="140" y="104" class="" text-anchor="middle">0x1000</text>
+<rect x="240" y="65" width="200" height="58" rx="7" class="box hot"/>
+<text x="340" y="104" class="title" text-anchor="middle">0x78</text>
+<text x="650" y="104" class="" text-anchor="middle">0x1000</text>
+<rect x="750" y="65" width="200" height="58" rx="7" class="box hot"/>
+<text x="850" y="104" class="title" text-anchor="middle">0x12</text>
+<text x="140" y="170" class="" text-anchor="middle">0x1001</text>
+<rect x="240" y="131" width="200" height="58" rx="7" class="box"/>
+<text x="340" y="170" class="title" text-anchor="middle">0x56</text>
+<text x="650" y="170" class="" text-anchor="middle">0x1001</text>
+<rect x="750" y="131" width="200" height="58" rx="7" class="box"/>
+<text x="850" y="170" class="title" text-anchor="middle">0x34</text>
+<text x="140" y="236" class="" text-anchor="middle">0x1002</text>
+<rect x="240" y="197" width="200" height="58" rx="7" class="box"/>
+<text x="340" y="236" class="title" text-anchor="middle">0x34</text>
+<text x="650" y="236" class="" text-anchor="middle">0x1002</text>
+<rect x="750" y="197" width="200" height="58" rx="7" class="box"/>
+<text x="850" y="236" class="title" text-anchor="middle">0x56</text>
+<text x="140" y="302" class="" text-anchor="middle">0x1003</text>
+<rect x="240" y="263" width="200" height="58" rx="7" class="box"/>
+<text x="340" y="302" class="title" text-anchor="middle">0x12</text>
+<text x="650" y="302" class="" text-anchor="middle">0x1003</text>
+<rect x="750" y="263" width="200" height="58" rx="7" class="box"/>
+<text x="850" y="302" class="title" text-anchor="middle">0x78</text>
+<text x="500" y="350" class="small" text-anchor="middle">Adressen steigen von oben nach unten.</text>
+</svg>

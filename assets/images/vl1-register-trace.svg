@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="335" viewBox="0 0 1000 335" role="img" aria-label="Datenwort und Freigabe bestimmen Übernahme an drei steigenden Flanken">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="335" fill="#FFFFFF"/>
+<text x="20" y="60" class="title" text-anchor="start">CLK</text>
+<text x="20" y="125" class="title" text-anchor="start">D</text>
+<text x="20" y="195" class="title" text-anchor="start">WE</text>
+<text x="20" y="265" class="title" text-anchor="start">Q</text>
+<path d="M180 80 L310 80 L310 45 L430 45 L430 80 L550 80 L550 45 L670 45 L670 80 L790 80 L790 45 L910 45 L910 80 L960 80" class="line"/>
+<path d="M180 105 L960 105" class="line"/>
+<path d="M180 140 L960 140" class="line"/>
+<path d="M430 105 L430 140" class="line"/>
+<path d="M670 105 L670 140" class="line"/>
+<text x="305.0" y="132" class="title" text-anchor="middle">5</text>
+<text x="550.0" y="132" class="title" text-anchor="middle">7</text>
+<text x="815.0" y="132" class="title" text-anchor="middle">9</text>
+<path d="M180 240 L960 240" class="line"/>
+<path d="M180 275 L960 275" class="line"/>
+<path d="M322 240 L322 275" class="line"/>
+<path d="M802 240 L802 275" class="line"/>
+<text x="251.0" y="267" class="title" text-anchor="middle">3</text>
+<text x="562.0" y="267" class="title" text-anchor="middle">5</text>
+<text x="881.0" y="267" class="title" text-anchor="middle">9</text>
+<path d="M180 170 L430 170 L430 205 L670 205 L670 170 L960 170" class="line"/>
+<text x="270" y="199" class="small" text-anchor="start">1</text>
+<text x="550" y="190" class="small" text-anchor="start">0</text>
+<text x="850" y="199" class="small" text-anchor="start">1</text>
+<path d="M310 30 L310 95" class="flow"/>
+<path d="M310 145 L310 162" class="flow"/>
+<path d="M310 213 L310 235" class="flow"/>
+<path d="M310 280 L310 290" class="flow"/>
+<path d="M550 30 L550 95" class="flow"/>
+<path d="M550 145 L550 162" class="flow"/>
+<path d="M550 213 L550 235" class="flow"/>
+<path d="M550 280 L550 290" class="flow"/>
+<path d="M790 30 L790 95" class="flow"/>
+<path d="M790 145 L790 162" class="flow"/>
+<path d="M790 213 L790 235" class="flow"/>
+<path d="M790 280 L790 290" class="flow"/>
+<path d="M180 320 L960 320" class="line" marker-end="url(#arrow)"/>
+<text x="20" y="325" class="small" text-anchor="start">Zeit</text>
+</svg>
