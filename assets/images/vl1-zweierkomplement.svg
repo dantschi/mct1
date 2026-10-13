@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="275" viewBox="0 0 1000 275" role="img" aria-label="Achtbittige Negation von plus fünf zu minus fünf">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="275" fill="#FFFFFF"/>
+<rect x="20" y="65" width="280" height="100" rx="7" class="box"/>
+<text x="160" y="110" class="title" text-anchor="middle">0000 0101</text>
+<text x="160" y="148" class="" text-anchor="middle">0x05</text>
+<text x="160" y="235" class="" text-anchor="middle">+5</text>
+<rect x="360" y="65" width="280" height="100" rx="7" class="box"/>
+<text x="500" y="110" class="title" text-anchor="middle">1111 1010</text>
+<text x="500" y="148" class="" text-anchor="middle">0xFA</text>
+<text x="500" y="235" class="" text-anchor="middle">invertiert</text>
+<rect x="700" y="65" width="280" height="100" rx="7" class="box hot"/>
+<text x="840" y="110" class="title" text-anchor="middle">1111 1011</text>
+<text x="840" y="148" class="" text-anchor="middle">0xFB</text>
+<text x="840" y="235" class="" text-anchor="middle">−5 (signed)</text>
+<path d="M300 115 L360 115" class="line" marker-end="url(#arrow)"/>
+<text x="330" y="45" class="small" text-anchor="middle">NOT</text>
+<path d="M640 115 L700 115" class="line" marker-end="url(#arrow)"/>
+<text x="670" y="45" class="small" text-anchor="middle">+1</text>
+</svg>

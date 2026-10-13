@@ -1,124 +1,115 @@
-# Einheit 1: Änderungsbericht
+# Änderungsbericht zu Vorlesung 1
 
-## Annahmen
+Stand: 13. Oktober 2026. Überarbeitet wurden `vorlesungen/01_kickoff.qmd`, `labs/lab_01_datenrepraesentation-logik.qmd` und `quizacademy/quiz_01_einleitung_und_grundlagen.csv`. Grundlage sind die Regeln unter `.cursor/rules/` und der gemeinsame Kursvertrag.
 
-RV32I, Registerbreite XLEN gleich 32, RISC-V-Word bleibt 32 Bit. Little Endian, positive Taktflanke, kombinatorisches Lesen und synchrones Schreiben der Registerbank sind Kursannahmen. Z ist ein internes ALU-Signal. Eine UE-Dauer von 45 Minuten ist nicht als geprüfte Modulminutenzahl belegt; die Folientabelle nennt neun Blöcke zu je 4 UE.
+## Einstieg und Aufbau
 
-## Sichtbare Korrekturen
+Die erste Einheit setzt kein Wissen aus späteren Einheiten und keine Programmiersprache voraus. Benötigt werden elementare Rechnungen und das schrittweise Lesen einfacher Tabellen; Stellengewichte und Zweierpotenzen werden erklärt.
 
-- Literalregeln: 0b nur als C23 oder GNU-Erweiterung; eine führende Null in C ist oktal.
-- Word und XLEN sind getrennt. Der Adressraum umfasst 4 GiB, nicht den eingebauten RAM.
-- Z ist keine RISC-V-Statusflag. BEQ und BNE vergleichen Register.
-- Eine OR-Rückkopplung ist keine Basis aller Speicherzellen. Das SR-Latch aus NOR-Gattern verbietet S und R gleichzeitig eins.
-- Die steigende Flanke gehört zum D-FF-Lehrmodell. add endet mit Registerwriteback, nicht mit Store.
-- Kopierbeispiel add x6, x5, x0. Registerbankbeispiel add x7, x5, x6.
-- Die Folienquelle ist Deutsch. Die Lernfassung ist das Handout-PDF mit Notizen.
+Die bisherige Fassung mit 98 Folien wurde auf 66 Inhaltsfolien plus automatisch erzeugte Titelfolie gestrafft. Wiederholte Themenübersichten und schematische Kurznotizen wurden durch eine zusammenhängende Lernfolge ersetzt:
 
-## Folien
+1. Verhalten, Schnittstelle und Hardwareumsetzung unterscheiden.
+2. Bits, Breiten, Stellenwerte und Hexadezimal einführen.
+3. Vorzeicheninterpretation, Zweierkomplement und Grenzen berechnen.
+4. Adresse, Byteordnung, Ausrichtung und Adressraum trennen.
+5. Grundgatter, Wahrheitstabelle und Multiplexer verbinden.
+6. Halb-/Volladdierer, Carrykette, Subtraktion und Rechenwerk entwickeln.
+7. Laufzeit, Zustand, aktive Flanke und Schreibfreigabe erklären.
+8. Registerbank, Additionsschritt und Speicherzugriffe zusammenführen.
 
-- 01 Titelfolie: Mikrocomputertechnik 1
-- 02 Einleitung und Grundlagen
-- 03 Modul: Mikrocomputertechnik 1
-- 04 Agenda für den Kickoff
-- 05 Lernziele
-- 06 Organisatorisches & Spielregeln
-- 07 Literatur
-- 08 Die Werkzeuge im Praktikum
-- 09 2. Warum Abstraktion?
-- 10 Strukturierung von Komplexität
-- 11 Das Komplexitätsproblem
-- 12 Die Lösung: Teile und Herrsche
-- 13 Was ist Abstraktion?
-- 14 Das Schichtenmodell der IT
-- 15 3. Datenrepräsentation
-- 16 Datenrepräsentation — Überblick
-- 17 Alles ist eine Zahl
-- 18 Das Bit und das Byte
-- 19 Das Word (Wortbreite)
-- 20 Das Problem mit Binärzahlen
-- 21 Die Lösung: Das Hexadezimalsystem
-- 22 Der magische Vierer-Block (Nibble)
-- 23 Mustererkennung: Visuelle Umrechnung
-- 24 Notation und Präfixe im Code
-- 25 Interaktive Übung: Konvertierung
-- 26 4. Negative Zahlen in der Hardware
-- 27 Negative Zahlen — Überblick
-- 28 Das Vorzeichen-Problem der Hardware
-- 29 Ansatz 1: Vorzeichen & Betrag (Sign-Magnitude)
-- 30 Die +0 und die −0
-- 31 Ansatz 2: Das Zweierkomplement
-- 32 Bildung des Zweierkomplements
-- 33 Rechenbeispiel: Aus +5 wird −5
-- 34 Die Symmetrie: Von −5 zu +5
-- 35 Das Zahlenrad und der Überlauf (Overflow)
-- 36 Vorzeichenerweiterung (Sign Extension)
-- 37 5. Byte-Reihenfolge (Endianness)
-- 38 Byte-Reihenfolge — Überblick
-- 39 Der Speicher als lineares Array
-- 40 Das Platzproblem im Speicher
-- 41 Big-Endian vs. Little-Endian
-- 42 Endianness in der Kursumgebung
-- 43 6. Kombinatorische Logik
-- 44 Kombinatorische Logik — Überblick
-- 45 Kombinatorik vs. Sequenzielle Logik
-- 46 Refresher: Die grundlegenden Logikgatter
-- 47 Das „Weichen“-Problem im Datenpfad
-- 48 Der Multiplexer (MUX)
-- 49 Die Logik des 2:1-Multiplexers
-- 50 Der Multiplexer in reiner Hardware
-- 51 Die Brücke zur Software: MUX = IF/ELSE
-- 52 Vom 1-Bit- zum 32-Bit-Bus-Multiplexer
-- 53 7. Addition in Hardware
-- 54 Addition in Hardware — Überblick
-- 55 Binäre Addition (mentales Modell)
-- 56 Der Halbaddierer (Half-Adder)
-- 57 Der Volladdierer (Full-Adder)
-- 58 Kaskadierung: Ripple-Carry-Adder (RCA)
-- 59 Das Problem der Laufzeit (Ripple Delay)
-- 60 Carry-Lookahead als schnellere Addiererstruktur
-- 61 8. Die Arithmetic Logic Unit (ALU)
-- 62 Die ALU — Überblick
-- 63 Ein Taschenrechner ohne Tasten
-- 64 Struktur einer 1-Bit-ALU
-- 65 Subtraktion elegant integrieren
-- 66 Das Zero-Signal (Null-Erkennung)
-- 67 Die 32-Bit RISC-V ALU
-- 68 Das ALU-Schaltsymbol
-- 69 9. Die Notwendigkeit der Zeit
-- 70 Die Notwendigkeit der Zeit — Überblick
-- 71 Das Problem der reinen Kombinatorik
-- 72 Die Lösung: Zustandsspeicherung
-- 73 Das Taktsignal (Clock / CLK)
-- 74 Flankensteuerung (Edge-Triggering)
-- 75 10. Sequenzielle Logik
-- 76 Sequenzielle Logik — Überblick
-- 77 Das Rückkopplungs-Konzept
-- 78 Das D-Flip-Flop (D-FF)
-- 79 Das Verhalten der Kamera (Metapher)
-- 80 Physikalische Limits: Setup- und Hold-Time
-- 81 Vom 1-Bit-D-FF zum 32-Bit-Register
-- 82 Das Write-Enable-Signal (WE)
-- 83 Das abstrahierte Register-Symbol
-- 84 11. Das Register File (Registersatz)
-- 85 Das Register File — Überblick
-- 86 Was ist ein Registersatz?
-- 87 Architektur des Register Files
-- 88 Interner Aufbau: Lesen (kombinatorisch)
-- 89 Interner Aufbau: Schreiben (sequenziell)
-- 90 Die RISC-V-Register ($x0$–$x31$)
-- 91 Das Hardwired-Zero-Register ($x0$)
-- 92 12. Speicherarchitektur
-- 93 Speicherarchitektur — Überblick
-- 94 Wo liegen die Programme?
-- 95 Die Von-Neumann-Architektur
-- 96 Die Harvard-Architektur
-- 97 Der RISC-V-Kompromiss im Labor
-- 98 Abschlussblatt
+Die Carry-Lookahead-Folie ist als Vertiefung gekennzeichnet. Der Ripes-Versuch ist optional. Die Voraussetzungen für Einheit 2 – Register, Auswahl, Rechenwerk, Übernahme und Speicherwege – bleiben enthalten.
 
-Alle 98 Folien haben eine Notiz. Die Lehrwerte stehen in beispiele/vl1_lehrwerte.md.
+## Notizen als Skript
 
-## Prüfung
+Alle 67 Browserfolien haben passende Notizen. Die 66 Inhaltsnotizen umfassen rund 7.900 Wörter. Sie erläutern lokale Begriffe, Abkürzungen, Formeln und Codebezeichner, beschreiben die Leserichtung und Farben der Abbildungen und enthalten Rechenwege sowie Lösungen der Kurzaufgaben.
 
-Statisch nachgerechnet: 0x2A gleich 42, 0xFB signed minus 5, Little Endian von 0x12345678 beginnt mit 0x78, der Volladdierer bei drei Einsen liefert Summe 1 und Carry 1, 7 minus 3 ergibt 4, x7 wird 10.
+Insbesondere werden Breite, Muster und Zahlenwert getrennt. Für Rechnungen und Traces sind Anfangswerte, Interpretation und Zeitannahmen genannt. Neue Begriffe werden eingeführt, statt Kenntnisse aus dem weiteren Kurs vorauszusetzen. Das Handout enthält alle 66 Notizblöcke zusammen mit den Folienkarten und kann als begleitendes Skript verwendet werden.
 
-Offen: kein Ripes-Lauf und keine Bauteildatenblatt-Zeiten. Die Endian-Grafik zeigt die Bytes 78, 56, 34 und 12. Die Subtraktionsgrafik beschriftet den ersten Carry-Eingang.
+## Fachliche Korrekturen
+
+- Kombinatorische Logik liefert nach endlicher Laufzeit und Stabilisierung die Funktion der aktuellen Eingänge. „Unmittelbar“ wurde in der Übung korrigiert.
+- Sequenziell bedeutet gespeicherten Zustand, nicht allgemein Taktpflicht. Ein pegelgesteuertes Latch und unser flankengesteuertes Register werden unterschieden.
+- Die steigende Flanke und Schreibfreigabe gehören zum Lehrmodell, nicht zu einer universellen RISC-V-Vorschrift.
+- Zweimalige modulare Negation stellt **jedes** Ausgangsmuster wieder her, einschließlich des kleinsten Zweierkomplementwerts. Dessen positives mathematisches Gegenstück ist trotzdem nicht darstellbar.
+- Übertrag und Signed-Überlauf werden an `0x7F+1` und `0xFF+1` getrennt geprüft.
+- Little Endian ist die Kursfestlegung. Byteordnung kehrt keine Bits im Byte um und bestimmt nicht die Adressausrichtung.
+- Ein 32-Bit-Byteadressraum umfasst vier GiB und ist keine Aussage über installierten Arbeitsspeicher.
+- Die ALU-Steuercodes sind interne Beispielcodes. Die Nullerkennung ist ein kombinatorisches Signal und kein vorgeschriebenes gespeichertes RV32I-Flag.
+- Ein Additionsbefehl schreibt sein Registerziel. Er ist kein Daten-Store.
+- Registernummern, Werte und Byteadressen sowie gemeinsame Adressräume und gemeinsame Zugriffspfade werden unterschieden.
+
+## Abbildungen und Lehrdateien
+
+17 neue native SVGs mit PDF-Paaren unter `assets/images/vl1-*.{svg,pdf}` zeigen:
+
+- Abstrakte Schnittstelle und mögliche Umsetzung.
+- Bitgewichte, Zweierkomplementbildung und Byteordnung.
+- Rechteckige IEC-Grundgatter, Multiplexer und Halb-/Volladdierer.
+- Carrykette und arithmetisch-logische Einheit.
+- Flip-Flop, Setup-/Hold-Fenster, Registerrückführung und Zeittrace.
+- Registerbank mit Ergebnisrückführung sowie Speicherzugriffswege.
+
+Schaltungen verwenden orthogonale Leitungen, sichtbare Verzweigungen, weiße Gatter und die vorgegebene Palette. UND-Symbole sind XML-konform escapet. Temporäre SVGs wurden auf XML, Boxengrenzen, überlappende Boxen und Leitungen durch Bausteine geprüft. Zeitfenster und Flankenmarkierungen sind bewusst Zeitannotationen. Alle Diagramme wurden visuell kontrolliert. Die PDFs wurden aus denselben finalen SVGs erzeugt.
+
+`beispiele/vl1_lehrwerte.md` enthält die zugehörigen Sollwerte. Das neue `beispiele/vl1_registeraddition.s` ist ein vollständiges manuelles RV32I-Ripes-Lehrprogramm mit Einstieg und Inspektionsschleife. Es erzeugt x5 gleich sieben, x6 gleich drei und x7 gleich zehn und verwendet keinen Systemdienst. Ein eigener Simulatorlauf wird dadurch nicht behauptet.
+
+## Übung und Quiz
+
+Sechs Papieraufgaben ergeben 60 Übungspunkte:
+
+| Thema | Punkte |
+|---|---:|
+| Binär und Hexadezimal | 10 |
+| Zweierkomplement und Überlauf | 12 |
+| Byteordnung und Adressen | 10 |
+| Logik und Multiplexer, einschließlich Schaltungsskizze | 10 |
+| Volladdierer und Carrykette | 8 |
+| Flanke, Freigabe und Register | 10 |
+
+Die Aufgaben verlangen Rechenwege, begründete Entscheidungen und Zustandsvorhersagen. Breite Tabellen und eigene Schreibflächen ermöglichen handschriftliche Lösungen. Studierendenfassung und Musterlösung sind getrennt. Die Punkte und Aufgabentypen dienen der Klausurvorbereitung, ohne verbindliche Prüfungsregeln festzulegen.
+
+Das Quiz behält zehn Fragen, elf semikolongetrennte Spalten, vier Optionen und genau eine richtige Antwort. Richtige Positionen sind 3/3/2/2 verteilt. Die richtige Antwort ist zweimal allein am längsten, einmal allein am kürzesten und in den übrigen Fragen weder allein am längsten noch allein am kürzesten. Bei allen übrigen Fragen ist mindestens ein Distraktor länger. Das Verhältnis längster zu kürzester Option liegt jeweils unter 1,35. Erläuterungen bestehen aus ein oder zwei Sätzen.
+
+## Tatsächlich erfolgte Prüfungen
+
+| Prüfung | Ergebnis |
+|---|---|
+| Reveal-Render | Erfolgreich, 67 Browserfolien |
+| Chromium bei 1280 × 720 | Keine Bildfehler, fehlenden Notizen, Überläufe oder JavaScript-Fehler |
+| MathJax und Sichtkontrolle | Formeln geladen, 29 repräsentative Bildschirmbilder und alle Diagramme kontrolliert |
+| Skript mit XeLaTeX | 39 A4-Seiten, alle 66 Inhaltsnotizen enthalten |
+| Studierendenfassung / Musterlösung | Je acht A4-Seiten, Lösungstrennung und Schreibflächen kontrolliert |
+| PDF-Textgrenzen | Innerhalb der geprüften Seitenränder |
+| UTF-8 und lokale Definitionen | Geprüft, einschließlich Code und Grafiktexten |
+| Zweierkomplement | Alle 256 Acht-Bit-Muster für Negation und Erweiterung geprüft |
+| Numerische Beispiele | Hex, Überlauf, Byteordnung, Ausrichtung, Adressraum und Frequenz geprüft |
+| MUX und Volladdierer | Je alle acht Eingangskombinationen geprüft |
+| Vier-Bit-Addierermodelle | 512 Additionen einschließlich Startübertrag und 256 Subtraktionen geprüft |
+| Registermodell | 64 Kombinationen sowie beide vollständigen Übungstraces geprüft |
+| Tatsächliche Assemblerquelle | Funktional interpretiert: Initialisierung, Summe zehn und Erhaltung in der Schleife |
+| `python beispiele/sollwerte.py` | Erfolgreich |
+| Quizschema, Antwortlängen und Positionen | Erfolgreich |
+| `git diff --check` | Erfolgreich |
+
+Die funktionalen Modelle wurden gegen Stellenwertrechnung, numerische Addition und die angegebenen Solltraces verglichen. Sie sind kein Nachweis einer konkreten Gatterschaltung unter physikalischen Verzögerungen. Das Assemblerprogramm wurde nicht mit Ripes oder einer RISC-V-Toolchain ausgeführt. Es werden keine Simulatorbeobachtungen, Pseudobefehlsexpansionen oder gemessenen Hardwarezeiten behauptet.
+
+## Möglicher Ablauf für vier Schulstunden
+
+Eine Auswahl für 180 Minuten Unterrichtszeit:
+
+| Abschnitt | Minuten |
+|---|---:|
+| Erklärung und integrierte Kurzaufgaben | 105 |
+| Ausgewählte Teile aus Papieraufgaben 1, 2, 4 und 6 mit Besprechung | 55 |
+| Quiz und Auswertung | 15 |
+| Abschluss | 5 |
+| **Summe** | **180** |
+
+Die übrigen Papieraufgaben, Carry-Lookahead und der vorbereitete Ripes-Versuch dienen als Reserve oder Nachbereitung. Eine vollständige Bearbeitung aller Aufgaben benötigt zusätzliche Zeit. Die Angaben sind Planungsschätzungen; Pausen und eine eventuelle Installation kommen hinzu.
+
+Erzeugte Ausgaben:
+
+- `_site/vorlesungen/01_kickoff.html`
+- `_handout/vorlesungen/01_kickoff.pdf`
+- `labs/_output/lab_01_datenrepraesentation-logik-studierende.pdf`
+- `labs/_output/lab_01_datenrepraesentation-logik-musterloesung.pdf`

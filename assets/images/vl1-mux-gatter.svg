@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="400" viewBox="0 0 1000 400" role="img" aria-label="Multiplexer aus Negation, zwei UND und einem ODER">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="400" fill="#FFFFFF"/>
+<rect x="230" y="140" width="110" height="60" rx="7" class="gate"/>
+<text x="285" y="180" class="title" text-anchor="middle">1</text>
+<circle cx="346" cy="170" r="6" fill="#FFFFFF" stroke="#86868B" stroke-width="2"/>
+<rect x="430" y="30" width="130" height="100" rx="7" class="gate"/>
+<text x="495" y="92" class="title" text-anchor="middle">&amp;</text>
+<rect x="430" y="230" width="130" height="100" rx="7" class="gate"/>
+<text x="495" y="292" class="title" text-anchor="middle">&amp;</text>
+<rect x="750" y="145" width="130" height="100" rx="7" class="gate"/>
+<text x="815" y="207" class="title" text-anchor="middle">&gt;=1</text>
+<text x="20" y="83" class="" text-anchor="start">A</text>
+<path d="M65 75 L430 75" class="line"/>
+<text x="20" y="178" class="" text-anchor="start">S</text>
+<path d="M65 170 L230 170" class="line"/>
+<circle cx="150" cy="170" r="4" fill="#86868B"/>
+<path d="M352 170 L400 170 L400 105 L430 105" class="line"/>
+<path d="M150 170 L150 255 L430 255" class="line"/>
+<text x="20" y="358" class="" text-anchor="start">B</text>
+<path d="M65 350 L370 350 L370 310 L430 310" class="line"/>
+<path d="M560 80 L640 80 L640 170 L750 170" class="line"/>
+<path d="M560 280 L640 280 L640 220 L750 220" class="line"/>
+<path d="M880 195 L950 195" class="line" marker-end="url(#arrow)"/>
+<text x="960" y="203" class="" text-anchor="start">Y</text>
+</svg>

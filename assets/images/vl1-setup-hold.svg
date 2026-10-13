@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="355" viewBox="0 0 1000 355" role="img" aria-label="Setup-Hold-Fenster und separate Clock-to-Q-Verzögerung">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="355" fill="#FFFFFF"/>
+<rect x="430" y="45" width="180" height="210" fill="#F5F5F7" stroke="#E2001A" stroke-width="2"/>
+<text x="20" y="93" class="title" text-anchor="start">D</text>
+<text x="20" y="173" class="title" text-anchor="start">CLK</text>
+<text x="20" y="253" class="title" text-anchor="start">Q</text>
+<path d="M160 85 L920 85" class="line"/>
+<path d="M160 180 L520 180 L520 145 L920 145" class="line"/>
+<path d="M160 245 L665 245 L665 215 L920 215" class="line"/>
+<path d="M520 30 L520 275" class="flow"/>
+<text x="470" y="295" class="small" text-anchor="middle">Setup</text>
+<text x="570" y="295" class="small" text-anchor="middle">Hold</text>
+<text x="500" y="22" class="title" text-anchor="middle">D stabil</text>
+<path d="M520 320 L665 320" class="line"/>
+<text x="740" y="326" class="small" text-anchor="start">Clock-to-Q</text>
+<path d="M160 345 L940 345" class="line" marker-end="url(#arrow)"/>
+<text x="80" y="350" class="small" text-anchor="start">Zeit</text>
+</svg>

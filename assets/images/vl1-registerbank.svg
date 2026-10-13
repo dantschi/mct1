@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="390" viewBox="0 0 1000 390" role="img" aria-label="Registerbank mit zwei Leseports und Rückschreiben des ALU-Ergebnisses">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="390" fill="#FFFFFF"/>
+<rect x="260" y="20" width="300" height="270" rx="7" class="box"/>
+<text x="410" y="190" class="title" text-anchor="middle">Registerbank</text>
+<text x="25" y="69" class="title" text-anchor="start">A1 = 5</text>
+<path d="M180 60 L260 60" class="line" marker-end="url(#arrow)"/>
+<text x="25" y="119" class="title" text-anchor="start">A2 = 6</text>
+<path d="M180 110 L260 110" class="line" marker-end="url(#arrow)"/>
+<text x="25" y="169" class="title" text-anchor="start">A3 = 7</text>
+<path d="M180 160 L260 160" class="line" marker-end="url(#arrow)"/>
+<text x="25" y="219" class="title" text-anchor="start">WE3 = 1</text>
+<path d="M180 210 L260 210" class="line" marker-end="url(#arrow)"/>
+<text x="25" y="269" class="title" text-anchor="start">CLK</text>
+<path d="M180 260 L260 260" class="line" marker-end="url(#arrow)"/>
+<text x="285" y="65" class="small" text-anchor="start">A1</text>
+<text x="285" y="115" class="small" text-anchor="start">A2</text>
+<text x="285" y="165" class="small" text-anchor="start">A3</text>
+<text x="285" y="215" class="small" text-anchor="start">WE3</text>
+<path d="M260 250 L272 260 L260 270" fill="none" stroke="#86868B" stroke-width="2"/>
+<text x="485" y="74" class="small" text-anchor="start">RD1</text>
+<text x="485" y="135" class="small" text-anchor="start">RD2</text>
+<text x="380" y="280" class="small" text-anchor="middle">WD3</text>
+<rect x="760" y="85" width="180" height="140" rx="7" class="box"/>
+<text x="850" y="150" class="title" text-anchor="middle">ALU</text>
+<text x="850" y="192" class="small" text-anchor="middle">Addition</text>
+<path d="M560 70 L660 70 L660 120 L760 120" class="line" marker-end="url(#arrow)"/>
+<text x="600" y="50" class="title" text-anchor="start">7</text>
+<path d="M560 130 L710 130 L710 175 L760 175" class="line" marker-end="url(#arrow)"/>
+<text x="600" y="115" class="title" text-anchor="start">3</text>
+<path d="M940 155 L980 155 L980 330 L380 330 L380 290" class="flow" marker-end="url(#redarrow)"/>
+<text x="650" y="363" class="title" text-anchor="middle">WD3 = 10</text>
+</svg>
