@@ -1,5 +1,5 @@
-# Lehrbeispiel Einheit 3. Little Endian. Venus-Exit a0=10.
-# Statisch geprueft, nicht in Venus ausgefuehrt.
+# Lehrbeispiel Einheit 3. Little Endian. Kurs-Venus-Exit a0=10.
+# Angegebene Werte sind Modellvorhersagen vor dem Exit-Dienst.
 # byteValues 0x007FFF80 liegt als 80 FF 7F 00.
 # halfValue 0x00008000 beginnt mit Halfword 0x8000.
 # Am Pruefpunkt:

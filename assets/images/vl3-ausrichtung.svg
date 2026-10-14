@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="365" viewBox="0 0 1000 365" role="img" aria-label="Ein Zugriff bei 1001 überquert die natürliche Wortgrenze">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="365" fill="#FFFFFF"/>
+<text x="25" y="35" class="title" text-anchor="start">Wortgrenzen bei 0x1000, 0x1004 und 0x1008</text>
+<rect x="30" y="100" width="110" height="70" rx="7" class="box"/>
+<text x="85" y="143" class="title" text-anchor="middle">00</text>
+<text x="85" y="202" class="small" text-anchor="middle">1000</text>
+<rect x="150" y="100" width="110" height="70" rx="7" class="box"/>
+<text x="205" y="143" class="title" text-anchor="middle">01</text>
+<text x="205" y="202" class="small" text-anchor="middle">1001</text>
+<rect x="270" y="100" width="110" height="70" rx="7" class="box"/>
+<text x="325" y="143" class="title" text-anchor="middle">02</text>
+<text x="325" y="202" class="small" text-anchor="middle">1002</text>
+<rect x="390" y="100" width="110" height="70" rx="7" class="box"/>
+<text x="445" y="143" class="title" text-anchor="middle">03</text>
+<text x="445" y="202" class="small" text-anchor="middle">1003</text>
+<rect x="510" y="100" width="110" height="70" rx="7" class="box"/>
+<text x="565" y="143" class="title" text-anchor="middle">04</text>
+<text x="565" y="202" class="small" text-anchor="middle">1004</text>
+<rect x="630" y="100" width="110" height="70" rx="7" class="box"/>
+<text x="685" y="143" class="title" text-anchor="middle">05</text>
+<text x="685" y="202" class="small" text-anchor="middle">1005</text>
+<rect x="750" y="100" width="110" height="70" rx="7" class="box"/>
+<text x="805" y="143" class="title" text-anchor="middle">06</text>
+<text x="805" y="202" class="small" text-anchor="middle">1006</text>
+<rect x="870" y="100" width="110" height="70" rx="7" class="box"/>
+<text x="925" y="143" class="title" text-anchor="middle">07</text>
+<text x="925" y="202" class="small" text-anchor="middle">1007</text>
+<path d="M30 75 L510 75" class="line"/>
+<text x="270" y="62" class="small" text-anchor="middle">vier Byte ab 0x1000: ausgerichtet</text>
+<path d="M150 250 L630 250" class="flow"/>
+<text x="390" y="290" class="small" text-anchor="middle">vier Byte ab 0x1001: nicht ausgerichtet</text>
+<text x="25" y="342" class="small" text-anchor="start">Adressen in Hex · die Bytewerte 00 bis 07 sind reine Lehrwerte</text>
+</svg>

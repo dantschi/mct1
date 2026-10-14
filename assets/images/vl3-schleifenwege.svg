@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="425" viewBox="0 0 1000 425" role="img" aria-label="Schleife testet vor dem Zugriff und führt nach dem Rumpf zurück">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="425" fill="#FFFFFF"/>
+<rect x="330" y="30" width="350" height="80" rx="7" class="box"/>
+<text x="505" y="63" class="title" text-anchor="middle">Test: i ≥ N ?</text>
+<text x="505" y="97" class="small" text-anchor="middle">bge t0, t1, Done</text>
+<rect x="330" y="190" width="350" height="90" rx="7" class="box hot"/>
+<text x="505" y="225" class="small" text-anchor="middle">Element lesen und addieren</text>
+<text x="505" y="261" class="small" text-anchor="middle">Zeiger +4 · Zähler +1</text>
+<rect x="760" y="30" width="220" height="80" rx="7" class="box"/>
+<text x="870" y="79" class="title" text-anchor="middle">Done</text>
+<path d="M680 70 L760 70" class="line" marker-end="url(#arrow)"/>
+<text x="713" y="55" class="small" text-anchor="middle">ja</text>
+<path d="M505 110 L505 190" class="flow" marker-end="url(#redarrow)"/>
+<text x="525" y="154" class="small" text-anchor="start">nein</text>
+<path d="M330 235 L170 235 L170 70 L330 70" class="line" marker-end="url(#arrow)"/>
+<text x="55" y="155" class="small" text-anchor="start">j Loop</text>
+<text x="25" y="360" class="small" text-anchor="start">Initialisierung einmal vor Loop · Test erneut nach jeder Wiederholung</text>
+<text x="25" y="400" class="small" text-anchor="start">Bei N = 0 endet die Schleife vor dem ersten Speicherzugriff.</text>
+</svg>

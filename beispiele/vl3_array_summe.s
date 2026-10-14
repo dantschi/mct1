@@ -1,8 +1,10 @@
-# Lehrbeispiel Einheit 3. Summe 10+20+30+40+50 = 150.
-# Venus: Druck a0=1, Argument a1; Ende a0=10.
-# Haltepunkt Ergebnis_pruefen liegt VOR mv a1, a0: dort a0=s0=150, t0=5.
-# Danach ist a0 die Dienstnummer. s0 bleibt 150.
-# N=0: kein lw, Summe 0. N=1: Summe 10. Statisch geprueft.
+# Musterlösung zu Einheit 3 und Laboraufgabe 7: Summe = 150.
+# Kurs-Venus: Druck a0=1, Argument a1; Ende a0=10.
+# Prüfpunkt Ergebnis_pruefen liegt VOR mv a1, s0: s0=150, t0=5.
+# Voraussetzung: 0 <= N <= 5; t1 enthält die Anzahl N.
+# N=0: kein lw, Summe 0. N=1: ein lw, Summe 10.
+# N=5: fünf lw, sechs Tests, s1 danach Basis+20; kein Load dort.
+# Modellvorhersagen, keine Venus-Messung. s-Register im Hauptprogramm.
 
     .data
 myArray:
@@ -22,9 +24,8 @@ Loop:
     addi t0, t0, 1
     j    Loop
 Done:
-    mv   a0, s0
 Ergebnis_pruefen:
-    mv   a1, a0
+    mv   a1, s0
     li   a0, 1
     ecall
     li   a0, 10

@@ -1,6 +1,6 @@
-# Lehrbeispiel Einheit 3. If/Else, Venus-Exit a0=10.
-# s1=7: t0=1 vor dem ecall. Fuer den zweiten Versuch s1 auf 8 setzen
-# und neu starten: dann t0=2. Statisch geprueft.
+# Lehrbeispiel Einheit 3: genau ein Entscheidungsblock, Venus-Exit a0=10.
+# s1=7: t0=1 vor dem Exit. Für den zweiten Versuch s1 auf 8 setzen
+# und neu assemblieren/starten: dann t0=2. Werte sind Modellvorhersagen.
 
     .text
     .globl main
@@ -13,5 +13,6 @@ main:
 ElseBlock:
     li   t0, 2
 EndIf:
+Ergebnis_pruefen:
     li   a0, 10
     ecall

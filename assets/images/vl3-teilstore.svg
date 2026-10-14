@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="340" viewBox="0 0 1000 340" role="img" aria-label="Store Byte verändert genau ein Byte und lässt die übrigen erhalten">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="340" fill="#FFFFFF"/>
+<text x="25" y="38" class="title" text-anchor="start">sb t0, 1(s1) · t0 = 0x11223344 · s1 = 0x2000</text>
+<text x="25" y="105" class="small" text-anchor="start">Adresse</text>
+<text x="25" y="174" class="small" text-anchor="start">vorher</text>
+<text x="25" y="264" class="small" text-anchor="start">nachher</text>
+<text x="300" y="105" class="small" text-anchor="middle">0x2000</text>
+<rect x="225" y="135" width="150" height="55" rx="7" class="box"/>
+<text x="300" y="173" class="title" text-anchor="middle">AA</text>
+<rect x="225" y="225" width="150" height="55" rx="7" class="box"/>
+<text x="300" y="263" class="title" text-anchor="middle">AA</text>
+<text x="480" y="105" class="small" text-anchor="middle">0x2001</text>
+<rect x="405" y="135" width="150" height="55" rx="7" class="box"/>
+<text x="480" y="173" class="title" text-anchor="middle">BB</text>
+<rect x="405" y="225" width="150" height="55" rx="7" class="box hot"/>
+<text x="480" y="263" class="title" text-anchor="middle">44</text>
+<text x="660" y="105" class="small" text-anchor="middle">0x2002</text>
+<rect x="585" y="135" width="150" height="55" rx="7" class="box"/>
+<text x="660" y="173" class="title" text-anchor="middle">CC</text>
+<rect x="585" y="225" width="150" height="55" rx="7" class="box"/>
+<text x="660" y="263" class="title" text-anchor="middle">CC</text>
+<text x="840" y="105" class="small" text-anchor="middle">0x2003</text>
+<rect x="765" y="135" width="150" height="55" rx="7" class="box"/>
+<text x="840" y="173" class="title" text-anchor="middle">DD</text>
+<rect x="765" y="225" width="150" height="55" rx="7" class="box"/>
+<text x="840" y="263" class="title" text-anchor="middle">DD</text>
+<text x="25" y="322" class="small" text-anchor="start">Quelle t0 bleibt 0x11223344 · geschrieben werden nur die unteren acht Bit</text>
+</svg>

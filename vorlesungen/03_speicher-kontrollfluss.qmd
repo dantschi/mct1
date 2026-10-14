@@ -1,1576 +1,688 @@
 ---
 title: "Mikrocomputertechnik 1"
-subtitle: "Einheit 3: Speicherzugriff & Kontrollfluss"
+subtitle: "Einheit 3: Speicherzugriff und Kontrollfluss"
 author: "Prof. Dr.-Ing. Daniel Klünder"
-# Vortrag:  quarto preview vorlesungen/03_speicher-kontrollfluss.qmd
-#           (Notizen nur mit Taste S)
-# Handout:  quarto render vorlesungen/03_speicher-kontrollfluss.qmd --profile handout --to pdf
-#           → _handout/vorlesungen/03_speicher-kontrollfluss.pdf
-format: revealjs
+format:
+  revealjs: default
+  pdf:
+    include-in-header:
+      - text: |
+          % Zusammenhängende Lerntexte bleiben in diesem Skript auf einer Seite.
+          \AtBeginDocument{%
+            \renewtcolorbox{notesblock}{%
+              enhanced,colback=applegray,colframe=applegray,coltext=softblack,
+              boxrule=0pt,borderline west={2.5pt}{0pt}{dhbwred},arc=3pt,
+              left=10pt,right=10pt,top=8pt,bottom=8pt,
+              before skip=2pt,after skip=12pt,
+              fontupper=\small\color{softblack},unbreakable}%
+          }
+title-slide-attributes:
+  data-notes: |
+    Diese dritte Einheit verbindet die Registerbefehle aus Vorlesung 2 mit Daten im Speicher und einem Programmablauf, der Entscheidungen und Wiederholungen enthält. Voraussetzung sind die aus Vorlesung 1 bekannten Byteadressen, Hexdarstellung und Zweierkomplement sowie Registerrollen, unmittelbare Konstanten und Befehlswirkung aus Vorlesung 2. C-Kenntnisse oder Funktionsaufrufe werden nicht vorausgesetzt. Ein Array ist eine Folge gleich großer, hintereinander gespeicherter Elemente; wir verwenden zunächst fünf 32-Bit-Zahlen.
+
+    Zwei Fragen führen durch die Einheit: Von welcher Adresse kommen die Daten, und welche Instruktion folgt als Nächstes? Loads lesen Speicher, Stores schreiben ihn. Bedingte Sprünge wählen einen von zwei Wegen, Rücksprünge ermöglichen Schleifen. Die Notizen erläutern alle Beispiele als Lerntext, einschließlich Anfangswerten, Zwischenzuständen und Grenzen. Im Labor sagen Sie Zustände auf Papier voraus und prüfen sie mit Venus. Die verwendete RISC-V-Integerbasis RV32I hat 32-Bit-Register; die komprimierte Erweiterung C wird nicht verwendet.
 ---
 
-# Speicherzugriff & Kontrollfluss
+## Zwei neue Möglichkeiten
+
+- Bisher: Register rechnen mit vorhandenen Werten.
+- Heute: Daten aus dem Speicher lesen und zurückschreiben.
+- Heute: entscheiden, überspringen und wiederholen.
+- Leitbeispiel: fünf Zahlen im Array $A=[10,20,30,40,50]$.
 
 ::: notes
-Diese Einheit gehört zu Mikrocomputertechnik 1. Sie verbindet Registerarithmetik mit Daten im Speicher und mit einem Programmablauf, der von Bedingungen abhängt. Die zwei Leitfragen lauten: Wo liegen die Daten, und welche Instruktion folgt als Nächstes? RAM heißt Random Access Memory, der Arbeitsspeicher. Der Program Counter, kurz PC, hält die Adresse der aktuellen Instruktion.
+In Vorlesung 2 hatte jedes Rechenbeispiel seine Eingaben bereits in Registern oder als direkte Konstanten. Ein größeres Programm verarbeitet aber Daten, die dauerhaft im Speicher liegen. Ein Array ist eine Folge gleich großer Elemente. A bezeichnet hier die fünf ausdrücklich gewählten Lehrzahlen 10, 20, 30, 40 und 50. Jedes Element belegt ein 32-Bit-Wort, also vier Byte. Die Nummer des ersten Elements ist null.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+Zunächst lesen wir einzelne Elemente und verändern einen Wert. Danach lassen wir eine Bedingung festlegen, welche Instruktionen ausgeführt werden. Schließlich verbindet eine Schleife beide Werkzeuge und berechnet die Summe 150. Diese Reihenfolge hält jeweils nur ein neues Problem offen: erst die Datenadresse, dann die Auswahl des nächsten Befehls, dann die Wiederholung. Sie benötigen dafür keine Syntax einer höheren Programmiersprache. Die zusätzlichen Speicher- und Sprungbefehle werden aus ihrer konkreten Wirkung auf den Maschinenzustand erklärt.
 :::
 
-## Von Arrays zu Schleifen
+## Lernziele und bekannte Grundlagen
 
-- Herzlich willkommen zur dritten Vorlesung in Mikrocomputertechnik 1
-- Heute: von einfachen Variablen zu großen Datenmengen
-- Kommunikation der CPU mit dem Arbeitsspeicher (RAM)
-- Ausbruch aus dem linearen Programmablauf: Entscheidungen treffen
-- Ziel: C-Schleifen in Hardware-nahen Assembler-Code übersetzen
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  RAM[(RAM)] -->|Load| CPU[CPU / Register]
-  CPU -->|Branch/Jump| CPU
-  CPU -->|Store| RAM
-  style CPU fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style RAM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
+- Adresse, Byteoffset und Inhalt auseinanderhalten
+- `lw`/`sw` und Teilzugriffe mit konkreten Werten verfolgen
+- Bedingte und unbedingte Sprünge erklären
+- Eine Array-Schleife einschließlich leerem Fall prüfen
+- Befehlsfelder nutzen; keinen Hardwaretakt aus Step ableiten
 
 ::: notes
-Ein Array aus vielen Elementen passt nicht in die 32 allgemeinen Register. Der Zyklus ist: Adresse bestimmen, Wort laden, verarbeiten, gegebenenfalls speichern und zum nächsten Element gehen. Lernziele: einen lw- oder sw-Zugriff nachvollziehen, einen Index in einen Byteoffset umrechnen und eine einfache Schleife zu übersetzen. Die 32 Register sind nicht der gesamte Speicher der CPU, der Central Processing Unit.
+Ein Offset ist ein Abstand relativ zu einer Basisadresse. Die Speicherbefehle lw, Load Word, und sw, Store Word, lesen beziehungsweise schreiben ein vier Byte breites Wort. Teilzugriffe betreffen nur ein oder zwei Byte. Aus der ersten Einheit kennen Sie schon den Unterschied zwischen einem Bitmuster und seiner signed oder unsigned Interpretation, also mit oder ohne Vorzeichen. Das benötigen wir sowohl beim Laden als auch beim Vergleichen.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+Die Registerarithmetik und die Vorzeichenerweiterung aus Einheit 2 bleiben gültig. Neu ist, dass eine Instruktion den Speicher oder die Auswahl der nächsten Adresse verändert. Ein Step im Simulator zeigt einen solchen Ausführungsschritt und keine gemessene Taktzeit. Die Papieraufgaben überprüfen dieselben Regeln ohne Werkzeug. Am Ende können Sie eine Schleife so erläutern, dass auch für null Elemente feststeht, ob ein Zugriff stattfindet. Das ist eine wichtigere Kontrolle als nur die Summe für fünf Eingaben zu kennen.
 :::
 
-## Agenda für den heutigen Tag
+# 1. Adressen bilden, Wörter übertragen
 
-1. Der Arbeitsspeicher — RAM-Konzept und Pointer-Grundlagen
-2. Load & Store (Words) — 32-Bit-Daten und die 4-Byte-Schrittweite
-3. Teilzugriffe — einzelne Bytes und das S-Type-Format
-4. Kontrollfluss — bedingte Sprünge (Branches) für If-Abfragen
-5. Unbedingte Sprünge — Jumps und das Überspringen von Else-Blöcken
-6. Praxis in Venus — For- und While-Schleifen über Arrays
 
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  A[RAM / Pointer] --> B[Load / Store]
-  B --> C[Bytes / S-Type]
-  C --> D[Branches]
-  D --> E[Jumps]
-  E --> F[Venus]
-  style A fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style B fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style E fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style F fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
 
 ::: notes
-Die Agenda teilt die Werkzeuge. Zuerst Speicher: Pointer, Load und Store, ganze Wörter und Teilzugriffe. Danach Kontrollfluss: Branch und Jump. S-Type ist das Maschinenformat der Stores. B-Type, das Format der bedingten Sprünge, bleibt eine kurze Vorschau. Die Summenschleife wird erst ausführbar, wenn beide Teile stehen. Ein Branch if equal, beq, wählt die nächste Adresse abhängig von zwei Registerwerten.
+Wir erweitern den sichtbaren Maschinenzustand um Daten im Speicher. Ein Register enthält weiterhin ein 32-Bit-Muster. Ob dieses Muster als Zahl oder als Adresse dient, legt die Verwendung im Befehl fest. Der Arbeitsspeicher bietet viele adressierte Byte, während Register die gerade benötigten Werte bereithalten. Eine große Datenfolge muss deshalb nicht vollständig gleichzeitig in Registern liegen.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+Für die folgenden Beispiele wird eine gültige, beschreibbare Speicherregion angenommen. Wir legen keine allgemeine Speicherkarte eines realen Rechners fest. Die Adresse 0x1000 ist ein Lehrwert und nicht die zugesicherte Basis eines Venus-Programms. Diese Trennung erlaubt es, alle Rechenschritte von Hand nachzuvollziehen und im Labor dieselbe Erklärung mit der tatsächlich angezeigten Labeladresse anzuwenden.
 :::
 
-## Rückblick: Was wir bisher können
+## Ein Array belegt lückenlos Byte
 
-- Basis-Arithmetik: `add`, `sub` und logische Operationen
-- Strikte Assembler-Syntax: Befehl `rd, rs1, rs2`
-- I-Type: Konstanten direkt im Code (`addi`)
-- Wichtige ABI-Register: `t0`–`t6`, `a0`–`a7`, `s0`–`s11`
-- Jeder Befehl ist intern exakt 32 Bit groß
+![Wörter, Werte, Indizes und zugehörige Bytebereiche](../assets/images/vl3-array-adressen.svg){width=95%}
+
+$$\operatorname{Adresse}(A[i])=B+4i,\qquad 0\le i<5$$
+
+::: notes
+A ist unser Array aus fünf 32-Bit-Wörtern. i ist der nullbasierte Elementindex und B die Basisadresse, hier als Lehrwert 0x1000 gewählt. Die Formel berechnet die Startadresse eines Elements in Byte: Ein Wort umfasst vier Byte, deshalb ist der Abstand viermal der Index. Index zwei liegt bei 0x1008 und enthält die Zahl 30.
+
+Die Abbildung liest sich von links nach rechts entlang steigender Adressen. Oben stehen die Indizes, in den Boxen die Zahlenwerte und darunter die jeweils belegten Bytebereiche. Der rote Rahmen hebt Element zwei hervor. Zwischen 0x1003 und 0x1004 liegt kein leeres Fach; die Adresse steigt genau um eins. Aufeinanderfolgende Elementstarts liegen dagegen vier Byte auseinander. Index eins ist daher nicht Byteadresse B plus eins. Die angegebene Grenze kleiner fünf ist die gültige Indexmenge dieses Arrays. Die Adressformel prüft diese Grenze nicht von selbst; ein Programm muss zulässige Indizes gewährleisten.
+:::
+
+## Ein Pointer enthält eine Adresse
+
+Lehrannahme: `s1 = 0x1000`; dort liegt $A[0]=10$.
+
+| Ausdruck im Maschinenmodell | Bedeutung |
+|---|---|
+| Inhalt von `s1` | Adresse `0x1000` |
+| vier Byte ab dieser Adresse | Wort `0x0000000A` |
+| `addi t0, s1, 0` | Adresse nach `t0` kopieren |
+| `lw t0, 0(s1)` | gespeicherte Zahl nach `t0` laden |
+
+::: notes
+Pointer bedeutet Zeiger: ein Wert, der als Adresse verwendet wird. s1 ist ein Registeralias und hält hier die Lehradresse 0x1000. A von null bezeichnet das erste Arrayelement, dessen Wert zehn ist. Die temporäre Zielstelle t0 kann sowohl eine kopierte Adresse als auch geladene Daten enthalten. Das Register besitzt dafür keinen getrennten Hardwaretyp.
+
+addi, Add Immediate, addiert die direkte null zu s1 und kopiert damit 0x1000. lw, Load Word, benutzt denselben Quellinhalt dagegen als Basis für einen Speicherzugriff und lädt 0x0000000A. Die Tabelle stellt zwei unabhängige Alternativen dar, keinen versteckten automatischen Ladevorgang. Dass eine Zahl als Pointer eingesetzt wird, macht die Adresse noch nicht gültig. Ebenso erzeugt das Laden der Zahl 0x1000 in ein Register dort keine Datenregion. Für vollständige Programme deklarieren wir die Daten ausdrücklich und lassen das Assemblerwerkzeug ihre Adresse bestimmen.
+:::
+
+## Daten deklarieren und ihre Adresse laden
 
 ```asm
-# Bisheriges Maximum an Komplexität:
-li t0, 100         # Lade Konstante 100
-addi t1, t0, 50    # t1 = 100 + 50
+.data
+myArray: .word 10, 20, 30, 40, 50
+.text
+.globl main
+main:
+    la s1, myArray
+    lw t0, 0(s1)
 ```
 
-::: notes
-Aus Einheit 2 bleiben li und addi. li ist load immediate, eine Pseudoinstruktion: der Assembler erzeugt eine oder mehrere echte Instruktionen. addi ist add immediate, Addition einer im Befehl stehenden Konstante. Nach li t0, 100 ist t0 gleich 100; addi t1, t0, 50 setzt t1 auf 150. Native Befehle dieses Kurses sind 32 Bit lang. Das gilt nicht für jede RISC-V-Erweiterung und nicht für jede Quelltextzeile. rd ist das Zielregister, rs1 und rs2 sind Quellen. Die Aliase t, a und s benennen Rollen, keine eigenen Hardwaretypen.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Das Register-Limit (Die Werkbank)
-
-- Die ISA sieht 32 Architekturregister vor
-- Jedes Register fasst 32 Bit (4 Bytes)
-- `x0` ist fest 0; 31 Register sind beschreibbar
-- Das ist nicht die Speicherkapazität der CPU: Caches und CSRs sind weiterer Zustand
-- Ein ILP32-`int`-Array mit 1000 Elementen braucht 4000 Bytes im Speicher
+Codeausschnitt; der kontrollierte Abschluss folgt im Laborrahmen.
 
 ::: notes
-RV32I hat 32 allgemeine Register zu je 32 Bit. x0 ist fest null, 31 Register sind beschreibbar, zusammen 124 Byte. Ein ILP32-int-Array mit 1000 Elementen braucht 4000 Byte. ILP32 meint: int, long und Zeiger sind hier 32 Bit. Cache und weitere Steuerregister, CSR, gehören nicht zu diesen 124 Byte. Die Werkbank hält nur den gerade bearbeiteten Ausschnitt.
+.data ist eine Direktive des Assemblerwerkzeugs für den Datenabschnitt. .word legt die angegebenen 32-Bit-Werte hintereinander ab; das sind Startdaten und keine während des Laufs ausgeführten Store-Befehle. Das Datenlabel myArray benennt ihre Basis. .text wählt den Codeabschnitt, .globl macht das Symbol main sichtbar, und main ist hier das Startlabel. Diese Direktiven sind keine nativen Instruktionen.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+la bedeutet Load Address, Laden einer Adresse. Es ist eine Pseudoinstruktion: Das Werkzeug erzeugt eine passende native Folge, die die tatsächliche Adresse von myArray nach s1 schreibt. lw, Load Word, liest anschließend das erste Wort zehn nach t0. s1 und t0 sind Registeraliase. Die Adresse hängt von der Umgebung und der Datenanordnung ab; sie wird nicht als 0x1000 vorausgesetzt. Der Ausschnitt hat noch keinen Exit-Dienst. Ein vollständiges Programm benötigt den später gezeigten Abschluss. Im Labor kontrollieren Sie die Adresse aus la und danach den Inhalt am ersten Load getrennt.
 :::
 
-## Die Memory Wall (Latenzen)
+## Basis plus signed Byteoffset
 
-- Daten in Registern: typisch in etwa einem Taktzyklus verfügbar
-- Externe DRAM-Zugriffe können deutlich länger dauern als ein Registerzugriff
-- Das ist eine mögliche Hardwarekonfiguration, keine ISA-Latenz
-- Mikrocontroller können SRAM auf dem Chip haben
-- Diese Kluft heißt in dem Beispiel Memory Wall
-- Jeder unnötige RAM-Zugriff bremst das Programm stark ab
+$$EA=(R[rs1]+\operatorname{sext}_{12\to32}(imm))\bmod 2^{32}$$
 
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
+- $EA$: effektive Adresse des Zugriffs
+- `offset(rs1)`: direkte Zahl und Basisregister
+- Offsetbereich: $-2048$ bis $2047$ Byte
+- Auch `lbu` verwendet einen signed Adressoffset.
 
-graph TD
-  R[Register: ca. 1 Takt] --> W[Memory Wall]
-  M[RAM: 100 bis 300 Takte] --> W
-  style R fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style M fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style W fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+::: notes
+EA steht für Effective Address, die effektive Adresse. R von rs1 ist der alte Inhalt des Basisregisters; rs1 bedeutet register source 1, erste Registerquelle. imm ist das zwölf Bit breite Immediate-Feld. sext steht für sign extension, Vorzeichenerweiterung von zwölf auf 32 Bit. Die Addition liefert ein 32-Bit-Adressmuster, deshalb beschreibt die Formel das Ergebnis modulo 2 hoch 32. Für unsere Beispiele werden gültige Adressen ohne Umlauf angenommen.
+
+Der Offset zählt Byte und liegt signed, also vorzeichenbehaftet, zwischen minus 2048 und 2047. Bei Basis 0x1000 und Offset acht ergibt sich 0x1008. Die Schreibweise 8(s1) bedeutet diese Rechnung und ist kein Funktionsaufruf. lbu heißt Load Byte Unsigned und erweitert die geladenen Daten mit Nullen; sein Adressoffset wird trotzdem vorzeichenerweitert. Dateninterpretation und Adressrechnung sind getrennte Entscheidungen. Die berechnete Adresse wird nicht automatisch in das Basisregister zurückgeschrieben, sondern für den konkreten Zugriff verwendet.
+:::
+
+## lw: Adresse hin, Daten zurück
+
+`lw t0, 8(s1)`
+
+![Getrennte Wege für Adresse und geladenes Wort](../assets/images/vl3-load-weg.svg){width=90%}
+
+::: notes
+lw bedeutet Load Word, Laden eines 32-Bit-Worts. In lw t0, 8(s1) ist t0 das temporäre Zielregister und s1 die Basisquelle. Die Zeichnung nimmt s1 gleich 0x1000 und das Array mit 30 an Index zwei an. Oben entsteht aus Basis plus acht die Adresse 0x1008. Die graue Verbindung wählt die vier Speicherbytes an dieser Adresse aus. Unter Little Endian, der niederwertige Byteanteil an der kleineren Adresse, lauten sie 1E 00 00 00.
+
+Der rote Datenpfeil unten führt vom Speicher zurück zum Zielregister. Danach ist t0 gleich 0x0000001E, also 30. s1 bleibt 0x1000 und die Speicherbytes bleiben unverändert. Ein vorhandener alter t0-Wert wird vollständig überschrieben. Die Zeichnung ist eine Darstellung der Befehlswirkung und keine Behauptung über konkrete Leitungen oder Taktphasen eines Prozessors. Entscheidend sind die zwei verschiedenen Informationen: Die grauen Wege liefern die Adresse, der rote Weg liefert den Inhalt. Ein Load schreibt nicht die berechnete Adresse nach t0.
+:::
+
+## sw: Registerdaten werden Speicherinhalt
+
+`sw t0, 12(s1)`
+
+![Adresse und zu schreibende Daten haben verschiedene Quellen](../assets/images/vl3-store-weg.svg){width=90%}
+
+::: notes
+sw bedeutet Store Word, Speichern eines 32-Bit-Worts. Anders als bei den Rechenbefehlen ist das erste Argument t0 hier eine Quelle, kein Ziel. s1 liefert die Basis. Mit den Lehrwerten s1 gleich 0x1000 und t0 gleich 42 wird die effektive Adresse 0x100C gebildet. Die oberen grauen Pfeile zeigen diese Adressrechnung. Der rote Datenpfeil läuft unten von t0 zum Speicher.
+
+42 ist hexadezimal 0x0000002A. Little Endian legt deshalb an den Adressen 0x100C bis 0x100F die Byte 2A, 00, 00, 00 ab. Die dort zuvor stehenden vier Byte werden überschrieben; Nachbarbytes bleiben gleich. Beide Quellregister behalten ihren Inhalt. Ein Store besitzt kein allgemeines Zielregister rd, register destination. Die Syntax „erstes Argument ist das Ziel“ aus den bisherigen Rechenbefehlen darf daher nicht verallgemeinert werden. Das Bild stellt die definierte Wirkung dar, ohne einen bestimmten Hardware-Datenpfad oder eine Laufzeit festzulegen.
+:::
+
+## Lesen, rechnen, zurückschreiben
+
+Anfang: $A=[10,20,30,40,50]$, `s1` enthält die Basis.
+
+```asm
+lw   s0, 8(s1)
+addi t0, x0, 12
+add  t1, s0, t0
+sw   t1, 12(s1)
 ```
 
-::: notes
-Registerzugriffe sind im einfachen Modell sehr kurz. Ein Zugriff auf externen DRAM kann deutlich länger dauern. DRAM ist Dynamic RAM, SRAM ist Static RAM und kann auf einem Mikrocontroller im Chip liegen. Die ISA schreibt keine Latenz von 100 bis 300 Takten vor. Das Memory-Wall-Bild ist deshalb ein qualitativer Vergleich einer möglichen Konfiguration, keine Messreihe. Wer einen Wert mehrfach braucht, lässt ihn im Register und spart Zugriffe. Load und Store beseitigen die Lücke nicht.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Das RAM-Modell (Refresher)
-
-- RAM als langes Array aus winzigen Fächern
-- Jedes Fach hat eine eindeutige Hausnummer: die Speicheradresse
-- Adressen in RV32I: 32 Bit (`0x00000000` bis `0xFFFFFFFF`)
-- Ein 32-Bit-Zeiger kann $2^{32}$ Bytes benennen
-- Das ist die Adressraumgröße dieser Kurskonfiguration, kein Zwang jeder RISC-V-Plattform
-- Das C-Programm sieht diesen linearen Adressraum für sich allein
-
-| Adresse (Hex) | Wert (Hex) | Bedeutung   |
-|---------------|------------|-------------|
-| `0x10000000`  | `0x12`     | Erstes Fach |
-| `0x10000001`  | `0xAB`     | Zweites Fach|
-| `0x10000002`  | `0x00`     | Drittes Fach|
+Danach: $A=[10,20,30,42,50]$.
 
 ::: notes
-Eine Adresse und der dort gespeicherte Wert sind verschieden. 0x kennzeichnet Hexadezimalzahlen zur Basis 16. Ein 32-Bit-Byteadressraum umfasst 2 hoch 32 Adressen, also 4 Gibibyte, nicht automatisch 4 Gibibyte installierten RAM. Nicht jede Adresse ist zugreifbar. Ein privater Prozessadressraum setzt ein Betriebssystem voraus und gilt nicht für Venus oder Bare-Metal. Die drei Beispieladressen im Abstand von eins liegen je ein Byte auseinander, unabhängig vom gespeicherten Inhalt.
+Das Array A enthält die fünf Lehrwerte, s1 seine gültige, natürlich ausgerichtete Basisadresse. s0, t0 und t1 sind Registeraliase. lw, Load Word, liest mit Byteoffset acht das Element an Index zwei: s0 wird 30. addi, Add Immediate, schreibt aus der Nullquelle x0 und der direkten zwölf den Wert zwölf nach t0. add bildet 30 plus zwölf und schreibt 42 nach t1. sw, Store Word, speichert dieses Wort am Byteoffset zwölf, also an Index drei.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+Die übrigen Elemente und die Basis s1 bleiben unverändert. Der Ablauf braucht einen Load für die Eingabe und einen Store für die dauerhafte Änderung. Die arithmetisch-logische Einheit allein schreibt das Array nicht zurück. Die Zeilen sind ein Rechenausschnitt; Dateninitialisierung, Start und Abschluss stehen in beispiele/vl3_wordzugriff.s. Die dort benutzten s-Register gehören hier zum Hauptprogramm und modellieren keinen Funktionsaufruf. Ein Simulatorvergleich prüft Registerwerte und Speicherzustand an ihrem jeweiligen Schritt, nicht erst nach dem Exit-Dienst.
 :::
 
-## Byte-Adressierbarkeit
+## Ein variabler Index ist kein lw-Immediate
 
-- Jedes Fach im RAM fasst exakt 1 Byte (8 Bits)
-- Der Arbeitsspeicher ist byte-adressierbar
-- Ein RISC-V-Register fasst 32 Bits (4 Bytes = 1 Word)
-- Ein Word laden heißt: vier aufeinanderfolgende Fächer lesen
-- Ein 32-Bit-Array belegt daher die Adressen 0, 4, 8, 12, …
+`s1`: Basis $B$, `t0`: gültiger Index $i=3$.
 
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Reg[32-Bit-Register] -->|braucht 4 Fächer| A0[0x00]
-  Reg --> A1[0x01]
-  Reg --> A2[0x02]
-  Reg --> A3[0x03]
-  style Reg fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A0 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style A1 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style A2 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style A3 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
+```asm
+slli t1, t0, 2
+add  t2, s1, t1
+lw   t3, 0(t2)
 ```
 
-::: notes
-Ein Byte hat 8 Bit, ein RV32-Wort 32 Bit, also 4 Byte. Liegt ein Wort bei Basis B, belegt es B bis B+3; das nächste Wort beginnt bei B+4. Die Zahlen 0, 4 und 8 sind Offsets relativ zur Basis, keine Pflichtadressen jedes Arrays. Ein lw liest die vier Bytes gemeinsam. Vier getrennte Byte-Loads wären ein anderes Programm. Im ILP32-Modell ist ein C-int vier Byte groß.
+![Vom Elementindex über den Byteoffset zur Adresse](../assets/images/vl3-indexadresse.svg){width=90%}
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+::: notes
+Ein Load-Offset ist eine direkt codierte Konstante. Die Schreibweise eines Laufzeitregisters an dieser Stelle würde den Registerinhalt nicht automatisch zum Offset machen. s1 hält die Basis B, die temporäre Stelle t0 den hier gültigen Index i gleich drei. slli ist Shift Left Logical Immediate, logisches Linksschieben mit direkter Weite. Weite zwei multipliziert diesen kleinen Index mit vier: t1 wird zwölf. add schreibt B plus zwölf nach t2. lw, Load Word, lädt von dieser Adresse das vierte Element nach t3, hier 40.
+
+Die Abbildung folgt genau diesen Rechenschritten von links nach rechts. Der rote Rahmen markiert die fertige Adresse 0x100C für die Lehrbasis 0x1000. Sie ist noch nicht der geladene Wert. Die Basis s1 bleibt erhalten. Gültiger Index und ausreichender Adressbereich sind Voraussetzungen; ein Shift ersetzt keine Arraygrenzenprüfung. Bei einer Schleife können wir stattdessen einen laufenden Pointer verschieben. Beide Methoden sind korrekt, dürfen aber nicht unbedacht gleichzeitig dieselbe Bewegung addieren.
 :::
 
-## Endianness (Refresher)
+## Negative Offsets beziehen sich auf die aktuelle Basis
 
-- In welcher Reihenfolge landen vier Bytes einer 32-Bit-Zahl im RAM?
-- RISC-V nutzt standardmäßig Little-Endian (wie x86)
-- Das niederwertigste Byte (LSB) liegt auf der kleinsten Adresse
-- Das höchstwertige Byte (MSB) liegt auf der größten Adresse
-- Relevant beim Debuggen im Venus-Memory-Tab
+Lehrannahme: `s1 = 0x100C` zeigt bereits auf $A[3]$.
+
+```asm
+lw t0, -4(s1)       # Adresse 0x1008: A[2] = 30
+lw t1,  0(s1)       # Adresse 0x100C: A[3] = 40
+lw t2,  4(s1)       # Adresse 0x1010: A[4] = 50
+```
+
+`s1` bleibt bei allen drei Loads `0x100C`.
+
+::: notes
+s1 ist hier nicht mehr die ursprüngliche Arraybasis, sondern ein Pointer auf das vierte Element A von drei. Die ursprüngliche Basis des Arrays ist weiterhin 0x1000. Ein Offset wird stets zum aktuellen Registerinhalt addiert. lw bedeutet Load Word und liest vier Byte ab dieser effektiven Adresse. Die temporären Ziele t0, t1 und t2 erhalten daher 30, 40 und 50.
+
+Minus vier ist als signed Zwölf-Bit-Immediate zulässig und zeigt ein Wort zurück. Offset null lädt den Inhalt an der aktuellen Basis, nicht die Zahl null. Plus vier zeigt ein Wort vorwärts. Kein Load verändert s1. Würden Sie zuvor addi s1, s1, 4 ausführen, wäre s1 dagegen dauerhaft 0x1010; dieselben Offsets hätten andere Ziele. Die gültige Speicherregion und ein passender Elementbereich sind auch bei negativen Offsets nötig. Ein negativer Abstand ist weder automatisch ungültig noch eine Erlaubnis, vor den Anfang eines Arrays zu greifen.
+:::
+
+## Ausrichtung prüft die effektive Adresse
+
+![Ausgerichteter und verschobener Wortzugriff im Bytegitter](../assets/images/vl3-ausrichtung.svg){width=90%}
+
+- Wortzugriff: $EA\bmod4=0$; Halbwort: $EA\bmod2=0$
+- Ein gerader Offset genügt bei unpassender Basis nicht.
+- Kursaufgaben verwenden natürlich ausgerichtete Zugriffe.
+
+::: notes
+EA bedeutet Effective Address, effektive Adresse aus Basis plus Byteoffset. Alignment heißt Ausrichtung. Ein vier Byte breites Wort ist natürlich ausgerichtet, wenn seine Startadresse durch vier teilbar ist; ein zwei Byte breites Halbwort entsprechend durch zwei. Modulo bezeichnet in diesen Formeln den Divisionsrest. Bytezugriffe brauchen keine weitere Teilbarkeit.
+
+Die Zeichnung zeigt Byteadressen 0x1000 bis 0x1007 und ausdrücklich gewählte Bytewerte 00 bis 07. Der graue Balken umfasst das Wort ab 0x1000, der rote das verschobene Stück ab 0x1001. Beide Zugriffe hätten vier Byte Breite, doch nur der erste startet an einer Wortgrenze. Basis 0x1001 plus Offset drei ergibt wiederum 0x1004 und ist ausgerichtet. Ob eine konkrete RISC-V-Umgebung einen unausgerichteten Zugriff unterstützt oder mit einer Ausnahme abbricht, hängt von deren Festlegung ab. Ein garantierter Absturz ist keine allgemeine Folgerung. Unsere Aufgaben vermeiden solche Zugriffe und prüfen zusätzlich, dass alle betroffenen Byte gültig sind.
+:::
+
+# 2. Kleine Speicherstücke, volle Register
+
+
+
+::: notes
+Ein Register bleibt immer 32 Bit breit, auch wenn wir nur ein Speicherbyte benötigen. Der Load muss deshalb festlegen, wie aus acht oder sechzehn Datenbits ein vollständig definiertes 32-Bit-Wort entsteht. Aus Einheit 1 kennen Sie bereits zwei Möglichkeiten: Vorzeichenerweiterung und Nullerweiterung. Nun übernimmt der Befehl diese Entscheidung.
+
+Beim Store ist die Richtung umgekehrt. Er wählt die unteren Bits des Registers aus und überschreibt nur die passende Anzahl Speicherbytes. Die übrigen Stellen der Quelle und des Speichers werden nicht verändert. Wir führen die Unterscheidung mit einem gesetzten höchsten Datenbit vor, weil bei kleinen positiven Werten beide Load-Arten dasselbe Ergebnis liefern und der Unterschied sonst unsichtbar bliebe.
+:::
+
+## lb und lbu: dasselbe Byte, anderes Ergebniswort
+
+![Vorzeichen- und Nullerweiterung des Speicherbytes 0x8F](../assets/images/vl3-byte-erweiterung.svg){width=90%}
+
+::: notes
+lb heißt Load Byte und lbu Load Byte Unsigned. Beide lesen genau ein Byte. lb kopiert das höchste Datenbit, Bit sieben, in die oberen 24 Registerstellen; lbu füllt sie mit Nullen. Das Bild verwendet das Speicherbyte 0x8F, binär 10001111. Die acht unteren Bits bleiben in beiden Reihen rechts erhalten. Links stehen die 24 ergänzten Bits als sechs Hexziffern. Der rote Rahmen betont die eingefügten Einsen beim signed Load.
+
+Nach lb ist das vollständige Wort 0xFFFFFF8F. Als Zweierkomplement entspricht es 143 minus 256 gleich minus 113. Nach lbu steht 0x0000008F, also 143. Es gibt nach keinem dieser Befehle undefinierte obere Bits oder ein erforderliches leeres Zielregister. Ein beliebiger alter Inhalt wird vollständig ersetzt. Die Wahl hängt davon ab, ob das gespeicherte Byte eine signed Zahl oder ein vorzeichenloses Bitmuster darstellen soll. An Adresse und Zugriffsbreite ändert der Zusatz unsigned nichts; der Adressoffset bleibt signed.
+:::
+
+## An den Grenzen wird die Erweiterung sichtbar
+
+| Speicherbyte | `lb`: Wort / signed Wert | `lbu`: Wort / Wert |
+|---|---|---|
+| `0x7F` | `0x0000007F` / 127 | `0x0000007F` / 127 |
+| `0x80` | `0xFFFFFF80` / −128 | `0x00000080` / 128 |
+| `0xFF` | `0xFFFFFFFF` / −1 | `0x000000FF` / 255 |
+
+Die Interpretation entsteht beim Laden; das Byte bleibt unverändert.
+
+::: notes
+lb, Load Byte, erweitert mit dem Vorzeichen. lbu, Load Byte Unsigned, erweitert mit Nullen. Die Tabelle wählt die Grenze zwischen 0x7F und 0x80 sowie das Muster 0xFF. signed bedeutet Zweierkomplementinterpretation. Bei 0x7F ist Bit sieben null; beide Befehle ergeben 127. Bei 0x80 ist es eins: lb bewahrt den Acht-Bit-Zahlenwert minus 128 durch 24 zusätzliche Einsen, lbu erzeugt die positive Zahl 128.
+
+Ein Byte aus acht Einsen bedeutet signed minus eins oder unsigned 255. Der Speicher trägt keine zusätzliche Vorzeichenmarkierung. Erst die Load-Art und die spätere Verwendung bestimmen die Interpretation des gelesenen Musters. Derselbe Bereich darf daher mit verschiedenen Load-Arten untersucht werden, ohne dass sich seine Byte ändern. Ein vorhandenes Zielwort 0x12345678 liefert keine oberen Bits zum Ergebnis: Das neue Registerwort ist vollständig definiert. Diese Beispiele erlauben im Labor eine klare Kontrolle, ob Vorzeichen- oder Nullerweiterung gewählt wurde.
+:::
+
+## Halbwörter: zwei Byte und Bit 15
+
+- `lh`: Load Halfword, mit Vorzeichenerweiterung
+- `lhu`: Load Halfword Unsigned, mit Nullen
+- Little Endian: Bytefolge `00 80` ergibt Halbwort `0x8000`.
+
+| Befehl | Registerwort | Zahlenwert |
+|---|---|---:|
+| `lh t0, 0(s1)` | `0xFFFF8000` | −32768 |
+| `lhu t1, 0(s1)` | `0x00008000` | 32768 |
+
+::: notes
+Ein Halfword, Halbwort, enthält sechzehn Bit und belegt zwei Byte. lh, Load Halfword, kopiert Datenbit 15 in die oberen sechzehn Registerstellen. lhu, Load Halfword Unsigned, ergänzt dort Nullen. s1 ist die Basisadresse, t0 und t1 sind temporäre Ziele. Wir nehmen eine gültige, durch zwei teilbare Basis an und an ihr die Bytefolge 00, 80.
+
+Little Endian legt das niederwertige Byte zuerst ab, sodass das zusammengesetzte Halbwort 0x8000 lautet. Bit 15 ist eins. lh ergibt damit 0xFFFF8000, signed minus 32768; lhu ergibt 0x00008000, also 32768. Die Registerquelle s1 wird in keinem Fall verändert. Im Unterschied zum Byte-Load muss die effektive Adresse natürlich gerade sein. Ein gerader Offset allein genügt nicht, wenn s1 ungerade ist. Die beiden Erweiterungsarten folgen derselben Regel wie bei acht Bit, lediglich das maßgebliche Datenbit und die Zahl der ergänzten Stellen ändern sich.
+:::
+
+## sb und sh überschreiben nur einen Teil
+
+![Ein Store Byte verändert nur das adressierte Byte](../assets/images/vl3-teilstore.svg){width=90%}
+
+`sh` schreibt entsprechend die unteren 16 Bit in zwei Byte.
+
+::: notes
+sb ist Store Byte, Speichern eines Bytes, sh Store Halfword, Speichern eines Halbworts. Im Bild enthält t0 das Quellwort 0x11223344 und s1 die Lehrbasis 0x2000. sb t0, 1(s1) wählt Adresse 0x2001 und schreibt ausschließlich die unteren acht Registerbits, also 0x44. Die Spalten zeigen steigende Byteadressen, die Reihen den Speicher vor und nach dem Zugriff. Der rote Rahmen markiert die einzige geänderte Stelle. AA, CC und DD bleiben erhalten; t0 und s1 ebenfalls.
+
+Ein sh mit natürlich ausgerichtetem Ziel würde die unteren sechzehn Bits 0x3344 schreiben, unter Little Endian als 44, 33. Es wird nichts vorzeichen- oder nullerweitert, weil die Datenbreite verkleinert wird. Ein Registerwert minus eins und ein Registerwert 255 schreiben per sb dasselbe Byte FF. Deshalb benötigt die Integerbasis keinen eigenen sbu-Befehl für einen unsigned Store dieser Breite. Erst ein späteres lb oder lbu macht daraus verschiedene volle Registerwerte.
+:::
+
+## Die Zugriffsbreite ist Teil des Befehls
+
+| Breite | Load signed | Load unsigned | Store | natürliche Ausrichtung |
+|---|---|---|---|---|
+| 1 Byte | `lb` | `lbu` | `sb` | jede Byteadresse |
+| 2 Byte | `lh` | `lhu` | `sh` | Adresse durch 2 teilbar |
+| 4 Byte | `lw` | gleiches Wort | `sw` | Adresse durch 4 teilbar |
+
+Alle Speicherbefehle hier: Basis plus signed Zwölf-Bit-Byteoffset.
+
+::: notes
+Load bedeutet Lesen vom Speicher in ein Register, Store Schreiben aus einem Register in den Speicher. Die Namen enthalten Byte, Halfword oder Word, also acht, sechzehn oder 32 Bit: lb/lbu und sb, lh/lhu und sh sowie lw und sw. Das u bedeutet unsigned, vorzeichenlos, und kennzeichnet hier Nullerweiterung der kleineren Load-Daten. signed Loads bewahren den Zweierkomplementwert durch Kopieren des höchsten Datenbits.
+
+Beim 32-Bit-Load sind Daten- und Registerbreite gleich. Eine Erweiterung entfällt, daher gibt es in dieser 32-Bit-Basis keinen benötigten zusätzlichen lwu-Befehl. Stores schreiben nur die ausgewählte Zahl unterer Bits. Die Adresse entsteht bei allen Tabellenzeilen aus Basis plus signed Zwölf-Bit-Byteoffset; unsigned geladene Daten machen den Offset nicht unsigned. Natürliche Ausrichtung betrifft diese effektive Adresse. Die Tabelle beschreibt keine Laufzeit und keine Garantie für unausgerichtete Zugriffe einer konkreten Umgebung. Breite, Erweiterung und Adresse werden nun als Angaben im Befehlswort wiedererkannt.
+:::
+
+# 3. Speicherbefehle im Maschinenwort
+
+
+
+::: notes
+Das Register- und Immediate-Format aus Einheit 2 erklärt schon einen großen Teil der Speicherbefehle. Ein Load braucht ein Basisregister, einen direkten Offset und ein Zielregister. Diese Angaben passen in das bekannte Immediate-Format. Die Operation unterscheidet sich aber von einer Addition: Das berechnete Adresswort wird zum Lesen benutzt, nicht als Rechenergebnis ins Ziel geschrieben.
+
+Ein Store braucht dagegen zwei Quellen, nämlich Basis und Datenwert, und zusätzlich einen Offset. Ein Registerziel fehlt. Das Store-Format verteilt deshalb die zwölf Offsetbits auf zwei freie Bereiche. Wir verfolgen diese Verteilung vollständig, einschließlich eines negativen Beispiels und der Rückrechnung. Die nötigen Operationswerte werden angegeben. Sie müssen die Feldpositionen begründet anwenden, nicht eine neue Liste von Zahlen auswendig kennen.
+:::
+
+## lw verwendet das I-Format
+
+`lw t0, 8(s1)`: `t0=x5`, `s1=x9`.
+
+| Feld | Bits | Wert |
+|---|---|---|
+| `imm[11:0]` | 31:20 | `000000001000` |
+| `rs1` | 19:15 | `01001` |
+| `funct3` | 14:12 | `010` |
+| `rd` | 11:7 | `00101` |
+| `opcode` | 6:0 | `0000011` |
+
+Maschinenwort: `0x0084A283`.
+
+::: notes
+I-Format ist das Immediate-Format. imm von elf bis null enthält die zwölf Bit des direkten Byteoffsets. rs1, register source 1, wählt die Basisquelle; rd, register destination, das Ziel für die gelesenen Daten. funct3 ist das drei Bit breite Funktionsfeld und opcode der sieben Bit breite Familiencode. lw heißt Load Word. Seine Kombination lautet opcode 0000011 und funct3 010.
+
+t0 bezeichnet x5, s1 x9. Deshalb codieren wir rd als 00101 und rs1 als 01001. Der Offset acht ist 000000001000. Das Zusammensetzen in der angegebenen Wortreihenfolge liefert 000000001000 01001 010 00101 0000011, neu gruppiert das Wort 0x0084A283. Es enthält die Registernummer neun, aber weder den aktuellen Basiswert noch das später gelesene Speicherwort. Dieselben Feldpositionen wie bei addi bedeuten also keine identische Befehlswirkung. funct3 unterscheidet in der Load-Familie sowohl Breite als auch Erweiterung; es ist nicht bloß eine allgemeine Byteanzahl.
+:::
+
+## S-Format: zwei Quellen, kein rd
+
+![Store-Format mit zwei getrennten Immediate-Teilen](../assets/images/vl3-sformat.svg){width=95%}
+
+`sw rs2, offset(rs1)`: Datenquelle `rs2`, Basis `rs1`.
+
+::: notes
+S-Format bezeichnet das Store-Format. sw bedeutet Store Word. rs1, register source 1, ist die Basisquelle, rs2, register source 2, die Datenquelle. Ein rd-Feld, register destination, gibt es hier nicht, denn der neue Wert wird in den Speicher geschrieben. opcode ist der Familiencode und funct3, im Bild f3, das Funktionsfeld für den Store-Typ.
+
+Die Zeichnung läuft von Instruktionsbit 31 links bis Bit null rechts; die Breiten entsprechen den Bitzahlen. Die roten Rahmen markieren imm von elf bis fünf links und imm von vier bis null weiter rechts. Zusammen tragen diese beiden Felder zwölf Offsetbits. Die Stelle an den Bits elf bis sieben, die im Registerformat rd hieß, enthält im Store-Format den unteren Offsetteil. Die Registerquellen bleiben an den bekannten Positionen 19 bis 15 und 24 bis 20. Diese regelmäßige Lage vereinfacht die Auswahl der Register, ohne dass wir eine bestimmte Zahl eingesparter Transistoren oder Takte behaupten.
+:::
+
+## sw mit negativem Offset codieren
+
+`sw t0, -4(s1)`: `rs2=x5`, `rs1=x9`.
 
 ```text
-Zahl 0xAABBCCDD an Adresse 0x100:
-RAM 0x100: DD   (LSB zuerst)
-RAM 0x101: CC
-RAM 0x102: BB
-RAM 0x103: AA
+imm[11:5] rs2   rs1   f3  imm[4:0] opcode
+1111111   00101 01001 010 11100    0100011
 ```
 
-::: notes
-Little Endian ist die Byte-Reihenfolge dieser Kurs- und Venus-Umgebung, nicht jeder denkbaren RISC-V-Plattform. Das niederwertigste Byte, least significant byte, liegt an der kleinsten Adresse. Das Wort 0xAABBCCDD steht ab Basis B als DD, CC, BB, AA. Ein anschließendes lw rekonstruiert wieder 0xAABBCCDD. Ein Hex-Dump kann Bytes oder zusammengesetzte Wörter zeigen. Die optische Reihenfolge ändert den Zahlenwert nicht. Innerhalb eines Bytes werden die Bits nicht umgedreht.
+Offset $-4$: `0xFFC` → oben `1111111`, unten `11100`.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Die Load/Store-Architektur
-
-- In Einheit 2: goldene RISC-Regel — die ALU greift nie direkt auf den RAM zu
-- Befehle wie `add` mit RAM-Operanden existieren in RISC-V nicht
-- Zwei Tore zwischen CPU und RAM:
-  - Load (Lesen): RAM $\rightarrow$ Register
-  - Store (Schreiben): Register $\rightarrow$ RAM
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  RAM[(Arbeitsspeicher)] -->|Load lw| Reg[Register x1-x31]
-  Reg -->|Store sw| RAM
-  Reg <-->|Operanden| ALU((ALU))
-  style ALU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Reg fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style RAM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
+Maschinenwort: `0xFE54AE23`.
 
 ::: notes
-add rechnet mit Registeroperanden. lw und sw veranlassen den Speicherzugriff. Die ALU, die arithmetisch-logische Einheit, darf dabei die Adresse berechnen. Sie ist also nicht vom RAM abgeschnitten. Beispiel: zwei Wörter 10 und 20 liegen bei B und B+4. lw t0, 0(s1) und lw t1, 4(s1) laden sie, add t2, t0, t1 bildet 30. Die Basis liefert die Adresse, die gelesenen Register die Daten.
+sw ist Store Word. t0 ist die Datenquelle x5, s1 die Basisquelle x9. rs2 und rs1 bedeuten register source 2 und 1. imm bezeichnet die Offsetbits, funct3 beziehungsweise f3 das Funktionsfeld, opcode den Familiencode. Für sw lauten opcode 0100011 und funct3 010. Die Datenquelle fünf wird 00101, die Basisquelle neun 01001.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+Minus vier wird als zwölf Bit Zweierkomplement gebildet: 2 hoch zwölf minus vier gleich 4092, also 0xFFC und binär 111111111100. Die oberen sieben dieser Bits sind 1111111, die unteren fünf 11100. Erst jetzt setzen wir sie an ihre getrennten Positionen im Instruktionswort. In Wortreihenfolge entstehen 1111111 00101 01001 010 11100 0100011. Vierergruppierung liefert 1111 1110 0101 0100 1010 1110 0010 0011, also 0xFE54AE23. Der gespeicherte Datenwert ist nicht Teil dieser Codierung. Die Zeile schreibt vier Byte ab der aktuellen Basis minus vier, vorausgesetzt diese Adresse ist gültig und ausgerichtet.
 :::
 
-## Was ist ein Pointer?
+## Das S-Immediate wieder zusammensetzen
 
-- Ein Pointer ist eine 32-Bit-Hausnummer (Speicheradresse) — keine Magie
-- In Assembler liegen Adressen in normalen Registern (`x0`–`x31`)
-- Die CPU unterscheidet die Zahl 10 nicht von der Adresse `0x1000`
-- Erst der Befehl (`add` vs. `lw`) bestimmt die Interpretation
+![Die getrennten Immediate-Teile werden vor der signed Interpretation verbunden](../assets/images/vl3-simmediate.svg){width=90%}
 
-```c
-// C: Pointer anlegen
-int array[3] = {10, 20, 30};
-int *ptr = array; // z. B. 0x00400000
-
-// In Assembler ist ptr nur ein Wert in einem Register
-```
+Erst zwölf Bit rekonstruieren, danach auf 32 Bit vorzeichenerweitern.
 
 ::: notes
-Ein Pointer ist in diesem ILP32-Modell eine 32-Bit-Adresse. In int array[3] = {10, 20, 30} und int *ptr = array enthält ptr die Startadresse, *ptr den Wert 10. Die Adresse liegt in einem beschreibbaren Register. x0 kann nur null liefern und daher keine variable Basis 0x1000 halten. Eine feste Beispieladresse ist illustrativ. C kennt zusätzlich Typen und Objektgrenzen, die ein nackter Registerwert nicht trägt.
+imm heißt Immediate, das im Befehl enthaltene Offsetfeld. Die Abbildung zeigt oben seine beiden Teile imm von elf bis fünf und imm von vier bis null. Die grauen Pfeile stehen für ihr Zusammenfügen, nicht für einen Speicherzugriff. Der rote Rahmen hebt beide Eingangsfelder hervor. Sie ergeben unten die zwölf Bit 111111111100 beziehungsweise 0xFFC.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+signed bedeutet Zweierkomplementinterpretation. Der uninterpretierte Feldwert ist 4092; weil Bit elf gesetzt ist, wird 4096 abgezogen. Das Resultat ist minus vier. Bei der anschließenden Vorzeichenerweiterung wird Bit elf in die zwanzig neuen Stellen kopiert und es entsteht 0xFFFFFFFC. Falsch wäre, die beiden Teile einzeln als vorzeichenbehaftete Zahlen zu lesen oder den unteren Teil als Registernummer zu behandeln. Die Rekonstruktion verwendet ausschließlich Instruktionsbits. Erst danach wird das erweiterte Offsetwort zum Basisregisterinhalt addiert. Damit bleibt derselbe Adressweg wie beim zusammenhängenden Immediate eines Loads erhalten.
 :::
 
-## Adressen in Registern
+## Rückrechnung eines Stores
 
-- Mit `li` (Load Immediate) Pointer initialisieren
-- Die Adresse im Register dient als Base-Pointer
-- Der Base-Pointer markiert den Start eines Arrays im RAM
-- `addi` auf den Pointer entspricht Bewegung im Speicher
-- Von diesem Anker aus adressieren wir alle Elemente
-
-```asm
-# Array startet bei 0x10000000 — Base-Pointer in s1:
-li s1, 0x10000000
-
-# s1 ist der Finger, der auf den RAM zeigt
-```
-
-::: notes
-li s1, 0x10000000 schreibt nur eine Zahl in s1 und legt dort kein Array an. la s1, myArray, load address, lädt die Adresse eines deklarierten Labels und kann mehrere native Instruktionen brauchen. addi s1, s1, 4 verschiebt die Basis um ein ILP32-int. Das ist richtig, wenn der Pointer absichtlich zum nächsten Element wandern soll, und unpraktisch, wenn die ursprüngliche Basis danach noch gebraucht wird.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Load & Store (Ganze Wörter)
-
-- Datenfluss zwischen Register und RAM etablieren
-- RISC-V-Adressierung: Base + Offset
-- `lw` (Load Word): 32-Bit-Blöcke lesen
-- `sw` (Store Word): 32-Bit-Blöcke schreiben
-- Stolperfalle: 4-Byte-Schrittweite bei Integer-Arrays
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Base[Base-Register] -->|Pointer| Addr{plus Offset}
-  Addr --> RAM[(RAM-Adresse)]
-  style Base fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Addr fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style RAM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-lw heißt load word, sw store word. Beide bilden die effektive Adresse als Basis plus Offset und bewegen 32 Bit. Die Instruktion selbst ist ebenfalls 32 Bit breit; Datenbreite und Befehlslänge sind trotzdem verschiedene Dinge. Der Offset erlaubt den Zugriff auf ein Element, ohne die Basis dauerhaft zu ändern. Das gemeinsame Beispiel bleibt ein int-Array mit bekannter Belegung.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Das Problem der Adressierung
-
-- Array mit 5 Werten; Base-Pointer `s1` zeigt auf den Start
-- Wie greifen wir elegant auf Element 3 zu?
-- `addi s1, s1, 12` verschiebt die Basis dauerhaft auf Index 3
-- Für einen Einzelzugriff bleibt die Basis besser unverändert: Offset 12 im Befehl
-- Lösung: Syntax der Load-/Store-Befehle
-
-::: notes
-Index 3 eines int-Arrays liegt 12 Byte hinter der Basis, weil 3 mal 4 gleich 12 ist. addi s1, s1, 12 setzt die Basis dauerhaft auf dieses Element. Das ist erlaubt, wenn der weitere Ablauf genau dort weitermacht. Für einen einzelnen Zugriff mit weiterhin benötigtem Start ist lw oder sw mit Offset 12 besser: s1 bleibt die Basis. Zerstört wird der Pointer nicht; er wird nur verändert.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Base + Offset (Konzept)
-
-- Speicherzugriffe in RISC-V: immer Base + Offset
-- Base: Register mit der Startadresse (z. B. `s1`)
-- Offset: konstante Zahl (Immediate), temporär addiert
-- Zieladresse = Registerwert + Konstante
-- Der Wert im Base-Register bleibt unverändert
-
-```c
-// C-Metapher für Base + Offset:
-int element = array[3];
-// array = Base, 3 (bzw. 12 Bytes) = Offset
-```
-
-::: notes
-Für die normalen Loads und Stores dieser Einheit gilt: effektive Adresse gleich Inhalt von rs1 plus vorzeichenerweitertes 12-Bit-Immediate. Der Bereich ist −2048 bis +2047 Byte. Mit Basis 0x1000 und Offset 12 entsteht 0x100C, s1 bleibt 0x1000. Die C-Indexzahl 3 ist nicht selbst der Byteoffset. Größere Abstände brauchen mehrere Befehle oder einen verschobenen Pointer. Ein negativer Offset −4 geht vier Byte zurück, er ist kein Arrayindex −4.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Load Word (`lw`)
-
-- 32-Bit-Wort aus dem RAM in ein Register laden
-- Syntax: `lw rd, offset(rs1)`
-- `rd`: Zielregister für den RAM-Wert
-- `offset`: Konstante (12-Bit-Immediate)
-- `rs1`: Base-Register (in Klammern)
-- Lädt exakt 4 Bytes ab der berechneten Adresse
-
-```asm
-# Element 8 Bytes nach dem Pointer in s1 → t0
-lw t0, 8(s1)
-
-# Adresse = s1 + 8; hole 4 Bytes
-```
-
-::: notes
-lw t0, 8(s1) lädt vier Bytes ab s1 plus 8 nach t0. rd ist das Ziel, rs1 die Basis. Bei Basis 0x1000 und Array 10, 20, 30, 40, 50 wird an 0x1008 der Wert 30 gelesen. s1 bleibt unverändert. Unter Little Endian setzen sich die vier Bytes zum Registerwort zusammen. Die Klammern sind Assembler-Syntax, kein Funktionsaufruf. Die Adresse muss gültig und für Wörter durch 4 teilbar sein.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Datenfluss beim `lw`
-
-- Flussrichtung visualisieren: wie eine C-Zuweisung
-- Bei `lw` fließt das Datum von rechts nach links
-- Klammer (rechts): Quelle (RAM)
-- Register (links): Ziel
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph RL
-  RAM[(RAM: s1 + 8)] -->|4 Bytes| Reg[Ziel: t0]
-  style RAM fill:#FFFFFF,stroke:#86868B,stroke-width:1.5px
-  style Reg fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
-
-::: notes
-Der Adressweg ist s1 plus 8. Der Datenweg bringt das Wort 30 nach t0. Links im Befehl steht das Ziel nur als Merkhilfe, nicht als Lage im Chip. Ein alter Wert in t0 wird überschrieben. s1 und der Speicher bleiben gleich. Nach dem Befehl steht 30 in t0, nicht die Adresse 0x1008. Die Adresse wurde nur benutzt.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Store Word (`sw`)
-
-- 32-Bit-Wort vom Register zurück in den RAM schreiben
-- Syntax: `sw rs2, offset(rs1)`
-- `rs2`: Quellregister (zu speichernde Daten)
-- `offset(rs1)`: Zieladresse im RAM
-- Ausnahme: Ziel (RAM) steht rechts — Quellregister links
-
-```asm
-# Wert aus t0 nach RAM-Adresse (s1 + 12)
-sw t0, 12(s1)
-
-# t0 wird nicht überschrieben — es ist die Quelle
-```
-
-::: notes
-sw t0, 12(s1) speichert die 32 Bit aus t0 ab der Adresse s1 plus 12. rs1 ist die Basis, rs2 die Datenquelle. Es gibt kein rd. Bei s1 gleich B und t0 gleich 150 ändern sich vier Bytes ab B plus 12, also array-Index 3 im ILP32-Modell. t0 und s1 bleiben unverändert. Die Merkhilfe links steht das Ziel gilt für lw, nicht für sw.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Datenfluss beim `sw`
-
-- Bei `sw` fließt das Datum von links nach rechts
-- Register (links): Quelle
-- Berechnete RAM-Adresse (rechts): Ziel
-- Store schreibt keinen neuen Wert ins Register File — kein `rd`
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Reg[Quelle: t0] -->|4 Bytes| RAM[(RAM: s1 + 12)]
-  style Reg fill:#FFFFFF,stroke:#86868B,stroke-width:1.5px
-  style RAM fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
-
-::: notes
-Beim Store fließen die Daten aus t0, die Adresse entsteht aus s1 plus 12. Das Register File ist die Registerbank. Unter Little Endian wird 150, hexadezimal 0x96, als 96 00 00 00 abgelegt. Nachbarbytes außerhalb dieser vier Adressen bleiben unverändert. Der Store ändert den Speicherzustand, obwohl kein allgemeines Register das Ziel ist.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## C-Arrays vs. Assembler
-
-- Array aus 32-Bit-Integern (`int`) durchlaufen
-- In C abstrahiert: `array[0]`, `array[1]`, `array[2]`
-- In Assembler: Bytes zählen — keine Index-Magie
-- Jeder `int` ist 4 Bytes groß → Adressen um 4 erhöhen
-- Häufigste Fehlerquelle im Labor
-
-```c
-// C: Indizes steigen um 1
-array[0] = 10;
-array[1] = 20;
-array[2] = 30;
-```
-
-::: notes
-Im ILP32-Modell ist sizeof(int) gleich 4. Die Elemente 10, 20 und 30 beginnen bei B, B plus 4 und B plus 8. Der C-Index zählt Elemente, der Assembler-Offset zählt Bytes. Offset 1 ist das zweite Byte des ersten Wortes, nicht das zweite int. Das gilt für dieses Datenmodell, nicht für jede C-Implementierung der Welt.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Die 4-Byte-Schrittweite
-
-- Startadressen aufeinanderfolgender 32-Bit-Wörter: Vielfache von 4
-- Index 0 → Offset 0
-- Index 1 → Offset 4
-- Index 2 → Offset 8
-- Index 3 → Offset 12
-
-| C-Index | Assembler-Offset | RAM (Base = `0x100`)   |
-|---------|------------------|------------------------|
-| `[0]`   | 0                | `0x100`–`0x103`        |
-| `[1]`   | 4                | `0x104`–`0x107`        |
-| `[2]`   | 8                | `0x108`–`0x10B`        |
-
-::: notes
-Offset gleich 4 mal i. Mit Basis 0x100 belegen die Wörter 0x100 bis 0x103, 0x104 bis 0x107, 0x108 bis 0x10B und 0x10C bis 0x10F. Die mittleren Bytes gehören zum jeweiligen int. Es liegen keine drei leeren Fächer zwischen den Elementen. Die Starts sind durch 4 teilbar, wenn die Basis es ist.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Element 0 laden
-
-- Pointer auf Array-Start liegt in `s1`
-- `array[0]` nach `t0` laden
-- Offset ist 0
-
-```asm
-# Lade array[0]
-lw t0, 0(s1)
-
-# RAM-Adresse = s1 + 0
-```
-
-::: notes
-Voraussetzung: s1 enthält die Basis B und das erste Wort ist 10. lw t0, 0(s1) liest B bis B plus 3 und setzt t0 auf 10. Offset 0 heißt Zugriff an der Basis, nicht kein Zugriff und nicht den Wert 0 laden. s1 bleibt B. lw und die beiden Registerrollen gelten auch dann, wenn sie schon vorkamen.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Element 1 und 2 laden
-
-- `array[1]` und `array[2]` laden
-- Offsets: 4 und 8
-- Base-Register `s1` bleibt unverändert (weiterhin Element 0)
-
-```asm
-lw t1, 4(s1)     # array[1], Adresse = s1 + 4
-lw t2, 8(s1)     # array[2], Adresse = s1 + 8
-
-# s1 ändert sich durch die Offsets nicht
-```
-
-::: notes
-lw t1, 4(s1) lädt 20 von B plus 4. lw t2, 8(s1) lädt 30 von B plus 8, beim Array 10, 20, 30, 40, 50. Beide Befehle lassen s1 auf B. Je Zugriff werden vier Bytes gelesen. Die berechnete Adresse wird nicht nach s1 geschrieben. Hätte man s1 vorher um 4 erhöht, läge ein Offset 8 relativ zur neuen Basis bei der alten Adresse B plus 12.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Die Illusion des C-Compilers
-
-- Warum nie `array[i * 4]` in C schreiben?
-- Der Compiler nimmt Ihnen die Skalierung ab
-- Bei `int`-Arrays weiß er: Elementgröße 4 Bytes
-- Aus `array[i]` wird Assembler mit $i \cdot 4$ vor dem Load
-- Assembler enttarnt diese High-Level-Abstraktion
-
-```c
-// Sie schreiben in ILP32, sizeof(int) = 4:
-int x = array[i];
-
-// Typisiert: array + i  bzw.  &array[i]
-// Byteadresse: Basis + i * sizeof(array[0])
-// &array hat den Typ int (*)[N] und eine andere Schrittweite
-```
-
-::: notes
-array plus i und die Adresse von array an der Stelle i haben die Schrittweite eines int, hier 4 Byte. Die Adresse des gesamten Arrays, Typ int Zeiger auf ein Feld der Länge 5, hat die Schrittweite 20 Byte. Gleiche Startadresse heißt nicht gleicher Typ. array mit Index 4 mal i wählt das Element mit diesem Index, es ist keine zusätzliche Byteskalierung. Die Formel Basis plus i mal 4 ist die Byteadresse, kein Ersatz für den typisierten C-Ausdruck. Ein Compilerlauf wird hier nicht behauptet.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Komplettes Beispiel (Lesen)
-
-- C-Zeile: `a = array[2];`
-- `a` in `s0`, Array-Base in `s1`
-- Index 2 → Offset $2 \cdot 4 = 8$
-
-```c
-int a = array[2];
-```
-
-```asm
-# s0 = a, s1 = Base-Pointer
-lw s0, 8(s1)
-```
-
-::: notes
-lw s0, 8(s1) übersetzt a gleich array an Index 2, wenn s1 die Basis ist und das Array 10, 20, 30, 40, 50 enthält. Dann wird s0 gleich 30. Die Zeile ist unter dieser Voraussetzung vollständig, aber noch kein eigenständiges Venus-Programm. Einstieg, la und Abschluss stehen in beispiele/vl3_wordzugriff.s. s0 ist hier das Zielregister der Zuweisung, s1 nur die Adresse.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Komplettes Beispiel (Schreiben)
-
-- Modifikation: `array[3] = a + b;`
-- Annahmen: `a` in `s0`, `b` in `t0`, Array in `s1`
-- Zwei Schritte: erst ALU, dann Store
-
-```c
-array[3] = a + b;
-```
-
-```asm
-add t1, s0, t0      # t1 = a + b
-sw t1, 12(s1)       # Index 3 → Offset 12
-```
-
-::: notes
-Mit a gleich 7 in s0 und b gleich 8 in t0 bildet add t1, s0, t0 die Summe 15. sw t1, 12(s1) schreibt sie nach Index 3. Die ALU schreibt nicht selbst in den RAM. Das Array 10, 20, 30, 40, 50 wird zu 10, 20, 30, 15, 50. t1 hält das Ergebnis, s1 die Basis. Die Werte bleiben in 32 Bit ohne Überlauf. Initialisierung und Programmende gehören zum ausführbaren Beispiel.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Speicherausrichtung (Alignment)
-
-- Die **effektive** Adresse `Basis + Offset` muss zur Zugriffsbreite passen
-- Ein gerader Offset reicht bei ungerader Basis nicht
-- Wort: effektiv durch 4 teilbar; Halbwort: durch 2
-- Kursmodell: unausgerichtete Zugriffe werden nicht verwendet
-- Ein Alignment-Trap ist nicht für jede RISC-V-Umgebung garantiert
-
-![Effektive Adresse statt nur Offset](../assets/images/alignment-effective.svg)
-
-::: notes
-Ausgerichtet ist ein Zugriff, wenn die effektive Adresse durch die Breite in Byte teilbar ist. Für lw und sw muss Basis plus Offset durch 4 teilbar sein, für lh und sh durch 2. Ein gerader Offset genügt nicht, wenn die Basis ungerade ist. Ob eine Umgebung unausgerichtete Zugriffe ausführt oder mit einem Trap abbricht, steht nicht pauschal in der ISA. Die alte Grafik mit garantierter Exception ist deshalb entfernt. Im Kurs verwenden wir natürliche Ausrichtung.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Teilzugriffe & S-Type-Format
-
-- Nicht alles ist ein 32-Bit-Integer (z. B. ASCII-Zeichen)
-- Zugriff auf einzelne Bytes: `lb` und `sb`
-- Vorzeichenerweiterung bei kleinen Daten
-- Signed vs. Unsigned Loads
-- S-Type-Instruction-Format für Store-Befehle
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  RAM[1 Byte im RAM] -->|lb| Reg[32-Bit-Register]
-  Reg -->|Sign Ext| ALU
-  style RAM fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Reg fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style ALU fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Ein C-char-Array hat ein Byte je Element. Ein Schriftzeichen braucht je nach Codierung nicht immer ein Byte. ASCII, der 7-Bit-Code, reicht von 0 bis 127. Ein lw über einen String kann mehrere Bytes lesen, ist aber nicht die direkte Übersetzung eines einzelnen Zeichenzugriffs. Die zwei Fragen lauten: Wie wird ein kleines Speicherstück zum 32-Bit-Register, und wie codiert ein Store zwei Quellregister plus Offset?
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Problem: Kleine Daten laden
-
-- Ein C-String (`char[]`) hat Elemente von 1 Byte
-- `lw` würde vier Buchstaben gleichzeitig laden
-- Lösung: `lb` (Load Byte) und `lh` (Load Halfword)
-- Bei Byte-Arrays ist das Offset tatsächlich +1 (Element = 1 Byte)
-
-```c
-char text[] = "ABC";
-char a = text[0];
-char b = text[1]; // Offset in Assembler wirklich +1
-```
-
-::: notes
-char text mit dem Inhalt ABC und abschließender Null besteht aus den Bytes 0x41, 0x42, 0x43 und 0x00. text an Index 1 liegt bei B plus 1, nicht bei B plus 4. Für diese positiven ASCII-Werte liefern lb und lbu denselben Registerwert. Der Unterschied erscheint, wenn Bit 7 gesetzt ist. Ob ein schlichtes C-char vorzeichenbehaftet ist, hängt von der Implementierung ab. Ein einzelnes Zeichen lädt man als Byte, ohne jede Wortverarbeitung von Bytefolgen zu verbieten.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Load Byte (`lb`)
-
-- Syntax: `lb rd, offset(rs1)`
-- Liest genau 1 Byte von der Adresse
-- Zielregister `rd` ist 32 Bit groß
-- 8 Bits geladen — was passiert mit den restlichen 24 Bits?
-- Die Architektur füllt die Lücke automatisch (Sign-Extension)
-
-```asm
-lb t0, 0(s1)
-
-# RAM liefert z. B. 0x8F (8 Bits)
-# Register t0: 0x??????8F — linke Bits werden aufgefüllt
-```
-
-::: notes
-lb, load byte, liest acht Bit und definiert sofort das ganze Zielregister. Das Speicherbyte 0x8F wird zu 0xFFFFFF8F. Bit 7 ist 1 und wird in die oberen 24 Bit kopiert. Als Zweierkomplement ist das −113, weil 143 minus 256 gleich −113 ist. Die Basis bleibt unverändert. Ein Registerzustand mit Fragezeichen entsteht dabei nicht. Solche Zeichen wären nur eine noch offene Frage, kein Zwischenwert der Hardware.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-
-## Sign-Extension (Vorzeichenerweiterung)
-
-- Nach `lb` bleiben links im 32-Bit-Register 24 Bits leer
-- Die CPU darf diese Lücke nicht mit Zufallswerten oder sturen Nullen füllen
-- Lösung: automatische Vorzeichenerweiterung (Sign-Extension)
-- Bit 7 des geladenen Bytes wird in alle 24 linken Bits kopiert
-- So bleibt der Zweierkomplement-Wert (z. B. $-5$) identisch
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Byte[RAM Byte: 10001111] -->|Sign Ext| Reg[Reg: 1111... 10001111]
-  Byte2[RAM Byte: 01110000] -->|Sign Ext| Reg2[Reg: 0000... 01110000]
-  style Byte fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Byte2 fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Reg fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Reg2 fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
-
-::: notes
-lb lässt keine Bits leer. Es schreibt alle 32 Ergebnisbits. Das höchstwertige Bit, most significant bit, des Bytes entscheidet die Füllung. 0x8F ist binär 10001111 und bleibt als 0xFFFFFF8F der Wert −113. 0x7F hat Bit 7 gleich 0 und wird 0x0000007F, also 127. Das Beispiel −5 passt zu 0xFB und 0xFFFFFFFB. Erweitert wird das Bitmuster, der Speicher bleibt unverändert.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Unsigned Load (`lbu`)
-
-- Manche Bytes sind keine Zweierkomplement-Zahlen
-- ASCII ist 7 Bit; ein Kanalwert oder ein allgemeines Byte kann 0 bis 255 sein
-- Dafür `lbu`, nicht `lb`
-- `lb` von Byte `0x80` ergibt `0xFFFFFF80`; `lbu` ergibt `0x00000080`
-
-![lb und lbu desselben Bytes 0x80](../assets/images/lb-lbu-0x80.svg)
-
-```asm
-# Farbwert 0-255 aus dem RAM
-lbu t0, 0(s1)
-
-# RAM: 0xFF (255) → t0 = 0x000000FF
-```
-
-::: notes
-Dieselbe Speicherstelle 0x80 ergibt mit lb den Wert 0xFFFFFF80, signed −128, und mit lbu den Wert 0x00000080, unsigned 128. lbu, load byte unsigned, füllt mit Nullen. lb zerstört das Speicherbyte nicht. Für einen Kanalwert von 0 bis 255 ist lbu passend, für einen vorzeichenbehafteten 8-Bit-Wert lb. ASCII endet bei 127. Das Byte 0xFF wird mit lb zu −1 und mit lbu zu 255. Die Grafik nennt deshalb −128, nicht 128, für das vorzeichenbehaftete Ergebnis.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Halfwords laden (`lh`, `lhu`)
-
-- Zwischen Word (32 Bit) und Byte (8 Bit): Halfword = 16 Bit (2 Bytes)
-- Anwendung: `short` in C, Audio-Samples (z. B. 16-Bit-WAV)
-- `lh`: mit Sign-Extension; `lhu`: Unsigned mit Zero-Fill
-- Alignment: die effektive Adresse Basis + Offset muss durch 2 teilbar sein
-
-```asm
-lh t0, 2(s1)    # 16 Bit mit Vorzeichenerweiterung
-lhu t1, 4(s1)   # 16 Bit mit Zero-Fill
-```
-
-::: notes
-Ein Halfword ist hier 16 Bit, zwei Byte. lh erweitert vorzeichenbehaftet, lhu mit Nullen. Dasselbe Muster 0x8000 wird mit lh zu 0xFFFF8000, also −32768, und mit lhu zu 0x00008000, also 32768. Ausgerichtet ist die effektive Adresse, nicht der Offset allein. Basis 0x1001 plus Offset 1 ergibt 0x1002 und ist für ein Halfword natürlich ausgerichtet. Dieselbe Basis plus Offset 2 ergibt 0x1003 und ist es nicht, obwohl der Offset gerade ist. Ein Alignment-Fault ist nicht für jede RISC-V-Umgebung garantiert.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Store Byte & Halfword (`sb`, `sh`)
-
-- Gegenstücke zum Laden: `sb` und `sh`
-- Syntax wie bei `sw`: `sb rs2, offset(rs1)`
-- Nur die untersten 8 bzw. 16 Bits des Registers wandern in den RAM
-- Obere Bits werden abgeschnitten und ignoriert
-
-```asm
-# t0 = 0x11223344 — nur 0x44 speichern:
-sb t0, 0(s1)
-```
-
-::: notes
-sb schreibt die unteren acht Bit, sh die unteren 16. Bei t0 gleich 0x11223344 speichert sb das Byte 0x44. sh speichert unter Little Endian 0x44 und danach 0x33. Die oberen Registerbits bleiben im Register erhalten, werden aber nicht mitgeschrieben. Nachbarbytes außerhalb der Zugriffsbreite bleiben unverändert. Die Adresse muss zur Breite passen. sb kann ein ASCII-Zeichen schreiben, verarbeitet aber beliebige acht Bit.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Warum gibt es kein `sbu`?
-
-- Im Handbuch fehlt `sbu` (Store Byte Unsigned) — absichtlich
-- Unsigned ist nur relevant, wenn Lücken im Register aufgefüllt werden
-- Beim Speichern wird nichts aufgefüllt, nur abgeschnitten
-- Dem RAM ist egal, ob die 8 Bits eine Zahl oder ein Pixel sind
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Reg[Register: 1111... 10001111] -->|sb schneidet ab| RAM[RAM: 10001111]
-  style Reg fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style RAM fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-```
-
-::: notes
-Für Stores gleicher Breite spielt die signed- oder unsigned-Herkunft keine Rolle, weil dieselben unteren Bits geschrieben werden. Vergleiche wie blt und bltu unterscheiden die Interpretation dagegen. Das Byte 0xFF entsteht per sb sowohl aus dem Registerwert −1 als auch aus 255. Erst ein späteres lb oder lbu erzeugt verschiedene 32-Bit-Werte. sbu ist kein RV32I-Befehl. Unsigned ist also nicht nur beim Laden wichtig, aber beim reinen Speichern dieser Breite entsteht keine zweite Variante.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Decodierung: Der `lw`-Befehl
-
-- `lw` nutzt das bekannte I-Type-Format
-- Opcode: Load
-- `rs1`: Base-Register
-- `imm`: 12-Bit-Offset
-- `rd`: Zielregister für den RAM-Wert
-
-| Bits | Feld |
-|:---|:---|
-| 31:20 | `imm[11:0]` (Offset) |
-| 19:15 | `rs1` (Base) |
-| 14:12 | `funct3` (Größe) |
-| 11:7 | `rd` (Ziel) |
-| 6:0 | `opcode` (Load) |
-
-::: notes
-Das I-Format eines Loads legt das 12-Bit-Immediate in die Bits 31 bis 20, rs1 in 19 bis 15, funct3 in 14 bis 12, rd in 11 bis 7 und den opcode in 6 bis 0. Für lw t0, 8(s1) gilt rd gleich x5, rs1 gleich x9, Immediate 8, opcode 0x03 und funct3 gleich 010. Die Summe der Breiten ist 32. funct3 unterscheidet auch lb und lbu, nicht nur die Breite. Das Immediate ist vorzeichenbehaftet und zählt Bytes. Die Codierung 0x0084A283 passt zu dieser Registerwahl.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Das Problem beim `sw`-Befehl
-
-- `sw` braucht Base (`rs1`), Datenquelle (`rs2`) und 12-Bit-Offset
-- Das I-Type-Format hat keinen Platz für `rs2` (dort liegt das Immediate)
-- R-Type hat kein Immediate; I-Type hat kein `rs2`
-- Für Stores braucht es ein neues Formular
-
-| Format | `rs1` | `rs2` | `rd` | Immediate |
-|--------|-------|-------|------|-----------|
-| R-Type | ja    | ja    | ja   | nein      |
-| I-Type | ja    | nein  | ja   | ja (12 Bit) |
-| Bedarf `sw` | ja | ja | nein | ja (12 Bit) |
-
-::: notes
-Ein Store braucht zwei Quellregister und einen Offset, aber kein rd. sw t0, 12(s1) nutzt die Basis x9, die Datenquelle x5 und den Offset 12. Das I-Format hat kein rs2-Feld. Die Tabelle zeigt belegte Felder des Formats, nicht fehlende Prozessorregister. Dass der allgemeine R-Typ kein Immediate hat, heißt nicht, dass RISC-V keine Konstantenbefehle besitzt. addi ist ein anderes Format.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Das S-Type-Format (Die Lösung)
-
-- Store-Befehle nutzen das S-Type Instruction Format
-- Kein Zielregister `rd` (Schreiben geht in den RAM)
-- Das 5-Bit-`rd`-Feld wird für `imm[4:0]` wiederverwendet
-- `imm[11:5]` liegt links (analog zu `funct7` beim R-Type)
-- Das Offset ist im Maschinenwort zweigeteilt
-
-| Bits | Feld |
-|:---|:---|
-| 31:25 | `imm[11:5]` (oberes Offset) |
-| 24:20 | `rs2` (Quelle) |
-| 19:15 | `rs1` (Base) |
-| 14:12 | `funct3` (Größe) |
-| 11:7 | `imm[4:0]` (unteres Offset) |
-| 6:0 | `opcode` (Store) |
-
-::: notes
-Im S-Format liegen imm 11 bis 5 in den Bits 31 bis 25, rs2 in 24 bis 20, rs1 in 19 bis 15, funct3 in 14 bis 12, imm 4 bis 0 in 11 bis 7 und der opcode in 6 bis 0. Bits 11 bis 7 heißen hier nicht rd. Für sw t0, 12(s1) ist der Offset 12, oben 0000000 und unten 01100. Für −4 sind die zwölf Bits 0xFFC, oben 1111111 und unten 11100. Zusammengesetzt und vorzeichenerweitert ergibt das −4. Die Codierung des positiven Beispiels ist 0x0054A623, die von −4 ist 0xFE54AE23.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Warum zerrisst RISC-V das Immediate?
-
-- Zerrissenes Immediate wirkt auf den ersten Blick umständlich
-- Grund: Hardware-Effizienz — Silizium sparen
-- In (fast) jedem Format liegen `rs1` und `rs2` an denselben Bit-Positionen
-- Der Kabelbaum zum Register File muss nicht umgeschaltet werden
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  R[R-Type: rs1 Bits 15-19, rs2 Bits 20-24]
-  I[I-Type: rs1 Bits 15-19]
-  S[S-Type: rs1 Bits 15-19, rs2 Bits 20-24]
-  R --> Decoder[Feste Kabel zur Register-Werkbank]
-  I --> Decoder
-  S --> Decoder
-  style Decoder fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style R fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style I fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style S fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-rs1 liegt in den Formaten, die es haben, an derselben Bitposition. rs2 ebenso, wo es vorkommt. Ein I-Typ hat kein rs2. Der Assembler verteilt die Immediate-Bits, der Decoder setzt sie wieder zusammen. Der Entwurfsgrund ist eine einfachere Registeradressierung. Konkrete eingesparte Transistorzahlen oder Takte werden hier nicht behauptet. Die Registerbank liefert danach die 32-Bit-Inhalte zu den Nummern.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Zusammenfassung: Load & Store
-
-- Werkzeuge, um die Memory Wall zu überwinden
-- Alle nutzen Base + Offset mit runden Klammern
-- Das Offset wird vorzeichenerweitert — auch negative Offsets wie `-4(s1)` sind möglich
-
-| Mnemonic     | Name           | Breite            | Sign-Ext. (Laden)   |
-|--------------|----------------|-------------------|---------------------|
-| `lw` / `sw`  | Word           | 32 Bit (4 Bytes)  | entfällt / (egal)   |
-| `lh` / `sh`  | Halfword       | 16 Bit (2 Bytes)  | ja / (egal)         |
-| `lhu`        | Half Unsigned  | 16 Bit (2 Bytes)  | nein (Zero-Fill)    |
-| `lb` / `sb`  | Byte           | 8 Bit (1 Byte)    | ja / (egal)         |
-| `lbu`        | Byte Unsigned  | 8 Bit (1 Byte)    | nein (Zero-Fill)    |
-
-::: notes
-Loads und Stores machen Speicherdaten zugänglich. Sie überwinden keine feste Memory Wall. lw übernimmt 32 Bit, lh und lb erweitern vorzeichenbehaftet, lhu und lbu mit Nullen. sw, sh und sb schreiben die unteren 32, 16 oder 8 Bit. Ausrichtung gilt für die effektive Adresse. Der 12-Bit-Adressoffset ist auch bei lbu vorzeichenbehaftet. Ein Kanalwert 255 wird mit lbu geladen. Der Offset −4 ist ein Byteabstand, kein Elementindex −4.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Der Kontrollfluss (Branches)
-
-- Ausbruch aus der starren, linearen Code-Ausführung
-- Program Counter (PC) und seine Manipulation
-- Labels als Ankerpunkte im Text
-- Bedingte Sprünge (`beq`, `bne`, `blt`) für If/Else
-- Operanden vertauschen, um fehlende Relationen zu simulieren
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  A[Code Zeile 1] --> B{Entscheidung}
-  B -->|Wahr Branch| C[Zeile 50]
-  B -->|Falsch| D[Zeile 2]
-  style B fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style C fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style D fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Kontrollfluss wählt die nächste Instruktionsadresse. Datenbefehle ändern Register oder Speicher. Ein Branch ist bedingt, ein Jump nicht von einem Datenvergleich abhängig. PC ist der Program Counter. Ein Label ist eine symbolische Stelle. Wenn später bne die C-Bedingung invertiert, darf die Beschriftung wahr nicht stillschweigend den genommenen Branch meinen. C-wahr und Branch-taken werden deshalb getrennt benannt.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Der Program Counter (Der Dirigent)
-
-- Der PC speichert die RAM-Adresse des aktuellen Befehls (Venus zeigt genau diese Adresse)
-- Folgeinstruktion: $PC+4$; Normalfall: Hardware erhöht nach dem Befehl um $+4$
-- Warum 4? Jeder RV32I-Befehl ist exakt 4 Bytes groß
-- Der Prozessor fällt von Zeile zu Zeile (Fall-Through)
+Wort `0x0054A623`:
 
 ```text
-RAM-Adresse | Maschinencode | Assembler
-0x00000000  | 0x...         | add t0, t1, t2   <-- PC
-0x00000004  | 0x...         | sub t3, t0, t1   <-- PC + 4
-0x00000008  | 0x...         | lw  t2, 0(s1)    <-- PC + 8
+0000000 00101 01001 010 01100 0100011
+oberes  rs2   rs1   f3  unten opcode
 ```
 
-::: notes
-Der PC speichert die Adresse der aktuellen Instruktion. Er ist keines der Register x0 bis x31. In Venus sieht man diese Adresse in der Codeliste. Auf einem Mikrocontroller kann der Code im Flash liegen, nicht im RAM. Im unkomprimierten Modell ist die Folgeadresse PC plus 4. Steht der PC bei 0, liegt die nächste Instruktion bei 4 und die übernächste bei 8, nicht beide bei PC plus 4. Eine Pseudoinstruktion kann mehrere native Befehle erzeugen.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Das IF-Problem
-
-- In C ist Kontrollfluss abstrahiert: `if (a == b) { ... } else { ... }`
-- Geschweifte Klammern markieren in C einen Block; im Maschinencode gibt es dafür kein eigenes Zeichen
-- Zum Überspringen muss der PC auf die Adresse nach dem Block zeigen
-- Adressabstände per Hand zu pflegen wäre fehleranfällig
-
-```c
-if (a == b) {
-    // Block ausführen
-}
-// Wie finden wir diese Zeile im RAM?
-```
+- `opcode=0100011`, `funct3=010` → `sw`
+- `rs2=5`, `rs1=9`; Offset `000000001100` → 12
+- Ergebnis: `sw t0, 12(s1)`; Bits 11:7 sind kein `rd`.
 
 ::: notes
-In C begrenzen geschweifte Klammern einen Block und können den Gültigkeitsbereich bestimmen. Im Maschinencode gibt es kein ausführbares Klammerzeichen. Eine falsche Bedingung muss den Rumpf überspringen, also den PC auf die Adresse nach dem Block setzen. Labels benennen diese Stellen. Ein Rumpf mit sichtbarer Wirkung, etwa t0 gleich 1, macht beide Wege prüfbar. Kosmetik sind die Klammern nicht.
+Decodieren bedeutet, das Maschinenwort in seine Felder zu zerlegen. opcode ist der sieben Bit breite Store-Familiencode 0100011. funct3, hier f3, ist 010 und wählt sw, Store Word. rs2, register source 2, enthält 00101 und wählt x5, Alias t0. rs1, register source 1, enthält 01001 und wählt x9, Alias s1. Die verbleibenden Immediate-Teile sind oben 0000000 und unten 01100.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+Wir verbinden beide Teile zu 000000001100. Bit elf ist null, der signed Byteoffset daher plus zwölf. Der Assemblertext lautet sw t0, 12(s1). Mit s1 gleich 0x1000 und t0 gleich 42 würde diese Instruktion vier Byte ab 0x100C schreiben. Diese Werte sind eine zusätzliche Lehrbelegung, keine Information im Wort. Ein allgemeines Zielregister rd, register destination, ist hier nicht vorhanden. Wer die Bits elf bis sieben trotzdem als Zielnummer zwölf interpretiert, verwechselt das Format. Das bisherige Registerformat liefert nützliche Positionen, ersetzt aber die Auswahl des richtigen Formats nicht.
 :::
 
-## Labels (Sprungmarken)
+# 4. Die nächste Instruktion auswählen
 
-- Labels: Textmarken mit Doppelpunkt (`:`) im Quelltext
-- Keine Prozessor-Befehle — kosten keine Ausführungszeit
-- Der Assembler berechnet die exakte RAM-Adresse des Labels
-- Sprungbefehle referenzieren den Label-Namen, nicht die Hex-Adresse
+
+
+::: notes
+Ein Speicherbefehl verändert Daten, aber bei normaler Ausführung geht das Programm danach zur nächsten Instruktion weiter. Eine Entscheidung benötigt nun eine andere Möglichkeit: abhängig von zwei Registerwerten entweder fortsetzen oder zu einer benannten Stelle springen. Diese Auswahl betrifft den Programmzähler und nicht die Anordnung der Daten im Array.
+
+Wir führen zunächst einen einzelnen bedingten Sprung ein. Danach prüfen wir verschiedene Vergleichsarten und den Bezugspunkt der Zieladresse. Ein zusätzlicher unbedingter Sprung ermöglicht, genau einen von zwei Rechenblöcken auszuführen. Dafür genügen die bisher bekannten Registeroperationen und neue Labels im Code. Rückkehradressen und vollständige Funktionsaufrufe sind ein Thema der nächsten Einheit; hier bleiben alle Wege innerhalb desselben Programms.
+:::
+
+## Branch: zwei mögliche Folgeadressen
+
+![Bei Gleichheit Sprungziel, sonst die nächste native Instruktion](../assets/images/vl3-branch-wege.svg){width=90%}
+
+::: notes
+Ein Branch ist ein bedingter Sprung. beq heißt Branch if Equal und vergleicht die beiden Registerinhalte auf gleiche Bitmuster. t0 und t1 sind temporäre Quellen. PC bedeutet Program Counter, Programmzähler; er enthält im betrachteten Modell die Adresse der aktuellen Instruktion. Die Zeichnung setzt den Branch an die Lehradresse 0x1000 und das Label Ziel an 0x1010.
+
+Der graue linke Weg bedeutet ungleiche Quellen: Der Branch wird nicht genommen und der PC nachher ist 0x1004. Der rote rechte Weg bedeutet Gleichheit: Die Instruktion wählt 0x1010. Der Zielabstand beträgt plus sechzehn Byte, bezogen auf die Branch-Adresse selbst. Die Folgeadresse plus vier wird nicht zusätzlich zum Zieloffset addiert. Ein Branch erzeugt kein allgemeines Ergebnisregister und verändert seine beiden Quellen nicht. Die Abbildung ist eine Auswahl zwischen Befehlsadressen, keine Darstellung von gleichzeitig ausgeführten Rechenzweigen. Die nächsten Beispiele machen deutlich, welche Zeilen dadurch übersprungen werden.
+:::
+
+## Labels benennen Adressen
 
 ```asm
-    add t0, t1, t2
-ZielMarke:              # Label → z. B. Adresse 0x08
-    sub t3, t0, t1
+    addi t0, x0, 5      # Lehradresse 0x1000
+Weiter:
+    addi t1, x0, 6      # Lehradresse 0x1004
 ```
 
-::: notes
-Ein Label der Form Name und Doppelpunkt bezeichnet die Adresse der folgenden Instruktion und verbraucht selbst kein Instruktionswort. Liegt ein natives add bei Adresse 0, liegt das unmittelbar folgende native sub bei 4, nicht ungeprüft bei 8. Konkrete Adressen setzen voraus, dass keine Pseudoinstruktion dazwischen expandiert. Ein Label vor .word benennt Daten. Das Label allein reserviert sie nicht.
+- `Weiter` benennt die Adresse der folgenden Instruktion.
+- Das Label selbst erzeugt kein Instruktionswort.
+- Adressabstände zählen native Befehle, nicht Quelltextzeilen.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+::: notes
+Ein Label ist eine symbolische Adressmarke im Assemblertext. Weiter mit Doppelpunkt benennt die Stelle der folgenden Instruktion. addi heißt Add Immediate und schreibt aus der Nullquelle x0 die direkten Werte fünf und sechs in die temporären Register t0 und t1. Für die beiden nativen Befehle wird der Start 0x1000 ausdrücklich als Lehradresse angenommen. Da jeder vier Byte belegt, steht Weiter bei 0x1004.
+
+Der Doppelpunkt und die Kommentartexte erzeugen keinen weiteren Befehlsplatz. Ein Label vor Daten würde entsprechend eine Datenadresse benennen. Das Assemblerwerkzeug berechnet die tatsächliche Lage und benutzt bei Sprüngen die Distanz zur Zielmarke. Der sichtbare Abstand im Text ist keine verlässliche Bytezahl: Leerzeilen und Kommentare belegen nichts, und Pseudoinstruktionen können mehrere native Befehle erzeugen. Änderungen zwischen Branch und Ziel können daher den codierten Abstand verändern, obwohl der Labelname gleich bleibt. Für Rechnungen von Hand verwenden wir ausschließlich ausdrücklich native oder fest entwickelte Zeilen.
 :::
 
-## Branch Equal (`beq`)
+## beq und bne lesen zwei Register
 
-- Syntax: `beq rs1, rs2, Label` (Branch if Equal)
-- Vergleich der Registerinhalte
-- Bei Gleichheit: PC → Label-Adresse (Sprung)
-- Bei Ungleichheit: Fall-Through mit PC $+4$
+Anfang: `t2=0`.
 
 ```asm
     beq t0, t1, Weiter
-    addi t2, t2, 1      # übersprungen, wenn t0 == t1
+    addi t2, t2, 1
 Weiter:
-    sub t3, t0, t1
+    addi t3, x0, 9
 ```
 
-::: notes
-beq, branch if equal, springt, wenn die beiden Registerbitmuster gleich sind, sonst fällt die Ausführung durch. Mit t0 und t1 beide 5 wird addi t2, t2, 1 übersprungen und t2 bleibt 0, wenn es vorher 0 war. Mit t1 gleich 6 wird addi ausgeführt und t2 wird 1. Ein allgemeines Vergleichsergebnisregister ist nicht nötig. Eine ALU-Differenz ist ein mögliches Hardwaremodell, keine ISA-Pflicht. addi ist hier der richtige Immediate-Befehl.
+- `t0=t1`: `t2` bleibt 0.
+- `t0` ungleich `t1`: `t2` wird 1.
+- `bne` springt bei Ungleichheit; `t3` wird in beiden Fällen 9.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+::: notes
+beq ist Branch if Equal, Sprung bei gleichen Registerbitmustern. bne bedeutet Branch if Not Equal und ist das Gegenstück für Ungleichheit. Beide haben zwei Registerquellen und ein Ziel-Label. Die temporäre Stelle t2 wird ausdrücklich mit Anfangswert null angenommen. addi, Add Immediate, erhöht sie nur, wenn die Ausführung durch die zweite Zeile läuft. x0 ist die Nullquelle für die letzte Initialisierung.
+
+Sind t0 und t1 beide fünf, springt beq direkt zu Weiter und lässt t2 null. Sind sie fünf und sechs, wird nicht gesprungen; t2 erhält eins. t3 wird auf beiden Wegen neun. Ein Ersetzen von beq durch bne vertauscht, bei welchen Daten die Erhöhung übersprungen wird. Der Vergleich schreibt weder eine allgemeine Wahrheitszahl noch ein architektonisches Vergleichsflag, also ein Statusbit, das ein weiterer Befehl erst lesen müsste. Wie eine konkrete Schaltung Gleichheit erkennt, wird hier nicht vorgegeben. Die bekannte Regel über alte Quellwerte bleibt gültig.
 :::
 
-## Branch Not Equal (`bne`)
+## Signed Relationen: blt und bge
 
-- Gegenstück zu `beq`: `bne rs1, rs2, Label`
-- Springt nur bei unterschiedlichen Registerwerten
-- Typisches Schleifen-Muster: solange Zähler ungleich Grenze, zurück nach oben
+| Befehl | Bedeutung für Zweierkomplementwerte $A,B$ |
+|---|---|
+| `blt rs1, rs2, Ziel` | springen, wenn $A<B$ |
+| `bge rs1, rs2, Ziel` | springen, wenn $A\ge B$ |
+
+| Quellen | `blt` genommen? | `bge` genommen? |
+|---|---|---|
+| $-5$, $2$ | ja | nein |
+| $2$, $2$ | nein | ja |
+| $3$, $2$ | nein | ja |
+
+::: notes
+blt steht für Branch if Less Than, Sprung wenn die erste Quelle kleiner ist. bge bedeutet Branch if Greater or Equal, Sprung bei größer oder gleich. rs1 und rs2 heißen register source 1 und 2, die beiden Quellregister. A und B bezeichnen ihre alten Inhalte, hier als signed Zweierkomplementzahlen interpretiert. Ziel ist die symbolische Sprungmarke.
+
+Die drei Beispiele decken kleiner, gleich und größer ab. Minus fünf ist kleiner als zwei, daher wird nur blt genommen. Bei Gleichheit wird bge genommen, denn sein Vergleich schließt Gleichheit ein. Beide Befehle lassen die Registerwerte unverändert und entscheiden lediglich über die nächste Befehlsadresse. Für jede feste Quellbelegung ergänzen sich die beiden Bedingungen: Genau eine ist wahr. Die Wahl der Interpretation gehört zum Befehl; ein Register ist nicht von sich aus ein signed Register. Für denselben Bitinhalt kann ein vorzeichenloser Vergleich eine andere Reihenfolge ergeben, was insbesondere bei großen Rohwerten oder Adressen wichtig ist.
+:::
+
+## Unsigned vergleicht dieselben Bits anders
+
+![Verschiedene Zahlenordnungen für identische Registermuster](../assets/images/vl3-vergleich.svg){width=90%}
+
+- `bltu`: vorzeichenlos kleiner
+- `bgeu`: vorzeichenlos größer oder gleich
+- Adressmuster werden in unseren Assemblerbeispielen vorzeichenlos geordnet.
+
+::: notes
+unsigned heißt vorzeichenlos. bltu bedeutet Branch if Less Than Unsigned, bgeu Branch if Greater or Equal Unsigned. Sie entsprechen den signed Relationen blt und bge, interpretieren die Quellen aber als nichtnegative Zahlen zwischen null und 2 hoch 32 minus eins. Die Abbildung verwendet dasselbe Muster FFFFFFFF und das Muster 00000001 in beiden Reihen.
+
+Oben ist die signed Zweierkomplementordnung: FFFFFFFF bedeutet minus eins und liegt vor eins. Unten steht die unsigned Ordnung: FFFFFFFF ist 4294967295 und liegt hinter eins. Die Boxen enthalten Werte, das Kleinerzeichen benennt deren Ordnung; der rote Rahmen hebt den großen vorzeichenlosen Wert hervor. Für einen Vergleich von t0 gleich 0xFFFFFFFF und t1 gleich eins würde blt springen, bltu nicht. Die Bits ändern sich dabei nicht. Eine hohe Adresse mit gesetztem Bit 31 ist als Adressmuster nicht deshalb eine negative Speicherposition. Für die Adresszahlen unserer Beispiele ist die vorzeichenlose Ordnung passend, ohne dass damit ein konkretes gültiges Speichergebiet zugesichert wird.
+:::
+
+## Kleiner oder gleich: Quellen vertauschen
+
+$$A\le B\quad\Longleftrightarrow\quad B\ge A$$
 
 ```asm
-    li   t0, 0               # Zaehler, sonst unbestimmt
-    li   t1, 10              # Grenze
-LoopStart:
-    # Rumpf zuerst: fußgesteuert, nicht while
-    addi t0, t0, 1
-    bne  t0, t1, LoopStart   # zurueck, solange t0 != 10
+bge t1, t0, Ziel      # t0 <= t1, signed
 ```
 
-::: notes
-bne, branch if not equal, springt bei ungleichen Mustern. Das gezeigte Beispiel ist fußgesteuert: t0 beginnt ausdrücklich bei 0, t1 bei 10, der Rumpf erhöht t0, und bne springt zurück, solange t0 ungleich 10 ist. Die Werte 1 bis 10 werden erreicht. Bei einer gewünschten Anzahl 0 würde der Rumpf trotzdem einmal laufen. Das ist deshalb keine allgemeine kopfgesteuerte while- oder for-Schleife. bne ist ein Werkzeug, nicht automatisch die passende Schleifenbedingung.
+- Für vorzeichenlose Werte: `bgeu t1, t0, Ziel`
+- `ble` kann eine Pseudoschreibweise dafür sein.
+- Relation und Reihenfolge gemeinsam prüfen.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+::: notes
+A und B sind die zu vergleichenden Werte. Die Relation A kleiner oder gleich B ist gleichbedeutend mit B größer oder gleich A. Deshalb benötigt die 32-Bit-Integerbasis keinen separaten nativen ble-Befehl. bge, Branch if Greater or Equal, erreicht die gewünschte signed Bedingung mit vertauschten Quellen: Im Code steht t1 vor t0. t0 und t1 sind temporäre Register, Ziel das Label.
+
+Für t0 gleich zwei und t1 gleich drei gilt drei größer oder gleich zwei, der Sprung wird genommen. Bei beiden gleich zwei ebenso. Bei t0 gleich vier und t1 gleich drei nicht. signed bedeutet Zweierkomplementinterpretation. unsigned, vorzeichenlose Interpretation, benutzt dieselbe Umformung mit bgeu, Branch if Greater or Equal Unsigned. ble, Branch if Less or Equal, ist gegebenenfalls eine Pseudoinstruktion des Assemblerwerkzeugs. Die native Entwicklung ist hier bereits angegeben und genügt unabhängig von dieser Komfortschreibweise. Das Vertauschen erhält die gewünschte Relation, nicht jede beliebige Bedingung ohne Prüfung.
 :::
 
-## Relationen (`blt`, `bge`)
+## Der Sprungoffset zählt ab der Branch-Adresse
 
-- `blt`: Branch if Less Than — springt wenn $rs1 < rs2$
-- `bge`: Branch if Greater or Equal — springt wenn $rs1 ≥ rs2$
-- Interpretation als Zweierkomplement (mit Vorzeichen)
-- $-5$ ist für `blt` korrekt kleiner als $2$
+$$PC_{\text{nach}}=\begin{cases}
+PC_{\text{vor}}+\Delta,&\text{Bedingung erfüllt}\\
+PC_{\text{vor}}+4,&\text{sonst}
+\end{cases}$$
+
+| Branch-Adresse | Ziel | signed Byteoffset $\Delta$ |
+|---|---|---:|
+| `0x1000` | `0x1010` | +16 |
+| `0x1018` | `0x1000` | −24 |
+
+Das B-Immediate liefert diesen Byteoffset; kein zweites Verdoppeln.
+
+::: notes
+PC steht für Program Counter, Programmzähler. PC vor ist die Adresse der Branch-Instruktion und PC nach die ausgewählte nächste Adresse. Delta bezeichnet den vorzeichenbehafteten Zielabstand in Byte. Bei erfüllter Bedingung wird Delta zum alten PC addiert; sonst folgt die nächste native Instruktion im Abstand vier. Der relative Offset wird also nicht ab PC plus vier gerechnet.
+
+0x1010 minus 0x1000 ergibt hexadezimal 0x10, also 16 Byte. Rückwärts ergibt 0x1000 minus 0x1018 den Abstand minus 24. Das B-Format ist das Format bedingter Sprünge. Sein rekonstruierter Immediate enthält bereits das implizite Bit null mit Wert null und beschreibt die Bytezahl. Man darf es danach nicht nochmals um eine Stelle schieben. Es ist ein anderes Immediate-Format als das normale zwölf Bit breite Load-Offsetfeld. Die vollständige Bitverteilung ist für die Pflichtaufgaben nicht nötig. Beide Lehrziele liegen hier an Vier-Byte-Grenzen, passend zu den unkomprimierten Instruktionen der Kursbasis.
+:::
+
+## j springt ohne Datenbedingung
 
 ```asm
-# Sensorwert t0 kleiner als Grenzwert t1?
-blt t0, t1, AlarmAusloesen
+    j Ende
+    addi t0, x0, 2      # auf diesem Weg übersprungen
+Ende:
+    addi t1, x0, 9
 ```
 
-::: notes
-blt, branch if less than, und bge, branch if greater or equal, vergleichen im Zweierkomplement. Die Quellregister werden nicht beschrieben. Mit t0 gleich −5 und t1 gleich 2 ist blt genommen und bge nicht. Bei Gleichheit ist blt nicht genommen und bge genommen. Ein Label wie Alarm ist eine Sprungmarke, kein eingebauter Dienst. Das höchste Bit ist nicht von selbst ein Minuszeichen. Die Vergleichsart legt die Interpretation fest.
+Gültige native Entwicklung: `jal x0, Ende`.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+`j` beendet das Programm nicht und löscht keine Register.
+
+::: notes
+j bedeutet Jump, unbedingter Sprung. Der Befehl wählt Ende ohne Vergleich von Datenregistern. Ende ist ein Label. Im Ausschnitt wird die Initialisierung von t0 übersprungen, die von t1 mit neun jedoch ausgeführt. addi ist Add Immediate, Addition einer direkten Konstante; x0 liefert null. Der alte t0-Inhalt bleibt auf diesem Weg bestehen. Ein anderer Einstieg könnte die übersprungene Zeile erreichen, daher ist sie nicht allgemein unerreichbarer Code.
+
+j ist eine Pseudoinstruktion. Für die hier nahen Ziele ist jal x0, Ende ihre gültige native Entwicklung. jal heißt Jump and Link und würde normalerweise die Folgeadresse, alter Programmzähler plus vier, in sein Zielregister schreiben. Das Ziel x0 verwirft diesen Linkwert, sodass nur die Umleitung bleibt. Der Zielabstand wird relativ zur Sprunginstruktion codiert. „Unbedingt“ bezeichnet die fehlende Datenbedingung und ist keine Aussage über absolute Adressierung. Wie ein Linkwert später eine Rückkehr ermöglicht, behandeln wir erst bei Funktionen.
 :::
 
-## Unsigned Branches (`bltu`, `bgeu`)
+## Genau einer von zwei Blöcken
 
-- Pointer und Rohdaten (Farben) sind oft vorzeichenlos
-- Adresse `0xF0000000` wäre als signed negativ — `blt` läge falsch
-- Suffix `u`: `bltu`, `bgeu` vergleichen die Bitmuster vorzeichenlos
-- Dasselbe Muster `0xFFFFFFFF`: signed kleiner als `1`, unsigned größer als `1`
-- Adressvergleiche in diesem Kurs deshalb mit `bltu`/`bgeu`
+Auftrag: bei `s0=s1` Ergebnis 1, sonst Ergebnis 2 in `t0`.
+
+![Then- und Else-Pfad laufen erst hinter der Entscheidung zusammen](../assets/images/vl3-ifelse.svg){width=90%}
+
+::: notes
+s0 und s1 sind die Eingaberegister, t0 das temporäre Ergebnisregister. Then ist der Block für die erfüllte ursprüngliche Gleichheitsbedingung, Else der andere Block. bne bedeutet Branch if Not Equal und springt gerade bei Ungleichheit zum Else-Label. Die ursprüngliche Entscheidung und die Sprungbedingung sind daher entgegengesetzt. Bei Gleichheit läuft das Programm ohne Sprung in den Then-Block.
+
+Die Zeichnung zeigt diesen Gleichheitsweg links in Grau, den genommenen Ungleichheitsbranch rechts in Rot. addi, Add Immediate, schreibt aus der Nullquelle x0 eins beziehungsweise zwei nach t0. Am Ende des linken Blocks führt j Ende, der unbedingte Jump, an Else vorbei. Beide Wege treffen erst an Ende wieder zusammen; der rote Rahmen dort markiert das gemeinsame Weiterlaufen, keinen Exit-Dienst. Ohne den linken Jump würde die Ausführung nach der eins auch den Else-Block durchlaufen und zwei schreiben. Eine andere Anordnung der Blöcke wäre möglich, benötigt dann aber passende Bedingungen und Sprungziele.
+:::
+
+## Die Entscheidung als vollständiger Ausschnitt
 
 ```asm
-bltu t0, t1, AdresseIstKleiner
+    bne  s0, s1, ElseBlock
+    addi t0, x0, 1
+    j    EndIf
+ElseBlock:
+    addi t0, x0, 2
+EndIf:
+    addi t1, x0, 9
 ```
 
-::: notes
-Dieselben Bits können signed und unsigned verschieden geordnet sein. 0xFFFFFFFF ist signed −1 und damit kleiner als 1, unsigned aber 4294967295 und damit nicht kleiner als 1. bltu und bgeu verwenden die vorzeichenlose Ordnung. 0xF0000000 ist ein illustrativ hoher Wert, keine feste Venus-Adresse. C-Zeigervergleiche haben zusätzliche Objektregeln. Für die Assembleradressrechnung des Kurses ist der vorzeichenlose Vergleich die passende Zahlenordnung.
+Beide Wege: `t1=9`. Ergebnis `t0` wird genau einmal gesetzt.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+::: notes
+Der Code enthält die gesamte Entscheidung, aber noch nicht die Initialisierung des Hauptprogramms und dessen Abschluss. s0 und s1 sind bekannte Eingaben. bne, Branch if Not Equal, springt bei unterschiedlichen Mustern zu ElseBlock. addi, Add Immediate, schreibt aus x0 null plus eins oder zwei nach t0. j ist Jump und überspringt ElseBlock nach dem ersten Rechenblock. EndIf ist die gemeinsame Fortsetzungsmarke; t1 erhält dort neun.
+
+Mit s0 und s1 beide sieben ist der Branch nicht genommen. Die ausgeführten Zeilen sind bne, die Initialisierung eins, j und die Initialisierung neun. t0 endet als eins. Mit sieben und acht springt bne direkt zum zweiten Block; ausgeführt werden bne, die Initialisierung zwei und die Initialisierung neun. t0 endet als zwei. In beiden Fällen bleiben die Quellen erhalten. Labels werden beim Tracen nicht als Instruktionen mitgezählt. Die unterschiedliche Zahl ausgeführter nativer Instruktionen ist noch keine Laufzeitmessung eines Prozessors.
 :::
 
-## Warum gibt es kein $\le$?
-
-- Keine Hardware-Befehle für $\le$ oder $>$
-- Absichtlicher Minimalismus: jeder Befehl kostet Decoder-Fläche
-- $A ≤ B$ ist logisch identisch mit $B ≥ A$
-- Fehlendes $\le$ simulieren: Operanden tauschen und `bge` nutzen
+## Selbstprüfung: Was fehlt in diesem Pfad?
 
 ```asm
-# Gewünscht: if (t0 <= t1)
-# Identisch: if (t1 >= t0)
-bge t1, t0, Label
+    bne  s0, s1, ElseBlock
+    addi t0, x0, 1
+ElseBlock:
+    addi t0, x0, 2
+EndIf:
+    addi t1, x0, 9
 ```
 
-::: notes
-RV32I hat keinen eigenen nativen Befehl ble oder bgt. Die Relation existiert trotzdem. A kleiner oder gleich B gilt genau dann, wenn B größer oder gleich A ist, also bge mit vertauschten Operanden. Die Fälle kleiner, gleich und größer bestätigen das. Für unsigned gilt dasselbe mit bgeu. Eine eingesparte Decoderfläche wird nicht in Transistoren beziffert.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Pseudo-Branches (`ble`, `bgt`)
-
-- Ständiges Umdenken der Operanden ist fehleranfällig
-- Venus bietet Pseudo-Instruktionen: z. B. `ble` (Branch Less Equal)
-- Der Assembler vertauscht Operanden und erzeugt echtes `bge`
-
-```asm
-# Lesbar im Quelltext:
-ble t0, t1, Label
-
-# Tatsächliche Hardware:
-bge t1, t0, Label
-```
+Was steht für gleiche und ungleiche Eingaben am Ende in `t0`?
 
 ::: notes
-ble und bgt sind Pseudoinstruktionen. ble A, B wird zu bge B, A. bgt A, B wird zu blt B, A. Die vorzeichenlosen Formen nutzen bgeu und bltu. In der hier angenommenen Venus-Linie werden sie unterstützt. Sonst bleiben die nativen Formen. Anders als li mit einer großen Konstante ist jeder dieser direkten Vergleiche ein nativer Branch. Lesbarkeit und Codierung bleiben getrennt.
+bne heißt Branch if Not Equal, bedingter Sprung bei ungleichen Registermustern. s0 und s1 sind die Eingaben, t0 das gewünschte Ergebnis und t1 die gemeinsame Folgerechnung. addi, Add Immediate, verwendet x0 als Nullquelle. Die Labels ElseBlock und EndIf markieren Positionen und begrenzen keine Ausführung von sich aus.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+Bei ungleichen Eingaben springt bne nach ElseBlock, sodass t0 direkt zwei wird. Bei gleichen Eingaben wird nicht gesprungen: t0 wird zunächst eins, danach läuft die Ausführung aber ebenfalls in ElseBlock und überschreibt es mit zwei. Am Ende ist t0 daher in beiden Fällen zwei und t1 neun. Es fehlt j EndIf nach der Initialisierung eins, der unbedingte Jump über den zweiten Block. Die Aufgabe illustriert, warum ein korrekt geschriebenes Label noch keinen Blockabschluss erzeugt. Der Rechenweg ist vollständig bestimmt; der Fehler liegt im Kontrollfluss, nicht in einer zufälligen Registerinitialisierung.
 :::
 
-## Architektur: Das B-Type-Format (Vorschau)
+# 5. Wiederholen, bis die Arbeit erledigt ist
 
-- Branches nutzen das B-Type-Format (Vorschau; vereinfacht: verwandt mit S-Type)
-- Das Label wird zum Immediate (Distanz), nicht zur absoluten RAM-Adresse
-- Neuer PC = alter PC + Immediate (PC-relative Adressierung)
-- Vorteil: verschiebbarer Code bleibt korrekt
+
+
+::: notes
+Eine Schleife verwendet dieselben Sprungwerkzeuge wie eine Entscheidung. Neu ist, dass ein Weg zu einem früheren Test zurückführt und dabei einen Fortschrittswert verändert. Damit daraus eine endende Rechnung wird, brauchen wir einen Anfangszustand, eine passende Abbruchbedingung und ein Update, das die Grenze tatsächlich erreicht.
+
+Für die Speicheraufgabe legen wir den Test vor den Zugriff. So bleibt der Fall ohne Elemente korrekt: Das Programm kann sofort beenden, ohne überhaupt zu laden. Zuerst üben wir diese Form mit einem kleinen Zähler. Danach erhält der Schleifenrumpf eine Speicheroperation, und wir verfolgen zusätzlich Pointer und Summe. Die Verbindung wird nicht durch einen neuen Spezialbefehl hergestellt, sondern durch die bereits verstandenen Instruktionen.
+:::
+
+## Eine kopfgesteuerte Schleife
 
 ```text
-Warum relativ?
-Absolute Adressen brechen, wenn das Programm im RAM verschoben wird.
-Die relative Distanz (z. B. +16 Bytes) bleibt gleich.
+i = 0
+solange i < N:
+    eine Arbeit ausführen
+    i = i + 1
+danach fortsetzen
 ```
 
-::: notes
-Das Ziel eines Branches ist die Adresse der Branch-Instruktion plus vorzeichenbehafteter Byteoffset, nicht PC plus 4 plus Offset. Von 0x100 nach 0x110 ist der Offset plus 16. Verschiebt man beide um 0x1000, bleibt der Abstand 16. Ein Sprung von 0x118 nach 0x100 hat den Offset −24. Das B-Immediate enthält Bit 0 bereits als Null. Ein zweites Schieben wäre falsch. Gleiche Abstände machen ein ganzes Programm noch nicht positionsunabhängig. Absolute Bezüge kann eine Toolchain relocieren.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-
-## Unbedingte Sprünge (Jumps)
-
-- Architektonisches Puzzleteil für vollständige Kontrollstrukturen
-- Warum Branches allein nicht ausreichen
-- Code-Blöcke ohne Wenn und Aber überspringen
-- Pseudo-Instruktion `j` (Jump)
-- Mentaler Algorithmus: If/Else aus C übersetzen
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  A[Bedingung] -->|Wahr| IF[If-Block]
-  A -->|Falsch| ELSE[Else-Block]
-  IF -->|ueberspringe Else| END[Ende]
-  ELSE --> END
-  style IF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style A fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style ELSE fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style END fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
+- Test vor dem Rumpf
+- Initialisierung vor dem Rücksprungziel
+- Für $N=0$: kein Durchlauf
 
 ::: notes
-Für eine Umleitung ohne Datenbedingung ist j das passende Idiom. beq x0, x0 könnte ebenfalls immer springen, hat aber eine andere Reichweite und ist hier nicht der empfohlene Stil. Bedingungslos heißt ohne Vergleich, nicht absolut adressiert. Der Jump überspringt auf diesem Pfad den Else-Rumpf, nachdem der If-Rumpf fertig ist. Er löscht keine Register und beendet das Programm nicht.
+Der Text ist ein ausdrücklich sprachunabhängiger Algorithmus, kein ausführbarer Assemblercode. i zählt die bereits erledigten Arbeiten, N ist deren nichtnegative Anzahl. Der Rumpf bezeichnet die innerhalb einer Wiederholung auszuführenden Aktionen. Kopfgesteuert heißt, dass der Test vor diesem Rumpf steht. Für N gleich drei läuft die Arbeit bei i gleich null, eins und zwei; nachher ist i gleich drei.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+Bei N gleich null ist schon der erste Test i kleiner N falsch. Es findet keine Arbeit statt. Ein Rücksprung führt zum Test, nicht zurück zur Initialisierung, denn sonst würde i jedes Mal null werden. Das Update erhöht i nach jeder Arbeit um eins. Diese Platzierung liefert eine überprüfbare Beziehung zwischen Rumpfdurchläufen und Endzähler. In Assembler springen wir bei der entgegengesetzten Bedingung i größer oder gleich N zum Ende; solange diese falsch bleibt, läuft die Ausführung in den Rumpf.
 :::
 
-## Das If-Else-Problem
-
-- If/Else erzwingt eine Entweder-Oder-Entscheidung
-- Beide Blöcke liegen im RAM direkt untereinander
-- Bei wahrer Bedingung: Fall-Through durch den If-Block
-- Danach fällt der PC physikalisch in den Else-Block
-- Am Ende des If-Blocks muss der Else-Block strikt übersprungen werden
-
-```c
-if (a == b) {
-    // wahr: nur dieser Block ...
-    // ... dann SOFORT das gesamte Konstrukt verlassen
-} else {
-    // falsch: nur dieser Block
-}
-```
-
-::: notes
-Ohne weiteren Sprung fällt die Ausführung nach dem If-Rumpf in den Else-Rumpf. Setzt der If-Rumpf das Ergebnis auf 1 und der Else-Rumpf auf 2, ginge die 1 verloren. Genau einer der Blöcke soll laufen. Verlassen heißt hier: hinter dem gesamten If-Else weiter, nicht aus einer Funktion zurückkehren. Andere Blockanordnungen sind möglich. Das lineare Layout ist eine verständliche Wahl.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Der bedingungslose Sprung
-
-- Branches (`beq`, `blt`) fragen die ALU nach einer Bedingung
-- Wir brauchen: Springe. Immer.
-- Solche Befehle heißen Jumps
-- Sie überschreiben den PC absolut bedingungslos
-- Unverzichtbar für If-Ausstiege, Endlosschleifen und später Funktionsaufrufe
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  IF[Ende des IF-Blocks] -->|bedingungsloser Sprung| END[Code nach dem Else]
-  ELSE[ELSE-Block] -.-> END
-  style IF fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style ELSE fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style END fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Ein Jump wählt sein Ziel unabhängig von den Datenwerten. Auf diesem Pfad wird der normale Folgecode übersprungen. Die Adressierung kann trotzdem PC-relativ sein. Unbedingtheit und absolute Adresse sind verschiedene Begriffe. Der Sprung löscht keine Register und ist kein Programmende. Funktionsaufrufe mit Rückkehradresse folgen in Einheit 4.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Jump (`j`) — die Pseudo-Instruktion
-
-- Im Labor: Pseudo-Instruktion `j`
-- Syntax: `j Label`
-- Label → relatives Offset; die CPU addiert es zum PC
-- Code physisch unter dem `j` wird nicht erreicht (toter Code)
+## Ein kleiner Schleifen-Trace
 
 ```asm
-    add t0, t1, t2
-    j Ueberspringen     # sofort zum Label
-
-    sub t3, t0, t1      # wird nie ausgeführt
-
-Ueberspringen:
-    lw t4, 0(s1)
+    addi t0, x0, 0       # i
+    addi t1, x0, 3       # N
+    addi s0, x0, 0       # Summe
+Loop:
+    bge  t0, t1, Done
+    add  s0, s0, t0
+    addi t0, t0, 1
+    j    Loop
+Done:
 ```
 
-::: notes
-j EndIf überspringt auf diesem Pfad das sub beziehungsweise den Else-Code und setzt bei dem Label vor dem folgenden lw fort. Übersprungen heißt nicht in jedem Programm tot. Ein anderer Sprung könnte denselben Code erreichen. Für das lw muss s1 auf gültige Daten zeigen. Das Fragment nennt diese Voraussetzung. j selbst ist noch keine native Schreibweise.
+Welcher Wert entsteht in `s0`, und wie oft wird getestet?
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+::: notes
+addi ist Add Immediate, add Registeraddition, bge Branch if Greater or Equal und j Jump. x0 liefert null. t0 hält den Zähler i, t1 die Grenze N gleich drei und s0 die Summe. Alle benötigten Anfangswerte sind explizit gesetzt. Loop bezeichnet den Test, Done die Stelle nach der Schleife. Das Fragment lässt die spätere Verwendung des Ergebnisses und den Programmabschluss offen.
+
+Am ersten Test ist i null, daher wird nicht zu Done gesprungen. Der Rumpf addiert null und erhöht i auf eins. Am zweiten Test entsteht im Rumpf die Summe eins und i wird zwei. Beim dritten entsteht drei und i wird drei. Der vierte Test nimmt den Branch, ohne den Rumpf erneut auszuführen. Somit ist s0 gleich null plus eins plus zwei, also drei; es gibt drei Rumpfdurchläufe, drei Rücksprünge und vier Tests. Diese Zählung betrifft ausgeführte Instruktionen, keine gemessenen Takte. Das zusätzliche letzte Testen ist für eine korrekte Trace-Tabelle wichtig.
 :::
 
-## Vorschau: Der echte Befehl (`jal`)
-
-- Der Chip kennt `j` nicht; Venus übersetzt zu `jal`
-- `jal` = Jump and Link
-- Syntax: `jal rd, Label` — springt und speichert die Rücksprungadresse in `rd`
-- Für normales `j` ohne Rückkehr: Ziel `x0` (Hardwired Zero)
+## Ein Test nach dem Rumpf hat andere Randfälle
 
 ```asm
-# Was wir tippen:
-j EndIf
-
-# Was Venus daraus macht (x0-Trick):
-jal x0, EndIf
-# Rücksprungadresse landet wirkungslos in x0
+    addi t0, x0, 0
+    addi t1, x0, 3
+Loop:
+    addi t0, t0, 1
+    bne  t0, t1, Loop
 ```
 
-::: notes
-j wird zu jal x0, Ziel. jal, jump and link, berechnet aus dem alten PC die Linkadresse PC plus 4 und das Sprungziel. Bei rd gleich x0 wird die Linkadresse verworfen. x0 bleibt null, ra wird nicht beschrieben. Die Rückkehradresse steht also nicht in x0. Diese Einheit erklärt nur den Sprung. Aufruf, Rückkehr und Sicherung folgen in Einheit 4.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## If-Else übersetzen (Konzept)
-
-- Beispiel: `if (s0 == s1) { t0 = 1; } else { t0 = 2; }`
-- Drei Bausteine: bedingter Sprung (`bne`), unbedingter Sprung (`j`), zwei Labels
-- Struktur als Blöcke denken
-- Streng in vier algorithmischen Schritten vorgehen
-
-```c
-if (s0 == s1) {
-    t0 = 1;
-} else {
-    t0 = 2;
-}
-```
+- Für Grenze 3 funktioniert dieses Zählerbeispiel.
+- Für Grenze 0 wird der Rumpf trotzdem zuerst ausgeführt.
+- Ein korrektes Beispiel ist kein allgemeines Schleifenmuster.
 
 ::: notes
-Die verglichenen Werte stehen in s0 und s1, das Ergebnis in t0. Bei 7 und 7 soll t0 gleich 1 werden, bei 7 und 8 gleich 2. Die Bausteine sind bne, j und Labels. Das ist eine verständliche Anordnung, nicht die einzige Compilerstrategie. Die C-Zeilen bilden das Registerbeispiel ab. Sie sind kein C-Programm, das Hardware-Registernamen als Variablen kennt.
+addi bedeutet Add Immediate und erhöht hier das temporäre Zählerregister t0. t1 enthält die Grenze drei, x0 die Nullquelle. bne, Branch if Not Equal, springt zurück, solange der erhöhte Zähler ungleich der Grenze ist. Bei den gezeigten Werten erreicht t0 nacheinander eins, zwei und drei; dann wird der Branch nicht genommen. Der Test liegt am Fuß der Schleife, also nach dem Rumpf.
 
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
+Für eine gewünschte Anzahl null wäre bereits die erste Erhöhung eine unerwünschte Arbeit. Würde der Rumpf vorher einen Arraywert laden, wäre dieses Laden ebenfalls schon geschehen. Außerdem ist eine reine Ungleichheitsprüfung nur passend, wenn das Update die Grenze tatsächlich trifft. Erhöhen um zwei bei einer ungeraden Grenze ist ein Gegenbeispiel. Die Moduloarithmetik großer Zähler macht daraus kein geeignetes Pflichtmuster. Unsere Array-Schleife verwendet deshalb einen Test vor dem Load und einen ausdrücklich kontrollierten Schritt. Diese Wahl begründet die korrekte leere Eingabe, statt nur den üblichen Fall vorzuführen.
 :::
 
-## Schritt 1: Die Invertierung
+## Registerplan für die Array-Summe
 
-- Wir fragen nicht, ob die C-Bedingung wahr ist
-- Wir fragen, ob sie falsch ist
-- C: `if (s0 == s1)` → Assembler: `bne s0, s1, ElseBlock`
-- Wahr → Fall-Through in den If-Block (spart Befehle)
-- Falsch → Sprung zum Else-Label
+| Bedeutung | Register | Anfang |
+|---|---|---|
+| erledigte Elemente $i$ | `t0` | 0 |
+| Anzahl $N$ | `t1` | 5 |
+| laufender Pointer | `s1` | Basis $B$ |
+| Summe | `s0` | 0 |
+| aktuell geladener Wert | `t2` | erst nach `lw` benötigt |
+
+Voraussetzung: $0\le N\le5$, gültige natürlich ausgerichtete Daten.
+
+::: notes
+Das Array A enthält die fünf Lehrzahlen. N ist die Zahl seiner zu verarbeitenden Elemente, hier fünf; i zählt, wie viele bereits zur Summe beigetragen haben. t0, t1 und t2 sind temporäre Registeraliase. s0 und s1 sind ebenfalls Aliasnamen, hier für das Hauptprogramm ohne Funktionsaufruf verwendet. Der Pointer ist eine Adresse und beginnt an der Basis B. s0 erhält ausdrücklich den Anfangswert null.
+
+Der Inhalt von t2 muss nicht vorab null sein, denn jeder Rumpfdurchlauf überschreibt ihn durch lw, Load Word, bevor er gelesen wird. Die Grenze null bis fünf stellt sicher, dass nur Elemente der deklarierten Datenfolge verarbeitet werden. Diese Prüfung wird als Vorbedingung genannt; das spätere bge allein weiß nicht, wie viele Speicherwörter tatsächlich angelegt wurden. Für die kleinen nichtnegativen Zähler genügt signed Vergleich. Durch den Registerplan bleiben Anzahl, Byteadresse und Zahlenwert getrennt. Das Update des Pointers wird vier Byte betragen, das des Zählers nur eins.
+:::
+
+## Test, Rumpf, Update, Rücksprung
 
 ```asm
-# Wenn s0 UNGLEICH s1: sofort zum Else
-bne s0, s1, ElseBlock
-
-# darunter geht es weiter, wenn sie GLEICH waren
-```
-
-::: notes
-Die C-Bedingung s0 gleich s1 wird für dieses Layout zu bne bei Ungleichheit. Bei 7 und 8 ist bne genommen und der Else-Pfad erreicht. Bei 7 und 7 fällt die Ausführung in den If-Rumpf. C-wahr und Branch-taken sind hier entgegengesetzt. Das Invertieren folgt aus dem Layout, nicht aus einem Gesetz jedes Compilers. Eine garantierte Einsparung von Befehlen wird nicht behauptet.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Schritt 2: Der IF-Block
-
-- `bne` hat nicht gegriffen → Bedingung war wahr
-- Hier der normale If-Code; kein If-Label nötig (Fall-Through)
-- Beispiel: Konstante 1 nach `t0`
-
-```asm
-    bne s0, s1, ElseBlock
-
-    # IF-Block (erreicht, wenn s0 == s1)
-    li t0, 1
-```
-
-::: notes
-Im Gleichheitsfall führt li t0, 1 den Wert 1 ein. Im Ungleichheitsfall hat bne diesen Befehl schon übersprungen. If-Label, Else und der gemeinsame Ausgang werden erst zusammen vollständig. Ein zusätzliches Label vor dem If-Rumpf ist für den Fall-through nicht nötig, kann die Lesbarkeit aber erhöhen. li lädt die Konstante, es liest keinen Speicher.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Schritt 3: Der rettende Jump
-
-- Unter dem If-Block liegt im Speicher der Else-Block
-- Ohne Gegenmaßnahme würde der PC auch `t0 = 2` ausführen
-- Am If-Ende: `j EndIf` — Else überspringen
-- `EndIf` steht ganz am Ende der Struktur
-
-```asm
-    bne s0, s1, ElseBlock
-
-    li t0, 1
-    j EndIf                 # Else überspringen
-```
-
-::: notes
-j EndIf steht unmittelbar nach li t0, 1. Der Gleichheitsfall behält dadurch die 1. Ohne diesen Sprung würde der folgende Else-Code 2 schreiben. Der Ungleichheitsfall erreicht diesen j nicht, weil bne bereits zum Else gesprungen ist. Ein weiterer Jump am Ende des Else ist unnötig, wenn EndIf direkt dahinter liegt.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Schritt 4: Der Else-Block
-
-- Label `ElseBlock:` — Ziel des ersten Branches
-- Alternative: `t0 = 2`
-- Darunter `EndIf:` als Sammelbecken beider Pfade
-- Ab dort wieder linearer Ablauf
-
-```asm
-    bne s0, s1, ElseBlock
-
-    li t0, 1
-    j EndIf
-
-ElseBlock:
-    li t0, 2
-
-EndIf:
-    # ab hier wieder gemeinsam weiter
-```
-
-::: notes
-Bei 7 und 7 ist bne nicht genommen, t0 wird 1, j erreicht EndIf. Bei 7 und 8 ist bne genommen, Else setzt t0 auf 2, und die Ausführung fällt nach EndIf. Labels führen keine Operation aus. Das vollständige Programm steht in beispiele/vl3_if_else.s. Beobachten sollte man t0, bevor a0 zur Exit-Dienstnummer wird. Lässt man j weg, wird im Gleichheitsfall am Ende ebenfalls 2 geschrieben. Das ist eine gekennzeichnete Fehlerquelle, nicht die Referenz.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Praxis: Algorithmen in Venus
-
-- Transfer in die Labor-Umgebung
-- C-Schleifen (`while`, `for`) in Assembler
-- Kontrollfluss + Speicherzugriff kombinieren
-- Iteration über Arrays im RAM
-- Memory-Interface in Venus
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph LR
-  Array[RAM Array] -->|Iteration| Loop((Schleife))
-  Loop -->|Pointer + 4| Array
-  style Loop fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style Array fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Venus ist der Lernsimulator dieser Einheit. Editor, Register und Speicher gehören zusammen und zeigen denselben Zustand. Die Kurslinie ist die verlinkte Venus-Distribution. Datenpfad und Pipeline betrachtet später Ripes. Das Laborergebnis der Summe ist 150 in s0 und, vor den Dienstnummern, auch in a0. Eine Word-Ansicht und eine Byte-Ansicht müssen zur gewählten Endianness passen.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Die `while`-Schleife
-
-- Einfachstes Loop-Konstrukt; kopfgesteuert
-- Label am Start (`LoopStart`)
-- Branch bei falscher Bedingung zum Exit (`LoopExit`)
-- Am Rumpf-Ende: `j LoopStart`
-
-```c
-int a = 0;
-while (a < 10) {
-    a++;
-}
-```
-
-::: notes
-Eine while-Schleife prüft vor dem Rumpf. Mit Start 0 und Grenze 10 erzeugt a plus eins die Werte 1 bis 10. Danach beendet der Test die Schleife. Beginnt a schon bei 10, läuft der Rumpf nicht. Das unterscheidet sie vom fußgesteuerten bne auf der früheren Folie. Die Zahl der Tests ist um eins größer als die Zahl der Rumpfausführungen. Labels markieren Test und Ausgang.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## `while` in Assembler
-
-- Zähler `a` in `t0`, Grenze 10 in `t1`
-- C: `a < 10` → Exit mit `bge` (sobald $a \ge 10$)
-
-```asm
-    li t0, 0
-    li t1, 10
-
-LoopStart:
-    bge t0, t1, LoopExit    # a >= 10 → raus
-
-    addi t0, t0, 1          # a++
-
-    j LoopStart
-
-LoopExit:
-```
-
-::: notes
-li t0, 0 und li t1, 10 initialisieren einmal. bge, branch if greater or equal, ist der signed Ausstieg, wenn t0 nicht mehr kleiner als 10 ist. addi erhöht, j führt zum Test zurück. Die Tests sehen 0 bis 10. Der Rumpf läuft zehnmal, der Test elfmal, der Endwert ist 10. Startet t0 bei 10, gibt es null Durchläufe. bge liest Register, nicht den Speicher.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Die `for`-Schleife
-
-- Syntaktisch kompakte `while`-Schleife
-- Vier Zonen: Init, Condition, Step, Body
-- Init vor der Schleife; Step zwingend am Ende des Bodies (vor dem Jump)
-
-```c
-for ( Init ; Condition ; Step ) {
-    Body
-}
-```
-
-::: notes
-Die Schreibweise einer for-Schleife nennt Init, Bedingung und Schritt zusammen. Ausgeführt wird Init einmal, danach Bedingung, bei wahr der Rumpf, dann der Schritt und wieder die Bedingung. Der Schritt steht in diesem einfachen Assembler hinter dem Rumpf. Bei continue in C gehört die Aktualisierung ebenfalls vor den nächsten Test. Für i von 0 bis kleiner 3 laufen die Indizes 0, 1 und 2.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## `for` in Assembler
-
-- Zähler `i` in `t0`, Grenze in `t1`
-- Struktur fast wie `while` — Position des Steps beachten
-
-```asm
-    li t0, 0                # INIT
-    li t1, 10
-
-ForStart:
-    bge t0, t1, ForExit     # CONDITION
-
-    # BODY
-
-    addi t0, t0, 1          # STEP (am Ende!)
-    j ForStart
-
-ForExit:
-```
-
-::: notes
-Init liegt außerhalb des Rücksprungs. Der Test steht vor dem Rumpf, der Schritt danach, dann j zum Test. Bei Grenze 3 sind die Rumpfwerte 0, 1 und 2, der Endzähler 3. Ein Zähler-Update an der falschen Stelle verschiebt den ersten Index. Liegt die Initialisierung im Rücksprungziel, wird der Fortschritt jedes Mal gelöscht. Der Rumpf soll eine sichtbare Wirkung haben, nicht nur das Wort BODY.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Arrays iterieren (Pointer Math)
-
-- Ziel: alle Array-Elemente aufsummieren
-- In der Schleife: `lw`
-- Problem: Offset bei `lw` ist eine feste Konstante — keine Variable `i`
-- Lösung: Base-Pointer in jedem Durchlauf verschieben
-
-```c
-summe = summe + array[i]; // i aendert sich dynamisch
-```
-
-::: notes
-Das Immediate eines lw ist eine feste Konstante, kein Laufzeitregister i. Zwei Muster sind richtig: den Pointer nach jedem Element um 4 erhöhen und mit Offset 0 laden, oder die Basis festlassen und eine temporäre Adresse über slli und add bilden. slli, shift left logical immediate, um 2 multipliziert den Index mit 4, solange der Index in den Grenzen bleibt. Die Muster darf man nicht mischen. Im Labor wandert der Pointer.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Das Pointer-Update (Labor-Trick)
-
-- Offset starr auf 0: immer `lw t2, 0(s1)`
-- Nächstes Element: Base-Pointer aktualisieren
-- Bei 32-Bit-Integern: `addi s1, s1, 4` pro Durchlauf
-
-```asm
-    lw t2, 0(s1)            # Wert an aktueller Adresse
-    add s0, s0, t2          # Summe in s0, wie im Labor
-
-    addi s1, s1, 4          # Pointer + 4 Bytes
-    addi t0, t0, 1          # i++
-```
-
-::: notes
-Die Summe steht in s0, nicht in einem zweiten Namen t4. Der Rumpf lautet: lw t2, 0(s1), add s0, s0, t2, addi s1, s1, 4 und addi t0, t0, 1. Summe und Zähler beginnen bei 0, s1 bei der Basis. Der erste Durchlauf lädt 10, setzt die Summe auf 10, den Pointer auf B plus 4 und den Zähler auf 1. t0 zählt Elemente, s1 zählt Bytes. Der Test vor dem Load verhindert das Lesen hinter dem Array. Die vier Zeilen allein sind noch nicht die Schleife.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Venus Onboarding: Memory-Tab
-
-- Register-Ansicht reicht nicht mehr: Blick in den RAM
-- Venus: Reiter Memory (neben Editor/Simulator)
-- Hex-Dump; Adressen im Raster `0x00`, `0x04`, `0x08`, …
-- Word-Inspektion: Little-Endian beachten
-
-::: notes
-Der Memory-Reiter zeigt den Speicher der gewählten Venus-Version. Eine Word-Ansicht in Viererschritten bleibt byteadressiert. Little Endian bestimmt die Bytefolge. Die Adresse des Arrays kommt vom Label, nicht aus einer festen Tabellenposition. Ein Screenshot wäre nur mit Version und Programmzustand belegt. Ohne ausgeführten Lauf bleibt die Darstellung schematisch. sw-Ergebnisse prüft man an genau diesen vier Bytes.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Daten im Editor deklarieren (`.data`)
-
-- Startwerte vor Programmstart in den RAM bringen
-- Direktive `.data` für statische Variablen
-- `.word` legt 32-Bit-Werte hintereinander (Abstand 4 Bytes)
-- Im `.text`-Block: Adresse per Label laden (`la`)
-
-```asm
-.data
-myArray:  .word  10, 20, 30, 40, 50
-
-.text
-.globl main
-main:
-    la s1, myArray    # Load Address — Pointer nach s1
-```
-
-::: notes
-.data leitet Daten ein, .word legt 32-Bit-Werte an, .text leitet Code ein, .globl main macht den Einstieg sichtbar. Das Label myArray benennt die Basis. .word ist keine fünfmal ausgeführte Store-Instruktion. la lädt die Adresse, nicht den Wert 10. Das erste lw mit Offset 0 lädt 10. Der Abstand der Wörter ist 4 Byte. Der Assembler der Umgebung richtet .word natürlich aus. Der Programmstart bei main ist eine Werkzeugkonvention.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Debugging von Schleifen
-
-- Falscher Branch → Endlosschleife (Run stoppt nicht)
-- Workflow: Register auf Dezimal, nur Step nutzen
-- Prüfen: wächst der Zähler (`t0`)?
-- Prüfen: springt der Pointer (`s1`) in 4er-Schritten?
-- Prüfen: löst `bge` an der Grenze korrekt aus?
-
-```{mermaid}
-%%| fig-width: 3.5
-%%{init: {'theme': 'base', 'themeVariables': {'background': '#FFFFFF', 'primaryColor': '#FFFFFF', 'primaryBorderColor': '#E5E5EA', 'primaryTextColor': '#1D1D1F', 'lineColor': '#86868B', 'secondaryColor': '#F5F5F7', 'tertiaryColor': '#FFFFFF', 'mainBkg': '#FFFFFF', 'nodeBorder': '#E5E5EA', 'clusterBkg': '#F5F5F7', 'clusterBorder': '#E5E5EA', 'titleColor': '#1D1D1F', 'edgeLabelBackground': '#FFFFFF'}}}%%
-
-graph TD
-  Klick[Klick Step] --> CheckZaehler[Wird i groesser?]
-  CheckZaehler --> CheckPointer[Wird Pointer +4?]
-  CheckPointer --> Branch[Ist bge invertiert?]
-  style Klick fill:#FFFFFF,stroke:#E2001A,stroke-width:2px !important
-  style CheckZaehler fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style CheckPointer fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-  style Branch fill:#FFFFFF,stroke:#E5E5EA,stroke-width:1.5px
-```
-
-::: notes
-Ein falscher Branch kann zu früh enden, zu oft laufen oder eine Endlosschleife bilden. Er muss es nicht. Step zeigt jeden Zustand. Run mit Haltepunkt ist ebenfalls sinnvoll, wenn die Version ihn bietet. Vor dem Load und am nächsten Test prüft man t0, s1, s0 und t2. Bleibt der Pointer stehen, fehlt das addi um 4. Adressen liest man hexadezimal, die Summe bei Bedarf dezimal. Vor einem neuen Versuch setzt man zurück. Die Summe prüft man, bevor a0 zur Dienstnummer wird.
-
-Adresse, Offset und gelesener Wert bleiben drei verschiedene Größen. Die effektive Adresse ist der Inhalt der Basis plus der vorzeichenerweiterte Byteoffset. Ein Load beschreibt das Zielregister, ein Store die adressierten Speicherbytes. Der PC geht um vier Byte weiter, außer ein Branch oder Jump wählt ein anderes Ziel. Kontrollfrage: Welche Groesse lässt ein lw unveraendert? Die Basis und den Speicherinhalt.
-:::
-
-## Labor-Aufgabe: Array summieren
-
-- Mit einer Schleife über ein Array iterieren und die Summe bilden
-- Setup: Array mit 5 Werten unter `.data`
-- Prüfpunkt: nach `mv a0, s0` steht 150 in `a0`, bevor `a0` zur Dienstnummer wird
-
-Checkliste:
-
-- Array-Adresse laden (`la`)
-- Startwerte: Summe $= 0$, Zähler $= 0$, Grenze $= 5$
-- Labels und Exit-Branch (`bge`)
-- Wert lesen (`lw`) und zur Summe addieren
-- Pointer um 4 erhöhen
-- Zähler um 1 erhöhen
-
-```asm
-.data
-myArray:  .word  10, 20, 30, 40, 50
-
-.text
-.globl main
-main:
-    la   s1, myArray
-    li   t0, 0
-    li   t1, 5
-    li   s0, 0
 Loop:
     bge  t0, t1, Done
     lw   t2, 0(s1)
@@ -1579,28 +691,176 @@ Loop:
     addi t0, t0, 1
     j    Loop
 Done:
-    mv   a0, s0            # Pruefpunkt: a0 = 150
+```
+
+Initialisierung gemäß Registerplan erfolgt vor `Loop`.
+
+::: notes
+bge ist Branch if Greater or Equal und beendet die Schleife, wenn der Zähler t0 mindestens die Grenze t1 erreicht. lw, Load Word, lädt über den laufenden Pointer s1 in t2. add summiert diesen Wert zum alten s0. addi, Add Immediate, verschiebt danach s1 um vier Byte und erhöht t0 um ein Element. j, Jump, führt zum Testlabel Loop zurück. Done bezeichnet die Fortsetzung nach der Schleife.
+
+Mit der Basis B und dem ersten Wert zehn wird im ersten Rumpf t2 zehn, s0 zehn, s1 B plus vier und t0 eins. Der Offset des Loads bleibt null, weil schon der Pointer zum nächsten Element wandert. Die Initialisierung wird nicht beim Rücksprung wiederholt. Falls der Zeiger stehen bliebe, würde dasselbe Wort mehrfach gelesen; falls er um eins stiege, passten die Wortadressen nicht. Die Summe folgt der 32-Bit-Moduloarithmetik aus Einheit 2. Alle Lehrsummen bleiben im darstellbaren signed Bereich, doch das vollständige Programm garantiert nicht allgemein überlauffreie Mathematik für beliebige Eingaben.
+:::
+
+## Der Test schützt den Zugriff
+
+![Der Rückweg führt zum Test und der leere Fall direkt zum Ende](../assets/images/vl3-schleifenwege.svg){width=85%}
+
+::: notes
+i ist die Zahl bereits verarbeiteter Elemente, N ihre erlaubte Anzahl. t0 und t1 enthalten diese Werte. bge, Branch if Greater or Equal, springt zum Label Done, wenn i größer oder gleich N ist. Loop ist die Marke des Tests. j bedeutet Jump und führt nach dem Rumpf bedingungslos dorthin zurück. Ein Pointer ist der laufende Adresswert für den nächsten Load.
+
+Die Zeichnung beginnt oben beim Test. Rechts geht der graue Ja-Weg direkt zum Ende, nach unten der rote Nein-Weg zum Lesen und Addieren. Der Rahmen des Rumpfs markiert die Arbeit einschließlich Zeiger- und Zählerupdate. Links führt der Rückweg zum Test zurück, ohne die Initialisierung erneut auszuführen. Für N gleich null wählt schon der erste Test den Endweg. Für N gleich fünf läuft der Rumpf genau fünfmal, der Test dagegen sechsmal. Die Grafik beschreibt den Kontrollfluss und keine Zeitachse. Der Schutz gilt nur mit korrekter Grenze und passender Datenregion; ein falsches N kann trotz dieser Form zu einem Zugriff außerhalb des Arrays führen.
+:::
+
+## Was am Schleifenkopf immer gelten soll
+
+![Nach drei Rumpfdurchläufen ist der nächste Arraywert noch ungelesen](../assets/images/vl3-schleifenzustand.svg){width=95%}
+
+- `t0`: bereits verarbeitete Elemente
+- `s1`: Basis plus viermal `t0`
+- `s0`: Summe dieser bereits verarbeiteten Elemente
+
+::: notes
+Eine Schleifeninvariante ist eine Beziehung, die am gleichen Kontrollpunkt vor jedem Test gilt. Hier enthält t0 den Zähler i, s1 den Pointer B plus viermal i und s0 die Summe der ersten i Arraywerte, bei allgemeinen Mustern modulo 2 hoch 32. B ist die ursprüngliche Basis, die der Rechnung zugrunde liegt. Für i gleich null ist die leere Summe null. t2 ist nur ein Zwischenregister und muss an diesem Punkt nicht der nächste Wert sein.
+
+Die Zeichnung nimmt i gleich drei an. Die graue Markierung oben umfasst die bereits verarbeiteten Werte zehn, 20 und 30, deren Summe 60 ist. Der rote Rahmen und Pfeil zeigen den nächsten Wert 40 bei B plus zwölf. Er wurde noch nicht zum aktuellen s0 addiert. Ein weiterer korrekter Rumpfdurchlauf lädt 40, macht die Summe 100 und erhöht Pointer und Zähler passend. So begründen Anfang und Update die Beziehung. Am Ende ist i gleich N und die Beziehung liefert genau die gewünschte Summe.
+:::
+
+## Die komplette Zustandsfolge
+
+Zustand am Testlabel `Loop`, vor `bge`:
+
+| `t0`: $i$ | `s1` | `s0` | nächste Aktion |
+|---:|---|---:|---|
+| 0 | $B$ | 0 | 10 laden |
+| 1 | $B+4$ | 10 | 20 laden |
+| 2 | $B+8$ | 30 | 30 laden |
+| 3 | $B+12$ | 60 | 40 laden |
+| 4 | $B+16$ | 100 | 50 laden |
+| 5 | $B+20$ | 150 | nach `Done` springen |
+
+::: notes
+Die Tabelle verwendet das Array zehn, 20, 30, 40, 50 und die Grenze N gleich fünf. i ist der Zähler im temporären Register t0, B die ursprüngliche Datenbasis, s1 der laufende Pointer und s0 die Summe. Loop ist der Testpunkt, bge bedeutet Branch if Greater or Equal und Done die Fortsetzung nach der Schleife. Jede Zeile beschreibt den Zustand vor dem Branch, nicht unmittelbar nach dem Load.
+
+Die erste Zeile ist die Initialisierung. Von einer Zeile zur nächsten wurde ein Element geladen und addiert, der Pointer um vier Byte sowie der Zähler um eins erhöht. Die Summen ergeben sich als zehn, zehn plus 20 gleich 30, plus 30 gleich 60, plus 40 gleich 100 und plus 50 gleich 150. In der letzten Zeile zeigt s1 hinter die verarbeiteten fünf Wörter. Dieser Adresswert darf im Register stehen; es folgt aber kein Load davon. Das letzte bge wird genommen. Wer nur die Rumpfdurchläufe notiert, übersieht diesen sechsten Test und häufig auch einen Zugriff zu viel.
+:::
+
+## N gleich null ist ein eigener Prüfungsfall
+
+Anfang: `t0=0`, `t1=0`, `s0=0`.
+
+```asm
+Loop:
+    bge t0, t1, Done
+    lw  t2, 0(s1)
+    # weiterer Rumpf wie zuvor
+Done:
+```
+
+Ergebnis: Summe 0, unveränderter Pointer, kein Speicherlesen.
+
+::: notes
+N bezeichnet die Zahl zu verarbeitender Elemente und ist hier null. t0 ist der bereits bei null beginnende Zähler, t1 die Grenze und s0 die bei null beginnende Summe. bge, Branch if Greater or Equal, vergleicht null mit null und springt unmittelbar zu Done. Deshalb wird lw, Load Word, gar nicht ausgeführt. t2 bleibt mit seinem unbekannten alten Inhalt bestehen, ohne dass dieser für die Summe verwendet wird. s1 wird nicht erhöht.
+
+Dieser lokale Kontrollfluss benötigt für den ausgelassenen Load keinen zugänglichen Datenwert. Das vollständige Beispiel lädt seinen Pointer dennoch regulär vom Arraylabel. Der Kommentarteil bezeichnet hier ausdrücklich den bereits erklärten ausgelassenen Rumpf und keine eigenständige Programmimplementierung. Ein Test unterhalb des Loads könnte den leeren Fall nicht schützen. Ebenso wäre ein Branch mit striktem Größer statt Größer-oder-gleich bei gleichen Startwerten falsch. Die Aufgabe verlangt also nicht, ein vermeintliches erstes Element null zu laden, sondern den Zugriff vollständig zu vermeiden.
+:::
+
+## Zwei Adressierungsmethoden nicht doppelt zählen
+
+| Methode | Basis | zusätzliche Adresse |
+|---|---|---|
+| laufender Pointer | `s1` wächst um 4 | `lw t2, 0(s1)` |
+| feste Basis und Index | `s1` bleibt $B$ | `slli`, `add`, dann `lw` |
+
+- Beide Methoden können das nächste Element finden.
+- Pointerbewegung plus derselbe Indexoffset würde doppelt vorwärts gehen.
+- Erster ungültiger Index bei fünf Wörtern: $i=5$.
+
+::: notes
+Ein Pointer ist der Adresswert im Register s1. lw, Load Word, liest ein Wort von der effektiven Adresse. Bei der ersten Methode enthält s1 bereits B plus viermal i, daher ist der Load-Offset null. Bei der zweiten bleibt s1 gleich B. slli, Shift Left Logical Immediate, erzeugt den Offset viermal i und add bildet in einem zusätzlichen Register die Adresse; der Load nutzt diese neue Basis.
+
+Beide Wege sind für gültige Indizes äquivalent. Wenn man aber den Pointer bereits auf B plus viermal i erhöht hat und nochmals viermal i dazuaddiert, würde für i gleich eins B plus acht statt B plus vier verwendet. Das überspringt ein Element. Der erste ungültige Index eines Arrays mit fünf Wörtern ist fünf, weil die gültigen Indizes null bis vier reichen. Ein zu spät platzierter Abbruchtest oder ein Limit sechs kann diese Grenze überschreiten. Die Architektur kennt keine versteckte Länge des Arrays. Die Programmvorbedingung und der richtige Kontrollfluss müssen die gültige Region sicherstellen.
+:::
+
+# 6. Papiermodell und Venus zusammenführen
+
+
+
+::: notes
+Im Labor wird das vollständige Programm aus deklarierter Datenfolge, Initialisierung, Schleife und Umgebungsabschluss zusammengesetzt. Die einzelne Instruktion ist dabei ebenso wichtig wie der Kontrollpunkt: Ein geladener Wert steht erst nach dem Load bereit, eine Summe nach der Addition, und die Beziehung zwischen Pointer und Zähler prüfen Sie vor dem nächsten Test.
+
+Vorhersage und Beobachtung sollten in getrennten Spalten stehen. So bleibt sichtbar, welche Rechnung Sie selbst begründet haben und welche Anzeige das Werkzeug tatsächlich lieferte. Datenadressen lesen Sie aus dem verwendeten Lauf ab; die Lehrbasis 0x1000 wird nicht übertragen. Dieselbe Arbeit prüft beim Store ein anderes Speicherbild und bei der Schleife eine Folge von Zuständen. Der Simulator ergänzt damit das Papiermodell, ohne eine physische Laufzeit zu messen.
+:::
+
+## Speicheransicht: erst die Anzeigeeinheit klären
+
+- [Kurs-Venus öffnen](https://thaumicmekanism.github.io/venus/) und neu assemblieren
+- Arrayadresse aus `la` beziehungsweise Labelanzeige ablesen
+- Prüfen: einzelne Byte oder zusammengesetzte Wörter?
+- Register und Speicher vor und nach derselben Instruktion vergleichen
+- Nach Änderungen neu starten; keine feste Labeladresse voraussetzen
+
+::: notes
+Venus ist der im Kurs verwendete Assembler und Simulator. la heißt Load Address, Pseudoinstruktion zum Laden der Adresse eines Labels. Die konkrete Register- und Speicheransicht kann zwischen Distributionen unterschiedlich aussehen. Eine Liste in Viererschritten kann ganze Wörter anzeigen, obwohl der Speicher weiterhin byteadressiert ist. Ein Hex-Dump, eine Auflistung der Speicherwerte als Hexziffern, kann dagegen einzelne Byte enthalten.
+
+Bei dem Wort 42 sehen Sie als zusammengesetztes Wort 0x0000002A, in Little-Endian-Bytefolge 2A 00 00 00. Das sind keine unterschiedlichen Inhalte. Bei einem sw prüfen Sie die genau vier geänderten Byte und die unveränderten Quellen. Nach einer Quelltextänderung neu assemblieren und den Zustand zurücksetzen, sonst vergleichen Sie mit einem alten Lauf. Die Adresse lesen Sie aus dem aktuellen Programm. Ein Step belegt die Befehlswirkung im Simulator, keine Latenz eines realen Speicherchips. Die Aufgaben verlangen ein eigenes Protokoll; dargestellte Lehrwerte ersetzen dieses nicht.
+:::
+
+## Laborauftrag: Array summieren und Randfälle prüfen
+
+- Daten: `.word 10, 20, 30, 40, 50`
+- Vorher: Startzustand und Zustände an `Loop` vorhersagen
+- Nachher: am Label `Ergebnis_pruefen` vor dem Druckdienst prüfen
+- Varianten: $N=0$, $N=1$, $N=5$ und gemischte Vorzeichen
+- Musterlösung: [vl3_array_summe.s](../beispiele/vl3_array_summe.s)
+
+::: notes
+.word ist die Direktive für fünf aufeinanderfolgende 32-Bit-Datenwörter. N ist die erlaubte Anzahl zwischen null und fünf. Die Musterlösung benutzt t0 als Zähler, t1 als Grenze, s1 als Pointer, s0 als Summe und t2 als gelesenen Wert. Loop benennt den Test vor jedem Load. Ergebnis_pruefen liegt in der überarbeiteten Quelle direkt vor der Vorbereitung der Ausgabe. Dort wird zunächst die Summe s0 beurteilt, nicht ein späterer Dienstwert in a0.
+
+Für N gleich null erwarten wir null, keinen Load und unveränderten Pointer. Für eins erwarten wir zehn und einen Load. Für fünf erwarten wir 150 und fünf Loads. Ein zusätzlicher Datensatz minus drei, acht, minus zehn, eins mit N gleich vier ergibt minus vier. Nach jeder Änderung müssen Daten und Grenze zusammenpassen sowie neu assembliert und gestartet werden. Die Datei enthält Anfang und Ende; sie dient erst nach eigener Bearbeitung als Vergleich. Notieren Sie bei Abweichungen den ersten falschen Zustand am gleichen Kontrollpunkt, nicht nur eine andere Endsumme.
+:::
+
+## Ausgabe: der Rechenwert bleibt vor dem Dienst prüfbar
+
+```asm
+Done:
 Ergebnis_pruefen:
-    mv   a1, a0
+    mv   a1, s0
     li   a0, 1
     ecall
     li   a0, 10
     ecall
 ```
 
-Die Summe $10+20+30+40+50$ ist 150. Am Label `Ergebnis_pruefen`, vor `mv a1, a0`, steht diese Summe in `a0` und in `s0`. Danach wird `a0` zur Venus-Dienstnummer.
+Vor `mv`: `s0=150`. Erwartete Druckzahl: `150`, danach Ende.
 
 ::: notes
-Das Programm in beispiele/vl3_array_summe.s summiert 10, 20, 30, 40 und 50. s1 beginnt bei B, t0 zählt verarbeitete Elemente, t1 ist N gleich 5, s0 ist die Summe. bge vor dem lw beendet bei N gleich 0 ohne Load. Nach k Durchläufen gilt: t0 gleich k, s1 gleich B plus 4k, s0 die Summe der ersten k Elemente. Bei k gleich 5 ist s0 gleich 150 und s1 gleich B plus 20. Dort wird nicht mehr geladen. mv a0, s0 kopiert die Summe. Am Label Ergebnis_pruefen, vor mv a1, a0, ist a0 gleich 150. Danach wird a0 zu 1 und später zu 10, den Venus-Diensten. s0 bleibt 150.
+Done ist die Fortsetzung nach der Summenschleife, Ergebnis_pruefen ein zweiter Name für dieselbe Stelle. Labels erzeugen keine zusätzlichen Instruktionen. Die Summe im Registeralias s0 ist für die fünf positiven Lehrwerte 150. mv, move, ist eine Pseudoinstruktion zum Kopieren und schreibt den Wert nach a1, dem Argumentregister x11. li, Load Immediate, setzt a0, Argumentregister x10, auf die Dienstnummer eins.
+
+ecall bedeutet Environment Call, Umgebungsaufruf. In der Kurs-Venus-Distribution druckt Dienst eins die signed Ganzzahl in a1. Danach wird a0 ausdrücklich auf zehn gesetzt und der zweite ecall beendet. Die Konsolenzahl sollte 150 sein; ein bestimmter Zeilenumbruch wird nicht vorausgesetzt. Nach dem ersten Dienst benötigt das Programm keinen erhaltenen temporären Summenwert mehr. Eine allgemeine Erhaltung sämtlicher Register durch beliebige Dienste wird nicht angenommen. Auch wenn s0 hier vor dem Dienst die Summe hält, ist a0 nach der Vorbereitung eine Dienstnummer und keine Ergebnisvariable. Normale Funktionsrückgaben werden davon in Einheit 4 getrennt erklärt.
 :::
 
-## Abschlussblatt
+## Selbstkontrolle vor dem Quiz
 
-- Begriffe: effektive Adresse, `lb`/`lbu`, Branch-Offset, Little Endian.
-- Modellannahme: ILP32, `sizeof(int) = 4`, unausgerichtete Zugriffe vermeiden.
-- Typischer Fehler: `&array + i*4` als C-Ausdruck oder ASCII mit dem Bereich 0 bis 255 gleichsetzen.
-- Übung: Index 3 hat Offset 12; `lb` von `0xFF` ergibt $-1$, `lbu` ergibt 255; Summe 10+20+30+40+50 = 150, danach zeigt der Pointer 20 Byte hinter die Basis.
+1. Warum ist $A[3]$ ein Byteoffset von 12 und kein Offset von 3?
+2. Was bleibt bei `sw t0, 12(s1)` unverändert?
+3. Warum liefert `lbu` von `0xFF` 255, auch mit Offset −1?
+4. Warum gibt es bei fünf Durchläufen sechs Schleifentests?
 
 ::: notes
-ILP32 legt hier 32 Bit für int und Zeiger fest. Die effektive Adresse ist Basis plus vorzeichenerweiterten Byteoffset. Little Endian legt das niederwertigste Byte an die kleinste Adresse. lb erweitert vorzeichenbehaftet, lbu mit Nullen. Der Branch-Offset zählt ab der Branch-Instruktion. Typische Fehler: den Offset statt der effektiven Adresse prüfen, den C-Index mit dem Byteoffset verwechseln, array plus i mit der Adresse des gesamten Arrays plus i verwechseln, ASCII bis 127 mit Bytes bis 255 gleichsetzen und a0 nach dem Laden der Dienstnummer noch für die Summe zu halten. Index 3 hat Offset 12. lb von 0xFF ergibt −1, lbu ergibt 255. Von 0x100 nach 0x110 ist der Offset plus 16. N gleich 0 lädt nichts. N gleich 5 ergibt 150, der Pointer steht 20 Byte hinter der Basis. Einheit 4 zeigt, wie solche Abläufe als Funktionen aufgerufen werden.
+A ist ein Array aus vier Byte breiten Wörtern; der nullbasierte Index drei liegt daher zwölf Byte hinter der Basis. sw, Store Word, schreibt die vier unteren Byte aus der Quelle t0 an Basis s1 plus zwölf. Beide Register und alle Speicherbytes außerhalb des Zielbereichs bleiben unverändert. Ein nachfolgender Load kann den neuen Inhalt sehen, aber der Store selbst lädt nichts zurück.
+
+lbu bedeutet Load Byte Unsigned. Es erweitert das Datenbyte FF mit Nullen zu 0x000000FF, also 255. Der signed Offset minus eins betrifft nur die Adresse; er kann bei gültiger Region ein Byte vor der aktuellen Basis wählen und verändert die Erweiterungsart nicht. Schließlich testet die kopfgesteuerte Schleife vor jedem der fünf Rumpfdurchläufe und ein sechstes Mal mit Zähler fünf. Erst dann wird die Abbruchbedingung größer oder gleich wahr. Diese Antworten verbinden Größe, Datenrichtung, Interpretation und Kontrollpunkt. Sie benötigen dafür keine konkrete Labeladresse oder einen gestarteten Simulator.
+:::
+
+## Ausblick und Quellen
+
+- Einheit 4: Funktionen, Rückkehradressen und Aufrufkonvention
+- Harris/Harris: *Digital Design and Computer Architecture — RISC-V Edition*
+- Patterson/Hennessy: *Computer Organization and Design — RISC-V Edition*
+- [Venus-Dienste dokumentiert](https://github.com/61c-teach/venus/wiki/Environmental-Calls)
+
+::: notes
+Sie können nun aus Registerbefehlen, Speicherzugriffen und Sprüngen einen vollständigen geradlinigen oder wiederholten Ablauf zusammensetzen. Die nächste Einheit ordnet solche Abläufe als Funktionen: Ein Aufruf muss eine Rückkehradresse bereitstellen, Eingaben übergeben und festlegen, welche Werte erhalten bleiben. Dafür dienen die Registerrollen aus Einheit 2, die bisher noch keine Sicherungsroutine verlangt haben.
+
+Harris und Harris erklären die Verbindung von Digitaltechnik und Rechnerarchitektur anhand von RISC-V. Patterson und Hennessy vertiefen die Schnittstelle zwischen Hardware und Software. RISC steht im Namen für Reduced Instruction Set Computer, eine Entwurfsrichtung mit regelmäßigen Befehlsformen. Beim Nachschlagen eines Beispiels unterscheiden Sie weiterhin Architekturwirkung und konkrete Umgebung. Die verlinkte Venus-Dokumentation beschreibt die Registerzuordnung der Umgebungsdienste. Weder ein bestimmter Speicherstart noch eine bestimmte Step-Schaltfläche ist deshalb eine allgemeine Eigenschaft der Befehlssatzarchitektur. Diese Trennung bleibt für die kommenden Datenpfad- und Pipeline-Modelle wichtig.
 :::

@@ -1,5 +1,5 @@
-# Lehrbeispiel Einheit 3, RV32I, ILP32, Little Endian, Venus.
-# Exit: li a0, 10 / ecall. Statisch geprueft, nicht in Venus ausgefuehrt.
+# Lehrbeispiel Einheit 3: RV32I, Little Endian, 32-Bit-Arraywörter.
+# Kurs-Venus-Exit: li a0, 10 / ecall. Werte sind Modellvorhersagen.
 # Erwartung am Label Ergebnis_pruefen: s0=30, t0=12, t1=42.
 # Array danach: 10, 20, 30, 42, 50.
 
