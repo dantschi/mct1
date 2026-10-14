@@ -7,7 +7,7 @@
 # Exit in dieser Kurskonvention: li a0, 10 / ecall.
 # Der Simulator stellt beim Start einen Stack-Bereich bereit.
 # Der konkrete Anfangswert von sp heisst hier S und ist durch 16 teilbar.
-# Diese Datei wurde statisch geprueft, nicht in Venus ausgefuehrt.
+# Werte sind funktional prüfbare Modellvorhersagen, keine Venus-Messung.
 #
 # main ist der Simulator-Einstieg und endet mit ecall.
 # main ist hier kein normal mit ret zurueckkehrendes Callee.
@@ -21,6 +21,7 @@ main:
     li a1, 10               # zweites Argument
     jal ra, Calc
 main_after_calc:
+Ergebnis_pruefen:
     mv s1, a0               # Ergebnis 20 vor dem Exit sichtbar sichern
     li a0, 10               # Dienstnummer: Venus exit, kein Rechenergebnis
     ecall

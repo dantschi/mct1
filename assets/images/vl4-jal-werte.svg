@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="320" viewBox="0 0 1000 320" role="img" aria-label="Zieladresse und Linkwert werden aus demselben alten PC berechnet">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="320" fill="#FFFFFF"/>
+<rect x="25" y="110" width="230" height="90" rx="7" class="box"/>
+<text x="140" y="145" class="small" text-anchor="middle">alter PC</text>
+<text x="140" y="181" class="title" text-anchor="middle">0x1000</text>
+<rect x="380" y="35" width="230" height="65" rx="7" class="box"/>
+<text x="495" y="77" class="small" text-anchor="middle">+ 4 Byte</text>
+<rect x="730" y="35" width="245" height="65" rx="7" class="box hot"/>
+<text x="852" y="77" class="small" text-anchor="middle">ra = 0x1004</text>
+<path d="M610 68 L730 68" class="flow" marker-end="url(#redarrow)"/>
+<rect x="380" y="220" width="230" height="65" rx="7" class="box"/>
+<text x="495" y="262" class="small" text-anchor="middle">+ 0x100 Byte</text>
+<rect x="730" y="220" width="245" height="65" rx="7" class="box hot"/>
+<text x="852" y="262" class="small" text-anchor="middle">PC = 0x1100</text>
+<path d="M610 253 L730 253" class="flow" marker-end="url(#redarrow)"/>
+<path d="M255 135 L315 135 L315 68 L380 68" class="line" marker-end="url(#arrow)"/>
+<path d="M255 175 L325 175 L325 253 L380 253" class="line" marker-end="url(#arrow)"/>
+<text x="25" y="310" class="small" text-anchor="start">jal ra, Calc · Lehrziel 0x1100 · vier Byte sind keine Taktzahl</text>
+</svg>

@@ -1,7 +1,7 @@
 # ABSICHTLICH FEHLERHAFT. Nicht als Vorlage verwenden.
 # Lehrbeispiel: ungesichertes ra erzeugt einen ret-Selbstloop.
 # Kein Frame, damit der ra-Fehler nicht mit einem sp-Fehler vermischt wird.
-# Statisch geprueft, nicht in Venus ausgefuehrt.
+# Die Zustandsfolge ist ein Modell, keine Venus-Messung.
 #
 # Erwartung: Sum_bad.ret erreicht calc_bad_return.
 # Dort springt ret wieder auf calc_bad_return, weil ra diese Adresse behaelt.

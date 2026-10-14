@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="375" viewBox="0 0 1000 375" role="img" aria-label="Ein Wort Nutzdaten, 16 Byte Frame">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="375" fill="#FFFFFF"/>
+<text x="25" y="38" class="title" text-anchor="start">Ein Wort Nutzdaten, 16 Byte Frame</text>
+<text x="25" y="88" class="small" text-anchor="start">S = 0x2000 · sp neu = 0x1FF0</text>
+<text x="190" y="149" class="small" text-anchor="middle">0x1FFC</text>
+<rect x="330" y="115" width="410" height="50" rx="7" class="box hot"/>
+<text x="535" y="149" class="small" text-anchor="middle">s0: Eintrittswert 99</text>
+<text x="790" y="149" class="small" text-anchor="start">12(sp)</text>
+<text x="190" y="204" class="small" text-anchor="middle">0x1FF8</text>
+<rect x="330" y="170" width="410" height="50" rx="7" class="box"/>
+<text x="535" y="204" class="small" text-anchor="middle">Padding</text>
+<text x="790" y="204" class="small" text-anchor="start">8(sp)</text>
+<text x="190" y="259" class="small" text-anchor="middle">0x1FF4</text>
+<rect x="330" y="225" width="410" height="50" rx="7" class="box"/>
+<text x="535" y="259" class="small" text-anchor="middle">Padding</text>
+<text x="790" y="259" class="small" text-anchor="start">4(sp)</text>
+<text x="190" y="314" class="small" text-anchor="middle">0x1FF0</text>
+<rect x="330" y="280" width="410" height="50" rx="7" class="box"/>
+<text x="535" y="314" class="small" text-anchor="middle">Padding</text>
+<text x="790" y="314" class="small" text-anchor="start">0(sp)</text>
+<path d="M930 110 L930 330" class="line" marker-end="url(#arrow)"/>
+<text x="25" y="357" class="small" text-anchor="start">Adressen fallen nach unten · sp ist Framegrenze, nicht zwingend Datenslot</text>
+</svg>

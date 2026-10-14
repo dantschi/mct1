@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="365" viewBox="0 0 1000 365" role="img" aria-label="Zwei Rückkehradressen und eine unveränderte Kopie im Frame">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="365" fill="#FFFFFF"/>
+<rect x="25" y="90" width="300" height="150" rx="7" class="box"/>
+<text x="175" y="128" class="small" text-anchor="middle">Calc-Eintritt</text>
+<text x="175" y="179" class="title" text-anchor="middle">ra = R_M</text>
+<text x="175" y="218" class="small" text-anchor="middle">Slot unbekannt</text>
+<path d="M325 165 L355 165" class="line" marker-end="url(#arrow)"/>
+<rect x="355" y="90" width="300" height="150" rx="7" class="box hot"/>
+<text x="505" y="128" class="small" text-anchor="middle">innerer Aufruf</text>
+<text x="505" y="179" class="title" text-anchor="middle">ra = R_C</text>
+<text x="505" y="218" class="small" text-anchor="middle">12(sp) = R_M</text>
+<path d="M655 165 L685 165" class="line" marker-end="url(#arrow)"/>
+<rect x="685" y="90" width="300" height="150" rx="7" class="box"/>
+<text x="835" y="128" class="small" text-anchor="middle">vor Calc-ret</text>
+<text x="835" y="179" class="title" text-anchor="middle">ra = R_M</text>
+<text x="835" y="218" class="small" text-anchor="middle">Frame freigegeben</text>
+<text x="25" y="285" class="small" text-anchor="start">R_M: Fortsetzung in main · R_C: Fortsetzung in Calc</text>
+<text x="25" y="330" class="small" text-anchor="start">jal überschreibt ra, nicht automatisch den gespeicherten Wert</text>
+</svg>
