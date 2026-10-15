@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="280" viewBox="0 0 1120 280" role="img" aria-label="Das Store-Immediate belegt zwei Felder, nicht ein Zielregister">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1120" height="280" fill="#FFFFFF"/>
+<text x="138.125" y="58" class="small muted" text-anchor="middle">31:25</text>
+<rect x="20" y="85" width="236.25" height="100" rx="0" class="box hot"/>
+<text x="138.125" y="147" class="title" text-anchor="middle">imm[11:5]</text>
+<text x="340.625" y="58" class="small muted" text-anchor="middle">24:20</text>
+<rect x="256.25" y="85" width="168.75" height="100" rx="0" class="box"/>
+<text x="340.625" y="147" class="title" text-anchor="middle">rs2</text>
+<text x="509.375" y="58" class="small muted" text-anchor="middle">19:15</text>
+<rect x="425.0" y="85" width="168.75" height="100" rx="0" class="box"/>
+<text x="509.375" y="147" class="title" text-anchor="middle">rs1</text>
+<text x="644.375" y="58" class="small muted" text-anchor="middle">14:12</text>
+<rect x="593.75" y="85" width="101.25" height="100" rx="0" class="box"/>
+<text x="644.375" y="147" class="title" text-anchor="middle">f3</text>
+<text x="779.375" y="58" class="small muted" text-anchor="middle">11:7</text>
+<rect x="695.0" y="85" width="168.75" height="100" rx="0" class="box hot"/>
+<text x="779.375" y="147" class="title" text-anchor="middle">imm[4:0]</text>
+<text x="981.875" y="58" class="small muted" text-anchor="middle">6:0</text>
+<rect x="863.75" y="85" width="236.25" height="100" rx="0" class="box"/>
+<text x="981.875" y="147" class="title" text-anchor="middle">opcode</text>
+<text x="25" y="237" class="small" text-anchor="start">7 obere + 5 untere Immediate-Bits = 12 Bit · f3 bedeutet funct3</text>
+</svg>

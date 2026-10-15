@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="320" viewBox="0 0 1000 320" role="img" aria-label="Rückwege führen zuerst zu Calc und erst nach dessen Epilog zu main">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="320" fill="#FFFFFF"/>
+<rect x="25" y="65" width="290" height="95" rx="7" class="box"/>
+<text x="170" y="103" class="title" text-anchor="middle">main</text>
+<text x="170" y="140" class="small" text-anchor="middle">Fortsetzung R_M</text>
+<rect x="355" y="65" width="290" height="95" rx="7" class="box hot"/>
+<text x="500" y="103" class="title" text-anchor="middle">Calc</text>
+<text x="500" y="140" class="small" text-anchor="middle">Fortsetzung R_C</text>
+<rect x="685" y="65" width="290" height="95" rx="7" class="box"/>
+<text x="830" y="103" class="title" text-anchor="middle">Sum</text>
+<text x="830" y="140" class="small" text-anchor="middle">Leaf: kein Frame</text>
+<path d="M315 95 L355 95" class="line" marker-end="url(#arrow)"/>
+<path d="M645 95 L685 95" class="line" marker-end="url(#arrow)"/>
+<path d="M830 160 L830 220 L500 220 L500 160" class="flow" marker-end="url(#redarrow)"/>
+<path d="M355 130 L335 130 L335 265 L170 265 L170 160" class="line" marker-end="url(#arrow)"/>
+<text x="530" y="248" class="small" text-anchor="start">Sum-ret: zu Calc</text>
+<text x="25" y="305" class="small" text-anchor="start">Calc-ret: nach Restaurierung zu main</text>
+</svg>

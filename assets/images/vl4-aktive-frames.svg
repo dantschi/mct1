@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="370" viewBox="0 0 1000 370" role="img" aria-label="Der innere Frame liegt unterhalb des noch aktiven äußeren Frames">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="370" fill="#FFFFFF"/>
+<text x="25" y="38" class="title" text-anchor="start">Zwei aktive 16-Byte-Frames · Lehrstart S = 0x2000</text>
+<rect x="300" y="95" width="570" height="90" rx="7" class="box"/>
+<text x="585" y="130" class="title" text-anchor="middle">äußerer Frame</text>
+<text x="585" y="165" class="small" text-anchor="middle">0x1FF0…0x1FFF</text>
+<rect x="300" y="215" width="570" height="90" rx="7" class="box hot"/>
+<text x="585" y="250" class="title" text-anchor="middle">innerer Frame</text>
+<text x="585" y="285" class="small" text-anchor="middle">0x1FE0…0x1FEF</text>
+<path d="M930 95 L930 305" class="line" marker-end="url(#arrow)"/>
+<text x="25" y="275" class="small" text-anchor="start">sp aktuell</text>
+<path d="M175 265 L300 265" class="flow" marker-end="url(#redarrow)"/>
+<text x="25" y="355" class="small" text-anchor="start">Inneren Frame zuerst freigeben: sp 1FE0 → 1FF0 → 2000</text>
+</svg>

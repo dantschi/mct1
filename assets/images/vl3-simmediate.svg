@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="300" viewBox="0 0 1000 300" role="img" aria-label="Zwei getrennte Stücke ergeben das signed Zwölf-Bit-Immediate minus vier">
+<style>
+text{font-family:Inter,sans-serif;fill:#1D1D1F;font-size:28px}
+.small{font-size:24px}.muted{fill:#86868B}.title{font-weight:600}
+.box{fill:#F5F5F7;stroke:#E5E5EA;stroke-width:2}
+.gate{fill:#FFFFFF;stroke:#E5E5EA;stroke-width:2}
+.hot{stroke:#E2001A;stroke-width:2.5}
+.line{fill:none;stroke:#86868B;stroke-width:2}
+.flow{fill:none;stroke:#E2001A;stroke-width:2.5}
+</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#86868B"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#E2001A"/></marker></defs>
+<rect width="1000" height="300" fill="#FFFFFF"/>
+<rect x="25" y="45" width="330" height="75" rx="7" class="box hot"/>
+<text x="190.0" y="76" class="small" text-anchor="middle">imm[11:5]</text>
+<text x="190.0" y="108" class="title" text-anchor="middle">1111111</text>
+<rect x="620" y="45" width="330" height="75" rx="7" class="box hot"/>
+<text x="785.0" y="76" class="small" text-anchor="middle">imm[4:0]</text>
+<text x="785.0" y="108" class="title" text-anchor="middle">11100</text>
+<rect x="280" y="205" width="430" height="65" rx="7" class="box"/>
+<text x="495" y="248" class="title" text-anchor="middle">111111111100 = 0xFFC</text>
+<path d="M190 120 L190 238 L280 238" class="line" marker-end="url(#arrow)"/>
+<path d="M785 120 L785 238 L710 238" class="line" marker-end="url(#arrow)"/>
+<text x="25" y="292" class="small" text-anchor="start">Erst verbinden, dann signed lesen: 4092 − 4096 = −4</text>
+</svg>
