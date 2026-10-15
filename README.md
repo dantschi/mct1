@@ -37,13 +37,6 @@ Pro Einheit: Folien (Reveal.js), Handout-PDF sowie Übungsblatt (Studierende / M
 |----------|:-----------:|:------------:|
 | Probeklausur (90 Min., 90 Punkte) | [PDF](https://dantschi.github.io/mct1/labs/probeklausur.pdf) | [PDF](https://dantschi.github.io/mct1/labs/probeklausur-musterloesung.pdf) |
 
-## Primärquellen des Kursvertrags
-
-- RISC-V Unprivileged ISA: [docs.riscv.org/reference/isa/unpriv/rv32.html](https://docs.riscv.org/reference/isa/unpriv/rv32.html)
-- RISC-V Privileged ISA, Machine Level: [docs.riscv.org/reference/isa/priv/machine.html](https://docs.riscv.org/reference/isa/priv/machine.html)
-- RISC-V ELF psABI: [riscv-non-isa.github.io/riscv-elf-psabi-doc](https://riscv-non-isa.github.io/riscv-elf-psabi-doc/)
-- C-Grundlagen dieses Kurses: WG14 N1570, Abschnitte 6.2.4, 6.2.6.2, 6.5.5, 6.5.6 und 6.5.9
-
 ## Literatur
 
 Zentrale Referenz dieses Moduls:
