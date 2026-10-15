@@ -2,20 +2,7 @@
 title: "Mikrocomputertechnik 1"
 subtitle: "Einheit 4: Funktionen und Stack"
 author: "Prof. Dr.-Ing. Daniel Klünder"
-format:
-  revealjs: default
-  pdf:
-    include-in-header:
-      - text: |
-          % Zusammenhängende Lerntexte bleiben im Skript auf einer Seite.
-          \AtBeginDocument{%
-            \renewtcolorbox{notesblock}{%
-              enhanced,colback=applegray,colframe=applegray,coltext=softblack,
-              boxrule=0pt,borderline west={2.5pt}{0pt}{dhbwred},arc=3pt,
-              left=10pt,right=10pt,top=8pt,bottom=8pt,
-              before skip=2pt,after skip=12pt,
-              fontupper=\small\color{softblack},unbreakable}%
-          }
+format: revealjs
 title-slide-attributes:
   data-notes: |
     In dieser Einheit wird ein bekannter Rechenblock als wiederverwendbares Unterprogramm aufgerufen. Vorausgesetzt werden nur Registerarithmetik, Byteadressen, Load und Store sowie Sprünge aus den Einheiten 1 bis 3. Eine höhere Programmiersprache ist nicht erforderlich. Neu sind der dynamische Rückweg, die Erhaltung von Registerwerten und ein Speicherbereich für gleichzeitig aktive Aufrufe. Diese drei Aufgaben werden getrennt eingeführt und danach verbunden.

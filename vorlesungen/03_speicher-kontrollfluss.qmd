@@ -2,20 +2,7 @@
 title: "Mikrocomputertechnik 1"
 subtitle: "Einheit 3: Speicherzugriff und Kontrollfluss"
 author: "Prof. Dr.-Ing. Daniel Klünder"
-format:
-  revealjs: default
-  pdf:
-    include-in-header:
-      - text: |
-          % Zusammenhängende Lerntexte bleiben in diesem Skript auf einer Seite.
-          \AtBeginDocument{%
-            \renewtcolorbox{notesblock}{%
-              enhanced,colback=applegray,colframe=applegray,coltext=softblack,
-              boxrule=0pt,borderline west={2.5pt}{0pt}{dhbwred},arc=3pt,
-              left=10pt,right=10pt,top=8pt,bottom=8pt,
-              before skip=2pt,after skip=12pt,
-              fontupper=\small\color{softblack},unbreakable}%
-          }
+format: revealjs
 title-slide-attributes:
   data-notes: |
     Diese dritte Einheit verbindet die Registerbefehle aus Vorlesung 2 mit Daten im Speicher und einem Programmablauf, der Entscheidungen und Wiederholungen enthält. Voraussetzung sind die aus Vorlesung 1 bekannten Byteadressen, Hexdarstellung und Zweierkomplement sowie Registerrollen, unmittelbare Konstanten und Befehlswirkung aus Vorlesung 2. C-Kenntnisse oder Funktionsaufrufe werden nicht vorausgesetzt. Ein Array ist eine Folge gleich großer, hintereinander gespeicherter Elemente; wir verwenden zunächst fünf 32-Bit-Zahlen.
