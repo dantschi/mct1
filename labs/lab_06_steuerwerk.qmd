@@ -4,274 +4,194 @@ subtitle: "Mikrocomputertechnik 1"
 format:
   pdf:
     papersize: a4
+    pdf-engine: xelatex
+    fontsize: 10pt
+    highlight-style: monochrome
     mainfont: TeX Gyre Heros
     sansfont: TeX Gyre Heros
     monofont: TeX Gyre Cursor
 ---
 
 ::: {.content-visible when-profile="solution"}
-> **Musterlösung**
+**Musterlösung**
 :::
 
-## Zielsetzung und Vorgehen
+## Aufgabe 1: Einen Decoderentwurf korrigieren (12 Punkte)
 
-Sie leiten Steuersignale aus der Befehlswirkung her, unterscheiden Haupt- und ALU-Steuerung und bestimmen konkrete Folgen falscher Freigaben. Teil A ist ohne Simulator lösbar und übt Klausuraufgaben. Teil B vergleicht Vorhersagen mit Ripes.
+Single-Cycle-Kursmodell mit addi-Erweiterung. ALUSrc: 0 = RD2, 1 = Immediate. MemtoReg: 0 = ALU, 1 = Speicher. X ist nur bei gesperrter Registerübernahme unerheblich.
 
-Orientierung: Teil A etwa 60 Minuten und 50 Punkte zur Selbsteinschätzung, Teil B etwa 25 Minuten. Begründen Sie die Entscheidungen; eine Liste von Bitwerten allein genügt bei Erklärungsaufgaben nicht.
-
-## Vereinbartes Modell
-
-Es gilt das Single-Cycle-Lehrmodell aus Vorlesung 5 und 6 mit der in Einheit 6 ergänzten `addi`-Unterstützung:
-
-- Unterstützt: `add`, `sub`, `and`, `or`, `lw`, `sw`, `beq`, `addi`.
-- Gültige Codierungen, 32-Bit-Daten, unkomprimierte Vier-Byte-Instruktionen, byteadressierter Speicher, Little Endian.
-- Lesen kombinatorisch, Übernahme an der steigenden Flanke mit Freigabe. Alle genannten Speicheradressen sind gültig, beschreibbar und wortausgerichtet.
-- `ALUSrc`: 0 wählt RD2, 1 den vorzeichenerweiterten Immediate.
-- `MemtoReg`: 0 wählt das ALU-Ergebnis, 1 die Speicherlesedaten. X bedeutet eine nachweislich unerhebliche Auswahl.
-- `ALUOp`: `00` erzwingt ADD, `01` SUB für `beq`, `10` wertet die gültigen Register-Funktionsfelder aus.
-- `ALUControl`: `0000` AND, `0001` OR, `0010` ADD, `0110` SUB. Die Codes sind Kurskonventionen.
-- $\mathrm{PCSrc}=\mathrm{Branch}\land\mathrm{Zero}$. ImmGen liefert den fertigen Branch-Byteoffset ohne weiteren Shift.
-
-Registernummern: `t0 = x5`, `t1 = x6`, `t2 = x7`, `s1 = x9`. Alle unabhängigen Fälle beginnen mit den jeweils angegebenen Anfangswerten.
-
-{{< pagebreak >}}
-
-# Teil A: Papieraufgaben
-
-## Aufgabe 1: Hauptsteuerung herleiten (12 Punkte)
-
-1. Füllen Sie die Quellen- und Freigabetabelle aus. Verwenden Sie X nur mit begründeter Unerheblichkeit. (6 P.)
+1. Prüfen Sie jede Zeile. Korrigieren Sie falsche Bits; kennzeichnen Sie auch eine vollständig richtige Zeile. (5 P)
 
 | Befehl | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| `add` | | | | | | |
-| `lw` | | | | | | |
-| `sw` | | | | | | |
-| `beq` | | | | | | |
-| `addi` | | | | | | |
+|---|---|---|---|---|---|---|
+| or | 0 | 0 | 1 | 0 | 0 | 0 |
+| addi | 1 | 1 | 1 | 0 | 0 | 0 |
+| sw | 1 | X | 1 | 0 | 1 | 0 |
+| lw | 1 | 1 | 1 | 0 | 0 | 0 |
+| beq | 1 | X | 0 | 0 | 0 | 1 |
 
-2. Geben Sie für jeden der fünf Befehle das zweibitige ALUOp an. Warum braucht `addi` dieselbe Kategorie wie `lw` und nicht dieselbe wie `add`? (3 P.)
-3. Begründen Sie das X bei `sw` über Schreibport und Datenweg. Dürfte stattdessen `MemWrite` mit X bezeichnet werden? (2 P.)
-4. Wie viele benannte Hauptsignale und wie viele Bits enthält die gesamte Hauptsteuerzeile? Gehört PCSrc als unabhängiger Ausgang dazu? (1 P.)
+2. Ordnen Sie jeder korrigierten Zeile ALUOp zu: 00 = ADD, 01 = SUB-Vergleich, 10 = Register-Funktionsfelder. Warum gehört addi zu 00? (3 P)
+3. Dürfen beim korrigierten sw sowohl MemtoReg = 0 als auch 1 verwendet werden? Begründen Sie. (2 P)
+4. Wie viele benannte Hauptsignale und Bits enthalten diese sechs Signale zusammen mit ALUOp? Ist PCSrc ein weiterer unabhängiger Hauptausgang? (2 P)
 
 ::: {.content-hidden when-profile="solution"}
-### Ihre Lösung {.unnumbered}
-\vspace{5cm}
+\vspace{7cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
-**Musterlösung Aufgabe 1**
+### Musterlösung {.unnumbered}
 
-| Befehl | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| `add` | 0 | 0 | 1 | 0 | 0 | 0 |
-| `lw` | 1 | 1 | 1 | 1 | 0 | 0 |
-| `sw` | 1 | X | 0 | 0 | 1 | 0 |
-| `beq` | 0 | X | 0 | 0 | 0 | 1 |
-| `addi` | 1 | 0 | 1 | 0 | 0 | 0 |
-
-2. In Tabellenreihenfolge: `10`, `00`, `00`, `01`, `00`. Bei `addi` steht Addition schon durch die gültige Befehlserkennung fest. Die oberen Bits sind Immediate-Bits, keine Register-Funktionskennung für Plus oder Minus.
-3. `RegWrite = 0` sperrt den Registerschreibport. `MemtoReg` wählt nur dessen Datenquelle; die Speicher-Schreibdaten kommen getrennt aus RD2. `MemWrite` darf kein X sein, weil sein Wert darüber entscheidet, ob der Store überhaupt schreibt.
-4. Sieben benannte Hauptsignale mit acht Bits, weil ALUOp zwei Bit hat. PCSrc wird aus Branch und Zero abgeleitet.
+1. or korrekt. addi: MemtoReg muss 0 sein. sw: RegWrite muss 0 sein. lw: MemRead muss 1 sein. beq: ALUSrc muss 0 sein. Je richtige Zeilenentscheidung 1 P.
+2. Kategorien in Tabellenreihenfolge: 10, 00, 00, 00, 01. Je 0,5 P. addi benötigt unabhängig von den Immediate-Bits immer Addition (0,5 P).
+3. Ja. RegWrite = 0 verhindert jede Registerübernahme; die Store-Daten kommen separat aus RD2. Urteil und Datenweg je 1 P.
+4. Sieben Signale, acht Bits wegen des zweibittigen ALUOp (zusammen 1 P). PCSrc wird aus Branch und Zero abgeleitet (1 P).
 :::
 
 {{< pagebreak >}}
 
-## Aufgabe 2: ALUOp, ALUControl und Bit 30 (10 Punkte)
+## Aufgabe 2: Rechenkategorie und Detailkommando (10 Punkte)
 
-Gegeben sind unabhängige Fälle mit `t1 = 7` und `t2 = 3`:
+Unabhängige Fälle mit a2 = 25, a3 = 12. Gültige Register-Funktionsfelder: AND = (funct3 111, funct7 0000000), SUB = (000, 0100000). addi hat Opcode 0010011 und funct3 000.
 
-| Fall | Befehl | Relevante Felder |
-|:---|:---|:---|
-| A | `sub t0, t1, t2` | Opcode `0110011`, funct3 `000`, funct7 `0100000` |
-| B | `or t0, t1, t2` | Opcode `0110011`, funct3 `110`, funct7 `0000000` |
-| C | `addi t0, t1, -5` | Opcode `0010011`, funct3 `000`, Immediate `1111 1111 1011` |
+Interne ALUControl-Codes: AND 0000, OR 0001, ADD 0010, SUB 0110.
 
-1. Bestimmen Sie ALUOp, ALUControl, die Quelle des zweiten ALU-Operanden und den neuen Inhalt von `t0` für alle drei Fälle. (6 P.)
-2. Bit 30 ist in A und C gesetzt. Warum verlangt es nur in A eine Subtraktion? (2 P.)
-3. Ein anderes Muster hat den Register-Opcode, funct3 `000` und funct7 `0000001`. Darf unser Decoder allein wegen Bit 30 gleich 0 auf `add` schließen? Begründen Sie die Antwort. (2 P.)
-
-::: {.content-hidden when-profile="solution"}
-### Ihre Lösung {.unnumbered}
-\vspace{5cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-**Musterlösung Aufgabe 2**
-
-| Fall | ALUOp | ALUControl | Quelle B | Ergebnis |
-|:---|:---:|:---:|:---|:---|
-| A | `10` | `0110` | RD2 = 3 | `t0 = 4` |
-| B | `10` | `0001` | RD2 = 3 | `t0 = 7` |
-| C | `00` | `0010` | Immediate $-5$ | `t0 = 2` |
-
-A: $7-3=4$. B: Die unteren vier Bits `0111` ODER `0011` ergeben `0111`, alle oberen Bits bleiben null. C: $7+(-5)=2$; der erweiterte Immediate ist `0xFFFFFFFB`.
-
-2. A ist eine gültige Registeroperation mit Kategorie `10`; Bit 30 gehört zum funct7-Feld und unterscheidet hier `sub` von `add`. C ist `addi` mit Kategorie `00`; Bit 30 gehört zur Konstanten und wird nicht als Subtraktionskennung ausgewertet.
-3. Nein. Das gesamte gültige funct7 für `add` ist `0000000`. Das abweichende Muster ist kein unterstützter Fall unseres Subsets. Der reduzierte Bit-30-Test setzt bereits legale Befehle voraus.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 3: Boolesche Steuerbedingungen (10 Punkte)
-
-R, L, S, B und I sind gegenseitig ausschließende Ein-Bit-Signale für gültig erkannte Registeroperationen, `lw`, `sw`, `beq` und `addi`.
-
-1. Leiten Sie eine Boolesche Formel für RegWrite und eine für ALUSrc her. Verwenden Sie $\land$, $\lor$ und bei Bedarf den Überstrich zur Negation. (4 P.)
-2. Zeichnen Sie RegWrite mit einem rechteckigen ODER-Gatter nach der verwendeten IEC-Darstellung. Beschriften Sie Ein- und Ausgang und die Bitbreiten. (2 P.)
-3. Ergänzen Sie die folgenden Funktionen für jede gültige Befehlsgruppe. Warum sind beide zulässig? (3 P.)
-
-$$\mathrm{MemtoReg}_a=L,\qquad \mathrm{MemtoReg}_b=L\lor S$$
-
-| Gruppe | R | L | S | B | I |
-|:---|:---:|:---:|:---:|:---:|:---:|
-| MemtoReg a | | | | | |
-| MemtoReg b | | | | | |
-
-4. Bedeutet X in der Steuertabelle einen hochohmigen Ausgang? Erklären Sie den Unterschied. (1 P.)
-
-::: {.content-hidden when-profile="solution"}
-### Ihre Lösung {.unnumbered}
-\vspace{5cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-**Musterlösung Aufgabe 3**
-
-1. $\mathrm{RegWrite}=R\lor L\lor I$, weil diese Gruppen Register schreiben. $\mathrm{ALUSrc}=L\lor S\lor I$, weil diese Gruppen das Immediate als zweiten ALU-Operanden benötigen.
-2. Drei Ein-Bit-Eingänge R, L und I führen in ein Rechteck mit dem Symbol >=1. Ein Ein-Bit-Ausgang trägt RegWrite. Die Leitungen sind rechtwinklig zu führen. Es ist kein Datenwort und kein Taktsignal.
-3. In Gruppenreihenfolge:
-
-| Gruppe | R | L | S | B | I |
-|:---|:---:|:---:|:---:|:---:|:---:|
-| MemtoReg a | 0 | 1 | 0 | 0 | 0 |
-| MemtoReg b | 0 | 1 | 1 | 0 | 0 |
-
-Nur beim Store unterscheiden sich die Werte. Dort ist RegWrite null, daher wird keine Rückschreibquelle übernommen. Der Speicher-Schreibwert kommt aus RD2 und bleibt gleich.
-4. Nein. X bezeichnet Entwurfsfreiheit bei unerheblicher Auswahl. Ein hochohmiger Ausgang treibt elektrisch keinen eindeutigen Pegel. Das sind verschiedene Begriffe.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 4: Fehlerfolgen exakt bestimmen (10 Punkte)
-
-Zwei voneinander unabhängige, gedachte Decoderfehler im Lehrmodell:
-
-### Fall A: Speicherfreigabe bei Addition {.unnumbered}
+1. Bestimmen Sie ALUOp, ALUControl, Quelle B und Ergebnis für alle Zeilen. (8 P)
 
 ```asm
-add t0, t1, t2      # t1 = 0x2000; t2 = 4
+and  a1, a2, a3
+sub  a1, a3, a2
+addi a1, a2, -13
+addi a1, a2, 1536
 ```
 
-Nur `MemWrite` ist falsch auf 1 gesetzt. Wort an `0x2004` vorher: 99. Alle übrigen Signale entsprechen einem korrekten `add`.
-
-1. Welche Adresse und welche Schreibdaten liegen am Datenspeicher? (2 P.)
-2. Welche Werte enthalten `t0` und das Wort an `0x2004` nach der Flanke? Geben Sie außerdem die vier Speicherbytes in aufsteigender Adressreihenfolge an. (2 P.)
-
-### Fall B: Registerfreigabe bei Store {.unnumbered}
-
-```asm
-sw t1, 12(s1)      # s1 = 0x2000; t1 = 37; x12 = 9
-```
-
-Hier sind `RegWrite = 1` und `MemtoReg = 0` gesetzt. Alle anderen Signale entsprechen einem korrekten Store. Die Bits 11:7 der Instruktion enthalten die unteren fünf Offsetbits, also `01100`; der Registeradressport ist fest mit diesen Positionen verbunden.
-
-3. Bestimmen Sie den Speicher-Schreibort und den geschriebenen Wert. Welches Register wird zusätzlich beschrieben und mit welchem Wert? (3 P.)
-4. Warum sind die Folgen in beiden Fällen nicht „zufällige Zellen mit Müll“? Warum setzt das Don't Care bei MemtoReg eine korrekte Registerfreigabe voraus? (3 P.)
+2. Warum verlangt das gesetzte Instruktionsbit 30 der letzten Zeile keine Subtraktion? (1 P)
+3. Ein Registermuster hat funct3 = 110 und funct7 = 0100000. Darf unser Decoder daraus OR ableiten, obwohl nur das Paar (110, 0000000) als OR definiert wurde? (1 P)
 
 ::: {.content-hidden when-profile="solution"}
-### Ihre Lösung {.unnumbered}
-\vspace{4cm}
+\vspace{9cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
-**Musterlösung Aufgabe 4**
+### Musterlösung {.unnumbered}
 
-1. A: ALU-Adresse $\mathtt{0x2000}+4=\mathtt{0x2004}$, Schreibdaten aus RD2 gleich 4.
-2. `t0 = 0x2004`; Speicherwort an `0x2004` gleich 4 statt 99. Bytes: `04 00 00 00` (Hex, Little Endian).
-3. B: Speicheradresse $\mathtt{0x2000}+12=\mathtt{0x200C}$, Speicher-Schreibwert 37. `01100` adressiert `x12`. Wegen `RegWrite = 1` und `MemtoReg = 0` erhält `x12` zusätzlich das ALU-Ergebnis `0x200C` statt 9.
-4. Adresse und Schreibdaten sind durch den Datenpfad und die Anfangswerte bestimmt. Ein Absturz hängt von der späteren Verwendung ab und ist nicht garantiert. MemtoReg ist beim korrekten Store nur deshalb unerheblich, weil RegWrite null ist. Nach Verletzung dieser Voraussetzung kann die Rückschreibquelle beobachtbar werden.
+| Zeile | ALUOp | ALUControl | Quelle B | Ergebnis a1 |
+|---|---|---|---|---|
+| AND | 10 | 0000 | a3 = 12 | 8 |
+| SUB | 10 | 0110 | a2 = 25 | −13 |
+| ADDI −13 | 00 | 0010 | Immediate −13 | 12 |
+| ADDI 1536 | 00 | 0010 | Immediate 1536 | 1561 |
+
+1. Je Eintrag 0,5 P.
+2. Bit 30 ist bei addi ein Immediate-Bit. Kategorie 00 erzwingt ADD; das Wort ist kein R-Format. 1 P.
+3. Nein. Nur die vollständige gültige Kombination darf als unterstützte OR-Instruktion akzeptiert werden; eine einzelne Feldübereinstimmung genügt nicht. 1 P.
 :::
 
 {{< pagebreak >}}
 
-## Aufgabe 5: Branch-Freigabe und Entscheidung (8 Punkte)
+## Aufgabe 3: Neue Boolesche Steuerbedingungen (10 Punkte)
 
-Der aktuelle Befehl liegt bei `PC = 0x100`. Sein vollständiger Branch-Byteoffset zum Label `ziel` beträgt $+12$.
+R, L, S, B, I sind gegenseitig ausschließende Erkennungssignale für Registeroperationen, lw, sw, beq und addi. ALUOp verwendet 10 für R, 01 für B, sonst 00.
 
-1. Ergänzen Sie die Tabelle. C ist eine unabhängige Registeroperation an derselben PC-Adresse. (4 P.)
-
-| Fall | Befehl und Operanden | Branch | Zero | PCSrc | Neuer PC |
-|:---|:---|:---:|:---:|:---:|:---|
-| A | `beq t0, t1, ziel`; 5 und 5 | | | | |
-| B | `beq t0, t1, ziel`; 5 und 6 | | | | |
-| C | `sub t0, t1, t2`; 5 und 5 | | | | |
-
-2. Welche ALUOp- und ALUControl-Werte gelten in A und B? Welche in C? (2 P.)
-3. Warum bleibt Branch auch beim nicht genommenen Sprung 1? Warum wird der Byteoffset hier nicht nochmals verschoben? (2 P.)
+1. Leiten Sie die beiden einzelnen ALUOp-Bits sowie MemRead und MemWrite als Boolesche Funktionen her. (4 P)
+2. Prüfen Sie die Gleichwertigkeit der beiden Rückschreibauswahlen für alle fünf Gruppen: $W_1=L\lor B$ und $W_2=L\lor S\lor B$. Warum bleiben beide zulässig? (3 P)
+3. Warum wäre $W_3=L\lor I$ als MemtoReg-Funktion falsch? (1 P)
+4. Eine andere Funktion ist für $(A,B)=(0,0)$ frei, bei (0,1) null und bei (1,0), (1,1) eins. Geben Sie zwei unterschiedliche zulässige Formeln an. (2 P)
 
 ::: {.content-hidden when-profile="solution"}
-### Ihre Lösung {.unnumbered}
-\vspace{5cm}
+\vspace{9cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
-**Musterlösung Aufgabe 5**
+### Musterlösung {.unnumbered}
 
-| Fall | Branch | Zero | PCSrc | Neuer PC |
-|:---|:---:|:---:|:---:|:---|
-| A | 1 | 1 | 1 | `0x10C` |
-| B | 1 | 0 | 0 | `0x104` |
-| C | 0 | 1 | 0 | `0x104` |
+1. $\mathrm{ALUOp}_1=R$, $\mathrm{ALUOp}_0=B$, $\mathrm{MemRead}=L$, $\mathrm{MemWrite}=S$. Je 1 P.
 
-2. A und B: ALUOp `01`, ALUControl `0110`, Subtraktion zum Vergleich. C: ALUOp `10`, ALUControl ebenfalls `0110`, aus den gültigen `sub`-Funktionsfeldern.
-3. Branch kennzeichnet die Instruktionsart, nicht das Vergleichsergebnis. PCSrc verbindet Branch mit Zero. ImmGen hat das implizite Bit 0 schon eingefügt und liefert den fertigen Byteoffset. Das Ziel ist der alte PC plus zwölf, kein zweiter Shift und keine Addition zu PC plus vier.
+| Gruppe | R | L | S | B | I |
+|---|---|---|---|---|---|
+| $W_1$ | 0 | 1 | 0 | 1 | 0 |
+| $W_2$ | 0 | 1 | 1 | 1 | 0 |
+
+2. Tabellen je 1 P, Begründung 1 P: Der einzige Unterschied liegt bei sw, dessen RegWrite null ist. Auch bei beq darf die Auswahl eins sein.
+3. Bei addi würde Speicher statt ALU-Ergebnis zurückgeschrieben; dort ist RegWrite eins. 1 P.
+4. Beispielsweise $f=A$ und $g=A\lor\overline{B}$. Beide erfüllen die drei festgelegten Zeilen, unterscheiden sich aber bei (0,0). Je 1 P. X bezeichnet hier Entwurfsfreiheit, keinen elektrischen dritten Logikpegel.
 :::
 
 {{< pagebreak >}}
 
-# Teil B: Beobachtung in Ripes
+## Aufgabe 4: Fehler mit genau bestimmten Nebenwirkungen (10 Punkte)
 
-## Aufgabe 6: Ein Programm, mehrere Steueraufgaben
+Gültige, beschreibbare, natürlich ausgerichtete Adressen; Little Endian. Jeder Fall startet unabhängig.
 
-Verwenden Sie `beispiele/vl6_mux_beobachter.s`. Wählen Sie einen RV32-Single-Cycle-Prozessor, deaktivieren Sie C und notieren Sie Version und Prozessorbezeichnung. Lesen Sie die tatsächliche Adresse von `slot` als $B$ ab.
+1. `or t0, t1, t2` mit t1 = `0x9000` und t2 = `0x10`. Nur MemWrite ist irrtümlich eins; das betroffene Speicherwort war −1. Bestimmen Sie Speicheradresse, Store-Daten, t0 und neue Bytes. (4 P)
+2. `sw a1, -8(s2)` mit s2 = `0x900C`, a1 = 128. Fehler: RegWrite = 1 und MemtoReg = 0. Der Registeradressport erhält Bits 11:7 des Befehlsworts. Bestimmen Sie regulären Store und zusätzlich beschriebenes Register samt Wert. (4 P)
+3. Ein anderer Store nutzt Offset −32 bei denselben fehlerhaften Freigaben. Was ändert sich am zusätzlichen Registereffekt, und weshalb? (2 P)
 
-Die Initialisierung `la s1, slot` kann mehrere Maschineninstruktionen erzeugen. Beginnen Sie bei `Beobachtung`. Halten Sie vor den Exit-Anweisungen bei `Pruefpunkt` an; die Simulator-Dienstkonvention ist für die Aufgaben nicht erforderlich.
-
-Vor jedem Clock-Schritt: PC und Befehl, Operanden, ausgewählte Registerschreibquelle und Register-/Speicherfreigaben protokollieren. Nach dem Schritt: gespeicherte Register, Speicherwort und PC prüfen. Die dann sichtbaren Leitungen können schon zur nächsten Instruktion gehören.
-
-### Vorhersage und Protokoll {.unnumbered}
-
-1. Ergänzen Sie zunächst die erwarteten Zustandsänderungen. (ohne Punkte)
-
-| Befehl | Nach Clock erwartet | Nach Clock beobachtet |
-|:---|:---|:---|
-| `addi t0, x0, 5` | | |
-| `add t1, t0, t0` | | |
-| `sw t1, 0(s1)` | | |
-| `lw t2, 0(s1)` | | |
-| erster `beq` | | |
-| `addi t3, x0, 1` | | |
-| zweiter `beq` | | |
-
-2. Welche konkrete Register-Rückschreibquelle zeigt Ripes beim Store und beim Branch? Warum kann ein angezeigter Auswahlwert mit X in der Papiertabelle vereinbar sein?
-3. Welches Bauteil berechnet den Branch-Vergleich, welches das Ziel? Vergleichen Sie die Funktionen mit dem Lehrmodell, ohne gleiche interne Codes vorauszusetzen.
-4. Dokumentieren Sie die Register- und Speicherwerte am Prüfpunkt und begründen Sie, warum der Markerwert 99 nicht ausgeführt wird.
+::: {.content-hidden when-profile="solution"}
+\vspace{9cm}
+:::
 
 ::: {.content-visible when-profile="solution"}
-**Musterlösung Aufgabe 6: funktionale Erwartungen**
+### Musterlösung {.unnumbered}
 
-| Befehl | Nach Clock erwartet |
-|:---|:---|
-| `addi t0, x0, 5` | `t0 = 5` |
-| `add t1, t0, t0` | `t1 = 10` |
-| `sw t1, 0(s1)` | Wort an $B$ ist 10 |
-| `lw t2, 0(s1)` | `t2 = 10` |
-| erster `beq` | nicht genommen, PC zur nächsten Instruktion |
-| `addi t3, x0, 1` | `t3 = 1` |
-| zweiter `beq` | genommen, PC zum Label `Pruefpunkt` |
+1. OR-Ergebnis und Adresse `0x9010`; Speicher-Schreibdaten aus RD2 = 16; t0 = `0x9010`; Bytes `10 00 00 00`. Je 1 P.
+2. Regulärer Store: Adresse `0x9004`, Daten 128 (zusammen 2 P). Die unteren fünf Immediate-Bits von −8 sind `11000` = 24: x24 erhält zusätzlich die ALU-Adresse `0x9004` (zusammen 2 P).
+3. −32 hat untere fünf Bits `00000`, also Ziel x0. Der falsche Registerschreibversuch wird verworfen; es gibt keinen zusätzlichen sichtbaren Registereffekt. Ziel und Erklärung je 1 P. Der eigentliche Store erfolgt weiterhin an `0x8FEC`.
+:::
 
-2. Ein konkreter Quellenwert ist bei gesperrter Registerübernahme unerheblich. Ein Mehrwege-MUX kann andere Codes als unser MemtoReg verwenden. X ist keine notwendige Simulatoranzeige.
-3. Die Bauteile und Ports sind anhand der verwendeten Version zu benennen. Ein eigener Registervergleicher und eine Haupt-ALU für das Branch-Ziel erfüllen dieselbe Funktion wie der getrennte Subtraktions-/Addiererweg unserer Zeichnung.
-4. Am Prüfpunkt sind `t0 = 5`, `t1 = 10`, `t2 = 10`, `t3 = 1` und das Wort an $B$ gleich 10. Der erste Branch vergleicht 5 mit 10 und fällt durch; der zweite vergleicht 10 mit 10 und überspringt die Instruktion, die 99 nach `t3` schreiben würde. Konkrete Portwerte und Adressen sind im eigenen Protokoll zu ergänzen.
+{{< pagebreak >}}
+
+## Aufgabe 5: Null ist noch keine Sprungfreigabe (8 Punkte)
+
+Befehlsadresse `0x5A0`, fertiger Branch-Byteoffset −32. Drei unabhängige Fälle:
+
+| Fall | Befehl | Operanden |
+|---|---|---|
+| A | beq | 11, 11 |
+| B | beq | 11, −11 |
+| C | addi a0, x0, 0 | 0, Immediate 0 |
+
+1. Bestimmen Sie jeweils Branch, Zero, PCSrc und nächsten PC. (4 P)
+2. Nennen Sie ALUOp und ALUControl für die drei Fälle. Kurscodes aus Aufgabe 2 gelten. (2 P)
+3. Warum ist Branch in B trotzdem eins? Warum ist PCSrc in C trotz Zero eins gleich null? (2 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{8cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+| Fall | Branch | Zero | PCSrc | nächster PC |
+|---|---|---|---|---|
+| A | 1 | 1 | 1 | `0x580` |
+| B | 1 | 0 | 0 | `0x5A4` |
+| C | 0 | 1 | 0 | `0x5A4` |
+
+1. Je Eintrag 1/3 P.
+2. A und B: ALUOp 01, ALUControl 0110; C: ALUOp 00, ALUControl 0010. Je korrektem Code 1/3 P.
+3. Branch kennzeichnet die Befehlsfamilie (1 P); PCSrc verlangt Branch und Zero gleichzeitig, und addi ist kein Branch (1 P).
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 6: Eine Bitprüfung in Ripes
+
+1. Öffnen Sie `beispiele/lab_06_bitpruefung.s` im RV32-Single-Cycle-Modell ohne C. Protokollieren Sie Version und Modell.
+2. Beginnen Sie bei Beobachtung. Notieren Sie vor jeder Clock Rechenoperation, ALU-Quelle, Rückschreibquelle und Schreibfreigaben; danach Register, Speicherwort und PC.
+3. Begründen Sie vor dem Lauf, welcher Pfad der Branch nehmen muss. Prüfen Sie t0 bis t5 und das zweite Pufferwort bei inspect.
+4. Verändern Sie in einem separaten Lauf das zweite Speicherwort zwischen Store und Load auf null. Welcher Pfad und t5-Wert entstehen jetzt?
+5. Erklären Sie am Store, weshalb ein konkreter Rückschreib-MUX-Wert mit X in Ihrer Papiertabelle vereinbar ist.
+
+::: {.content-hidden when-profile="solution"}
+\vspace{8cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+Regulär: t0 = −13, t1 = 8, t2 = −5, zweites Wort = −5, t3 = −5, t4 = 8. Der Branch wird genommen und t5 = 12. Bitweise gilt $(A\lor B)\land B=B$; hier liefert die Maske daher genau t1.
+
+Nach der gezielten Speicheränderung liest t3 null und t4 wird null. Der Branch ist nicht genommen, t5 = −1. Die Software setzt inspect über einen separaten beq-Jump fort und erreicht Pass nicht.
+
+Beim Store ist RegWrite null. Der gewählte Rückschreibwert wird nicht übernommen; die Speicher-Schreibdaten kommen aus RD2. Die Tabelle beschreibt Sollwerte, keine bereits erfolgten Ripes-Beobachtungen.
 :::

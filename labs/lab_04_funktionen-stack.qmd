@@ -1,382 +1,269 @@
 ---
 title: "Übungsblatt 4: Funktionen und Stack"
-subtitle: "Aufruf-Traces, Frameadressen und Venus-Vergleich"
-lang: de
+subtitle: "Mikrocomputertechnik 1"
 format:
   pdf:
     papersize: a4
+    pdf-engine: xelatex
     fontsize: 10pt
-    mainfont: "TeX Gyre Heros"
-    sansfont: "TeX Gyre Heros"
-    monofont: "TeX Gyre Cursor"
+    highlight-style: monochrome
+    mainfont: TeX Gyre Heros
+    sansfont: TeX Gyre Heros
+    monofont: TeX Gyre Cursor
 ---
 
 ::: {.content-visible when-profile="solution"}
-> **Musterlösung** — Die Zahlen sind Modellvorhersagen; Beobachtungen der konkreten Venus-Umgebung werden getrennt eingetragen.
+**Musterlösung**
 :::
 
-## Arbeitsweise und Zeitplanung
+## Aufgabe 1: Link und Ziel berechnen (10 Punkte)
 
-Die Pflichtaufgaben setzen die Einheiten 1–3 und die Erklärungen aus Vorlesung 4 voraus. C und die Multiplikationserweiterung M sind nicht erforderlich. Aufgaben 1–6 bearbeiten Sie zunächst auf Papier. Die **60 Punkte** dienen der Selbstkontrolle, nicht einer Prüfungsbewertung. Aufgabe 7 vergleicht eigene Vorhersagen mit [Kurs-Venus](https://thaumicmekanism.github.io/venus/).
+RV32I ohne komprimierte Instruktionen. Jeder Fall startet unabhängig. Geben Sie Ziel-PC und ra danach an.
 
-| Aufgabe | Inhalt | Minuten | Punkte |
-|---|---|---:|---:|
-| 1 | Linkwert und Registerziel | 9 | 10 |
-| 2 | Registerverantwortung | 8 | 8 |
-| 3 | Framegröße und Slotadressen | 8 | 10 |
-| 4 | Verschachtelter Aufruf-Trace | 13 | 14 |
-| 5 | Fehler isoliert erklären | 9 | 10 |
-| 6 | Caller-saved Wert erhalten | 8 | 8 |
-| 7 | Leaf und Calc in Venus | 35 | — |
-
-Für vier Schulstunden zu je 45 Minuten: 70 Minuten Vorlesung einschließlich Rückfragen, 55 Minuten Papierarbeit, 35 Minuten Venus, zehn Minuten Quiz und zehn Minuten Auswertung. Die optionale Rekursion ist zusätzliche Reserve. Die Zeiten sind Planungsannahmen; bei mehr Unterstützungsbedarf kann Aufgabe 5 nachbesprochen werden.
-
-## Gemeinsame Annahmen
-
-RV32I bezeichnet die RISC-V-Integerbasis mit 32-Bit-Registern. Ohne komprimierte Erweiterung C ist jeder native Befehl vier Byte lang. Adressen zählen Byte, Daten liegen Little Endian. Registerarithmetik speichert die unteren 32 Bit. `ra=x1` ist return address, Rückkehradresse; `sp=x2` ist stack pointer, Stackzeiger. `a0=x10` und `a1=x11` sind Argumentregister, `s0=x8` ein saved Register und `t0=x5` ein temporäres Register.
-
-Die ABI, Application Binary Interface, legt die Softwarevereinbarung fest: einzelne 32-Bit-Ergebnisse in `a0`, alte `t`-/`a`-/`ra`-Werte nicht allgemein erhalten, veränderte `s`-Eintrittswerte und `sp` bei Rückkehr restaurieren. Wir verwenden 16-Byte-ausgerichtete Framegrößen und einen gültigen, ausreichend großen Anfangsstack. Lehradressen sind keine zugesicherten Venus-Adressen. Nicht genannte Werte und Paddingbyte sind unbekannt.
-
-{{< pagebreak >}}
-
-## Aufgabe 1: Rückwege aus dem alten Zustand
-
-**10 Punkte · 9 Minuten · Papier**
-
-Jeder Fall wird unabhängig betrachtet. Notieren Sie jeweils den nächsten PC, Program Counter, und den neuen beziehungsweise unveränderten `ra`-Wert.
-
-a) Bei `PC=0x1000` wird `jal ra, Calc` ausgeführt. Das Lehrziel Calc liegt bei `0x1100` (2 Punkte).
-
-b) Bei `PC=0x1000` und altem `ra=0x3000` wird `jal x0, Calc` zum selben Ziel ausgeführt (2 Punkte).
-
-c) Bei `PC=0x1124` und `ra=0x1004` wird `jalr x0, 0(ra)` ausgeführt (2 Punkte).
-
-d) Gleicher Anfang wie c), aber Befehl `jalr ra, 0(ra)`. Welche Basis wird gelesen, bevor der Linkwert geschrieben wird? (2 Punkte).
-
-e) Welche Zielmuster bilden `jalr x0, 0(ra)` für `ra=0x1005` und `ra=0x1006`? Ist das zweite Ergebnis im Kursmodell durch vier teilbar? Gefragt ist die Adressrechnung, keine erfolgreiche Ausführung dieses ungültigen Ziels (2 Punkte).
+1. PC = `0x3000`: `jal ra, Ziel`, Ziel = `0x3700`. (2 P)
+2. Gleicher PC und gleiches Ziel; alter ra = `0x4800`: `jal x0, Ziel`. (2 P)
+3. PC = `0x3728`, ra = `0x3004`: `jalr x0, 0(ra)`. (2 P)
+4. PC = `0x3440`, alter ra = `0x5009`: `jalr ra, -5(ra)`. (2 P)
+5. `jalr x0, 1(t0)` mit t0 = `0x5803` beziehungsweise `0x5805`. Welches Ziel ist vierbyteausgerichtet? Gefragt ist die Zielrechnung, keine erfolgreiche Ausführung des ungültigen Ziels. (2 P)
 
 ::: {.content-hidden when-profile="solution"}
-```{=latex}
-\renewcommand{\arraystretch}{2.3}
-\begin{tabular}{p{14mm}|p{35mm}|p{36mm}|p{61mm}}
-Fall & nächster PC / Ziel & ra danach & Begründung \\ \hline
-a & & & \\ \hline
-b & & & \\ \hline
-c & & & \\ \hline
-d & & & \\ \hline
-e & & &
-\end{tabular}
-```
+\vspace{10cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
-### Musterlösung
+### Musterlösung {.unnumbered}
 
-a) PC `0x1100`, `ra=0x1004`. Ziel und Linkwert verwenden beide den alten PC.
+1. Ziel `0x3700`, ra = `0x3004`.
+2. Ziel `0x3700`, ra bleibt `0x4800`.
+3. Ziel `0x3004`, ra bleibt `0x3004`.
+4. Alte Basis `0x5009` minus 5 ergibt `0x5004`; ra wird `0x3444`.
+5. Ziele `0x5804` und `0x5806`; nur das erste ist durch vier teilbar. jalr löscht ausschließlich Bit 0.
 
-b) PC `0x1100`, `ra` bleibt `0x3000`. `x0` verwirft den Linkwert `0x1004`; das ist die Entwicklung des Sprungs `j`.
-
-c) PC `0x1004`, `ra` bleibt `0x1004`. Der neu berechnete Linkwert `0x1128` wird in `x0` verworfen. Das ist `ret`.
-
-d) PC `0x1004`, `ra=0x1128`. Zuerst wird die alte Basis `0x1004` gelesen. Dass Basis- und Linkzielregister gleich sind, ändert diese Reihenfolge nicht. Der Befehl ist daher kein gewöhnliches `ret`.
-
-e) Zielmuster `0x1004` beziehungsweise `0x1006`. `jalr` löscht Bit 0, nicht beide unteren Bits. `0x1006` ist nicht durch vier teilbar; eine gültige Rückkehradresse wird dadurch nicht allgemein hergestellt.
+Je Fall 2 P: Ziel und Link jeweils 1 P; im letzten Fall Ziele zusammen 1 P, Ausrichtung 1 P.
 :::
 
 {{< pagebreak >}}
 
-## Aufgabe 2: Wer erhält welchen Wert?
+## Aufgabe 2: Erhaltungspflichten begründen (8 Punkte)
 
-**8 Punkte · 8 Minuten · Papier**
+Normale ILP32-Aufrufe. Entscheiden Sie, wer einen Wert erhalten muss und ob dafür hier eine zusätzliche Sicherung nötig ist. Je Fall 2 P.
 
-Ordnen Sie jedem Fall eine Verantwortung zu und begründen Sie, ob eine Sicherung benötigt wird. „Sichern“ muss nicht immer einen Store bedeuten; eine passende Registerwahl oder Neuberechnung kann denselben Bedarf erfüllen (je 2 Punkte).
-
-1. Der Caller hat einen Zähler in `t0` und liest dessen alten Wert nach einem normalen Aufruf weiter.
-2. Der Callee liest `s0` nur und verändert es nicht.
-3. Der Callee nutzt `s1` als Arbeitsregister und schreibt neue Werte hinein.
-4. Calc braucht den beim Eintritt in `ra` stehenden äußeren Rückweg nach einem inneren `jal ra, Sum` erneut.
+1. Der Caller benötigt seinen t2-Zähler nach einem Helfer erneut.
+2. Ein Leaf verändert s4, ruft aber niemanden auf.
+3. Eine Funktion liest s3 als Konfigurationswert, verändert es aber nie.
+4. Eine zurückkehrende Funktion ruft mit `jal ra, Helfer` weiter und benötigt anschließend ihre äußere Rückkehradresse.
 
 ::: {.content-hidden when-profile="solution"}
-```{=latex}
-\renewcommand{\arraystretch}{3.0}
-\begin{tabular}{p{15mm}|p{41mm}|p{90mm}}
-Fall & Verantwortung & Bedarf und Begründung \\ \hline
-1 & & \\ \hline
-2 & & \\ \hline
-3 & & \\ \hline
-4 & &
-\end{tabular}
-```
-
-Zusatz zur Kontrolle: Bedeutet caller-saved, dass der Wert automatisch null wird?
-
-\vspace{2cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung
-
-1. Caller-Verantwortung: `t0` ist nicht als erhalten zugesichert. Der alte Zähler muss erhalten werden, weil er weiter gebraucht wird. Ein Stackbackup ist eine Möglichkeit, keine allein zulässige Lösung.
-2. Kein Backup allein fürs Lesen nötig. `s0` ist callee-saved, sein Eintrittswert ist ohne Änderung bereits erhalten.
-3. Callee-Verantwortung: Eintrittswert von `s1` erhalten und vor der Rückkehr wiederherstellen. Die Hardware sperrt das Register nicht und führt keine automatische Sicherung aus.
-4. Calc ist gegenüber Sum selbst Caller. `jal ra` überschreibt den noch benötigten alten Rückweg. Das Beispiel sichert ihn deshalb vor dem inneren Aufruf und lädt ihn vor der eigenen Rückkehr zurück. `ra` wird dadurch nicht zu einem callee-saved Register.
-
-Caller-saved heißt nur „alter Inhalt nicht zugesichert“. Der Wert kann unverändert bleiben oder verändert werden; er wird nicht automatisch gelöscht.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 3: Nutzbedarf, Frame und Slots
-
-**10 Punkte · 8 Minuten · Papier**
-
-Der gültige Stack beginnt mit `sp=S=0x2000`. Sie benötigen Sicherungen für `ra`, `s0` und `s1`, je ein 32-Bit-Wort.
-
-a) Bestimmen Sie Nutzbedarf, kleinste Framegröße nach der 16-Byte-Konvention, Padding und den Reservierungsbefehl (4 Punkte).
-
-b) Wählen Sie für diese Aufgabe ausdrücklich Offsets `12(sp)` für `ra`, `8(sp)` für `s0` und `4(sp)` für `s1`. Berechnen Sie die drei Wortstartadressen und den gesamten Framebereich (3 Punkte).
-
-c) Reserviert ein innerer Aufruf einen weiteren 16-Byte-Frame, wo liegen dessen `sp` und sein Slot `12(sp)`? Kollidiert er mit dem äußeren Slot zwölf? (2 Punkte).
-
-d) Wäre in einem Einwort-Frame prinzipiell auch Slot `0(sp)` zulässig, sofern der passende Load denselben Slot verwendet? (1 Punkt).
-
-::: {.content-hidden when-profile="solution"}
-Framegrößen und Befehle:
-
-\vspace{3cm}
-
-Skizze mit Adressen, Offsets und Padding:
-
-\vspace{6cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung
-
-a) Nutzbedarf zwölf Byte, Frame sechzehn Byte, Padding vier Byte. `addi sp, sp, -16` stellt `sp=0x1FF0` her. Drei Sicherungen sind keine drei einzelnen 16-Byte-Frames.
-
-b) `ra` bei `0x1FFC`, `s0` bei `0x1FF8`, `s1` bei `0x1FF4`. Frame: `0x1FF0` bis `0x1FFF`, Padding an `0x1FF0` bis `0x1FF3`. Ein Slot ist vier Byte breit; die Tabelle benennt die Startadresse.
-
-c) Innerer `sp=0x1FE0`, Slot zwölf bei `0x1FEC`. Das ist ein anderer Bereich. Freigabe in umgekehrter Reihenfolge: `0x1FE0 → 0x1FF0 → 0x2000`.
-
-d) Ja. Slot zwölf ist eine Layoutwahl, keine allgemeine ABI-Pflicht. Slot null ist natürlich ausgerichtet und innerhalb desselben 16-Byte-Frames. Die Sicherungs- und Wiederherstellungsadressen müssen übereinstimmen.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 4: Der vollständige Calc-Trace
-
-**14 Punkte · 13 Minuten · Papier**
-
-Die folgende native **Lehrtabelle** verwendet feste Adressen, keine behauptete Venus-Disassembly. Vor dem Aufruf bei `0x1000` gilt `a0=5`, `a1=10`, `s0=99`, `sp=0x2000`. Unbekannter alter `ra`-Inhalt wird überschrieben.
-
-```text
-1000  jal  ra, Calc           Calc = 1100
-1004  addi t0, a0, 0          Fortsetzung in main
-1100  addi sp, sp, -16
-1104  sw   ra, 12(sp)
-1108  sw   s0, 8(sp)
-110C  addi s0, a0, 0
-1110  jal  ra, Sum            Sum = 1200
-1114  add  a0, a0, s0
-1118  lw   s0, 8(sp)
-111C  lw   ra, 12(sp)
-1120  addi sp, sp, 16
-1124  jalr x0, 0(ra)
-1200  add  a0, a0, a1
-1204  jalr x0, 0(ra)
-```
-
-Alle Adressen sind Hexzahlen. a) Füllen Sie die Zustände **nach** dem genannten Kontrollpunkt aus; PC bedeutet die nächste Adresse (je 2 Punkte). b) Welche Wörter liegen nach `1108` an `0x1FF8` und `0x1FFC`? (2 Punkte).
-
-::: {.content-hidden when-profile="solution"}
-```{=latex}
-\renewcommand{\arraystretch}{1.9}
-\begin{tabular}{p{34mm}|p{22mm}|p{16mm}|p{16mm}|p{24mm}|p{24mm}}
-Kontrollpunkt & PC & a0 & s0 & ra & sp \\ \hline
-Aufruf 1000 & & & & & \\ \hline
-innerer Aufruf 1110 & & & & & \\ \hline
-Sum-Rückkehr 1204 & & & & & \\ \hline
-Addition 1114 & & & & & \\ \hline
-beide Loads bis 111C & & & & & \\ \hline
-Calc-Rückkehr 1124 & & & & &
-\end{tabular}
-```
-
-Slots b):
-
-\vspace{1cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung
-
-| nach Kontrollpunkt | PC | `a0` | `s0` | `ra` | `sp` |
-|---|---|---:|---:|---|---|
-| 1000 | `1100` | 5 | 99 | `1004` | `2000` |
-| 1110 | `1200` | 5 | 5 | `1114` | `1FF0` |
-| 1204 | `1114` | 15 | 5 | `1114` | `1FF0` |
-| 1114 | `1118` | 20 | 5 | `1114` | `1FF0` |
-| Loads bis 111C | `1120` | 20 | 99 | `1004` | `1FF0` |
-| 1124 | `1004` | 20 | 99 | `1004` | `2000` |
-
-b) `0x1FF8` enthält `0x00000063`, den Eintrittswert 99. `0x1FFC` enthält `0x00001004`, die äußere Fortsetzung. Der innere `jal` verändert nur die Registerfassung von `ra`. Die Kopie `1004` im Frame bleibt erhalten, bis der Epilog sie liest. Danach übernimmt main den Wert 20 nach `t0`.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 5: Vier Fehler und ein falscher Rückweg
-
-**10 Punkte · 9 Minuten · Papier**
-
-Jeder Fall ist unabhängig. Beschreiben Sie die erste falsche Wirkung und die passende Korrektur (Fälle a)–d) je 2 Punkte).
-
-a) Prolog `addi sp, sp, -16`, aber nach korrekten Loads nur `addi sp, sp, 8`. Eintritts-`sp=0x2000`.
-
-b) `s0` wird bei `12(sp)` gespeichert, später aber ohne weiteren Store aus `8(sp)` geladen. Dort waren zuvor unbekannte Byte.
-
-c) Nach der Sicherung bei `12(sp)` wird erst `addi sp, sp, 16` ausgeführt, dann `lw s0, 12(sp)`. Während des Frames war `sp=0x1FF0`.
-
-d) Eine Funktion liefert 20 in `a0`. Ihr Epilog lädt aber anschließend den vor dem Aufruf gesicherten alten Argumentwert 5 wieder nach `a0`.
-
-e) Erklären Sie den isolierten Fehler unten. Welches Label wird wiederholt erreicht, und warum ist dafür kein Stackfehler nötig? (2 Punkte).
-
-```asm
-Calc_bad:
-    jal ra, Sum_bad
-calc_bad_return:
-    ret
-Sum_bad:
-    ret
-```
-
-::: {.content-hidden when-profile="solution"}
-Diagnosen und Reparaturen:
-
-\vspace{7cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung
-
-a) `sp=0x1FF8`, also acht Byte unter dem Eintritt und nicht durch sechzehn teilbar. Vollständig sechzehn Byte freigeben. Ein richtiges Ergebnis oder ra heilt das nicht.
-
-b) Falscher Slot; `s0` erhält das unbekannte dortige Wort, nicht zugesichert den Eintrittswert. Dasselbe gespeicherte Offset zwölf laden. Unbekannt heißt nicht automatisch null.
-
-c) Nach Freigabe ist die Loadadresse `0x200C` statt `0x1FFC`. Erst laden, dann freigeben; unverändert 12(sp) benutzt sonst die falsche Basis.
-
-d) Das gewünschte Resultat wird mit fünf überschrieben. Ein alter noch benötigter Argumentwert müsste an anderer Stelle erhalten werden, während `a0` das neue Ergebnis trägt.
-
-e) Der innere `jal` setzt `ra` auf `calc_bad_return`. Sum kehrt dorthin korrekt zurück; der dortige `ret` springt wegen unverändertem `ra` wieder zu sich selbst. Den älteren äußeren Rückweg erhalten und vor Calc-ret wiederherstellen. Dieses minimale Fragment benutzt keinen Frame und isoliert den ra-Verlust.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 6: Caller-saved konkret prüfen
-
-**8 Punkte · 8 Minuten · Papier**
-
-Das Hauptprogramm benötigt seinen alten `t0=5` nach einem Helferaufruf. `VerdoppleMitTemp` liefert für `a0=15` das Ergebnis 30 in `a0` und setzt `t0` ausdrücklich auf 999. Erlaubt ist das, weil `t0` caller-saved ist.
-
-```asm
-    addi sp, sp, -16
-    sw   t0, 12(sp)
-    li   a0, 15
-    jal  ra, VerdoppleMitTemp
-    lw   t0, 12(sp)
-    addi sp, sp, 16
-    add  a0, a0, t0
-```
-
-a) Welche Endwerte haben `a0`, `t0` und `sp` bei gültigem Eintrittsstack $S$? (2 Punkte).
-
-b) Was würde die letzte Addition ohne t0-Sicherung und Wiederherstellung berechnen? (2 Punkte).
-
-c) Warum darf nicht einfach auch das alte `a0=15` nach dem Aufruf zurückgeladen werden? (2 Punkte).
-
-d) Würde eine normale zurückkehrende Funktion den Zähler stattdessen in `s0` halten, welche zusätzliche Erhaltungspflicht hätte sie gegenüber ihrem eigenen Caller? (2 Punkte).
-
-::: {.content-hidden when-profile="solution"}
-Rechnungen und Erhaltungspflichten:
-
-\vspace{7cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung
-
-a) `a0=35`, `t0=5`, `sp=S`. Der Load restauriert den alten Zähler; das neue Funktionsergebnis 30 bleibt erhalten und wird mit fünf addiert.
-
-b) Der Helfer hinterlässt 999 in `t0`; ohne Schutz ergibt sich $30+999=1029$. Ein unveränderter Wert wäre nicht zugesichert.
-
-c) Dann wäre das Ergebnis 30 wieder durch das Argument 15 ersetzt. Die letzte Addition ergäbe 20. Alte Werte werden nur gemäß ihrem tatsächlichen Bedarf erhalten; Resultate dürfen nicht durch blindes Restore vernichtet werden.
-
-d) Die Funktion verändert ein callee-saved Register und muss den eigenen s0-Eintrittswert vor der Rückkehr wiederherstellen. Verschieben in ein s-Register verschiebt die Verantwortung, beseitigt sie nicht.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 7: Leaf und Calc in Venus
-
-**35 Minuten · Rechner und Papierprotokoll**
-
-1. Schreiben Sie ein vollständiges Hauptprogramm und `Verdopple` für Eingabe 15. Der Leaf nutzt `slli a0, a0, 1` und `ret`. Vor dem Druckdienst prüfen Sie Ergebnis 30. Ausgabe: `mv a1, a0`, `li a0, 1`, `ecall`. Beenden: `li a0, 10` und `ecall`. Der Exit verhindert das Weiterlaufen in den Funktionscode.
-2. Implementieren Sie Calc mit zwei Argumenten: Erst Sum aufrufen, dann das alte erste Argument addieren. Nutzen Sie den in Vorlesung und Papieraufgabe erklärten 16-Byte-Frame mit ra und s0. main setzt s0 als Erhaltungssignal auf 99.
-3. Vor dem Lauf prüfen Sie den von der Umgebung gelieferten Stackzeiger und seine Ausrichtung. Erfinden Sie keinen festen gültigen Venus-Stack bei `0x2000`; das ist nur die Lehradresse der Papieraufgaben.
-4. Am Label `main_after_calc` erwarten Sie das Ergebnis in `a0`, `s0=99` und den ursprünglichen `sp`. Lesen Sie die tatsächlichen Fortsetzungsadressen aus der nativen Liste. Kopieren Sie das Ergebnis vor einem Exit nach `s1` oder für die Ausgabe nach `a1`.
-5. Prüfen Sie Argumentpaare $(5,10)$, $(0,0)$, $(-3,8)$ und $(7,-10)$ nach erneutem Assemblieren und Neustart. Vergleichen Sie Zahlenresultat und Erhaltung getrennt.
-
-::: {.content-hidden when-profile="solution"}
-```{=latex}
-\renewcommand{\arraystretch}{1.8}
-\begin{tabular}{p{25mm}|p{40mm}|p{42mm}|p{39mm}}
-Argumente & erwarteter Zustand & Beobachtung & erste Abweichung \\ \hline
-5,10 & & & \\ \hline
-0,0 & & & \\ \hline
--3,8 & & & \\ \hline
-7,-10 & & &
-\end{tabular}
-```
-
-Eigener Code und Protokoll:
-
-\vspace{4cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung
-
-Vollständige Quellen: [Leaf](../beispiele/mct1_vl4_leaf.s) und [Calc](../beispiele/mct1_vl4_nested_calls_ok.s). Der Leaf benötigt keinen Frame. Calc sichert ra und s0, kopiert a0 nach s0, ruft Sum, addiert s0 zum Resultat, lädt beide Slots und gibt den Frame frei.
-
-Die vier Resultate lauten 20, 0, 2 und 4. Bei allen korrekten Rückkehren gelten `s0=99` und `sp=S`. Sum liefert vorher 15, 0, 5 beziehungsweise −3. Die vollständige Calc-Datei kopiert das Ergebnis nach s1 und beendet ohne Konsolenausgabe; eine eigene Druckvariante verwendet vor dem Dienst `a1`.
-
-Das Protokoll mit tatsächlichen Adressen und Anzeigezuständen ist selbst einzutragen. Die angegebenen Werte sind Modellvorhersagen, kein vorweggenommener Venus-Lauf.
-:::
-
-{{< pagebreak >}}
-
-## Optionale Vertiefung: Rekursion ohne Multiplikation
-
-**Zusätzliche Reserve · nicht in den 90 Übungsminuten enthalten**
-
-Nutzen Sie [mct1_vl4_rekursive_summe.s](../beispiele/mct1_vl4_rekursive_summe.s). SumDown(n) addiert eins bis n, vorausgesetzt $0\le n\le6$. Der Basisfall null ist framefrei; jede andere Aktivierung sichert ra und s0 in einem eigenen 16-Byte-Frame.
-
-a) Sagen Sie Ergebnis und größte zusätzliche Stackreserve für $n=0$, $n=1$ und $n=3$ voraus.
-
-b) Vergleichen Sie die drei gleichzeitig aktiven nichtleeren Frames bei $n=3$. Warum können alle Offset zwölf verwenden, ohne dieselbe Sicherung zu überschreiben?
-
-c) Prüfen Sie am äußeren Rückkehrpunkt `s0=99` und `sp=S`. Beobachten Sie zunächst einzelne Kontrollpunkte; eine berechnete Stackreserve ist keine Hardwarezeitmessung.
-
-::: {.content-hidden when-profile="solution"}
-Vorhersage und Adressskizze:
-
 \vspace{9cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
-### Musterlösung
+### Musterlösung {.unnumbered}
 
-Ergebnisse: null, eins und sechs. Zusatzreserve: null, sechzehn und 48 Byte. Für drei entstehen Rahmen für n gleich drei, zwei und eins; der Basisfall null reserviert nichts. Die Rückgaben laufen als 0, 1, 3 und 6 zurück.
+1. Der Caller muss den noch benötigten t2-Wert über den Aufruf erhalten; etwa im Stack, in einem geeignet geschützten Register oder durch Neuberechnung.
+2. Der Leaf muss seinen s4-Eintrittswert wiederherstellen. Leaf-Eigenschaft befreit nicht von callee-saved-Pflichten.
+3. Keine zusätzliche Sicherung fürs reine Lesen: Der Eintrittswert bleibt bereits erhalten.
+4. Die Funktion ist gegenüber Helfer selbst Caller. Der innere jal überschreibt ra; der äußere Rückweg muss vor diesem Aufruf erhalten und später wiederhergestellt werden.
 
-Die jeweiligen Stackbasen lauten $S-16$, $S-32$, $S-48$. Slot zwölf hat damit die Adressen $S-4$, $S-20$, $S-36$: gleiche Offsets, getrennte Orte. Jede Aktivierung restauriert ihren s0-Eintrittswert und äußeren Rückweg. Nach dem letzten ret stehen s0 und sp wieder wie am Eintritt, während a0 das Ergebnis trägt.
+Je Fall Verantwortungszuordnung 1 P, begründeter Bedarf 1 P. Caller-saved bedeutet keine zugesicherte Erhaltung, nicht automatische Löschung.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 3: Ein größerer Frame (10 Punkte)
+
+Gültiger Stack, Eintritt sp = `0xA000`. Eine Funktion muss ra und s0 bis s3, je 32 Bit, sichern. Es gilt die 16-Byte-Ausrichtung der ILP32-Konvention.
+
+1. Bestimmen Sie Nutzbedarf, kleinste Framegröße, Padding und Reservierungsbefehl. (4 P)
+2. Legen Sie ra, s0, s1, s2, s3 in dieser Reihenfolge bei Offsets 0, 4, 8, 12, 16 ab. Nennen Sie Slotadressen, Frame- und Paddingbereich. (3 P)
+3. Ein innerer Aufruf reserviert weitere 16 Byte und nutzt Slot `4(sp)`. Berechnen Sie Adresse und Überlappung mit dem äußeren Frame. (2 P)
+4. Dürfte eine andere Einwortfunktion Slot `8(sp)` ihres 16-Byte-Frames benutzen? (1 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{10cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+1. Nutzbedarf 20 Byte, Frame 32 Byte, Padding 12 Byte; `addi sp, sp, -32`. Je 1 P.
+2. Neuer sp = `0x9FE0`; Slots `0x9FE0, 0x9FE4, 0x9FE8, 0x9FEC, 0x9FF0`. Frame `0x9FE0`–`0x9FFF`; Padding `0x9FF4`–`0x9FFF`. Slots 2 P, Bereiche zusammen 1 P.
+3. Innerer sp = `0x9FD0`, Slot `0x9FD4`; keine Überlappung. Adresse 1 P, Begründung 1 P.
+4. Ja, wenn der Slot innerhalb des reservierten Frames liegt, ausgerichtet ist und derselbe Slot wieder geladen wird. 1 P.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 4: Versatz mit Unteraufruf (14 Punkte)
+
+`Versatz(a,b)=a-2b` ruft zuerst `Differenz(a,b)=a-b` auf und zieht danach das alte b ab. Vor `0x3400` gilt a0 = 19, a1 = 6, s1 = 77, sp = `0x9000`. Adressen sind feste Hex-Lehradressen; alle Befehle nativ.
+
+```text
+3400  jal  ra, Versatz       Versatz = 3500
+3404  addi t0, a0, 0
+3500  addi sp, sp, -16
+3504  sw   ra, 0(sp)
+3508  sw   s1, 4(sp)
+350C  addi s1, a1, 0
+3510  jal  ra, Differenz     Differenz = 3600
+3514  sub  a0, a0, s1
+3518  lw   s1, 4(sp)
+351C  lw   ra, 0(sp)
+3520  addi sp, sp, 16
+3524  jalr x0, 0(ra)
+3600  sub  a0, a0, a1
+3604  jalr x0, 0(ra)
+```
+
+1. Notieren Sie jeweils **danach** PC, a0, s1, ra und sp: `3400`, `3510`, `3604`, `3514`, `351C`, `3524`. PC bezeichnet die nächste Instruktion. (12 P)
+2. Welche Wörter wurden bei `0x8FF0` und `0x8FF4` abgelegt? (2 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{7cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+| nach | PC | a0 | s1 | ra | sp |
+|---|---|---|---|---|---|
+| `3400` | `3500` | 19 | 77 | `3404` | `9000` |
+| `3510` | `3600` | 19 | 6 | `3514` | `8FF0` |
+| `3604` | `3514` | 13 | 6 | `3514` | `8FF0` |
+| `3514` | `3518` | 7 | 6 | `3514` | `8FF0` |
+| `351C` | `3520` | 7 | 77 | `3404` | `8FF0` |
+| `3524` | `3404` | 7 | 77 | `3404` | `9000` |
+
+1. Je Zelle 0,4 P, also 2 P pro Zeile. Adressspalten hexadezimal.
+2. `0x8FF0: 0x00003404`; `0x8FF4: 0x0000004D`. Je 1 P. Der innere Link überschreibt die Registerfassung von ra, nicht den äußeren Stackslot.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 5: Fehler reparieren (10 Punkte)
+
+Jeder Fall ist unabhängig; nennen Sie erste falsche Wirkung und Korrektur. Je Fall 2 P.
+
+1. Nach Reservierung von 32 Byte werden nur 16 Byte freigegeben; Eintritt sp = `0xA000`.
+2. `sw s1, 4(sp)` wird durch `lw s1, 8(sp)` rückgängig gemacht; der Slot acht war unbekannt.
+3. Im 16-Byte-Frame mit sp = `0x8FF0` wird erst freigegeben und danach `lw ra, 0(sp)` ausgeführt.
+4. Versatz liefert 7 in a0, danach lädt der Epilog das alte erste Argument 19 wieder in a0.
+5. Der folgende Ausschnitt sichert ra nicht. Beschreiben Sie den Ablauf ab der Rückkehr aus Differenz und reparieren Sie den Rückweg.
+
+```asm
+Fehler:
+    jal ra, Differenz
+Nach_Helfer:
+    addi a0, a0, 1
+    ret
+```
+
+::: {.content-hidden when-profile="solution"}
+\vspace{8cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+1. sp endet bei `0x9FF0` statt `0xA000`. Vollständige 32 Byte freigeben.
+2. Der falsche Slot liefert nicht zugesichert den alten s1-Wert. Aus `4(sp)` laden.
+3. Geladen wird von `0x9000` statt `0x8FF0`. Erst restaurieren, dann den Frame freigeben.
+4. Das neue Ergebnis 7 wird durch 19 überschrieben. a0 als Rückgaberegister erhalten, statt das alte Argument blind zurückzuladen.
+5. Differenz kehrt zu Nach_Helfer zurück. Dessen ret springt erneut dorthin, sodass die Addition wiederholt wird. Äußeren ra vor dem inneren jal sichern und vor dem abschließenden ret restaurieren.
+
+Je Fall Diagnose und Reparatur je 1 P.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 6: Ein temporärer Wert überlebt (8 Punkte)
+
+Im Hauptprogramm steht t2 = 8. `Spiegel` erhält a0 = −9, liefert 9 und verändert t2 ausdrücklich auf −20.
+
+```asm
+addi sp, sp, -16
+sw   t2, 0(sp)
+li   a0, -9
+jal  ra, Spiegel
+lw   t2, 0(sp)
+addi sp, sp, 16
+add  a0, a0, t2
+```
+
+1. Bestimmen Sie a0, t2 und sp am Ende bei Eintrittsstack S. (2 P)
+2. Was berechnet die letzte Addition ohne die t2-Sicherung? (2 P)
+3. Was entsteht, wenn zusätzlich das alte a0 = −9 vor der Addition restauriert wird? (2 P)
+4. Eine zurückkehrende Funktion benutzt stattdessen s2 für die Acht. Welche Pflicht entsteht gegenüber ihrem eigenen Caller? (2 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{8cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+1. a0 = 17, t2 = 8, sp = S. Ergebnis 1 P, Erhaltung zusammen 1 P.
+2. $9+(-20)=-11$; der Caller darf den alten t2-Inhalt nicht voraussetzen. Rechnung und Begründung je 1 P.
+3. $-9+8=-1$ statt 17. Das neue Resultat wurde durch das alte Argument ersetzt. Rechnung und Diagnose je 1 P.
+4. Sie muss den eigenen s2-Eintrittswert über ihre gesamte Aktivierung erhalten und vor der Rückkehr restaurieren. Pflicht und Umsetzungsidee je 1 P.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 7: Neue Funktionen in Venus
+
+1. Implementieren Sie die Blattfunktion Spiegel mit a0 als Argument und Ergebnis: Vorzeichen durch Subtraktion von null wechseln. Testen Sie −9, 0 und 12 in einem vollständigen Hauptprogramm.
+2. Implementieren Sie Versatz aus Aufgabe 4 mit Differenz als Helfer. Testen Sie $(19,6)$, $(0,0)$, $(-4,3)$ und $(8,-5)$.
+3. Setzen Sie s1 im Hauptprogramm auf 77. Notieren Sie am äußeren Rückkehrpunkt Ergebnis, s1 und sp; vergleichen Sie mit dem Eintrittszustand.
+4. Prüfen Sie die tatsächliche Stackausrichtung der Umgebung und die nativen Rückkehradressen.
+5. Venus-Ausgabe: Ergebnis nach a1 kopieren, a0 = 1, ecall; anschließend a0 = 10, ecall. Prüfen Sie vor dem Dienstaufruf.
+
+Eine vollständige neue Referenz ist `beispiele/lab_04_versatz.s`.
+
+::: {.content-hidden when-profile="solution"}
+\vspace{8cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+Spiegel: `sub a0, x0, a0`, danach `ret`; Ergebnisse 9, 0, −12. Der Leaf braucht keine Sicherung callee-saved Register.
+
+Versatz-Ergebnisse: 7, 0, −10, 18. s1 wird jeweils wieder 77 und sp wieder S. Die Referenz verwendet Slots 0 und 4, bewahrt das zweite Argument und zieht es vom Helferergebnis ab. Die Rückkehr liegt vor der Ausgabevorbereitung. Werte sind Modellvorhersagen; die konkreten Venus-Anzeigen gehören in das eigene Protokoll.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 8: Rekursion mit konstantem Zuschlag (optional)
+
+Definiert sei $F(0)=2$ und $F(n)=F(n-1)+3$ für $1\le n\le4$.
+
+1. Schreiben Sie eine rekursive RV32I-Funktion mit n und Ergebnis in a0. Der Basisfall braucht keinen Frame; jeder andere Aufruf reserviert 16 Byte.
+2. Welche Werte und maximale zusätzliche Stackreserve entstehen für n = 0, 2 und 4?
+3. Warum muss n hier im Gegensatz zur rekursiven Summe nicht über den Unteraufruf hinweg erhalten bleiben?
+
+::: {.content-hidden when-profile="solution"}
+\vspace{8cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+```asm
+F:
+    bne a0, x0, Rekursiv
+    addi a0, x0, 2
+    ret
+Rekursiv:
+    addi sp, sp, -16
+    sw ra, 0(sp)
+    addi a0, a0, -1
+    jal ra, F
+    addi a0, a0, 3
+    lw ra, 0(sp)
+    addi sp, sp, 16
+    ret
+```
+
+Ergebnisse 2, 8, 14; maximale Zusatzreserve 0, 32, 64 Byte. Nach dem Unteraufruf wird nur die Konstante drei benötigt, nicht der alte n-Wert. Deshalb genügt hier die Sicherung von ra; s-Register werden nicht verändert.
 :::

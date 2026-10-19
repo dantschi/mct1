@@ -4,156 +4,73 @@ subtitle: "Mikrocomputertechnik 1"
 format:
   pdf:
     papersize: a4
+    pdf-engine: xelatex
+    fontsize: 10pt
+    highlight-style: monochrome
     mainfont: TeX Gyre Heros
+    sansfont: TeX Gyre Heros
     monofont: TeX Gyre Cursor
 ---
 
 ::: {.content-visible when-profile="solution"}
-> **Musterlösung** – Rechenwege und begründete Zustandsvorhersagen.
+**Musterlösung**
 :::
 
-## Ziel und Voraussetzungen
+## Aufgabe 1: Bitmuster umrechnen (10 Punkte)
 
-Bearbeiten Sie die Aufgaben zuerst auf Papier. Es werden nur die Inhalte von Vorlesung 1 vorausgesetzt. Eine Programmiersprache oder Simulatorinstallation ist für die sechs Papieraufgaben nicht erforderlich.
-
-Geben Sie Bitbreite, Interpretation und Rechenweg an. Unterscheiden Sie Adresse und Inhalt, Übertrag und vorzeichenbehafteten Überlauf sowie kombinatorisches Ergebnis und gespeicherten Zustand.
-
-| Aufgabe | Thema | Übungspunkte |
-|---|---|---:|
-| 1 | Binär und Hexadezimal | 10 |
-| 2 | Zweierkomplement und Überlauf | 12 |
-| 3 | Byteordnung und Adressen | 10 |
-| 4 | Logik und Multiplexer | 10 |
-| 5 | Volladdierer und Carrykette | 8 |
-| 6 | Flanke, Freigabe und Register | 10 |
-| **Summe** | | **60** |
-
-Die Punkte dienen der Selbstkontrolle. Die Aufgaben sind zur Vorbereitung auf ähnliche Klausuraufgaben geeignet; sie legen keine konkreten Prüfungsregeln fest.
-
-## Gemeinsames Lehrmodell
-
-Ein Byte hat acht Bit, ein RISC-V-Word 32 Bit. Kleine vier- und achtbittige Beispiele verwenden die jeweils angegebene Breite. Vorzeichenbehaftete Werte werden als Zweierkomplement interpretiert. Little Endian ist die Kursfestlegung, nicht eine Aussage über jede mögliche Rechnerumgebung.
-
-Das Registermodell übernimmt Daten an der **steigenden Flanke** bei Schreibfreigabe `WE=1`. Bei `WE=0` oder ohne aktive Flanke hält es. Setup und Hold, die Stabilitätszeiten vor und nach der Flanke, sind in den Aufgaben erfüllt. Gespeicherte Ausgänge werden nach der Clock-to-Q-Verzögerung betrachtet. Jeder Anfangszustand ist angegeben.
-
-{{< pagebreak >}}
-
-## Aufgabe 1: Binär und Hexadezimal (10 Punkte)
-
-### Arbeitsauftrag {.unnumbered}
-
-1. Stellen Sie 85 als **achtbittiges** Binärmuster und als Hexwert dar. Zeigen Sie die Zerlegung in Zweierpotenzen. (4 P)
-2. Stellen Sie `0xDA3F` als **16-Bit-Muster** dar. Ordnen Sie jede Hexziffer ihrer Vier-Bit-Gruppe zu. (4 P)
-3. Wie viele Hexziffern benötigt ein Byte? Wie viele benötigt ein RISC-V-Word? Begründen Sie mit der Breite einer Hexziffer. (2 P)
-
-Führende Nullen gehören zur ausdrücklich geforderten Breite. Das Präfix `0x` kennzeichnet Hexadezimal; Leerzeichen dienen nur der Gruppierung.
+1. Stellen Sie 109 als achtbittige Binärzahl und als Hexwert dar. Zeigen Sie die Zerlegung in Zweierpotenzen. (4 P)
+2. Wandeln Sie `0xC6E9` in ein 16-Bit-Muster um. (4 P)
+3. Ein Datenfeld enthält `1011 0110`. Geben Sie den Hexwert und den vorzeichenlosen Dezimalwert an. (2 P)
 
 ::: {.content-hidden when-profile="solution"}
-**85: Rechenweg, Binärmuster und Hexwert**
-
-\vspace{3.5cm}
-
-**0xDA3F: Vierergruppen**
-
-\vspace{3cm}
-
-**Breitenbegründung**
-
-\vspace{2cm}
+\vspace{10cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
 ### Musterlösung {.unnumbered}
 
-1. $85=64+16+4+1$. Das Acht-Bit-Muster ist `0101 0101`. Die Gruppen `0101` und `0101` sind jeweils Hexziffer 5, also `0x55`.
-2. D ist dreizehn, A zehn, 3 drei und F fünfzehn:
-
-| Hexziffer | D | A | 3 | F |
-|---|---|---|---|---|
-| Vierergruppe | `1101` | `1010` | `0011` | `1111` |
-
-Ergebnis: `1101 1010 0011 1111`, insgesamt 16 Bit. Die Gruppen werden nicht umgedreht.
-
-3. Eine Hexziffer bildet vier Bit ab. Ein Byte benötigt $8/4=2$ Hexziffern, ein RISC-V-Word $32/4=8$.
+1. $109=64+32+8+4+1$: `0110 1101`, `0x6D`. Zerlegung 2 P, Bitmuster und Hexwert je 1 P.
+2. `1100 0110 1110 1001`. Je korrekter Vierergruppe 1 P.
+3. `0xB6`; $128+32+16+4+2=182$. Je 1 P.
 :::
 
 {{< pagebreak >}}
 
-## Aufgabe 2: Zweierkomplement und Überlauf (12 Punkte)
+## Aufgabe 2: Vorzeichen und Überlauf (12 Punkte)
 
-### Arbeitsauftrag {.unnumbered}
+Rechnen Sie mit acht gespeicherten Bits, soweit keine andere Breite angegeben ist.
 
-1. Bilden Sie die Darstellung von $-85$ mit acht Bit. Zeigen Sie positives Ausgangsmuster, invertiertes Muster und Addition eins. (4 P)
-2. Lesen Sie `0xAB` vorzeichenlos und als Acht-Bit-Zweierkomplement. Welche Vorzeichenerweiterung auf 32 Bit erhält den negativen Wert? (3 P)
-3. Ergänzen Sie die Tabelle für **acht gespeicherte Bits**. Prüfen Sie Übertrag und Signed-Überlauf getrennt. (3 P)
-4. Negieren Sie `1000 0000` modular durch Invertieren und Addition eins. Warum stellt das Ergebnis nicht plus 128 dar? (2 P)
+1. Bilden Sie −54 im Zweierkomplement: positives Muster, Invertieren, Addition eins. (4 P)
+2. Interpretieren Sie `0xD6` unsigned und signed. Erweitern Sie das Muster so auf 32 Bit, dass der signed Wert erhalten bleibt. (3 P)
+3. Bestimmen Sie jeweils Ergebnisbits, hinausfallenden Übertrag und signed Überlauf: `0x60 + 0x30` und `0xB0 + 0x70`. (3 P)
+4. Negieren Sie das **vierbittige** Muster `1000` modular. Welcher signed Wert entsteht, und weshalb nicht +8? (2 P)
 
 ::: {.content-hidden when-profile="solution"}
-\begingroup
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.7}
-\begin{tabular}{|p{3cm}|p{3cm}|p{3cm}|p{4cm}|}
-\hline
-Rechnung & Ergebnisbits & Übertrag & Signed-Überlauf \\ \hline
-\texttt{0x7F + 1} & & & \\ \hline
-\texttt{0xFF + 1} & & & \\ \hline
-\end{tabular}
-\endgroup
-
-\vspace{0.5cm}
-
-**Rechenwege und Interpretationen**
-
-\vspace{7cm}
+\vspace{9cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
 ### Musterlösung {.unnumbered}
 
-1. Plus 85: `0101 0101` beziehungsweise `0x55`. Invertiert: `1010 1010`, `0xAA`. Plus eins: `1010 1011`, `0xAB`.
-2. Vorzeichenlos: $128+32+8+2+1=171$. Als Zweierkomplement: $-128+32+8+2+1=-85$. Vorzeichenerweiterung: `0xFFFFFFAB`, da das höchste Ausgangsbit eins ist.
-
-| Rechnung | Ergebnisbits | Übertrag | Signed-Überlauf |
-|---|---|---:|---|
-| `0x7F + 1` | `1000 0000` | 0 | Ja: 128 passt nicht |
-| `0xFF + 1` | `0000 0000` | 1 | Nein: $-1+1=0$ |
-
-3. Der Übertrag ist das neunte Bit. Signed-Überlauf betrifft dagegen den mathematischen Bereich von −128 bis 127.
-4. `1000 0000` → `0111 1111` → `1000 0000`. Das letzte Muster bedeutet im Acht-Bit-Zweierkomplement weiterhin −128. Plus 128 ist nicht darstellbar. Zweimalige modulare Negation liefert trotzdem auch für diesen Fall das ursprüngliche Muster.
+1. $54=32+16+4+2$: `0011 0110` → `1100 1001` → `1100 1010` = `0xCA`. Positives Muster 1 P, Invertierung 1 P, Addition eins und Ergebnis 2 P.
+2. Unsigned 214; signed $214-256=-42$; Vorzeichenerweiterung `0xFFFFFFD6`. Je 1 P.
+3. `0x60 + 0x30`: `1001 0000`, Übertrag 0, signed Überlauf, denn $96+48=144>127$. `0xB0 + 0x70`: `0010 0000`, Übertrag 1, kein signed Überlauf, denn $-80+112=32$. Je Angabe 0,5 P.
+4. `1000` → `0111` → `1000`. Das Ergebnis ist wieder −8; +8 liegt außerhalb des Vier-Bit-Bereichs von −8 bis 7. Rechenweg und Interpretation je 1 P.
 :::
 
 {{< pagebreak >}}
 
-## Aufgabe 3: Byteordnung und Adressen (10 Punkte)
+## Aufgabe 3: Speicherbild und Grenzen (10 Punkte)
 
-### Arbeitsauftrag {.unnumbered}
+Ein 32-Bit-Wort `0x936EC127` beginnt im byteadressierten Speicher bei `0x2808`.
 
-Das 32-Bit-Wort `0xAABBCCDD` beginnt im angenommenen byteadressierten Speicher an `0x1000`.
-
-1. Tragen Sie die Bytes für Little Endian und Big Endian ein. Welche Adresse enthält bei Little Endian das höchstwertige Byte? (5 P)
-2. Ist die Startadresse `0x1000` für ein Vier-Byte-Word natürlich ausgerichtet? Gilt das auch für `0x1001`? Begründen Sie. (2 P)
-3. Erklären Sie, weshalb Little Endian keine Umkehrung der Bits innerhalb eines Bytes bedeutet. (1 P)
-4. Ein Modell hat 32-Bit-Byteadressen. Berechnen Sie die Größe seines Adressraums in GiB. Warum folgt daraus nicht dieselbe Menge eingebauter Arbeitsspeicher? (2 P)
+1. Ordnen Sie die vier Bytes den aufsteigenden Adressen zu, einmal Little Endian und einmal Big Endian. Wo liegt jeweils das höchstwertige Byte? (5 P)
+2. Prüfen Sie die natürliche Vier-Byte-Ausrichtung von `0x2808` und `0x280A`. (2 P)
+3. Würde Little Endian das Byte `0x27` selbst in seiner Bitreihenfolge umkehren? Begründen Sie. (1 P)
+4. Ein separates System verwendet **30-Bit-Byteadressen**. Wie groß ist sein Adressraum in GiB? Muss dieselbe Menge RAM eingebaut sein? (2 P)
 
 ::: {.content-hidden when-profile="solution"}
-\begingroup
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.8}
-\begin{tabular}{|p{4cm}|p{4cm}|p{4cm}|}
-\hline
-Adresse & Little Endian & Big Endian \\ \hline
-\texttt{0x1000} & & \\ \hline
-\texttt{0x1001} & & \\ \hline
-\texttt{0x1002} & & \\ \hline
-\texttt{0x1003} & & \\ \hline
-\end{tabular}
-\endgroup
-
-\vspace{0.7cm}
-
-**Begründungen und Rechnung**
-
-\vspace{5cm}
+\vspace{9cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
@@ -161,202 +78,122 @@ Adresse & Little Endian & Big Endian \\ \hline
 
 | Adresse | Little Endian | Big Endian |
 |---|---|---|
-| `0x1000` | `DD` | `AA` |
-| `0x1001` | `CC` | `BB` |
-| `0x1002` | `BB` | `CC` |
-| `0x1003` | `AA` | `DD` |
+| `0x2808` | `27` | `93` |
+| `0x2809` | `C1` | `6E` |
+| `0x280A` | `6E` | `C1` |
+| `0x280B` | `93` | `27` |
 
-1. Das höchstwertige Byte AA liegt bei Little Endian an `0x1003`.
-2. `0x1000` ist durch vier teilbar, `0x1001` nicht. Die Ausrichtung betrifft die Adresse und ist unabhängig von der Byteordnung.
-3. Die Bytes DD, CC, BB und AA bleiben jeweils unverändert. Geändert wird ihre Zuordnung zu aufsteigenden Adressen, nicht ihre innere Bitfolge.
-4. $2^{32}$ mögliche Byteadressen ergeben $2^{32}/2^{30}=4$ GiB. Bereiche können fehlen, unzugänglich sein oder anderen Funktionen dienen. Adressierbarkeit ist keine Angabe der installierten Speichermenge.
+1. Höchstwertiges Byte `93`: Little Endian bei `0x280B`, Big Endian bei `0x2808`. Bytezuordnung 4 P (je 0,5), beide Adressen zusammen 1 P.
+2. `0x2808` ist durch vier teilbar, `0x280A` nicht. Je 1 P.
+3. Nein. Endianness ordnet vollständige Bytes den Adressen zu; `0x27` bleibt `0010 0111`. 1 P.
+4. $2^{30}$ Byte = 1 GiB. Adressräume können auch unbestückte oder Gerätebereiche enthalten; eingebautes RAM folgt daraus nicht. Je 1 P.
 :::
 
 {{< pagebreak >}}
 
-## Aufgabe 4: Logik und Multiplexer (10 Punkte)
+## Aufgabe 4: Zwei Signalquellen auswählen (10 Punkte)
 
-### Arbeitsauftrag {.unnumbered}
+Eine Anlage verwendet bei $M=1$ das manuelle Signal $H$, bei $M=0$ das automatische Signal $F$ als Ausgang $Y$. Alle Größen sind zunächst einzelne Bits.
 
-Ein 2-zu-1-Multiplexer hat Dateneingänge $A$, $B$, Auswahl $S$ und Ausgang $Y$. Bei $S=0$ wählt er $A$, bei $S=1$ wählt er $B$.
-
-1. Vervollständigen Sie alle acht Tabellenzeilen. (4 P)
-2. Geben Sie $Y$ mit UND, ODER und Negation an und skizzieren Sie eine passende Gatterschaltung. Beschriften Sie Eingänge, Ausgang und Verzweigungen. (4 P)
-3. Wortauswahl mit 32 Bit: $A=5$, $B=10$, $S=1$. Welches Wort entsteht und wie viele Ein-Bit-Multiplexer benötigt unser Parallelmodell? (2 P)
+1. Erstellen Sie die vollständige Wahrheitstabelle für $M,H,F,Y$. (4 P)
+2. Geben Sie eine Gleichung mit UND, ODER und Negation an. Zeigen Sie für $M=0,H=1,F=0$, welcher Teilterm aktiv ist. (4 P)
+3. Die Auswahl wird auf 16-Bit-Wörter erweitert: $H=\mathtt{0x3052}$, $F=\mathtt{0xE109}$ und $M=1$. Welches Wort entsteht? Wie viele Einbit-Auswahlelemente sind im Parallelmodell nötig? (2 P)
 
 ::: {.content-hidden when-profile="solution"}
-\begingroup
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.4}
-\begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{3cm}|}
-\hline
-$S$ & $A$ & $B$ & $Y$ \\ \hline
-0 & 0 & 0 & \\ \hline
-0 & 0 & 1 & \\ \hline
-0 & 1 & 0 & \\ \hline
-0 & 1 & 1 & \\ \hline
-1 & 0 & 0 & \\ \hline
-1 & 0 & 1 & \\ \hline
-1 & 1 & 0 & \\ \hline
-1 & 1 & 1 & \\ \hline
-\end{tabular}
-\endgroup
-
-\vspace{0.5cm}
-
-**Gleichung und Schaltung**
-
-\vspace{4cm}
-
-**Wortauswahl**
-
-\vspace{1cm}
+\vspace{9cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
 ### Musterlösung {.unnumbered}
 
-Die Ausgangsspalte lautet in Reihenfolge: **0, 0, 1, 1, 0, 1, 0, 1**.
+| $M$ | $H$ | $F$ | $Y$ |
+|---|---|---|---|
+| 0 | 0 | 0 | 0 |
+| 0 | 0 | 1 | 1 |
+| 0 | 1 | 0 | 0 |
+| 0 | 1 | 1 | 1 |
+| 1 | 0 | 0 | 0 |
+| 1 | 0 | 1 | 0 |
+| 1 | 1 | 0 | 1 |
+| 1 | 1 | 1 | 1 |
 
-$$Y=(\overline{S}\land A)\lor(S\land B)$$
-
-S wird negiert und mit A verundet. S wird direkt mit B verundet. Ein ODER verbindet die beiden Teilergebnisse.
-
-![](../assets/images/vl1-mux-gatter.pdf){width=85%}
-
-Die Wortauswahl liefert 10. Unser Parallelmodell benötigt 32 Ein-Bit-Multiplexer mit demselben Auswahlwert, nicht 32 Ausführungstakte.
+1. Je Ausgangswert 0,5 P.
+2. $Y=(M\land H)\lor(\overline{M}\land F)$. Gleichung 2 P. Im gefragten Fall ist der manuelle Pfad gesperrt; der automatische Pfad ist ausgewählt, enthält aber null. Beide Teilterme und Y sind null. Auswahl und Werte zusammen 2 P.
+3. `0x3052`; 16 Einbit-Multiplexer mit gemeinsamer Auswahl. Je 1 P.
 :::
 
 {{< pagebreak >}}
 
-## Aufgabe 5: Volladdierer und Carrykette (8 Punkte)
+## Aufgabe 5: Überträge verfolgen (8 Punkte)
 
-### Arbeitsauftrag {.unnumbered}
-
-1. Bestimmen Sie Summenbit $S$ und ausgehenden Übertrag $C_{\mathrm{out}}$ für $(A,B,C_{\mathrm{in}})=(1,1,0)$ und $(1,1,1)$. Begründen Sie durch die mathematische Summe. (2 P)
-2. Addieren Sie **vorzeichenlos** `0110` und `0101` mit vier gespeicherten Bits und Startübertrag null. Ergänzen Sie je Stelle die Eingangsüberträge, Summenbits und Ausgangsüberträge. Nennen Sie Endwort und finalen Übertrag. (3 P)
-3. Berechnen Sie $7-3$ mit vier gespeicherten Bits als Addition mit invertierten B-Bits und Startübertrag. Zeigen Sie, an welcher Stelle die zusätzliche Eins eingespeist wird. (3 P)
+1. Bestimmen Sie Summenbit und Ausgangsübertrag für die Volladdierer-Eingänge $(A,B,C_\mathrm{in})=(0,1,1)$ und $(1,0,0)$. (2 P)
+2. Addieren Sie vorzeichenlos `1011` und `0111` mit vier gespeicherten Bits und Startübertrag null. Notieren Sie für jede Stelle von rechts $C_i,S_i,C_{i+1}$ sowie Endwort und finalen Übertrag. (3 P)
+3. Berechnen Sie $5-9$ mit vier gespeicherten Bits als Addition mit invertierten B-Bits und Startübertrag. Interpretieren Sie das Ergebnis unsigned und signed. (3 P)
 
 ::: {.content-hidden when-profile="solution"}
-\begingroup
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.6}
-\begin{tabular}{|p{2.5cm}|p{1.5cm}|p{1.5cm}|p{2cm}|p{2cm}|p{2cm}|}
-\hline
-Stelle von rechts & $A_i$ & $B_i$ & $C_i$ & $S_i$ & $C_{i+1}$ \\ \hline
-0 & 0 & 1 & & & \\ \hline
-1 & 1 & 0 & & & \\ \hline
-2 & 1 & 1 & & & \\ \hline
-3 & 0 & 0 & & & \\ \hline
-\end{tabular}
-\endgroup
+\vspace{9cm}
+:::
 
-\vspace{0.7cm}
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
 
-**Ein-Bit-Fälle und Subtraktionsweg**
+1. $(0,1,1)$: Summe 2, also $S=0,C_\mathrm{out}=1$. $(1,0,0)$: Summe 1, also $S=1,C_\mathrm{out}=0$. Je Fall 1 P.
 
+| Stelle $i$ | $A_i$ | $B_i$ | $C_i$ | $S_i$ | $C_{i+1}$ |
+|---|---|---|---|---|---|
+| 0 | 1 | 1 | 0 | 0 | 1 |
+| 1 | 1 | 1 | 1 | 1 | 1 |
+| 2 | 0 | 1 | 1 | 0 | 1 |
+| 3 | 1 | 0 | 1 | 0 | 1 |
+
+2. Endwort `0010`, finaler Übertrag 1. Vollständige Übertragskette 2 P, Wort und finaler Übertrag zusammen 1 P.
+3. `0101 + 0110 + 1 = 1100`. Die zusätzliche Eins wird nur als $C_0=1$ eingespeist. Ergebnis unsigned 12, signed −4. Invertierung und Startübertrag 1 P, Ergebnis 1 P, Interpretationen zusammen 1 P.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 6: Registerzustände vorhersagen (10 Punkte)
+
+1. Ein Wortregister übernimmt an steigenden Flanken bei $WE=1$. Anfang $Q=12$, alle Zeitbedingungen sind erfüllt. Bestimmen Sie Q nach jeder Zeile. (5 P)
+
+| Ereignis | $D$ | $WE$ | $Q$ danach |
+|---|---|---|---|
+| Keine Flanke | 6 | 1 | |
+| Steigende Flanke | 6 | 0 | |
+| Steigende Flanke | 6 | 1 | |
+| Fallende Flanke | 2 | 1 | |
+| Steigende Flanke | 10 | 1 | |
+
+2. Zwei Register haben denselben aktuellen Eingang, aber verschiedene gespeicherte Werte. Erklären Sie das. Kann auch eine Schaltung ohne Flankensteuerung Zustand besitzen? Nennen Sie ein Beispiel. (3 P)
+3. Anfang `x9=12`, `x10=6`, `x11=8`. Geben Sie die Registerwerte nach `add x9, x10, x11` und anschließend `add x0, x9, x10` an. (2 P)
+
+::: {.content-hidden when-profile="solution"}
 \vspace{6cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
 ### Musterlösung {.unnumbered}
 
-1. Zwei Einsen ergeben 2, also $S=0$, $C_{\mathrm{out}}=1$. Drei Einsen ergeben 3, also $S=1$, $C_{\mathrm{out}}=1$. Stets gilt $A+B+C_{\mathrm{in}}=S+2C_{\mathrm{out}}$.
-
-| Stelle von rechts | $A_i$ | $B_i$ | $C_i$ | $S_i$ | $C_{i+1}$ |
-|---|---:|---:|---:|---:|---:|
-| 0 | 0 | 1 | 0 | 1 | 0 |
-| 1 | 1 | 0 | 0 | 1 | 0 |
-| 2 | 1 | 1 | 0 | 0 | 1 |
-| 3 | 0 | 0 | 1 | 1 | 0 |
-
-2. Das Wort wird von höchster zu niedrigster Stelle geschrieben: `1011`, vorzeichenlos 11. Finaler Übertrag: 0.
-3. A ist `0111`, B `0011`, invertiertes B `1100`. Nur der erste Übertrag `C0=1` wird vorgegeben. Höhere Stellen übernehmen den Übertrag der vorherigen Stelle. Die Addition ergibt `10100`, gespeichert werden die unteren vier Bit `0100`, also 4. Der äußere Übertrag ist 1.
+1. Q in Reihenfolge: 12, 12, 6, 6, 10. Je 1 P.
+2. Frühere Übernahmen können verschieden gewesen sein; die aktuellen Eingänge allein bestimmen einen gespeicherten Zustand nicht (2 P). Ein pegelgesteuertes Latch besitzt ebenfalls Zustand (1 P).
+3. Nach der ersten Addition `x9=14`, `x10=6`, `x11=8` (1 P). Die zweite Addition verwirft ihr Ergebnis 20: `x0=0` und die drei anderen Register bleiben erhalten (1 P).
 :::
 
 {{< pagebreak >}}
 
-## Aufgabe 6: Flanke, Freigabe und Register (10 Punkte)
+## Aufgabe 7: Registerspur in Ripes (optional)
 
-### Arbeitsauftrag {.unnumbered}
-
-1. Anfang: das Wortregister hält $Q=3$. Ergänzen Sie $Q$ nach jeder Zeile. Die Schritte sind nacheinander auszuführen, alle Zeitbedingungen sind erfüllt. (5 P)
-2. Warum kann $Q$ bei demselben aktuellen Eingang $D$ verschiedene Werte haben? Ist jede sequenzielle Schaltung zwingend flankengesteuert? Nennen Sie ein Gegenbeispiel aus der Vorlesung. (3 P)
-3. Anfang `x5=7`, `x6=3`, `x7=0`. Was steht nach `add x7, x5, x6` und gültiger Registerübernahme in diesen Registern? Was wäre bei Ziel `x0` dessen gespeicherter Wert? (2 P)
+1. Öffnen Sie `beispiele/lab_01_registerspur.s` in einem RV32I-Modell. Notieren Sie Version und Prozessormodell.
+2. Sagen Sie `x0`, `x9`, `x10` und `x11` nach den ersten fünf Rechenanweisungen voraus.
+3. Setzen Sie zurück, führen Sie schrittweise aus und halten Sie bei `inspect`. Vergleichen Sie Ihre Werte mit den Registeranzeigen.
+4. Geben Sie für jede Addition die gelesenen Register, das Ziel und den übernommenen Wert an. Weshalb verändert der zweite Additionsbefehl kein Register?
 
 ::: {.content-hidden when-profile="solution"}
-\begingroup
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.7}
-\begin{tabular}{|p{5cm}|p{2cm}|p{2cm}|p{3cm}|}
-\hline
-Ereignis & $D$ & $WE$ & $Q$ danach \\ \hline
-Keine aktive Flanke & 5 & 1 & \\ \hline
-Steigende Flanke & 5 & 1 & \\ \hline
-Keine aktive Flanke & 7 & 1 & \\ \hline
-Steigende Flanke & 7 & 0 & \\ \hline
-Steigende Flanke & 9 & 1 & \\ \hline
-\end{tabular}
-\endgroup
-
-\vspace{0.7cm}
-
-**Begründungen und Registerwerte**
-
-\vspace{5cm}
+\vspace{8cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
 ### Musterlösung {.unnumbered}
 
-| Ereignis | $D$ | $WE$ | $Q$ danach |
-|---|---:|---:|---:|
-| Keine aktive Flanke | 5 | 1 | 3 |
-| Steigende Flanke | 5 | 1 | 5 |
-| Keine aktive Flanke | 7 | 1 | 5 |
-| Steigende Flanke | 7 | 0 | 5 |
-| Steigende Flanke | 9 | 1 | 9 |
-
-1. Schreibfreigabe allein übernimmt keine Daten. Erst eine aktive Flanke mit Freigabe ersetzt den gespeicherten Wert.
-2. Der bisher gespeicherte Zustand hängt von vorherigen Übernahmen ab. Sequenziell bedeutet Zustand, nicht allgemein Taktflanke. Ein Latch ist während seines Freigabepegels durchlässig und hält sonst.
-3. `x5=7` und `x6=3` bleiben erhalten, `x7=10`. Ein Schreibziel `x0` speichert die Summe nicht: `x0` bleibt null.
-:::
-
-{{< pagebreak >}}
-
-## Optional: Registeraddition mit Ripes beobachten
-
-Nutzen Sie diesen Versuch bei vorbereiteter Ripes-Installation. Für die Papieraufgaben ist er nicht erforderlich.
-
-1. Notieren Sie Ripes-Version und gewähltes RV32I-Prozessormodell. Ein Single-Cycle-Modell ist für den ersten Versuch übersichtlich.
-2. Öffnen Sie `beispiele/vl1_registeraddition.s`. Keine Ein-/Ausgabegeräte oder Systemdienste sind nötig.
-3. Starten Sie neu und führen Sie die Anweisungen schrittweise aus. Halten Sie nach der dritten Rechenanweisung an und notieren Sie `x0`, `x5`, `x6` und `x7`.
-4. Verfolgen Sie Lesen, Rechnen und die tatsächliche Registerübernahme im gewählten Modell. Unterscheiden Sie die Registernummer von dem gezeigten Datenwert.
-5. Erklären Sie, weshalb die anschließende Schleife die Werte erhält und keine Konsolenausgabe benötigt.
-
-`addi` addiert eine direkt angegebene Konstante zu einem Registerwert. `add` addiert zwei Registerwerte. Das Ziel steht zuerst. Die Marke `main` benennt den Einstieg, `j inspect` springt immer zur Marke `inspect` zurück. Die Datei ist vollständig und bleibt zur Zustandsinspektion in dieser Schleife.
-
-::: {.content-hidden when-profile="solution"}
-**Version und Prozessormodell**
-
-\vspace{1cm}
-
-| Register | Sollwert nach drei Rechenanweisungen | Eigene Beobachtung |
-|---|---:|---|
-| `x0` | 0 | |
-| `x5` | 7 | |
-| `x6` | 3 | |
-| `x7` | 10 | |
-
-**Datenweg und erste Abweichung, falls vorhanden**
-
-\vspace{3cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Sollverhalten und Auswertung {.unnumbered}
-
-Die beiden `addi`-Anweisungen bilden null plus sieben beziehungsweise null plus drei. `add x7, x5, x6` schreibt zehn ins Zielregister. Erwartet sind `x0=0`, `x5=7`, `x6=3`, `x7=10`.
-
-Die Dauerschleife führt einen Sprung aus und verändert diese Datenregister nicht. Wann ein Zwischenwert im Datenpfad und wann der neue Registerwert sichtbar wird, ist anhand des gewählten Modells zu protokollieren. Ein Simulatorschritt ist keine gemessene Hardwarezeit. Eigene Beobachtungen stammen aus dem eigenen Lauf; die Sollwerte ersetzen kein solches Protokoll.
+Erwartung am Prüfpunkt: `x0=0`, `x9=14`, `x10=6`, `x11=8`. Die ersten drei addi laden 12, 6 und 8. Die erste Addition liest x10 und x11 und schreibt 14 nach x9. Die zweite liest x9 und x10, aber das Ziel x0 verwirft 20. Die Inspektionsschleife verändert diese Werte nicht. Das sind Modellvorhersagen; Modellname und tatsächliche Anzeige sind im eigenen Lauf zu dokumentieren.
 :::

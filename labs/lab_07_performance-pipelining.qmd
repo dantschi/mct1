@@ -4,304 +4,214 @@ subtitle: "Mikrocomputertechnik 1"
 format:
   pdf:
     papersize: a4
+    pdf-engine: xelatex
+    fontsize: 10pt
+    highlight-style: monochrome
     mainfont: TeX Gyre Heros
     sansfont: TeX Gyre Heros
     monofont: TeX Gyre Cursor
 ---
 
 ::: {.content-visible when-profile="solution"}
-> **Musterlösung**
+**Musterlösung**
 :::
 
-## Zielsetzung und Arbeitsweise
+## Aufgabe 1: Latenz und Durchsatz neu berechnen (12 Punkte)
 
-Sie bestimmen Laufzeiten, zeichnen Stufenfolgen und begründen, welcher Datenwert wann verfügbar ist. Teil A ist ohne Simulator lösbar und übt Klausuraufgaben. Teil B vergleicht vorhergesagte Abläufe mit Ripes.
+Fünf Stufen IF, ID, EX, MEM, WB. Angenommene reine Stufenzeiten: 180, 140, 220, 160, 100 ps; effektiver Registeroverhead 30 ps je Taktpfad. Single Cycle durchläuft alle Bereiche in einem Takt, die Pipeline trennt alle fünf Stufen. Keine Stalls, anfangs leer. Gezählt wird vom ersten IF bis zum letzten WB.
 
-Orientierung: Teil A etwa 70 Minuten und 60 Punkte zur Selbsteinschätzung, Teil B etwa 25 Minuten. Für eine kürzere gemeinsame Arbeitsphase eignen sich Aufgaben 1, 2 und 4; die übrigen Aufgaben können als Vertiefung bearbeitet werden. Geben Sie bei Rechnungen Größen, Einheiten und Zählgrenzen an.
-
-## Vereinbartes Modell
-
-- RV32I, unkomprimierte Vier-Byte-Instruktionen, gültige wortausgerichtete Datenadressen. Anfangswerte sind vor dem betrachteten Kern hergestellt.
-- Fünf Stufen: IF (Instruction Fetch, Befehlsholen), ID (Instruction Decode, Decodieren und Registerlesen), EX (Execute, Rechnen), MEM (Memory Access, Datenzugriff), WB (Write Back, Rückschreiben / Abschluss).
-- Anfangs leere Pipeline, höchstens ein neuer Befehl je Takt, getrennte Befehls- und Datenzugriffe. Ein Datenzugriff braucht eine MEM-Stufe.
-- Forwarding aus EX/MEM und MEM/WB für bereite Werte, getrennt für benutzte Quellen. Jüngster passender gültiger Registerschreiber gewinnt; Ziel x0 löst keine Weiterleitung aus.
-- Registerbank: Ein am Taktende geschriebenes Register ist erst im Folgetakt lesbar. Ohne zusätzlichen Lesebypass muss die Erkennung einen gleichzeitigen WB/ID-Konflikt halten.
-- Load-Use bei unmittelbarer EX-Nutzung: PC und IF/ID halten, Bubble nach ID/EX, ältere Instruktionen weiterlaufen lassen.
-- Branch-Entscheidung in EX, zunächst sequenzieller Fetch. Genommener Branch: zwei jüngere Einträge verwerfen. Vergleichswerte sind in den Branch-Aufgaben bereits bereit.
-- Zählung: Beginn des ersten IF bis Ende des letzten WB. Nur gültig abgeschlossene Maschineninstruktionen gehören zu $N$; Bubble und verworfene Arbeit nicht.
-
-Für Aufgabe 1 und 4: reine Stufenzeiten 200, 100, 150, 250 und 100 ps, effektiver Registeroverhead 20 ps je Taktpfad. Das sind didaktische Annahmen.
-
-{{< pagebreak >}}
-
-# Teil A: Papieraufgaben
-
-## Aufgabe 1: Laufzeit, Latenz und Durchsatz (12 Punkte)
-
-1. Bestimmen Sie aus den angegebenen Stufenzeiten die Taktperiode des Single-Cycle-Modells und der Pipeline. Begründen Sie Summe und Maximum. (3 P.)
-2. Bestimmen Sie die Latenz eines einzelnen Befehls in beiden Modellen. Warum kann eine höhere Einzellatenz trotzdem nützlich sein? (2 P.)
-3. Zwanzig unabhängige Maschineninstruktionen sollen abschließen. Bestimmen Sie Taktzahl, endlichen CPI und Gesamtzeit beider Modelle sowie den Pipeline-Speedup. (5 P.)
-4. Nennen Sie zwei Voraussetzungen für den idealen Grenzwert von Faktor fünf. Ist er im vorgegebenen Zeitenmodell erreichbar? (2 P.)
+1. Berechnen Sie beide Taktperioden und begründen Sie Summe beziehungsweise Maximum. (3 P)
+2. Bestimmen Sie die Einzellatenzen. Warum entscheidet deren Vergleich noch nicht über den Durchsatz? (2 P)
+3. Zwölf unabhängige Instruktionen: Takte, endlicher CPI, Gesamtzeiten und Speedup? (5 P)
+4. Bestimmen Sie den Speedup-Grenzwert für sehr große N. Welche zwei Bedingungen fehlen für Faktor fünf? (2 P)
 
 ::: {.content-hidden when-profile="solution"}
-### Ihre Lösung {.unnumbered}
-\vspace{8cm}
+\vspace{9cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
-**Musterlösung Aufgabe 1**
+### Musterlösung {.unnumbered}
 
-1. $T_\mathrm{single}=200+100+150+250+100+20=820\,\mathrm{ps}$. Der längste angenommene Signalpfad läuft durch alle Bereiche. $T_\mathrm{pipe}=\max(200,100,150,250,100)+20=270\,\mathrm{ps}$. In der Pipeline begrenzt die längste Stufe plus Overhead die Periode.
-2. $L_\mathrm{single}=820\,\mathrm{ps}$, $L_\mathrm{pipe}=5\cdot270=1350\,\mathrm{ps}$. Eine längere Latenz eines einzelnen Befehls kann mit höherem Durchsatz vieler überlappter Befehle einhergehen.
-3. Single Cycle: $C=20$, $\mathrm{CPI}=1$, $t=16400\,\mathrm{ps}$. Pipeline: $C=20+4=24$, $\mathrm{CPI}=24/20=1{,}2$, $t=6480\,\mathrm{ps}$. $S=16400/6480\approx2{,}53$. Füllung und Leerung werden gemeinsam nur einmal als vier Zusatztakte berücksichtigt.
-4. Beispielsweise gleich lange Stufen und vernachlässigbarer Registeroverhead; außerdem lange Folge ohne Zusatzzyklen. Hier ist der Grenzwert $820/270\approx3{,}04$, deshalb auch bei sehr großem $N$ kein Faktor fünf.
+1. $T_\mathrm{single}=180+140+220+160+100+30=830\,\mathrm{ps}$; $T_\mathrm{pipe}=\max(180,140,220,160,100)+30=250\,\mathrm{ps}$. Zeiten je 1 P, Begründung 1 P.
+2. Latenzen 830 ps und $5\cdot250=1250$ ps (1 P). Überlappung kann den Durchsatz trotz längerer Einzellatenz erhöhen (1 P).
+3. Single: C = 12, CPI = 1, Zeit 9960 ps. Pipeline: C = 16, CPI = 16/12, Zeit 4000 ps. Speedup = 2,49. Takte 1 P, CPI 1 P, Zeiten je 1 P, Speedup 1 P.
+4. Grenzwert $830/250=3{,}32$ (1 P). Ungleich lange Stufen und relevanter Registeroverhead verhindern hier Faktor fünf (zusammen 1 P).
 :::
 
 {{< pagebreak >}}
 
-## Aufgabe 2: Load-Use-Raster und Werte (12 Punkte)
+## Aufgabe 2: Vier abhängige Instruktionen (12 Punkte)
 
-Anfang: `a0` zeigt auf ein gültiges Wort mit Wert 42. Die übrigen genannten Register beginnen bei null. I1, I2 und I3 bezeichnen die drei Zeilen; sie sind keine zusätzlichen Instruktionen.
-
-```asm
-lw   t0, 0(a0)      # I1
-addi t1, t0, 1     # I2
-add  t2, t1, t1    # I3
-```
-
-1. Füllen Sie das Raster aus. Ein gehaltenes ID- oder IF-Feld muss als solches erkennbar sein; verwenden Sie dafür `ID hält` beziehungsweise `IF hält`. (5 P.)
-
-::: {.content-hidden when-profile="solution"}
-```{=latex}
-\begin{center}
-\renewcommand{\arraystretch}{1.8}
-\begin{tabular}{|p{2cm}|*{8}{>{\centering\arraybackslash}p{1.15cm}|}}
-\hline
-Eintrag / Takt & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
-\hline
-I1 & & & & & & & & \\
-\hline
-I2 & & & & & & & & \\
-\hline
-I3 & & & & & & & & \\
-\hline
-Bubble & & & & & & & & \\
-\hline
-\end{tabular}
-\end{center}
-```
-:::
-
-2. Nennen Sie für I2 in EX und beide Quellen von I3 in EX jeweils den Datenwert und das liefernde Pipeline-Register. Warum darf I2 nicht die Load-Adresse erhalten? (3 P.)
-3. Bestimmen Sie die Endwerte t0, t1 und t2. (2 P.)
-4. Bestimmen Sie $N$, $C$ und den endlichen CPI. Zählt die Bubble zu $N$? (2 P.)
-
-::: {.content-hidden when-profile="solution"}
-### Ihre Lösung {.unnumbered}
-\vspace{4cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-**Musterlösung Aufgabe 2**
-
-| Eintrag / Takt | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| I1 | IF | ID | EX | MEM | WB | | | |
-| I2 | | IF | ID | ID hält | EX | MEM | WB | |
-| I3 | | | IF | IF hält | ID | EX | MEM | WB |
-| Bubble | | | | EX | MEM | WB | | |
-
-2. I2 erhält in EX5 den geladenen Wert 42 aus MEM/WB. I3 erhält in EX6 beide Registeroperanden mit Wert 43 aus EX/MEM. EX des Loads bildet nur die Adresse; diese ist kein Ersatz für das Wort 42.
-3. t0 ist 42, t1 ist $42+1=43$, t2 ist $43+43=86$.
-4. $N=3$, $C=8$, $\mathrm{CPI}=8/3\approx2{,}67$. Die Bubble ist kein zusätzlich abgeschlossener Maschinenbefehl. Es gibt einen Load-Use-Zusatzzyklus, danach keinen weiteren Konflikt der benutzten Quellen.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 3: Forwarding begründen (8 Punkte)
-
-Drei voneinander unabhängige Fälle:
-
-### A: Zwei passende Produzenten {.unnumbered}
-
-Anfang: `t1 = 7`, `t2 = 3`, `t4 = 4`.
+Anfangs leere Fünfstufen-Pipeline, Forwarding aus EX/MEM und MEM/WB; pro Takt höchstens ein neuer Befehl. Ein Load braucht eine MEM-Stufe, seine Daten sind erst danach bereit. Benötigte nicht genannte Registerwerte sind unbekannt. t1 = 15; s0 zeigt auf zwei gültige Wörter, das zweite hat Wert −9.
 
 ```asm
-add  t0, t1, t2
-addi t0, t0, 1
-sub  t3, t0, t4
+lw  t2, 4(s0)       # I1
+sub t3, x0, t2      # I2
+and t4, t3, t1      # I3
+add a0, t4, t3      # I4
 ```
 
-Wenn `sub` in EX ist, steht `addi` in MEM und `add` in WB. Welche Quelle muss den ersten Operanden liefern und welcher Endwert entsteht in t3? Begründen Sie den Vorrang. (3 P.)
-
-### B: Ziel x0 {.unnumbered}
-
-Ersetzen Sie im folgenden eigenständigen Fall die mittlere Zeile durch `add x0, t0, t0`:
-
-```asm
-add t0, t1, t2
-add x0, t0, t0
-sub t3, x0, t4
-```
-
-Warum darf der interne Rechenwert 20 nicht nach `sub` weitergeleitet werden? Welcher Wert entsteht? (3 P.)
-
-### C: Gleichzeitig WB und ID {.unnumbered}
-
-Ein Schreiber ist in WB, sein Leser nach zwei unabhängigen Instruktionen in ID. Genügen die beiden EX-Forwarding-Pfade allein unter unserer Registerbankkonvention? Nennen Sie die nötige Behandlung und eine alternative Modellannahme. (2 P.)
+1. Zeichnen Sie das vollständige Stufenraster. Markieren Sie gehaltene IF-/ID-Stufen und die Bubble. (5 P)
+2. Geben Sie die Quelle samt Wert jedes abhängigen EX-Operanden an; beachten Sie die zwei unterschiedlichen Produzenten von I4. (3 P)
+3. Bestimmen Sie t2, t3, t4 und a0 nach Abschluss. (2 P)
+4. Nennen Sie N, Gesamttakte und endlichen CPI. Zählt die Bubble zu N? (2 P)
 
 ::: {.content-hidden when-profile="solution"}
-### Ihre Lösung {.unnumbered}
-\vspace{4cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-**Musterlösung Aufgabe 3**
-
-A: add erzeugt 10, addi erzeugt 11. Der jüngere Schreiber addi in EX/MEM gewinnt vor dem älteren add in MEM/WB. sub nutzt 11 und schreibt $11-4=7$ nach t3.
-
-B: x0 bleibt null und verwirft den Registerschreibversuch. Das interne Ergebnis 20 ist deshalb kein sichtbares Ergebnis für einen Leser von x0. Die Prüfung rd ungleich x0 unterdrückt die Weiterleitung. sub schreibt $0-4=-4$, das Bitmuster 0xFFFFFFFC.
-
-C: Nein. Im Folgetakt erreicht der Leser EX, aber der Schreiber steht nicht mehr in MEM/WB. Ohne zusätzlichen Lesebypass muss der Leser einen Takt in ID gehalten werden und danach neu lesen. Eine Registerbank mit Schreiben vor Lesen im selben Takt oder ein zusätzlicher WB-nach-ID-Bypass würde den Fall anders behandeln.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 4: Flush, Endzustand und Gesamtkosten (10 Punkte)
-
-Anfang: `t0 = t1 = 1`, `t2 = 77`, `t3 = 0`, `a0 = 0`. s1 zeigt auf ein beschreibbares Wort mit Wert null.
-
-```asm
-beq  t0, t1, Ziel
-sw   t2, 0(s1)
-addi t3, x0, 99
-Ziel:
-addi a0, x0, 7
-```
-
-1. Zeichnen Sie das Stufenraster vom IF des Branch bis zum WB der Zielinstruktion. Kennzeichnen Sie, wann die beiden Folgeinstruktionen ungültig werden. (4 P.)
-2. Bestimmen Sie Speicherwort, t3 und a0 nach dem Abschluss der Zielinstruktion. Warum genügt es nicht, nur den Fetch umzulenken? (2 P.)
-3. Ein anderer, längerer Lauf schließt $N=100$ Instruktionen ab. Er hat zehn zusätzliche Wartezyklen und zwanzig Branches, davon zwölf genommen. Vergleichswerte sind bereit, Zusatzkosten überdecken sich nicht. Bestimmen Sie $C$, CPI und Laufzeit bei 270 ps. (4 P.)
-
-::: {.content-hidden when-profile="solution"}
-### Ihre Lösung {.unnumbered}
-\vspace{6cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-**Musterlösung Aufgabe 4**
-
-| Eintrag / Takt | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| beq | IF | ID | EX | MEM | WB | | | |
-| sw | | IF | ID | ungültig | | | | |
-| addi t3 | | | IF | ungültig | | | | |
-| addi a0 | | | | IF | ID | EX | MEM | WB |
-
-An der Grenze zu Takt 4 werden IF/ID und ID/EX ungültig; die Folgeeinträge dürfen danach keine aktive Zustandswirkung haben.
-
-2. Speicherwort 0, t3 gleich 0 und a0 gleich 7. Der falsche Store und die falsche Registeraddition würden trotz neuem Fetch später schreiben, wenn ihre schon gespeicherten Einträge gültig blieben.
-3. Bei Not-Taken-Annahme sind $F=12$ Pfade falsch. $C=N+4+H+2F=100+4+10+24=138$. $\mathrm{CPI}=138/100=1{,}38$. $t=138\cdot270=37260\,\mathrm{ps}=37{,}26\,\mathrm{ns}$. Branches sind bereits in $N$ enthalten; verworfene Instruktionen erhöhen $N$ nicht.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 5: Scheduling mit derselben Arbeit (10 Punkte)
-
-Das Wort an der gültigen Adresse in s1 ist 42. Anfang: a5 gleich null.
-
-```asm
-lw   t0, 0(s1)
-add  a0, t0, t0
-addi a5, a5, 1
-```
-
-1. Ordnen Sie genau diese drei Instruktionen so um, dass die unmittelbare Load-Nutzung entfällt. Begründen Sie, welche Register- und Speicherabhängigkeiten die Umordnung erlauben. (3 P.)
-2. Bestimmen Sie die Endwerte in t0, a0 und a5 sowie die Taktzahl vor und nach der Umordnung. Wie hoch ist der Kern-Speedup bei gleicher Periode? (3 P.)
-3. Würde das zusätzliche Einfügen von `addi a5, a5, 1` zwischen Load und add denselben Vergleich liefern? Begründen Sie. (2 P.)
-4. In einer anderen Variante lautet die letzte Zeile `addi s1, s1, 4`. Warum darf diese Erhöhung nicht vor den Load rücken? Das nächste Wort kann einen anderen Wert haben. (2 P.)
-
-::: {.content-hidden when-profile="solution"}
-### Ihre Lösung {.unnumbered}
-\vspace{6cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-**Musterlösung Aufgabe 5**
-
-1. Zulässig ist lw, dann addi a5, dann add. a5 ist unabhängig vom Basisregister s1, dem Load-Ergebnis t0 und dem Ergebnis a0. Die Erhöhung greift nicht auf den Speicher zu; die Reihenfolge Load vor Nutzung bleibt erhalten.
-2. In beiden Folgen: t0 gleich 42, a0 gleich 84, a5 gleich 1. Vorher $C=3+4+1=8$, danach $C=3+4=7$. $S=8/7\approx1{,}14$ für dieses Kernfenster.
-3. Nein. Beim Einfügen zusätzlich zur schon vorhandenen Erhöhung gäbe es vier statt drei Instruktionen und a5 würde 2 statt 1. Die Aufgabe und das Ergebnis wären verändert.
-4. Die vorgezogene Erhöhung würde die Adresse des Loads um vier Byte verschieben. Er würde ein anderes Wort lesen. Beispielsweise 99 statt 42 ergäbe 198 statt 84 in a0. Ein Verschieben nur zwischen Load und add ist unter den angegebenen Annahmen möglich; vor den Load ist es nicht zulässig.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 6: Sprungvorhersage als Zustandsaufgabe (8 Punkte)
-
-Ein isolierter Branch mit der tatsächlichen Folge T, T, T, N. T bedeutet genommen, N nicht genommen. Die Richtungstabelle teilt ihren Eintrag nicht mit anderen Branches; das Ziel ist für diesen Vergleich rechtzeitig verfügbar. Die Korrekturzeit pro Fehler wird mit zwei Takten angenommen.
-
-1. Ein Einbitmodell startet mit Vorhersage N. Nach jeder Entscheidung speichert es die tatsächliche Richtung als nächste Vorhersage. Füllen Sie die Tabelle und bestimmen Sie Fehlerzahl und Zusatzzyklen. (4 P.)
-
-| Ausführung | 1 | 2 | 3 | 4 |
-|:---|:---:|:---:|:---:|:---:|
-| Tatsächlich | T | T | T | N |
-| Vorhergesagt | | | | |
-| Fehler? | | | | |
-
-2. Ein Zweibitzähler startet in 11. Bei T erhöht er bis höchstens 11, bei N vermindert er bis mindestens 00. 00 und 01 sagen N vorher, 10 und 11 sagen T vorher. Bestimmen Sie Vorhersagen, Endzustand und Fehlerzahl für dieselbe Folge. (3 P.)
-3. Ist der Zweibitzähler aufgrund dieses Ergebnisses für jedes Programm überlegen? Begründen Sie. (1 P.)
-
-::: {.content-hidden when-profile="solution"}
-### Ihre Lösung {.unnumbered}
 \vspace{5cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
-**Musterlösung Aufgabe 6**
+### Musterlösung {.unnumbered}
 
-1. Vorhersagen N, T, T, T. Fehler bei Ausführung 1 und 4: zwei Fehler, vier zusätzliche Takte. Endzustand N.
-2. Vorhersagen T, T, T, T. Die ersten drei T halten den Zustand jeweils in 11; das letzte N führt nach 10. Es gibt einen Fehler und zwei Zusatzzyklen.
-3. Nein. Die beiden Ausgangszustände, die kurze tatsächliche Folge und die angenommene Korrekturzeit bestimmen diesen Vergleich. Andere Verläufe oder Anfangszustände können andere Fehlerzahlen liefern. Richtung allein stellt zudem noch keine Zieladresse bereit.
+| Eintrag / Takt | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|---|---|---|---|---|---|---|---|---|---|
+| I1 | IF | ID | EX | MEM | WB | | | | |
+| I2 | | IF | ID | ID* | EX | MEM | WB | | |
+| I3 | | | IF | IF* | ID | EX | MEM | WB | |
+| I4 | | | | | IF | ID | EX | MEM | WB |
+| Bubble | | | | EX | MEM | WB | | | |
+
+1. Stern = gehalten. Je richtiger Instruktionszeile 1 P, Bubble 1 P.
+2. I2 EX5: −9 aus MEM/WB. I3 EX6: 9 aus EX/MEM. I4 EX7: t4 = 9 aus EX/MEM und t3 = 9 aus MEM/WB. Die Load-Adresse ist kein Ersatz für die geladenen Daten. I2 und I3 zusammen 1 P, beide I4-Quellen je 1 P.
+3. t2 = −9, t3 = 9, t4 = 9, a0 = 18. Je 0,5 P.
+4. N = 4, C = 9, CPI = 2,25; Bubble zählt nicht. Je Angabe 0,5 P.
 :::
 
 {{< pagebreak >}}
 
-# Teil B: Ripes
+## Aufgabe 3: Der richtige Produzent (8 Punkte)
 
-## Aufgabe 7: Vorhersage und Beobachtung vergleichen
+Forwarding wie in Aufgabe 2; Anfangswerte stehen vor dem Kern bereits bereit.
 
-Wählen Sie eine fünfstufige RV32-Variante mit Forwarding und Hazard-Erkennung, komprimierte Instruktionen aus. Dokumentieren Sie Version und Modell. Setzen Sie vor jedem Versuch zurück. Verwenden Sie einzelne Clock-Schritte und die Stufenhistorie Ihrer Version; Menünamen und Farben können abweichen.
+1. t1 = `0x12`, t2 = 5, t4 = 15. Wenn die letzte Zeile EX erreicht, welche Quelle liefert t0 und welcher t3-Wert entsteht? (3 P)
 
-Öffnen Sie die vollständigen Programme im Ordner `beispiele/`. Initialisierung, `la`-Expansion, echte Programm-NOPs und Abschluss gehören nicht zum relativen Kernfenster. Beginnen Sie die Kernzählung beim IF der mit `Kern` markierten Folge. Eine Prozessorkonfiguration kann vom Papiermodell abweichen; begründen Sie dann die beobachtete Stufenzahl statt eine passende Anzeige zu erzwingen.
+```asm
+or   t0, t1, t2
+addi t0, t0, -4
+and  t3, t0, t4
+```
 
-1. `vl7_forwarding.s`: Identifizieren Sie add und sub im Kern. Wenn sub in EX ist, notieren Sie seine Datenquelle und den Operand mit Wert 150. Prüfen Sie nach dem passenden WB die Endwerte t2 und a0.
-2. `vl7_loaduse.s`: Identifizieren Sie Load und Verdopplung. Notieren Sie den gehaltenen Verbraucher, den weiterlaufenden Load und die wirkungslose Lücke. Prüfen Sie die beiden benutzten Additionsquellen sowie t0 und a0 nach Abschluss.
-3. `vl7_flush.s`: Bestimmen Sie Vergleichs- und Zielstufe Ihrer Variante. Prüfen Sie, dass falscher Store und falsche Addition keine bestätigte Wirkung haben. Lesen Sie Speicherwort, t3 und a0 nach der Zielinstruktion.
-4. `vl7_schedule_a.s` und `vl7_schedule_b.s`: Vergleichen Sie dieselben drei Kerninstruktionen. Prüfen Sie t0, a0 und a5. Dokumentieren Sie, welche Zusatzzyklen entfallen; verwenden Sie den globalen Laufzeitzähler nicht ungeprüft als Kernzählung.
-
-Ein Selektorwert oder eine Kabelfarbe allein ist kein Nachweis. Geben Sie Produzent, lieferndes Register, Datenwert und Verbraucher an. Der Codeabschluss verwendet einen Ripes-Umgebungsdienst; prüfen Sie dessen Vertrag in der Dokumentation Ihrer Version. Die Aufgabe kann vor dem Abschlussdienst beendet werden, sobald die Kern-Ergebnisse vorliegen.
-
-{{< pagebreak >}}
+2. Unabhängig davon t1 = 18, t4 = 15: `addi x0, t1, 9` gefolgt von `or a0, x0, t4`. Warum darf 27 nicht weitergeleitet werden? Welches a0 entsteht? (3 P)
+3. Ein anderer Schreiber steht in WB, sein Leser nach zwei unabhängigen Instruktionen gleichzeitig in ID. Im Papiermodell wird ein am Taktende geschriebener Wert erst im Folgetakt lesbar. Genügen ausschließlich die EX-Forwarding-Pfade? Nennen Sie Behandlung und eine alternative Registerbankkonvention. (2 P)
 
 ::: {.content-hidden when-profile="solution"}
-### Beobachtungsprotokoll {.unnumbered}
-
-Version / Modell: \rule{8cm}{0.4pt}
-
-Versuch, relative Stufen, Quelle, Datenwert und Ergebnis:
-
-\vspace{6cm}
+\vspace{9cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
-**Musterlösung Aufgabe 7: Erwartungen, keine protokollierten Ripes-Läufe**
+### Musterlösung {.unnumbered}
 
-Forwarding: t2 wird 150, a0 wird 100. Das unmittelbare Rechenpaar erhält den neuen ersten sub-Operanden aus EX/MEM ohne Zusatzzyklus im Lehrmodell.
+1. OR liefert 23, ADDI danach 19. Der jüngere Produzent in EX/MEM muss gegenüber dem älteren in MEM/WB gewinnen. `t3=19 AND 15=3`. Wertefolge 1 P, Quelle und Vorrang 1 P, Ergebnis 1 P.
+2. x0 verwirft den Rechenwert 27. Ein Leser von x0 braucht null; rd = x0 muss daher vom Forwarding ausgeschlossen werden. a0 wird 15. Erklärung 2 P, Ergebnis 1 P.
+3. Nein: Im nächsten EX-Takt ist der alte Schreiber bereits aus MEM/WB verschwunden. Ein Takt Halt in ID mit erneutem Lesen oder ein zusätzlicher WB-ID-Bypass löst den Fall (1 P). Eine Registerbank mit Schreiben vor Lesen im selben Takt wäre eine andere Konvention (1 P).
+:::
 
-Load Use: t0 wird 42, a0 wird 84. Beide Quellen der Verdopplung brauchen 42. Im Lehrmodell wird sie einen Takt in ID gehalten und erhält danach das Wort aus MEM/WB; die Load-Adresse ist kein Nutzdatenersatz.
+{{< pagebreak >}}
 
-Flush: Das Wort bei slot bleibt 0, t3 bleibt 0 und a0 wird 7. Falsche jüngere Einträge müssen vor Zustandswirkungen ungültig werden. Auflösungsstufe und Darstellung sind anhand der konkreten Simulatorvariante zu dokumentieren.
+## Aufgabe 4: Zwei falsche Zustandsänderungen verhindern (10 Punkte)
 
-Scheduling: Beide Varianten enden mit t0 gleich 42, a0 gleich 84 und a5 gleich 1. Für das anfangs leere Lehrfenster sind acht gegen sieben Takte vorhergesagt. Ein globaler Zähler umfasst weitere Befehle; konkrete Ripes-Zahlen werden ohne Lauf nicht behauptet.
+Branch-Auflösung in EX, vorher sequenzieller Fetch; bei genommenem Branch werden die beiden jüngeren Einträge verworfen. Vergleichswerte sind bereit. Anfang: a0 = a1 = −2, t2 = `0x55`, a2 = 0. s0 = B zeigt auf ein beschreibbares Wort `0x33`; auch B + 4 ist gültig.
+
+```asm
+beq  a0, a1, Ziel
+addi s0, s0, 4
+sw   t2, 0(s0)
+Ziel:
+xori a2, t2, 15
+```
+
+1. Zeichnen Sie das Raster bis zum WB der Zielinstruktion und markieren Sie den Flush. (4 P)
+2. Geben Sie s0, Speicherwort bei B und a2 danach an. Warum genügt es nicht, nur den Fetch umzulenken? (2 P)
+3. Ein anderer Lauf schließt 240 Instruktionen ab, hat 17 zusätzliche Wartezyklen und 40 Branches, davon 15 genommen. Zusatzkosten überschneiden sich nicht. Bestimmen Sie C, CPI und Zeit bei 250 ps; Füllen und Leeren sind einzubeziehen. (4 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{8cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+| Eintrag / Takt | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|---|---|---|---|---|---|---|---|---|
+| beq | IF | ID | EX | MEM | WB | | | |
+| addi s0 | | IF | ID | verworfen | | | | |
+| sw | | | IF | verworfen | | | | |
+| xori a2 | | | | IF | ID | EX | MEM | WB |
+
+1. Je Zeile 1 P. Ab Grenze zu Takt 4 sind beide jüngeren Einträge ungültig.
+2. s0 bleibt B, Wort bei B bleibt `0x33`, a2 wird `0x5A` = 90 (1 P). Bereits geholte falsche Arbeit darf später weder Pointer noch Speicher verändern (1 P).
+3. $C=240+4+17+2\cdot15=291$; CPI = 1,2125; Zeit = 72750 ps = 72,75 ns. Takte 2 P, CPI 1 P, Zeit 1 P. Branches gehören bereits zu den 240 Instruktionen.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 5: Vier Befehle sinnvoll umordnen (10 Punkte)
+
+Das Wort bei 4(s0) ist −9; t1 = 30, a5 = 1, a6 beliebig. Forwarding und Load-Use-Erkennung wie zuvor, Kernzählung vom ersten IF bis zum letzten WB.
+
+```asm
+lw   t2, 4(s0)
+sub  a0, t1, t2
+addi a5, a5, 2
+xor  a6, a6, a6
+```
+
+1. Ordnen Sie genau diese vier Instruktionen so um, dass der Load-Use-Stall entfällt. Begründen Sie die Unabhängigkeit der verschobenen Arbeit. (3 P)
+2. Bestimmen Sie Endwerte t2, a0, a5, a6 sowie Takte und Speedup vor/nach der Umordnung. (3 P)
+3. Warum ist ein zusätzlich eingefügtes `addi a5, a5, 2` kein gleichwertiges Scheduling? (2 P)
+4. Würde stattdessen eine Pointererhöhung von s0 als unabhängige Füllinstruktion gelten? Unterscheiden Sie Verschieben vor den Load und zwischen Load und Nutzung. (2 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{9cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+1. Beispielsweise lw, addi a5, sub, xor a6. Alternativ kann xor a6 die Lücke füllen. Die verschobene Arbeit liest weder Loadwert noch Basis und verändert diese nicht. Reihenfolge 1 P, Register-/Speicherbegründung 2 P.
+2. t2 = −9, a0 = 39, a5 = 3, a6 = 0 (zusammen 1 P). Vorher 9, danach 8 Takte (1 P). Speedup $9/8=1{,}125$ (1 P).
+3. Es wären fünf statt vier Instruktionen und a5 würde 5 statt 3. Befehlszahl und geändertes Ergebnis je 1 P.
+4. Vor dem Load verschiebt die Erhöhung die gelesene Adresse und ist hier nicht zulässig (1 P). Zwischen Load und sub darf sie bei ansonsten gleichen Voraussetzungen stehen, weil sub nur das bereits geladene Wort benötigt (1 P).
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 6: Eine wechselnde Branch-Folge (8 Punkte)
+
+Isolierter Branch mit Folge N, T, N, N, T, T. T = genommen, N = nicht genommen. Zieladresse ist rechtzeitig verfügbar, kein geteilter Richtungseintrag; je Vorhersagefehler zwei Zusatztakte.
+
+1. Einbitprädiktor startet mit T und speichert nach jedem Branch die tatsächliche Richtung. Bestimmen Sie Vorhersagen, Fehlerpositionen, Endzustand und Zusatzzyklen. (4 P)
+2. Zweibitzähler startet in 10. 00/01 sagen N, 10/11 sagen T; T erhöht sättigend, N verringert sättigend. Bestimmen Sie Vorhersagen, Zustandsfolge und Fehlerzahl. (3 P)
+3. Was zeigt der Vergleich über eine pauschale Überlegenheit des Zweibitmodells? (1 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{9cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+1. Vorhersagen T, N, T, N, N, T. Fehler an Position 1, 2, 3, 5; Endzustand T, acht Zusatzzyklen. Je gefragter Angabengruppe 1 P.
+2. Vorhersagen T, N, T, N, N, N. Zustände nachher: 01, 10, 01, 00, 01, 10. Fünf Fehler, also zehn Zusatzzyklen. Vorhersagen 1 P, Zustände 1 P, Fehlerzahl 1 P.
+3. In diesem Verlauf ist das Zweibitmodell schlechter. Verhalten hängt von Folge und Anfangszustand ab; eine allgemeine Überlegenheit folgt nicht. 1 P.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 7: Eigenständige Scheduling-Versuche in Ripes
+
+1. Öffnen Sie [Variante A](../beispiele/lab_07_schedule_a.s) und [Variante B](../beispiele/lab_07_schedule_b.s) nacheinander in derselben RV32-Fünfstufen-Variante mit Forwarding und Hazard-Erkennung, C aus. Notieren Sie Version und Modell.
+2. Sagen Sie die vier Endwerte am Prüfpunkt voraus. Starten Sie jede Datei neu.
+3. Verfolgen Sie jeweils nur den Bereich Kern bis Ende_Kern. Die vorbereitenden NOPs und die Inspektionsschleife zählen nicht zu diesen vier Instruktionen.
+4. Protokollieren Sie ersten IF, letzten WB, gehaltene Stufen sowie Wert und Herkunft der Subtraktionsoperanden.
+5. Begründen Sie, ob eine Zeitdifferenz auf entfernten Stalls oder auf veränderter Arbeit beruht. Verwenden Sie den globalen Zähler nicht als ungeprüfte Kernzählung.
+
+::: {.content-hidden when-profile="solution"}
+\vspace{8cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+Beide Dateien rechnen dieselbe Aufgabe aus Aufgabe 5: t2 = −9, a0 = 39, a5 = 3, a6 = 0. A hat im Papiermodell neun, B acht Kerntakte. Die Differenz ist genau der vermiedene Load-Use-Stall. Die vier vorbereitenden NOPs trennen die Initialisierung vom Kern; sie sind keine vom Hazard-Baustein erzeugten Bubbles. Bei abweichender Ripes-Registerbank- oder Stufenkonvention ist die tatsächliche Stufenhistorie maßgeblich.
 :::

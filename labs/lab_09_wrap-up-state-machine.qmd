@@ -1,224 +1,78 @@
 ---
-title: "Übungsblatt 9: C, Assembler und Code-Schloss"
+title: "Übungsblatt 9: C, Assembler und Lüfterregler"
 subtitle: "Mikrocomputertechnik 1"
 format:
   pdf:
     papersize: a4
+    pdf-engine: xelatex
+    fontsize: 10pt
+    highlight-style: monochrome
     mainfont: TeX Gyre Heros
+    sansfont: TeX Gyre Heros
     monofont: TeX Gyre Cursor
 ---
 
 ::: {.content-visible when-profile="solution"}
-> **Musterlösung** – Papieraufgaben und Sollverhalten für die Simulatoraufgabe.
+**Musterlösung**
 :::
 
-## Ziel und Voraussetzungen
+## Aufgabe 1: Die Werkzeugkette prüfen (10 Punkte)
 
-Sie verbinden die Inhalte der Einheiten 1–8: C-Kontrollfluss, RV32I-Anweisungen, Aufrufkonvention, Datenpfad, Pipeline und Ein-/Ausgabe. Bearbeiten Sie die Papieraufgaben ohne Simulator und begründen Sie Ihre Ergebnisse. Die praktische Aufgabe prüft danach die gleiche Spezifikation mit Ripes.
+1. Ein RISC-V-GNU-Zieltreiber wird mit `-S lab_09_transfer.c -o transfer.o` aufgerufen. Welche Art Inhalt entsteht trotz der Endung .o? Begründen Sie. (2 P)
+2. Geben Sie passende Aufrufe für Assemblerausgabe und anschließend Objektdatei mit `-march=rv32i -mabi=ilp32` an. Ordnen Sie Compiler und Assembler zu. (3 P)
+3. Ein Header deklariert `extern int helper(int);`, die Funktion wird aufgerufen, aber nirgends definiert. Welche Stufe kann am fehlenden Funktionskörper scheitern? Warum behebt eine weitere Deklaration das nicht? (2 P)
+4. Erläutern Sie march und mabi. Warum genügt ein Host-gcc ohne passende Zielauswahl nicht? (3 P)
 
-**Gemeinsame Annahmen:** RV32I ohne komprimierte Befehle, 32-Bit-Register, vier Byte pro `int` im vereinbarten ILP32-Datenmodell. Vorzeichenbehaftete C-Zwischenresultate sind darstellbar. Normale Funktionsaufrufe verwenden `a0` für das skalare Ergebnis und einen 16-Byte-ausgerichteten Stack.
-
-| Papieraufgabe | Thema | Übungspunkte |
-|---|---|---:|
-| 1 | Werkzeugkette und Zielauswahl | 10 |
-| 2 | Kontrollfluss und Schleifentrace | 12 |
-| 3 | Arrayadresse und vollständige Funktion | 12 |
-| 4 | Aufruf und Stackframe | 8 |
-| 5 | Zustand und Eingabeereignis | 10 |
-| 6 | Datenpfad und Load-Use | 8 |
-| **Summe** | | **60** |
-
-Die Punkte dienen der Selbstkontrolle, nicht der Festlegung einer späteren Klausur. Für eine gemeinsame Einheit bieten sich die Aufgaben 1–3 und 5 sowie der praktische Basistest an. Aufgaben 4 und 6 und die Erweiterung vertiefen die Wiederholung.
-
-**Lehrdateien** im Repository unter `beispiele/`:
-
-- `vl9_control.c`: C-Beispiele
-- `vl9_sum_array.s` und `vl9_calls.s`: manuelle Funktionen
-- `vl9_next_state.s` und `vl9_code_lock.s`: Zustandsfunktion und Ripes-Programm
-
-Die Funktionsdateien sind keine eigenständigen Programme. Das Schlossprogramm enthält dagegen Einstieg und alle Hilfsfunktionen. Compilerexperimente sind optional; ein fehlender Crosscompiler verhindert weder Papieraufgaben noch Ripes-Aufgabe.
-
-{{< pagebreak >}}
-
-## Aufgabe 1: Werkzeugkette und Zielauswahl (10 Punkte)
-
-### Arbeitsauftrag {.unnumbered}
-
-1. Ordnen Sie die vier Werkzeuge **Compiler, Linker, Präprozessor, Assembler** und nennen Sie zu jedem das erzeugte Zwischenergebnis. (4 P)
-2. Welche Stufe ist jeweils die letzte bei `gcc -E`, `gcc -S` und `gcc -c`? (3 P)
-3. Eine Assemblerdatei wurde mit `-march=rv32i -mabi=ilp32 -S` erzeugt. Erläutern Sie die beiden Zieloptionen und warum diese Datei allein noch kein startfähiges Programm ist. (3 P)
-
-Verwenden Sie die Werkzeugnamen präzise: Assemblertext und das Werkzeug Assembler sind verschiedene Dinge.
+Die neue C-Datei steht unter `beispiele/lab_09_transfer.c`. Die Aufrufe sind zu formulieren; eine vorhandene Cross-Toolchain ist für diese Papieraufgabe nicht nötig.
 
 ::: {.content-hidden when-profile="solution"}
-| Werkzeug | Zwischenergebnis |
-|---|---|
-| 1. | |
-| 2. | |
-| 3. | |
-| 4. | |
-
-\vspace{1cm}
-
-`-E`: \rule{11cm}{0.4pt}
-
-\vspace{0.6cm}
-
-`-S`: \rule{11cm}{0.4pt}
-
-\vspace{0.6cm}
-
-`-c`: \rule{11cm}{0.4pt}
-
-\vspace{0.8cm}
-
-Zieloptionen und Startfähigkeit:
-
-\vspace{3.5cm}
+\vspace{9cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
 ### Musterlösung {.unnumbered}
 
-| Werkzeug | Zwischenergebnis |
-|---|---|
-| Präprozessor | Präprozessierter C-Text, etwa `.i` |
-| Compiler | Assemblertext, etwa `.s` |
-| Assembler | Objektdatei, etwa `.o` |
-| Linker | Verknüpftes Programm, etwa ELF-Datei |
+1. Assemblertext: -S bestimmt die letzte Stufe; die frei gewählte Ausgabedateiendung ändert den Inhalt nicht. Inhalt und Begründung je 1 P.
+2. Beispielsweise mit passendem GNU-Zieltreiber:
 
-`-E` stoppt nach dem Präprozessor, `-S` nach dem Compiler mit Assemblertext, `-c` nach dem Assembler mit einer Objektdatei.
+```bash
+riscv64-unknown-elf-gcc \
+  -march=rv32i -mabi=ilp32 -S \
+  beispiele/lab_09_transfer.c -o transfer.s
+riscv64-unknown-elf-gcc \
+  -march=rv32i -mabi=ilp32 -c \
+  transfer.s -o transfer.o
+```
 
-`-march=rv32i` wählt den 32-Bit-RISC-V-Basisbefehlssatz. `-mabi=ilp32` wählt die zugehörige Binärschnittstelle mit 32 Bit für `int`, `long` und Zeiger. Die Optionen setzen eine passende Toolchain voraus. Assemblertext muss erst assembliert und verknüpft werden. Außerdem müssen Programmeinstieg und Laufzeitumgebung passen; ein Header liefert beispielsweise nicht den Maschinenkörper einer Bibliotheksfunktion.
+Erster Aufruf endet mit Compiler-Assemblerausgabe, zweiter assembliert zur Objektdatei. Aufrufe je 1 P, Stufenzuordnung 1 P. Dies sind keine behaupteten Ausführungsprotokolle.
+3. Der Linker kann das benötigte Symbol nicht auflösen (1 P). Eine Deklaration liefert keinen implementierten Maschinenkörper (1 P).
+4. march wählt ISA/Erweiterungen, mabi die Binärschnittstelle; ilp32 verwendet hier 32-Bit-int, long und Zeiger. Ein Hostcompiler kann eine ganz andere Zielarchitektur erzeugen. Je 1 P.
 :::
 
 {{< pagebreak >}}
 
-## Aufgabe 2: Kontrollfluss und Schleifentrace (12 Punkte)
+## Aufgabe 2: Einen neuen Kontrollfluss übersetzen (12 Punkte)
 
-### Arbeitsauftrag {.unnumbered}
-
-**a) Fehler finden (4 P).** Das Fragment soll bei Gleichheit eins, sonst zwei in `a0` liefern.
+1. Das Fragment soll für negatives x dessen Betrag, sonst x + 2 zurückgeben. Eingaben liegen zwischen −100 und 100. Prüfen Sie x = −4 und x = 5 und reparieren Sie den Fehler. (4 P)
 
 ```asm
-bne a0, a1, Else
-li  a0, 1
-Else:
-li  a0, 2
+    blt a0, x0, Negativ
+    addi a0, a0, 2
+Negativ:
+    sub a0, x0, a0
+    ret
 ```
 
-Verfolgen Sie die Fälle (5, 5) und (5, 4). Nennen und korrigieren Sie die fehlende Kontrollkante.
-
-**b) Schleife übersetzen (6 P).** Schreiben Sie eine vollständige Blattfunktion `count_to_ten` einschließlich Rückkehr. `i` kommt in `a0` an, das Ergebnis bleibt in `a0`. Temporäre Register dürfen Sie verwenden.
+2. Übersetzen Sie folgende C-Funktion vollständig nach RV32I mit Ergebnis in a0. Bestimmen Sie außerdem Körper- und Testanzahl für x = 7 sowie das Ergebnis für x = −1. (6 P)
 
 ```c
-int count_to_ten(int i) {
-    while (i < 10) { i++; }
-    return i;
+int lower_to_zero(int x) {
+    while (x > 0) { x -= 3; }
+    return x;
 }
 ```
 
-Wie oft werden Bedingung und Körper bei Startwert 0 ausgeführt? Welches Ergebnis entsteht bei Startwert 12?
-
-**c) Vorzeichen (2 P).** `a0` enthält `0xFFFFFFFF`. Welche Werte repräsentiert dieses Muster als vorzeichenbehaftete beziehungsweise vorzeichenlose 32-Bit-Zahl? Warum ist `bgeu` hier kein Ersatz für `bge`?
-
-::: {.content-hidden when-profile="solution"}
-\vspace{8cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung {.unnumbered}
-
-a) (5, 5): erst eins, danach durch Fall-through zwei, also falsch. (5, 4): direkter Sprung zu Else, Ergebnis zwei. Nach `li a0, 1` fehlt `j End`, wobei `End:` nach dem Else-Zweig steht.
-
-b) Eine gültige manuelle Lösung:
-
-```asm
-count_to_ten:
-    li t0, 10
-count_loop:
-    bge a0, t0, count_end
-    addi a0, a0, 1
-    j count_loop
-count_end:
-    ret
-```
-
-Start 0: elf Bedingungsprüfungen, zehn Körperausführungen, Ergebnis 10. Start 12: eine Prüfung, kein Körper, Ergebnis 12.
-
-c) Das Muster ist vorzeichenbehaftet −1, vorzeichenlos 4294967295. `bge` vergleicht vorzeichenbehaftet, `bgeu` vorzeichenlos. Für −1 soll die Schleife laufen; ein vorzeichenloser Vergleich würde sofort abbrechen.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 3: Arrayadresse und Summe (12 Punkte)
-
-### Arbeitsauftrag {.unnumbered}
-
-Ein `int`-Array enthält `{10, 20, 30, 40, 50}` und beginnt im Adressmodell bei `0x2000`.
-
-1. Berechnen Sie die Adresse und den Wert von `p[3]`. Liegt `0x2014` auf einem vorhandenen Element? Begründen Sie mit $A_i=B+4i$. (4 P)
-2. Ergänzen Sie die Funktion. `a0` enthält anfangs die Basisadresse, `a1` die vorzeichenlose Länge. `t0` hält die Basis, `t1` den Index, `t2` die Summe. Tragen Sie jeweils den **fehlenden Befehlsnamen** in die fünf Lücken ein. (5 P)
-3. Nennen Sie Ergebnis und Anzahl der Array-Lesezugriffe für `n=0` und `n=5`. Welche zusätzliche Voraussetzung braucht der Vergleich mit einer vorzeichenbehafteten C-Summe? (3 P)
-
-```asm
-sum_array:
-    mv t0, a0
-    li t1, 0
-    li t2, 0
-sum_array_loop:
-    ______ t1, a1, sum_array_end
-    ______ t3, t1, 2
-    ______ t4, t0, t3
-    ______ t5, 0(t4)
-    add t2, t2, t5
-    addi t1, t1, 1
-    j sum_array_loop
-sum_array_end:
-    ______ a0, t2
-    ret
-```
-
-::: {.content-hidden when-profile="solution"}
-Adresse und Grenzen:
-
-\vspace{2cm}
-
-Ergebnisse, Zugriffe und Voraussetzung:
-
-\vspace{2cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung {.unnumbered}
-
-1. $A_3=\mathtt{0x2000}+12=\mathtt{0x200C}$, Wert 40. `0x2014` wäre die Adresse des Index 5 und liegt direkt hinter dem Array. Sie darf hier nicht als vorhandenes Element gelesen werden.
-2. In Reihenfolge: `bgeu`, `slli`, `add`, `lw`, `mv`. Der vorzeichenlose Vergleich passt zur Länge und zum Index. Die Verschiebung um zwei bildet den Byteoffset $4i$. Die komplette Lehrlösung steht in `beispiele/vl9_sum_array.s`.
-3. `n=0`: Ergebnis 0, kein Array-Lesezugriff. `n=5`: Ergebnis 150, fünf Array-Lesezugriffe. Alle gelesenen Elemente müssen gültig und jede vorzeichenbehaftete C-Zwischensumme darstellbar sein. Maschinenaddition modulo $2^{32}$ definiert keinen C-Überlauf.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 4: Aufruf und Stackframe (8 Punkte)
-
-### Arbeitsauftrag {.unnumbered}
-
-`calc` ist die Blattfunktion `slli a0, a0, 1` gefolgt von `ret`. Sie verändert keine gesicherten Register. Die folgende Funktion wird normal aufgerufen. Der eingehende `sp` ist `0x2000`.
-
-```asm
-double_plus_one:
-    addi sp, sp, -16
-    sw ra, 12(sp)
-    call calc
-    addi a0, a0, 1
-    lw ra, 12(sp)
-    addi sp, sp, 16
-    ret
-```
-
-1. Berechnen Sie `sp` nach dem Prolog, die Speicheradresse von `ra` und `sp` nach der Wiederherstellung. (3 P)
-2. Warum wird `ra` gesichert? Weshalb sind 16 Byte reserviert, obwohl nur ein Wort gesichert wird? (3 P)
-3. Ein Aufrufer benötigt seinen Zähler in `t0` nach einem normalen Funktionsaufruf erneut. Wer ist gemäß ABI für die Sicherung verantwortlich? Berechnen Sie außerdem das Ergebnis für `a0=-3`. (2 P)
+3. a0 enthält `0xFFFFFFFA`. Welche signed und unsigned Werte sind das? Weshalb wäre ein unsigned Schleifentest hier falsch? (2 P)
 
 ::: {.content-hidden when-profile="solution"}
 \vspace{7cm}
@@ -227,220 +81,212 @@ double_plus_one:
 ::: {.content-visible when-profile="solution"}
 ### Musterlösung {.unnumbered}
 
-1. Neuer `sp`: `0x1FF0`. Sicherungsadresse: `0x1FF0 + 12 = 0x1FFC`. Nach dem Epilog: `0x2000`.
-2. `call calc` überschreibt `ra`, die Rücksprungadresse. Die Funktion braucht ihre eingehende Adresse später für `ret` zum ursprünglichen Aufrufer. 16 Byte erhalten die vereinbarte Stackausrichtung. Der Nutzwert belegt nur vier Byte.
-3. `t0` ist caller-saved: Der Aufrufer muss einen noch benötigten Wert selbst sichern. `calc(-3)=-6`, anschließend Addition eins: Ergebnis −5. Die Aussage über Registererhaltung gilt für normale ABI-Aufrufe, nicht pauschal für beliebige `ecall`-Umgebungen.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 5: Zustandsmaschine und Ereignis (10 Punkte)
-
-### Gemeinsame Schlossregeln {.unnumbered}
-
-S0 ist rot, S1 gelb, S2 blau, S3 grün. Die Folge UP, DOWN, RIGHT öffnet das Schloss. Falsche einzelne Codetasten setzen S0–S2 nach S0 zurück. S3 bleibt bei Codetasten offen. LEFT setzt jeden Zustand nach S0 zurück. Ereignis 0 erhält gültige Zustände, ein ungültiger Zustand wird nach S0 korrigiert.
-
-Rohmasken: UP=1, DOWN=2, LEFT=4, RIGHT=8. Eine leere Gruppe gibt die Eingabe frei. Die nächste nichtleere Gruppe verbraucht diese Freigabe. Nur eine einzelne Taste erzeugt ein Ereignis: UP=1, DOWN=2, RIGHT=3, RESET=4. Mehrfachdruck erzeugt Ereignis 0 und erfordert ebenfalls vollständiges Loslassen.
-
-### Arbeitsauftrag {.unnumbered}
-
-1. Ergänzen Sie die Übergänge. (4 P)
-2. Vervollständigen Sie den Trace. Anfang: S0, Freigabe geschlossen. Jeder Wert bezeichnet eine Abfragegruppe; der Zustand steht **nach** ihrer Verarbeitung. (4 P)
-3. Was muss bei Zustandswert 99 und Ereignis 0 geschehen? Warum reicht ein Sprung zu einer Marke namens `state0` nicht? (2 P)
-
-::: {.content-hidden when-profile="solution"}
-\begingroup
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.5}
-\begin{tabular}{|p{1.6cm}|p{2.6cm}|*{4}{p{2.2cm}|}}
-\hline
-Aktuell & Kein Ereignis & UP & DOWN & RIGHT & RESET \\ \hline
-S0 & & & & & \\ \hline
-S1 & & & & & \\ \hline
-S2 & & & & & \\ \hline
-S3 & & & & & \\ \hline
-\end{tabular}
-
-\vspace{0.6cm}
-
-\begin{tabular}{|p{2.3cm}|*{12}{p{0.75cm}|}}
-\hline
-Rohmaske & 0 & 1 & 1 & 0 & 3 & 2 & 0 & 2 & 0 & 8 & 0 & 4 \\ \hline
-Ereignis & & & & & & & & & & & & \\ \hline
-Zustand & & & & & & & & & & & & \\ \hline
-\end{tabular}
-\endgroup
-
-\vspace{0.7cm}
-
-Zusatzfall:
-
-\vspace{2cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung {.unnumbered}
-
-| Aktuell | Kein Ereignis | UP | DOWN | RIGHT | RESET |
-|---|---|---|---|---|---|
-| S0 | S0 | S1 | S0 | S0 | S0 |
-| S1 | S1 | S0 | S2 | S0 | S0 |
-| S2 | S2 | S0 | S0 | S3 | S0 |
-| S3 | S3 | S3 | S3 | S3 | S0 |
-
-| Rohmaske | 0 | 1 | 1 | 0 | 3 | 2 | 0 | 2 | 0 | 8 | 0 | 4 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Ereignis | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 2 | 0 | 3 | 0 | 4 |
-| Zustand | S0 | S1 | S1 | S1 | S1 | S1 | S1 | S2 | S2 | S3 | S3 | S0 |
-
-Die Mehrfachmaske 3 verbraucht die Freigabe. Der danach noch gehaltene DOWN-Wert 2 zählt nicht. Erst nach null kann ein neuer DOWN-Druck S2 erreichen.
-
-Die Übergangsfunktion muss null liefern, und der Aufrufer muss null im Zustandsregister speichern. Eine Sprungmarke verändert allein den Programmzähler, nicht den dort gespeicherten Zustandswert.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 6: Datenpfad und Load-Use (8 Punkte)
-
-### Arbeitsauftrag {.unnumbered}
-
-**a) Hauptsteuerung (3 P).** Im Einzyklus-Teilmodell aus Einheit 5/6: Nennen Sie für `sw` die Werte von `RegWrite`, `ALUSrc` und `MemWrite`. Begründen Sie, warum `MemtoReg` dort als `X` markiert werden darf.
-
-**b) Pipeline (5 P).** Zeichnen Sie die Stufen für das Fragment ein:
+1. −4 wird korrekt 4. Für 5 entsteht erst 7, dann fälschlich −7. Nach der Erhöhung fehlt `jal x0, Ende` mit `Ende: ret` hinter dem Negativzweig. Fälle je 1 P, fehlende Kante und Korrektur zusammen 2 P.
+2. Eine manuelle Lösung:
 
 ```asm
-lw  t0, 0(a0)
-add t1, t0, t0
+lower_to_zero:
+Test:
+    bge x0, a0, Ende
+    addi a0, a0, -3
+    jal x0, Test
+Ende:
+    ret
 ```
 
-Verwenden Sie das Kursmodell: IF/ID/EX/MEM/WB, Forwarding von EX/MEM und MEM/WB, ein Load-Use-Stall. Die Registerbank darf dasselbe Register nicht im gleichen Takt schreiben und lesen. Der gelesene Speicherwert sei 42.
+Für 7: Werte 7 → 4 → 1 → −2, drei Körper, vier Tests. Für −1: kein Körper, Ergebnis −1. Code 4 P (Test, Update, Rückkante, Rückkehr je 1); Trace und Randfall je 1 P.
+3. Signed −6, unsigned 4294967290 (zusammen 1 P). Negative signed Eingaben sollen sofort enden, werden unsigned aber als große positive Zahlen gelesen (1 P).
+:::
 
-Kennzeichnen Sie den Stall, die Bubble und den Weiterleitungspfad. Nennen Sie Gesamttaktzahl und Endwert von `t1`.
+{{< pagebreak >}}
+
+## Aufgabe 3: Jedes zweite Element summieren (12 Punkte)
+
+ILP32: int und Zeiger je 32 Bit. Gültiges Array $[6,-2,9,4,-7,3]$ ab `B=0x5600`. Alle betrachteten signed Zwischensummen sind darstellbar.
+
+1. Geben Sie Adresse und Wert von p[4] an. Ist `0x5618` ein vorhandenes Element? (4 P)
+2. Die Blattfunktion addiert p[0], p[2], p[4], soweit der Index kleiner als n ist. a0 enthält B, a1 die unsigned Länge, $0\le n\le6$. Füllen Sie vier Befehlsnamen und die letzte Konstante ein. (5 P)
+
+```asm
+sum_even_positions:
+    mv t0, a0
+    li t1, 0
+    li t2, 0
+Loop:
+    ______ t1, a1, Ende
+    ______ t3, t1, 2
+    ______ t4, t0, t3
+    ______ t5, 0(t4)
+    add t2, t2, t5
+    addi t1, t1, ______
+    jal x0, Loop
+Ende:
+    mv a0, t2
+    ret
+```
+
+3. Bestimmen Sie Ergebnis und Loadzahl für n = 0 und n = 6. Welche Grenze des C-Vergleichs wäre bei einer anderen signed Summe zu beachten? (3 P)
 
 ::: {.content-hidden when-profile="solution"}
-a)
-
-\vspace{2cm}
-
-\begingroup
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.9}
-\begin{tabular}{|p{3cm}|*{7}{p{1.3cm}|}}
-\hline
-Anweisung / Takt & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\ \hline
-\texttt{lw} & & & & & & & \\ \hline
-\texttt{add} & & & & & & & \\ \hline
-Bubble in EX & & & & & & & \\ \hline
-\end{tabular}
-\endgroup
-
-\vspace{1cm}
-
-Begründung und Ergebnis:
-
-\vspace{3cm}
+\vspace{5cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
 ### Musterlösung {.unnumbered}
 
-a) `RegWrite=0`, `ALUSrc=1`, `MemWrite=1`. `sw` berechnet Basis plus Immediate und schreibt den Registerwert in den Speicher. Da kein Zielregister beschrieben wird, hat die Wahl des Register-Rückschreibwerts `MemtoReg` keinen Einfluss. Ein `X` erlaubt keinen unbestimmten Schreibzugriff.
+1. $\mathtt{0x5600}+4\cdot4=\mathtt{0x5610}$, Wert −7. Je 1 P. `0x5618` liegt unmittelbar hinter sechs Elementen und darf nicht als p[6] gelesen werden (2 P).
+2. bgeu, slli, add, lw und Konstante 2. Je 1 P. Die neue vollständige Funktionsquelle steht in `beispiele/lab_09_alternate_sum.s`.
+3. n = 0: 0 und kein Load; n = 6: $6+9-7=8$ und drei Loads (zusammen 2 P). Signed C-Überlauf wäre undefiniert; die RV32I-Moduloaddition kann ihn nicht legitimieren (1 P).
+:::
 
-b)
+{{< pagebreak >}}
 
-| Anweisung / Takt | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+## Aufgabe 4: Spiegeln und verschieben (8 Punkte)
+
+`Negate` ist der Leaf `sub a0, x0, a0`, danach ret. Eingaben liegen zwischen −100 und 100. Normale ILP32-Aufrufe, Eintritt sp = `0xC000`.
+
+```asm
+reflect_plus_four:
+    addi sp, sp, -16
+    sw ra, 4(sp)
+    jal ra, Negate
+    addi a0, a0, 4
+    lw ra, 4(sp)
+    addi sp, sp, 16
+    ret
+```
+
+1. Nennen Sie reservierten sp, Sicherungsadresse und sp nach Rückkehr. (3 P)
+2. Begründen Sie ra-Sicherung und Framegröße. (3 P)
+3. Berechnen Sie Ergebnisse für a0 = 6 und a0 = −3. (2 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{8cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+1. sp = `0xBFF0`, ra-Slot `0xBFF4`, nachher sp = `0xC000`. Je 1 P.
+2. Der innere jal überschreibt ra, dessen alter Wert für die äußere Rückkehr nötig bleibt (2 P). Ein Wort benötigt vier Byte Nutzbedarf, aber die vereinbarte Aufrufausrichtung verlangt hier 16 Byte Frame (1 P).
+3. $-6+4=-2$, $-(-3)+4=7$. Je 1 P. Die Rückgabe liegt in a0; ein alter a0-Wert darf sie nicht nachträglich überschreiben.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 5: Ein dreistufiger Lüfterregler (10 Punkte)
+
+Zustände: 0 aus, 1 langsam, 2 schnell. Ereignisse: 0 keines, 1 PLUS (UP), 2 MINUS (DOWN), 3 STOP (LEFT). PLUS erhöht bis höchstens 2, MINUS vermindert bis mindestens 0, STOP setzt null. Kein Ereignis hält den Zustand; ungültige Zustandswerte werden immer null.
+
+Rohmasken: UP = 1, DOWN = 2, LEFT = 4, RIGHT = 8. Null gibt frei; die nächste nichtleere Gruppe verbraucht die Freigabe. Nur eine einzelne UP-, DOWN- oder LEFT-Taste liefert ein Ereignis. RIGHT und Mehrfachdruck liefern 0, verbrauchen aber ebenfalls die Freigabe. Anfang: Zustand 0, Freigabe geschlossen.
+
+1. Erstellen Sie die Übergangstabelle für alle gültigen Zustände und Ereignisse. (4 P)
+2. Tragen Sie zu jeder Rohmaske Ereignis und Zustand danach ein. (4 P)
+
+| Rohmaske | 0 | 1 | 1 | 0 | 1 | 0 | 2 | 0 | 3 | 2 | 0 | 4 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Ereignis | | | | | | | | | | | | |
+| Zustand | | | | | | | | | | | | |
+
+3. Zustandswert 17 und Ereignis 0: Welche Rückgabe ist nötig, und welcher zusätzliche Schritt speichert die Korrektur tatsächlich? (2 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{5cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+| Zustand | 0 keines | 1 PLUS | 2 MINUS | 3 STOP |
+|---|---|---|---|---|
+| 0 | 0 | 1 | 0 | 0 |
+| 1 | 1 | 2 | 0 | 0 |
+| 2 | 2 | 2 | 1 | 0 |
+
+1. Je Tabellenzelle 1/3 P.
+
+| Rohmaske | 0 | 1 | 1 | 0 | 1 | 0 | 2 | 0 | 3 | 2 | 0 | 4 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Ereignis | 0 | 1 | 0 | 0 | 1 | 0 | 2 | 0 | 0 | 0 | 0 | 3 |
+| Zustand | 0 | 1 | 1 | 1 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 0 |
+
+2. Je Zelle 1/6 P. Die Mehrfachmaske drei unterdrückt auch die danach verbleibende Taste zwei, bis wieder null gelesen wurde.
+3. Rückgabe null; der Caller muss sie ins Zustandsregister kopieren, beispielsweise `mv s0, a0`. Je 1 P. Eine Marke allein ändert keinen gespeicherten Zustand.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 6: Gleiche ISA-Wirkung, anderer Zeitablauf (8 Punkte)
+
+1. Im addi-erweiterten Einzyklusmodell: Nennen Sie RegWrite, ALUSrc und MemWrite für addi. Warum muss MemtoReg die ALU wählen? (3 P)
+2. Zeichnen Sie das Pipeline-Raster des folgenden Kerns bis zum letzten WB. IF/ID/EX/MEM/WB, Forwarding aus EX/MEM und MEM/WB, anfangs leer, Loadwert erst nach MEM; keine anderen Konflikte. a0 zeigt auf ein Wort −6. Nennen Sie Stallzahl, Quellen beider Subtraktionsoperanden, Endwert t1 und Gesamttakte. (5 P)
+
+```asm
+lw   t0, 0(a0)
+addi t2, x0, 4
+sub  t1, t2, t0
+```
+
+::: {.content-hidden when-profile="solution"}
+\vspace{7cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+1. RegWrite = 1, ALUSrc = 1 (zusammen 1 P), MemWrite = 0 (1 P). Das Resultat entsteht in der ALU und nicht im Datenspeicher, deshalb MemtoReg = 0 (1 P).
+
+| Befehl / Takt | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
 |---|---|---|---|---|---|---|---|
-| `lw` | IF | ID | EX | MEM | WB | | |
-| `add` | | IF | ID | ID gehalten | EX | MEM | WB |
-| Bubble in EX | | | | Bubble | | | |
+| lw | IF | ID | EX | MEM | WB | | |
+| addi | | IF | ID | EX | MEM | WB | |
+| sub | | | IF | ID | EX | MEM | WB |
 
-IF: Instruction Fetch, ID: Instruction Decode, EX: Execute, MEM: Memory Access, WB: Write Back. Der Load-Wert liegt erst nach MEM in Takt 4 vor. Deshalb wird `add` einen Takt gehalten und der Wert 42 in Takt 5 von MEM/WB zu **beiden** ALU-Eingängen weitergeleitet. `t1=84`, Gesamtdauer sieben Takte. Die Bubble ist keine vom Programm eingefügte `nop`-Anweisung.
+2. Je korrekter Zeile 1 P. Kein Load-Use-Stall: Die unabhängige addi füllt die Lücke. In EX5 kommt t2 = 4 aus EX/MEM, t0 = −6 aus MEM/WB (Quellen und Stallfreiheit zusammen 1 P). t1 = 10, insgesamt sieben Takte (zusammen 1 P). Eine zusätzliche Bubble wäre hier unnötig.
 :::
 
 {{< pagebreak >}}
 
-## Aufgabe 7: Code-Schloss mit Ripes
+## Aufgabe 7: Den Lüfterregler in Ripes implementieren
 
-### Vorbereitung und Geräteprüfung {.unnumbered}
+1. Schreiben Sie eine reine Blattfunktion `next_level`: Zustand in a0, Ereignis in a1, Folgezustand in a0. Testen Sie alle zwölf gültigen Paare sowie Zustand 17 mit Ereignis 0.
+2. Verbinden Sie Rohwerterfassung, Freigabemerker, next_level und gespeicherten Zustand. Geräte: D-Pad und mindestens ein LED-Pixel; echte Exports D_PAD_0_BASE und LED_MATRIX_0_BASE prüfen.
+3. Farbe: Zustand 0 schwarz, 1 `0x000000C0`, 2 `0x00C0C0C0`. Die LED zeigt nur die gewählte Stufe; es wird kein realer Motor angesteuert.
+4. Prüfen Sie zwei PLUS-Ereignisse, PLUS an der Obergrenze, MINUS, STOP, Halten, RIGHT und Mehrfachdruck mit teilweisem Loslassen. Protokollieren Sie Rohmaske, Freigabe, Ereignis, Zustand und Farbe.
+5. Vergleichen Sie nach Ihrer Implementierung mit [Referenzprogramm](../beispiele/lab_09_luefterregler.s). Testen Sie auch die Rückkopie einer ungültigen Zustandskorrektur.
 
-1. Wählen Sie ein geeignetes RV32I-Prozessormodell und richten Sie **ein D-Pad und eine LED-Matrix** ein. Notieren Sie Ripes-Version und Prozessormodell.
-2. Prüfen Sie die exportierten Symbole `D_PAD_0_BASE` und `LED_MATRIX_0_BASE`. Die tatsächlichen Basisadressen werden vom Gerätelayout bestimmt. Bei abweichenden Namen passen Sie nur diese Symbolverwendungen in Ihrer Arbeitskopie an.
-3. Prüfen Sie die D-Pad-Wortoffsets UP=0, DOWN=4, LEFT=8, RIGHT=12 und das Farbformat des ersten LED-Pixels. Der dokumentierte Kursstand verwendet `0x00RRGGBB`.
-4. Öffnen Sie `beispiele/vl9_code_lock.s`. Das Programm enthält alle Funktionen; zusätzliche `include`-Dateien sind nicht erforderlich.
-
-**Geräteannahme:** Im dokumentierten Ripes-Quellstand liefert ein D-Pad-Lesen eine gehaltene oder seit dem letzten Lesen erfasste Betätigung und löscht den gespeicherten Druckindikator. Das Programm liest deshalb jedes Richtungsregister einmal pro Gruppe. Vier aufeinanderfolgende Lesezugriffe sind keine atomare Momentaufnahme. Prüfen Sie dieses Verhalten an Ihrer Installation. Die Freigaberegel ersetzt keine physikalische Entprellung.
-
-### Durchführung {.unnumbered}
-
-1. Starten Sie ohne gedrückte Taste. Beobachten Sie S0 und rot. Drücken und lösen Sie UP, DOWN und RIGHT nacheinander. Zwischen Betätigungen muss mindestens eine vollständig leere Abfragegruppe verarbeitet werden.
-2. Halten Sie UP in einem neuen Versuch. Prüfen Sie, dass der Zustand nicht durch mehrere UP-Ereignisse weiter verändert wird.
-3. Erzeugen Sie nach einer leeren Gruppe eine Mehrfachmaske und lassen Sie nur eine Taste los. Erst vollständiges Loslassen darf die nächste neue Betätigung freigeben. Wenn die Oberfläche einen Mehrfachdruck nicht erlaubt, verfolgen Sie diesen Fall im Debugger mit passenden Rohmasken.
-4. Prüfen Sie S1 mit neuem UP, S3 mit neuem DOWN und LEFT als neuen Druck in jedem Zustand.
-5. Halten Sie das Programm **vor `mv a0, s0` bei `update`** an. Setzen Sie `s0=99` und `a1=0`. Führen Sie die Übergangsfunktion und Rückkopie schrittweise aus. Prüfen Sie `s0=0` und die rote Ausgabe.
-
-Erfassen Sie pro Test **Rohmaske, Freigabe, Ereignis, Zustand und Farbe**. Vergleichen Sie zuerst mit Ihrer Papierlösung, dann mit der Musterlösung. Ein sichtbarer Farbwechsel allein belegt nicht die Registerkorrektur im Zusatzfall.
-
-{{< pagebreak >}}
-
-## Aufgabe 7: Protokoll und Erweiterung
-
-### Testprotokoll {.unnumbered}
-
-| Test | Soll | Beobachtung / erste Abweichung |
-|---|---|---|
-| Start, keine Taste | S0, rot | |
-| UP → DOWN → RIGHT | S1 → S2 → S3 | |
-| UP halten | Ein neues UP-Ereignis | |
-| Mehrfachdruck, teilweise lösen | Kein neues Ereignis | |
-| Neuer UP in S1 | S0 | |
-| Neuer DOWN in S3 | S3 | |
-| Neuer LEFT | S0 | |
-| `s0=99`, Ereignis 0 | `s0=0`, rot | |
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung und Funktionsaufteilung {.unnumbered}
-
-Das Sollverhalten steht in der Tabelle. Ein Simulatorprotokoll muss aus dem eigenen Lauf stammen; diese Musterlösung enthält keine erfundenen Beobachtungen.
-
-`read_sample` liest die vier Richtungen und bildet die Rohmaske. Die Hauptschleife hält die Freigabe in `s3`, beginnt gesperrt und akzeptiert nur Einzelmasken nach einer leeren Gruppe. Auch eine Mehrfachmaske schließt die Freigabe. `next_state` liefert den Folgezustand in `a0`. `mv s0, a0` speichert ihn. `state_colour` liefert das RGB-Wort, das `sw a0, 0(s2)` ins erste Pixel schreibt.
-
-Alle Hilfsfunktionen sind Blattfunktionen und erhalten `s0–s11` sowie `sp`. Die Hauptschleife läuft dauerhaft und verwendet keinen Exit-Dienst.
-:::
-
-### Erweiterung: Andere Codefolge {.unnumbered}
-
-Ändern Sie in einer Arbeitskopie die Folge zu **DOWN, UP, RIGHT**. Lassen Sie Eingabefreigabe, Rohmasken und LEFT-Rücksetzen unverändert. Schreiben Sie zuerst die geänderte Übergangstabelle und ändern Sie danach die Zustandsfunktion. Die Originaldateien dienen weiter als Referenz.
+Lesen Sie jeden D-Pad-Wert (Wortoffsets 0, 4, 8, 12) einmal je Gruppe und prüfen Sie die Lese-Nebenwirkungen Ihrer Version. Vier Reads sind keine atomare Momentaufnahme; die Freigabe ersetzt keine physikalische Entprellung.
 
 ::: {.content-hidden when-profile="solution"}
-\vspace{3cm}
+\vspace{8cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
-**Lösungshinweis:** S0 führt mit DOWN nach S1, S1 mit UP nach S2, S2 mit RIGHT nach S3. Die sonstigen falschen Codetasten in S0–S2 führen weiterhin nach S0. In den Marken `from_s0` und `from_s1` werden die erwarteten Ereignisse von 1 nach 2 beziehungsweise von 2 nach 1 geändert. Die Eingabeerkennung wird nicht umcodiert. Prüfen Sie neue Erfolgsfolge, alte Folge, Halten, Mehrfachdruck und Rücksetzen.
+### Musterlösung {.unnumbered}
+
+Die neue Referenz enthält Hauptschleife und die drei Leafs read_mask, next_level und level_colour. main kehrt nicht zurück; die Helfer erhalten s-Register und sp. Die Hauptschleife speichert a0 nach next_level in s0.
+
+Zwei getrennte PLUS-Ereignisse führen 0 → 1 → 2. Weiteres PLUS hält 2; MINUS führt nach 1, STOP nach 0. Halten zählt einmal; RIGHT erzeugt kein Ereignis und verlangt erneutes Loslassen. Mehrfachdruck verbraucht die Freigabe. Für Zustand 17 liefert und speichert die Rückkopie null und damit Schwarz. Tatsächliche Anzeigen und exportierte Adressen stammen aus dem eigenen Lauf.
 :::
 
 {{< pagebreak >}}
 
-## Optional: Reale Compilerübersetzung vergleichen
+## Aufgabe 8: Compilervergleich mit neuen Funktionen (optional)
 
-Vergleichen Sie eine tatsächliche RV32I-Übersetzung von `vl9_control.c` mit `-O0` und `-O2` in einer vorhandenen passenden Toolchain. Verwenden Sie `-S -march=rv32i -mabi=ilp32` und dokumentieren Sie Version und vollständigen Aufruf. Alternativ konfigurieren Sie das entsprechende Ziel in Compiler Explorer.
+Übersetzen Sie `beispiele/lab_09_transfer.c` mit einer vorhandenen passenden GNU-Toolchain oder Compiler Explorer nach RV32I/ILP32, einmal -O0 und einmal -O2, jeweils mit -S.
 
-Erklären Sie eine Optimierung am tatsächlich erzeugten Text. Ohne Compilerlauf dürfen Sie keine Befehlsfolge als dessen Ausgabe darstellen. Assemblertext allein belegt weder Linkbarkeit noch einen Ripes-Lauf.
+1. Dokumentieren Sie Compiler, Version, vollständige Optionen und erzeugte Dateien.
+2. Vergleichen Sie Schleifenprüfung und Indexfortschritt von lower_to_zero und sum_even_positions mit Ihrer Papierlösung.
+3. Erklären Sie eine tatsächlich beobachtete Optimierung. Unterscheiden Sie gleiche Ergebnisse von gleicher Register- oder Befehlswahl.
 
 ::: {.content-hidden when-profile="solution"}
-**Toolversion und Ziel:**
-
-\vspace{1.5cm}
-
-**Vollständige Aufrufe:**
-
-\vspace{2cm}
-
-**Beobachtete Befehlsfolge und Erklärung:**
-
-\vspace{4cm}
+\vspace{8cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
-**Auswertung:** Der konkrete Text hängt von Toolchain und Optionen ab. Bei `constant_sum` ist beispielsweise eine Zusammenfassung der Rechnung zur Konstanten 15 möglich. Ein Vergleich muss trotzdem die tatsächlich erzeugten Dateien heranziehen. Eine allgemeine Zusicherung bestimmter Register oder Befehlsfolgen ist keine Musterlösung für diesen Versuch.
+### Musterlösung {.unnumbered}
+
+Die C-Datei verwendet eine um drei verringernde while-Schleife und eine Arrayschleife mit Indexschritt zwei. Beispiele: lower_to_zero(7) liefert −2; für $[6,-2,9,4,-7,3]$ und Länge sechs liefert sum_even_positions 8. Die Arrayregion muss gültig und die signed Summe darstellbar sein.
+
+Eine bestimmte Compilerbefehlsfolge wird ohne tatsächlichen Lauf nicht als Ergebnis zugesichert. Assemblerausgabe allein ist noch kein gelinktes, gestartetes Programm.
 :::
