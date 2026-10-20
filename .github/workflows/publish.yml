@@ -35,11 +35,13 @@ jobs:
         timeout-minutes: 10
         run: quarto install chrome-headless-shell --no-prompt
 
-      - name: Install rsvg (optional diagram conversion)
+      - name: Install rsvg and TeX Gyre fonts
         timeout-minutes: 5
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends librsvg2-bin
+          # fonts-texgyre: XeLaTeX (Übungsblätter) sucht TeX Gyre Heros/Cursor über
+          # fontconfig. tlmgr install tex-gyre reicht nur für LuaLaTeX (Handouts).
+          sudo apt-get install -y --no-install-recommends librsvg2-bin fonts-texgyre
 
       # Optionaler Vorsorge-Schritt: Quarto/TinyTeX kann fehlende Pakete oft selbst nachziehen.
       # || true verhindert Abbruch bei temporären CTAN-Spiegel-Problemen.
