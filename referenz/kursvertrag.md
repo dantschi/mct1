@@ -24,7 +24,7 @@ Kleine Hinweise in den Folien trennen vier Ebenen:
 ## C und ABI
 
 - C-Vergleiche in diesem Kurs beziehen sich auf eine **ILP32**-Zielumgebung: `int` und Zeiger sind dort 32 Bit. Das gilt nicht für jede C-Implementierung.
-- Standard-Integer-ABI: **ILP32**, Stack an Aufrufgrenzen auf **16 Byte** ausgerichtet. Einfache skalare 32-Bit-Rückgaben liegen in `a0`. Andere Rückgabearten (Aggregate, 64-Bit-Werte, Gleitkomma) sind Ausblick.
+- Standard-Integer-ABI: **ILP32**, Stackzeiger während der Ausführung standardkonformer Funktionen auf **16 Byte** ausgerichtet. Einfache skalare 32-Bit-Rückgaben liegen in `a0`. Andere Rückgabearten (Aggregate, 64-Bit-Werte, Gleitkomma) sind Ausblick.
 - Ein einzelnes gesichertes Register belegt deshalb einen 16-Byte-Frame mit Padding. Mehrere Sicherungen teilen sich einen gemeinsamen Frame, dessen Größe ein Vielfaches von 16 Byte ist.
 - Ein korrekter C-Compiler erhält die Lebensdauer einer C-Variable über Aufrufe hinweg (Registerwahl oder Sicherung). Ein ungesichertes Assembler-`t`-Register über einen Aufruf ist ein anderer Vertrag.
 
@@ -46,11 +46,9 @@ Drei Verträge nicht vermischen:
 
 ## Datenpfad (Einheiten 5 und 6)
 
-Das Lehrmodell implementiert ausdrücklich nur:
+Einheit 5 beginnt mit dem Subset `add`, `sub`, `and`, `or`, `lw`, `sw`, `beq`. Einheit 6 ergänzt ausdrücklich `addi`: I-Immediate als zweite ALU-Quelle, feste Addition und ALU-Ergebnis als Registerschreibwert. Die dortige erweiterte Steuertabelle umfasst damit acht Befehle.
 
-`add`, `sub`, `and`, `or`, `lw`, `sw`, `beq`.
-
-Es ist kein vollständiger RV32I-Prozessor. `addi`, `bne` und `jal` gelten erst als unterstützt, wenn Immediate-Erzeugung, Vergleich bzw. Link-Write-Back im selben Modell ergänzt sind.
+Es ist weiterhin kein vollständiger RV32I-Prozessor. `bne` und `jal` gehören erst nach einer entsprechenden Erweiterung von Vergleich bzw. Link-Write-Back zum Modell. Die Simulatoren können für Initialisierung und Abschluss zusätzliche Befehle ausführen.
 
 - **ImmGen** erhält das Instruktionswort und liefert für `beq` direkt den vorzeichenerweiterten **Byteoffset** einschließlich implizitem Bit 0. Danach gibt es kein zweites Shift-left-1.
 - `PCSrc` ist nicht der Opcode allein: $\mathrm{PCSrc} = \mathrm{Branch} \land \mathrm{Zero}$ für `beq`.
@@ -65,7 +63,7 @@ Fünf Stufen: IF, ID, EX, MEM, WB.
 - Load-Use: Erkennung zwischen ID und EX; Stall hält PC und IF/ID, der Produzent läuft weiter, nach ID/EX wird eine wirkungslose Bubble injiziert.
 - Ohne Forwarding, aber mit Hazard-Erkennung, sind zusätzliche Stalls eine korrekte Ausführung. Falsche Ergebnisse entstehen nur ohne ausreichende Hazard-Behandlung.
 - Branch-Auflösung in diesem Lehrmodell in **EX**. Bei genommenem Branch werden die zwei jüngeren Instruktionen vor Seiteneffekten verworfen (Flush). Eine frühere Entscheidung in ID ist ein anderes Modell und erzeugt eigene Operanden-Hazards.
-- Registerfile dieses Lehrmodells: kein Schreib-/Lesevorgang desselben Registers im selben Takt. Drei Wartezyklen ohne Forwarding sind deshalb eine Modellannahme, nicht die einzige zulässige RISC-V-Mikroarchitektur. Im Ripes-Labor gilt die dort beobachtete Variante.
+- Registerfile dieses Pipeline-Modells: Ein am Ende von WB geschriebener Wert ist erst im folgenden Takt beim Registerlesen in ID verfügbar; ein gleichzeitiger WB→ID-Lesebypass fehlt. Deshalb braucht das unmittelbare Produzent-Verbraucher-Paar ohne Forwarding drei Zusatzzyklen; auch mit EX-Forwarding muss ein sonst ungelöster WB/ID-Konflikt einen Takt warten. Das verbietet nicht, dass eine einzelne Instruktion dasselbe Register als Quelle und Ziel verwendet. Im Ripes-Labor gilt die dort beobachtete Variante.
 - Die Zeiten IF $= 200\,\mathrm{ps}$, ID $= 100\,\mathrm{ps}$, EX $= 150\,\mathrm{ps}$, MEM $= 250\,\mathrm{ps}$, WB $= 100\,\mathrm{ps}$ und $20\,\mathrm{ps}$ je Registerübergang (clk-to-Q und Setup zusammen) sind **erfundene Lehrwerte**, keine Messung.
 
 ## Speicherbild und I/O

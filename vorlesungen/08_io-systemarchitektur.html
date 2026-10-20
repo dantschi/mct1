@@ -243,7 +243,7 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <p>Ein durchgängiges Beispiel: Schalter lesen, Bit auswählen, Pixel setzen.</p>
 <aside class="notes">
 <p>Die erste Frage verbindet Speicherbefehle mit einer Adresskarte: Eine Adresse kann statt einer Speicherzelle ein Geräteregister auswählen. Die zweite Frage betrifft den zeitlichen Ablauf: Ein Programm kann regelmäßig nachsehen oder durch eine gemeldete Unterbrechung reagieren. Die dritte Frage betrifft den dabei benötigten Zustand und die Parameter einer Dienstanforderung.</p>
-<p>Ein Handler ist die Routine, die einen Trap, also einen durch Exception oder Interrupt ausgelösten Kontrollübergang, behandelt. Ein Konsolendienst im Simulator ist eine andere Ebene. Wir verwenden deshalb einen Schalter und einen Pixel als einfachen Gerätefall und getrennte Papiermodelle für Trap und Dienst. So können Sie den Datenwert, die Adresse und den gerade geltenden Vertrag jeweils benennen. Die späteren Übungsaufgaben folgen derselben Reihenfolge und verlangen begründete Ergebnisse statt ungeprüfter typischer Adressen.</p>
+<p>Ein Handler ist die Routine, die einen Trap, also einen durch Exception oder Interrupt ausgelösten Kontrollübergang, behandelt. Ein Konsolendienst im Simulator ist eine andere Ebene. Wir verwenden deshalb einen Schalter und einen Pixel als einfachen Gerätefall und getrennte Papiermodelle für Trap und Dienst. So können Sie den Datenwert, die Adresse und den gerade geltenden Vertrag jeweils benennen. Die späteren Übungsaufgaben übertragen diese Regeln auf neue Beispiele: zwei ausgewählte Eingangsbits bestimmen den zweiten Pixel, vier gleiche Proben bestätigen einen Zustand und die Venus-Ausgabe berechnet dreimal n minus vier. Die Dateien lab_08_zweibit_anzeige.s und lab_08_messwertausgabe.s enthalten die passenden Vergleichsprogramme. Die Laborwerte und der Vierprobenfilter ersetzen nicht die anders gewählten Demonstrationswerte dieser Vorlesung.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1778,12 +1778,11 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 </section>
 <section id="selbstkontrolle-und-übergang-zur-übung" class="slide level2">
 <h2>Selbstkontrolle und Übergang zur Übung</h2>
+<p>Transfer: Zweibit-Anzeige, Vierprobenfilter und Messwert <span class="math inline">\(3n-4\)</span>.</p>
 <ul>
-<li>Warum ist ein Geräteregister kein gewöhnliches RAM-Element?</li>
 <li>Wie unterscheiden sich Pegel, Ereignis und entprellter Zustand?</li>
-<li>Welche Trap-Daten sichert Hardware, welche Werte Software?</li>
-<li>Wann bleibt mepc unverändert, wann wird ein ecall übersprungen?</li>
-<li>Welcher Vertrag bestimmt Ausgabe und Registererhaltung?</li>
+<li>Welche Trap-Daten und Register muss der Handler erhalten?</li>
+<li>Welcher Dienstvertrag bestimmt Ausgabe und Registererhaltung?</li>
 </ul>
 <aside class="notes">
 <p>RAM steht für Random Access Memory, hier Arbeitsspeicher. Ein Geräteregister besitzt dagegen einen eigenen Zugriffstyp und möglicherweise Lese- oder Schreibnebenwirkungen. Ein Pegel ist ein gegenwärtiger Zustand, ein Ereignis eine relevante Änderung oder gespeicherte Meldung. Entprellen filtert Kontaktwechsel; bloßes Warten auf Freigabe löst diese Aufgabe nicht vollständig.</p>

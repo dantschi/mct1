@@ -315,7 +315,7 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 </ul>
 <aside class="notes">
 <p>Unser Modell ist eine fünfstufige In-order-Pipeline. In order bedeutet: Befehle schreiten in Programmreihenfolge fort. Es wird höchstens eine neue Instruktion je Takt aufgenommen. Die Pipeline ist vor der betrachteten Folge leer; Anfangswerte sind schon hergestellt. Getrennte Zugriffe auf Befehle und Daten vermeiden den hier betrachteten Speicherkonflikt. Speicheradressen sind gültig und wortausgerichtet. Langsame Speicherantworten und Cachefehler werden nicht modelliert.</p>
-<p>Die Basis ist RV32I, also der 32-Bit-RISC-V-Ganzzahlbefehlssatz. Die C-Erweiterung für komprimierte Instruktionen ist ausgeschaltet; betrachtete Maschinenbefehle sind vier Byte lang. Die Rechenbeispiele nutzen die in Einheit 6 ergänzte Addition mit Konstante, addi. Die Registerbank erlaubt im Kursmodell kein wirksames Schreiben und Lesen desselben Registers innerhalb desselben Takts. Diese Konvention wird beim Warten ohne Forwarding und beim gleichzeitigen Registerzugriff ausdrücklich berücksichtigt.</p>
+<p>Die Basis ist RV32I, also der 32-Bit-RISC-V-Ganzzahlbefehlssatz. Die C-Erweiterung für komprimierte Instruktionen ist ausgeschaltet; betrachtete Maschinenbefehle sind vier Byte lang. Die Rechenbeispiele nutzen die in Einheit 6 ergänzte Addition mit Konstante, addi. Ein in WB am Taktende geschriebener Wert kann im Kursmodell erst in ID des folgenden Takts aus der Registerbank gelesen werden; ein WB→ID-Lesebypass ist nicht vorhanden. Diese Konvention wird beim Warten ohne Forwarding und beim gleichzeitigen Registerzugriff ausdrücklich berücksichtigt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1109,7 +1109,7 @@ L_\mathrm{pipe}=5\cdot270\,\mathrm{ps}=1350\,\mathrm{ps}\]</span></p>
 <ul>
 <li>Zwei unabhängige Befehle zwischen Schreiber und Leser</li>
 <li>Schreiber in WB, Leser gleichzeitig in ID</li>
-<li>EX-Forwarding allein erreicht den Leser im Folgetakt zu spät</li>
+<li>Im Folgetakt ist der Schreiber nicht mehr in MEM/WB verfügbar</li>
 <li>Kursmodell: einen Takt halten und danach neu lesen</li>
 <li>Andere Registerbank oder zusätzlicher Lesebypass: anderes Modell</li>
 </ul>
@@ -1814,9 +1814,10 @@ L_\mathrm{pipe}=5\cdot270\,\mathrm{ps}=1350\,\mathrm{ps}\]</span></p>
 <li>Modell B: <span class="math inline">\(3+4=7\)</span> Takte</li>
 <li>Gleiche Taktperiode: Kern-Speedup <span class="math inline">\(8/7\approx1{,}14\)</span></li>
 </ul>
+<p>Übungsblatt: neue Viererfolgen <code>lab_07_schedule_a.s</code> / <code>_b.s</code>, neun bzw. acht Takte.</p>
 <aside class="notes">
 <p>Instruction Scheduling bedeutet zulässiges Umsortieren vorhandener Instruktionen. Die beiden vollständigen Dateien liegen unter beispiele/. Ihre Kernfolge enthält lw, Load Word, add zur Verdopplung und addi, Add Immediate, zur Erhöhung von a5. Der Anfangszustand ist gleich: Das Speicherwort ist 42 und a5 ist null. Am Ende sind t0 gleich 42, a0 gleich 84 und a5 gleich 1; t0 ist ein temporäres Register, a0 das Ergebnisregister und a5 der unabhängige Zähler.</p>
-<p>Im anfangs leeren Lehrfenster braucht A wegen unmittelbarer Load-Nutzung acht Takte und B durch die dazwischengeschobene vorhandene Erhöhung sieben. Bei gleicher Periode ist das Laufzeitverhältnis <span class="math inline">\(8/7\approx1{,}14\)</span>. CPI, Cycles per Instruction, beträgt im endlichen Kernfenster <span class="math inline">\(8/3\)</span> beziehungsweise <span class="math inline">\(7/3\)</span>, einschließlich der Randkosten. Ein globaler Ripes-Zähler erfasst auch Initialisierung, echte NOPs, la-Expansion, also Load Address, und Abschluss. Man kann diese Zähler daher nicht ungeprüft als acht beziehungsweise sieben ausgeben. Die Verbesserung der Kernfolge ist eine Modellprognose, keine hier gemessene Simulatorzeit.</p>
+<p>Im anfangs leeren Lehrfenster braucht A wegen unmittelbarer Load-Nutzung acht Takte und B durch die dazwischengeschobene vorhandene Erhöhung sieben. Bei gleicher Periode ist das Laufzeitverhältnis <span class="math inline">\(8/7\approx1{,}14\)</span>. CPI, Cycles per Instruction, beträgt im endlichen Kernfenster <span class="math inline">\(8/3\)</span> beziehungsweise <span class="math inline">\(7/3\)</span>, einschließlich der Randkosten. Ein globaler Ripes-Zähler erfasst auch Initialisierung, echte NOPs, la-Expansion, also Load Address, und Abschluss. Man kann diese Zähler daher nicht ungeprüft als acht beziehungsweise sieben ausgeben. Die Verbesserung der Kernfolge ist eine Modellprognose, keine hier gemessene Simulatorzeit. Das Übungsblatt verwendet bewusst andere Operanden und vier Kerninstruktionen aus beispiele/lab_07_schedule_a.s und lab_07_schedule_b.s. Für das Wort minus neun entstehen t2 gleich minus neun, a0 gleich 39, a5 gleich drei und a6 gleich null. Dieselbe Umordnung spart dort einen Takt: neun gegenüber acht. Die drei Befehle und acht gegenüber sieben dieser Folie gehören ausschließlich zum Vorlesungsbeispiel.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;

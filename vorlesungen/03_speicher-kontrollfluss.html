@@ -1090,7 +1090,6 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <ul>
 <li><code>bltu</code>: vorzeichenlos kleiner</li>
 <li><code>bgeu</code>: vorzeichenlos größer oder gleich</li>
-<li>Adressmuster werden in unseren Assemblerbeispielen vorzeichenlos geordnet.</li>
 </ul>
 <aside class="notes">
 <p>unsigned heißt vorzeichenlos. bltu bedeutet Branch if Less Than Unsigned, bgeu Branch if Greater or Equal Unsigned. Sie entsprechen den signed Relationen blt und bge, interpretieren die Quellen aber als nichtnegative Zahlen zwischen null und 2 hoch 32 minus eins. Die Abbildung verwendet dasselbe Muster FFFFFFFF und das Muster 00000001 in beiden Reihen.</p>
@@ -1675,18 +1674,18 @@ PC_{\text{vor}}+4,&amp;\text{sonst}
           display:block!important;
       }</style></aside>
 </section>
-<section id="laborauftrag-array-summieren-und-randfälle-prüfen" class="slide level2">
-<h2>Laborauftrag: Array summieren und Randfälle prüfen</h2>
+<section id="laborauftrag-negative-arraywerte-zählen" class="slide level2">
+<h2>Laborauftrag: negative Arraywerte zählen</h2>
 <ul>
-<li>Daten: <code>.word 10, 20, 30, 40, 50</code></li>
-<li>Vorher: Startzustand und Zustände an <code>Loop</code> vorhersagen</li>
-<li>Nachher: am Label <code>Ergebnis_pruefen</code> vor dem Druckdienst prüfen</li>
-<li>Varianten: <span class="math inline">\(N=0\)</span>, <span class="math inline">\(N=1\)</span>, <span class="math inline">\(N=5\)</span> und gemischte Vorzeichen</li>
-<li>Musterlösung: <a href="../beispiele/vl3_array_summe.s">vl3_array_summe.s</a></li>
+<li>Neue Daten: <code>.word -5, 8, -2, 7, -1, 0</code></li>
+<li>Vor jedem Load die Längengrenze prüfen</li>
+<li>Nur bei negativem geladenem Wert den Zähler erhöhen</li>
+<li>Varianten: <span class="math inline">\(N=0\)</span>, <span class="math inline">\(N=1\)</span>, <span class="math inline">\(N=6\)</span> und nur nichtnegative Werte</li>
+<li>Vergleich: <a href="../beispiele/lab_03_negative_zaehlen.s">lab_03_negative_zaehlen.s</a></li>
 </ul>
 <aside class="notes">
-<p>.word ist die Direktive für fünf aufeinanderfolgende 32-Bit-Datenwörter. N ist die erlaubte Anzahl zwischen null und fünf. Die Musterlösung benutzt t0 als Zähler, t1 als Grenze, s1 als Pointer, s0 als Summe und t2 als gelesenen Wert. Loop benennt den Test vor jedem Load. Ergebnis_pruefen liegt in der überarbeiteten Quelle direkt vor der Vorbereitung der Ausgabe. Dort wird zunächst die Summe s0 beurteilt, nicht ein späterer Dienstwert in a0.</p>
-<p>Für N gleich null erwarten wir null, keinen Load und unveränderten Pointer. Für eins erwarten wir zehn und einen Load. Für fünf erwarten wir 150 und fünf Loads. Ein zusätzlicher Datensatz minus drei, acht, minus zehn, eins mit N gleich vier ergibt minus vier. Nach jeder Änderung müssen Daten und Grenze zusammenpassen sowie neu assembliert und gestartet werden. Die Datei enthält Anfang und Ende; sie dient erst nach eigener Bearbeitung als Vergleich. Notieren Sie bei Abweichungen den ersten falschen Zustand am gleichen Kontrollpunkt, nicht nur eine andere Endsumme.</p>
+<p>Das Übungsblatt überträgt die Schutzbedingung und die Pointerbewegung der Summenschleife auf eine neue Arbeit: negative Elemente zählen. Die sechs Wörter enthalten minus fünf, acht, minus zwei, sieben, minus eins und null. t0 zählt verarbeitete Elemente, t1 enthält die Länge, s1 den laufenden Pointer und s0 die Anzahl negativer Werte. Nach jedem Load prüft bge t2, x0, Next, ob der geladene signed Wert nichtnegativ ist. Nur andernfalls erhöht addi s0, s0, 1 die Anzahl. Pointer und Elementzähler werden unabhängig vom Vorzeichen weitergeschaltet.</p>
+<p>Für N gleich sechs erwarten Sie drei Treffer bei sechs Loads. Bei N gleich null gibt es keinen Load und Ergebnis null; bei eins einen Load und Ergebnis eins. Eine Folge ausschließlich nichtnegativer Werte ergibt auch bei positiver Länge null. Am Label Ergebnis_pruefen wird zuerst s0 beurteilt. Grenzen und Daten müssen zusammenpassen; die Länge ist keine automatisch gespeicherte Arrayeigenschaft. Die neue Lösung verwendet bgeu für die nichtnegative Längenzählung und bge für die signed Datenprüfung. Diese unterschiedlichen Vergleiche erfüllen verschiedene Aufgaben.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1699,19 +1698,18 @@ PC_{\text{vor}}+4,&amp;\text{sonst}
           display:block!important;
       }</style></aside>
 </section>
-<section id="ausgabe-der-rechenwert-bleibt-vor-dem-dienst-prüfbar" class="slide level2">
-<h2>Ausgabe: der Rechenwert bleibt vor dem Dienst prüfbar</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb18-1"><a aria-label="1"></a><span class="fu">Done:</span></span>
-<span id="cb18-2"><a aria-label="2"></a><span class="fu">Ergebnis_pruefen:</span></span>
-<span id="cb18-3"><a aria-label="3"></a>    mv   a1<span class="op">,</span> s0</span>
-<span id="cb18-4"><a aria-label="4"></a>    li   a0<span class="op">,</span> <span class="dv">1</span></span>
-<span id="cb18-5"><a aria-label="5"></a>    ecall</span>
-<span id="cb18-6"><a aria-label="6"></a>    li   a0<span class="op">,</span> <span class="dv">10</span></span>
-<span id="cb18-7"><a aria-label="7"></a>    ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Vor <code>mv</code>: <code>s0=150</code>. Erwartete Druckzahl: <code>150</code>, danach Ende.</p>
+<section id="ausgabe-der-zählwert-bleibt-vor-dem-dienst-prüfbar" class="slide level2">
+<h2>Ausgabe: der Zählwert bleibt vor dem Dienst prüfbar</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode numberSource asm number-lines code-with-copy"><code class="sourceCode fasm"><span id="cb18-1"><a aria-label="1"></a><span class="fu">Ergebnis_pruefen:</span></span>
+<span id="cb18-2"><a aria-label="2"></a>    mv   a1<span class="op">,</span> s0</span>
+<span id="cb18-3"><a aria-label="3"></a>    li   a0<span class="op">,</span> <span class="dv">1</span></span>
+<span id="cb18-4"><a aria-label="4"></a>    ecall</span>
+<span id="cb18-5"><a aria-label="5"></a>    li   a0<span class="op">,</span> <span class="dv">10</span></span>
+<span id="cb18-6"><a aria-label="6"></a>    ecall</span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Für die sechs Laborwerte vor <code>mv</code>: <code>s0=3</code>. Druckzahl: <code>3</code>, danach Ende.</p>
 <aside class="notes">
-<p>Done ist die Fortsetzung nach der Summenschleife, Ergebnis_pruefen ein zweiter Name für dieselbe Stelle. Labels erzeugen keine zusätzlichen Instruktionen. Die Summe im Registeralias s0 ist für die fünf positiven Lehrwerte 150. mv, move, ist eine Pseudoinstruktion zum Kopieren und schreibt den Wert nach a1, dem Argumentregister x11. li, Load Immediate, setzt a0, Argumentregister x10, auf die Dienstnummer eins.</p>
-<p>ecall bedeutet Environment Call, Umgebungsaufruf. In der Kurs-Venus-Distribution druckt Dienst eins die signed Ganzzahl in a1. Danach wird a0 ausdrücklich auf zehn gesetzt und der zweite ecall beendet. Die Konsolenzahl sollte 150 sein; ein bestimmter Zeilenumbruch wird nicht vorausgesetzt. Nach dem ersten Dienst benötigt das Programm keinen erhaltenen temporären Summenwert mehr. Eine allgemeine Erhaltung sämtlicher Register durch beliebige Dienste wird nicht angenommen. Auch wenn s0 hier vor dem Dienst die Summe hält, ist a0 nach der Vorbereitung eine Dienstnummer und keine Ergebnisvariable. Normale Funktionsrückgaben werden davon in Einheit 4 getrennt erklärt.</p>
+<p>Ergebnis_pruefen benennt die Fortsetzung nach der Zählschleife des Übungsblatts. Labels erzeugen keine Instruktionen. Im Registeralias s0 steht für die sechs Datenwerte die Anzahl drei. mv, move, kopiert sie nach a1, dem Druckargument der Kurs-Venus-Umgebung. li, Load Immediate, setzt a0 auf die Dienstnummer eins. ecall, Environment Call, fordert die signed Ganzzahlausgabe an. Danach wählt a0 Dienst zehn und der zweite ecall beendet den Lauf.</p>
+<p>Die vorgeführte Arraysumme und die neue Zählaufgabe benutzen denselben Ausgaberahmen, aber unterschiedliche Ergebnisse: 150 für die fünf positiven Summenwerte, drei für die sechs Zählwerte. Deshalb muss die Vorhersage immer zum geladenen Programm gehören. Eine bestimmte Zeilenumbruchdarstellung wird nicht vorausgesetzt. Nach dem Druck benötigt dieses Programm keinen erhaltenen Rechenwert mehr; eine allgemeine Registererhaltung beliebiger Dienste wird nicht angenommen. Beurteilen Sie s0 vor dem Dienst und verwechseln Sie die später in a0 stehende Kennung nicht mit dem Ergebnis. Normale Funktionsrückgaben werden davon in Einheit 4 getrennt erklärt.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;

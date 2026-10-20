@@ -202,7 +202,8 @@
   <div class="reveal">
     <div class="slides">
 
-<section id="title-slide" class="quarto-title-block center">
+<section id="title-slide" data-notes="<p>Diese Einheit erklärt, wie eine konkrete Schaltung die bisher bekannten Befehlswirkungen erzeugt. Voraussetzungen sind Bitmuster und Logikbausteine aus Einheit 1, Register und Befehlsfelder aus Einheit 2, Speicherzugriffe und Sprünge aus Einheit 3 sowie die Unterscheidung von Befehlssatz und Softwarekonvention aus Einheit 4. Eine Pipeline oder ein fertiger Steuerdecoder werden noch nicht vorausgesetzt. Die Begriffe werden aus ihrer Funktion im Datenweg hergeleitet.</p>
+<p>Das Single-Cycle-Lehrmodell verarbeitet einen unterstützten Befehl je Taktperiode. Es umfasst add, sub, and, or, lw, sw und beq und ist kein vollständiger RV32I-Prozessor. Zuerst verfolgen wir Registerarithmetik, danach Laden, Speichern und Branch-Entscheidung. Quellenwahl und Schreibfreigabe erklären gemeinsam den neuen Zustand an der Flanke. Die Timingrechnung verwendet erfundene Lehrwerte; Ripes liefert einen Vergleich mit einer eigenen Mikroarchitektur. Die Übung überträgt das Verfahren auf neue Operanden und einen Paketpfad.</p>" class="quarto-title-block center">
   <h1 class="title">Mikrocomputertechnik 1</h1>
   <p class="subtitle">Einheit 5: Der Single-Cycle-Datenpfad</p>
 
@@ -1306,7 +1307,7 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <section id="alle-pfade-in-einer-schaltung" class="slide level2">
 <h2>Alle Pfade in einer Schaltung</h2>
 <p><img data-src="../assets/images/single-cycle-datapath.svg" class="" style="max-height: 510px; width: auto;" alt="Single-Cycle-Datenpfad des Kursmodells mit drei Multiplexern und Branch-UND"></p>
-<p>Punkt = Verbindung; Kreuzung ohne Punkt = getrennte Leitungen.</p>
+<p>Punkt: verbunden. Kreuzung ohne Punkt: getrennt.</p>
 <aside class="notes">
 <p>Oben liegen PC-Kandidaten und Entscheidung, unten Registerarithmetik, Speicherzugriff und Rückführung. ImmGen speist die ALU-Quellenauswahl und die Branch-Zielberechnung. RD2 hat einen Abzweig zu den Speicher-Schreibdaten; das ALU-Ergebnis einen Abzweig zum Register-Rückschreib-MUX.</p>
 <p>PCSrc kommt ausdrücklich aus Branch und Zero, nicht direkt aus dem Opcode. Weitere Steuerleitungen sind zugunsten der Lesbarkeit durch Portbeschriftungen angegeben. Die eigene Kurszeichnung orientiert sich am Single-Cycle-Konzept von Harris &amp; Harris sowie Patterson &amp; Hennessy. Sie übernimmt keine vollständige Lehrbuch- oder Ripes-Abbildung.</p>
@@ -1577,7 +1578,7 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <h1>6. In Ripes beobachten und auf Papier erklären</h1>
 <aside class="notes">
 <p>Die Papierrechnung beschreibt unseren Datenpfad. Ripes zeigt eine eigene Mikroarchitektur mit zusätzlichen Instruktionen. Wir suchen funktionale Entsprechungen, keine identische Anordnung aller Bauteile.</p>
-<p>Das Übungsblatt beginnt mit Aufgaben ohne Simulator. Der Ripes-Teil ergänzt die Beobachtung. Nutzen Sie für drei Traces die Dateien unter beispiele; ihre Labels benennen die interessierenden Instruktionen.</p>
+<p>Das Übungsblatt beginnt mit Aufgaben ohne Simulator. Der Ripes-Teil ergänzt die Beobachtung. Die drei folgenden Traces sind Vorlesungsdemonstrationen. Der praktische Transfer im Übungsblatt verwendet beispiele/lab_05_paketpfad.s mit ODER-Verknüpfung, Paketkopie und einer neuen Branch-Bedingung. Dort ergeben 40 ODER 22 den Wert 62; das kopierte Wort ist minus 24. Die Labels benennen die jeweils interessierenden Instruktionen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;

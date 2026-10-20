@@ -536,7 +536,7 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <span id="cb4-5"><a aria-label="5"></a>        <span class="cf">return</span> <span class="dv">2</span><span class="op">;</span></span>
 <span id="cb4-6"><a aria-label="6"></a>    <span class="op">}</span></span>
 <span id="cb4-7"><a aria-label="7"></a><span class="op">}</span></span></code></pre></div><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>a == b</code> liefert 1, sonst 2.</p>
+<p>Bei <code>a == b</code> liefert <code>choose</code> 1, sonst 2.</p>
 <aside class="notes">
 <p>choose ist eine int-Funktion mit den Parametern a und b. == prüft Gleichheit, während = eine Zuweisung wäre. Bei gleichen Werten wird eins zurückgegeben, bei verschiedenen zwei. Die beiden Zweige schließen sich aus; es wird nicht erst der eine und danach der andere ausgeführt. choose(5,5) ergibt eins, choose(5,10) zwei.</p>
 <p>Nach der normalen ABI, Application Binary Interface oder binären Aufrufkonvention, liegen diese skalaren Parameter in a0 und a1 und die Rückgabe in a0. Die Parameternamen a und b sind nicht dieselben Dinge wie die Registernamen a0 und a1, auch wenn die Namen ähnlich aussehen. Gleichheit von Bitmustern benötigt keine getrennte signed- und unsigned-Sprungvariante. Der Compiler könnte den Fall anders anordnen. Wir verwenden im nächsten Ausschnitt die umgekehrte Bedingung, damit der Gleichheitszweig ohne ersten Sprung weiterläuft.</p>
@@ -848,7 +848,7 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <h1>3. Funktionen und Aufrufkonvention</h1>
 <aside class="notes">
 <p>Die bisherigen Muster beschreiben einzelne Kontrollstrukturen. Sobald eine Funktion eine andere aufruft, muss zusätzlich klar sein, welche Werte einen Aufruf überleben und wohin die aufgerufene Funktion zurückkehrt. Die Aufrufkonvention, Application Binary Interface oder ABI, legt diese Schnittstelle zwischen getrennt übersetzten Funktionen fest.</p>
-<p>Die Beispiele setzen die Konvention aus Einheit 8 voraus: a0 bis a7 dienen der Parameterübergabe, a0 enthält hier das skalare Ergebnis, ra, Return Address, die Rücksprungadresse und sp, Stack Pointer, den Stackzeiger. Wir beginnen mit einer Blattfunktion ohne weitere Aufrufe. Anschließend kommt ein Aufruf hinzu, bei dem die Rücksprungadresse gesichert werden muss. Diese Unterscheidung erklärt den Stackframe aus dem tatsächlichen Bedarf.</p>
+<p>Die Beispiele setzen die Funktionskonvention aus Einheit 4 voraus: a0 bis a7 dienen der Parameterübergabe, a0 enthält hier das skalare Ergebnis, ra, Return Address, die Rücksprungadresse und sp, Stack Pointer, den Stackzeiger. Wir beginnen mit einer Blattfunktion ohne weitere Aufrufe. Anschließend kommt ein Aufruf hinzu, bei dem die Rücksprungadresse gesichert werden muss. Diese Unterscheidung erklärt den Stackframe aus dem tatsächlichen Bedarf.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1052,7 +1052,7 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <p>Falsche einzelne Codetaste in S0–S2 → S0.</p>
 <aside class="notes">
 <p>Die Zustände S0 bis S3 beschreiben den bisher erreichten Fortschritt der Eingabefolge UP, DOWN, RIGHT. Die Anzeige verwendet Rot, Gelb, Blau und Grün, damit dieser Fortschritt beobachtbar ist. LEFT ist unabhängig vom aktuellen Fortschritt eine Rücksetztaste. In S3 verändern UP, DOWN und RIGHT den offenen Zustand nicht; nur LEFT schließt wieder.</p>
-<p>Eine falsche einzelne Codetaste in S0, S1 oder S2 verwirft den bisherigen Fortschritt. Beispielsweise führt S1 mit erneutem UP nach S0 und nicht nach S1. Ein fehlendes Eingabeereignis verändert einen gültigen Zustand nicht. Mehrere Tasten gelten nicht als gültige einzelne Codetaste; sie erzeugen gemäß der folgenden Eingaberegel kein Ereignis. Die Zustandsmaschine soll also keine Priorität aus der Reihenfolge der Speicherzugriffe ableiten. Diese Regeln sind die gemeinsame Spezifikation für Vorlesung, Übung, Quiz und das vollständige Lehrprogramm.</p>
+<p>Eine falsche einzelne Codetaste in S0, S1 oder S2 verwirft den bisherigen Fortschritt. Beispielsweise führt S1 mit erneutem UP nach S0 und nicht nach S1. Ein fehlendes Eingabeereignis verändert einen gültigen Zustand nicht. Mehrere Tasten gelten nicht als gültige einzelne Codetaste; sie erzeugen gemäß der folgenden Eingaberegel kein Ereignis. Die Zustandsmaschine soll also keine Priorität aus der Reihenfolge der Speicherzugriffe ableiten. Diese Regeln sind die gemeinsame Spezifikation für das Vorlesungsbeispiel, das zugehörige Quiz und das vollständige Code-Schloss-Lehrprogramm. Das Übungsblatt überträgt Zustandsautomat und Ereigniserkennung auf einen Lüfterregler mit eigener Übergangstabelle.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1278,7 +1278,7 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <p>Geräte: ein D-Pad und eine LED-Matrix, erstes Pixel.</p>
 <aside class="notes">
 <p>Die Datei enthält das vollständige manuelle Ripes-Lehrprogramm einschließlich aller Hilfsfunktionen. RGB bedeutet Red, Green, Blue; das verwendete LED-Gerät, Light Emitting Diode, erwartet im dokumentierten Kursstand ein Farbwort 0x00RRGGBB. Ein Store Word schreibt es in das erste Pixel der über die Symbole adressierten LED-Matrix. Die Symbolnamen D_PAD_0_BASE und LED_MATRIX_0_BASE müssen zu den eingerichteten Geräten passen.</p>
-<p>Die Hauptschleife hält den Zustand in s0, die beiden Basisadressen in s1 und s2 und die Freigabe in s3. Diese gesicherten Register überleben die normalen Funktionsaufrufe gemäß dem Application Binary Interface, ABI. Die Blattfunktionen verändern sie nicht. Da die Hauptschleife nie zum ursprünglichen Einstieg zurückkehrt, braucht sie dessen Rücksprungadresse nicht zu sichern. Alle Hilfsfunktionen kehren jeweils über die durch call gesetzte Adresse zurück. Das Programm ist als vollständige Lehrvorlage bereitgestellt, nicht als Bericht über einen ausgeführten Ripes-Lauf. Die Übung enthält die konkreten Geräteprüfungen und Solltraces für diesen Lauf.</p>
+<p>Die Hauptschleife hält den Zustand in s0, die beiden Basisadressen in s1 und s2 und die Freigabe in s3. Diese gesicherten Register überleben die normalen Funktionsaufrufe gemäß dem Application Binary Interface, ABI. Die Blattfunktionen verändern sie nicht. Da die Hauptschleife nie zum ursprünglichen Einstieg zurückkehrt, braucht sie dessen Rücksprungadresse nicht zu sichern. Alle Hilfsfunktionen kehren jeweils über die durch call gesetzte Adresse zurück. Das Programm ist als vollständige Lehrvorlage bereitgestellt, nicht als Bericht über einen ausgeführten Ripes-Lauf. Die Übung verwendet dieselbe Entwurfsmethode für einen anderen Anwendungsfall: einen dreistufigen Lüfterregler. Dessen Zustände, PLUS-/MINUS-/STOP-Ereignisse und Farben sind ausschließlich durch die dortige Tabelle und beispiele/lab_09_luefterregler.s festgelegt. Insbesondere ist LEFT dort STOP und kein Code-Schloss-Ereignis mit Nummer vier.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1525,7 +1525,7 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <li>Eingabetrace mit Übergangstabelle vervollständigen</li>
 <li>Einen Load-Use-Stall im bekannten Modell einzeichnen</li>
 </ul>
-<p>Übungsblatt 9 enthält Aufgaben und getrennte Musterlösungen.</p>
+<p>Übungsblatt 9: neue C-Fälle, Summe gerader Arrayindizes und dreistufiger Lüfterregler.</p>
 <aside class="notes">
 <p>Diese Aufgaben greifen ausschließlich die im Kurs eingeführten Modelle auf. Bei C-Kontrollfluss zählen die Bedeutung der Bedingung und die Richtung der Sprungkante. Bei Arrays gehören Elementgröße, gültiger Indexbereich und tatsächlicher Speicherzugriff zusammen. Beim Stack ist die Adresse aus dem veränderten Stackzeiger zu berechnen; außerdem muss begründet werden, welcher Wert einen Aufruf überleben soll.</p>
 <p>Für einen Eingabetrace werden Rohmaske und Freigabe zuerst in Ereignisse übersetzt. Danach liefert die Zustandstabelle den neuen Fortschritt. Eine Pipelinezeichnung braucht eine klare Stufenlegende und die vereinbarten Weiterleitungspfade. Diese Aufgaben können ohne Simulator bearbeitet werden und eignen sich zur Vorbereitung auf vergleichbare Klausuraufgaben. Die konkrete Prüfungsgestaltung wird dadurch nicht festgelegt. Die praktische Aufgabe ergänzt das Papiermodell durch einen dokumentierten Ripes-Lauf mit den Geräten der eigenen Installation.</p>
