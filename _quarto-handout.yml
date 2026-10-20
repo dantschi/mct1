@@ -119,7 +119,7 @@ format:
     show-notes: true
     chalkboard: false
     slide-number: true
-    center: true
+    center: false
     theme:
       - simple
       - assets/styles/slides.scss

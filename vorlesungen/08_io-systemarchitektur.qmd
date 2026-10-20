@@ -39,7 +39,7 @@ Ein durchgängiges Beispiel: Schalter lesen, Bit auswählen, Pixel setzen.
 ::: notes
 Die erste Frage verbindet Speicherbefehle mit einer Adresskarte: Eine Adresse kann statt einer Speicherzelle ein Geräteregister auswählen. Die zweite Frage betrifft den zeitlichen Ablauf: Ein Programm kann regelmäßig nachsehen oder durch eine gemeldete Unterbrechung reagieren. Die dritte Frage betrifft den dabei benötigten Zustand und die Parameter einer Dienstanforderung.
 
-Ein Handler ist die Routine, die einen Trap, also einen durch Exception oder Interrupt ausgelösten Kontrollübergang, behandelt. Ein Konsolendienst im Simulator ist eine andere Ebene. Wir verwenden deshalb einen Schalter und einen Pixel als einfachen Gerätefall und getrennte Papiermodelle für Trap und Dienst. So können Sie den Datenwert, die Adresse und den gerade geltenden Vertrag jeweils benennen. Die späteren Übungsaufgaben folgen derselben Reihenfolge und verlangen begründete Ergebnisse statt ungeprüfter typischer Adressen.
+Ein Handler ist die Routine, die einen Trap, also einen durch Exception oder Interrupt ausgelösten Kontrollübergang, behandelt. Ein Konsolendienst im Simulator ist eine andere Ebene. Wir verwenden deshalb einen Schalter und einen Pixel als einfachen Gerätefall und getrennte Papiermodelle für Trap und Dienst. So können Sie den Datenwert, die Adresse und den gerade geltenden Vertrag jeweils benennen. Die späteren Übungsaufgaben übertragen diese Regeln auf neue Beispiele: zwei ausgewählte Eingangsbits bestimmen den zweiten Pixel, vier gleiche Proben bestätigen einen Zustand und die Venus-Ausgabe berechnet dreimal n minus vier. Die Dateien lab_08_zweibit_anzeige.s und lab_08_messwertausgabe.s enthalten die passenden Vergleichsprogramme. Die Laborwerte und der Vierprobenfilter ersetzen nicht die anders gewählten Demonstrationswerte dieser Vorlesung.
 :::
 
 ## Was aus Einheit 1–7 weiterverwendet wird
@@ -830,11 +830,11 @@ la heißt Load Address und ist eine Pseudoinstruktion. lw heißt Load Word und l
 
 ## Selbstkontrolle und Übergang zur Übung
 
-- Warum ist ein Geräteregister kein gewöhnliches RAM-Element?
+Transfer: Zweibit-Anzeige, Vierprobenfilter und Messwert $3n-4$.
+
 - Wie unterscheiden sich Pegel, Ereignis und entprellter Zustand?
-- Welche Trap-Daten sichert Hardware, welche Werte Software?
-- Wann bleibt mepc unverändert, wann wird ein ecall übersprungen?
-- Welcher Vertrag bestimmt Ausgabe und Registererhaltung?
+- Welche Trap-Daten und Register muss der Handler erhalten?
+- Welcher Dienstvertrag bestimmt Ausgabe und Registererhaltung?
 
 ::: notes
 RAM steht für Random Access Memory, hier Arbeitsspeicher. Ein Geräteregister besitzt dagegen einen eigenen Zugriffstyp und möglicherweise Lese- oder Schreibnebenwirkungen. Ein Pegel ist ein gegenwärtiger Zustand, ein Ereignis eine relevante Änderung oder gespeicherte Meldung. Entprellen filtert Kontaktwechsel; bloßes Warten auf Freigabe löst diese Aufgabe nicht vollständig.

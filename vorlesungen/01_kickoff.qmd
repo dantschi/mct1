@@ -879,7 +879,7 @@ Lehrzustand: `x5=7`, `x6=3`, `x7=0`.
 ::: notes
 Die Registerbank des Lehrmodells hat zwei Leseports und einen Schreibport. A1 und A2 sind die Auswahl der Quellnummern, RD1 und RD2 bedeuten Read Data, die gelesenen Daten. A3 wählt die Zielnummer, WD3 bedeutet Write Data, Schreibdaten, und WE3 bedeutet Write Enable, Schreibfreigabe. CLK ist Clock, das Taktsignal. Die ALU, Arithmetic Logic Unit oder arithmetisch-logische Einheit, erhält die beiden Operanden.
 
-Mit A1 gleich fünf und A2 gleich sechs werden nach der Leselaufzeit die gespeicherten Werte sieben und drei geliefert. Die auf Addition eingestellte ALU berechnet zehn. A3 gleich sieben und WE3 gleich eins erlauben die Übernahme von WD3 gleich zehn in x7 an der aktiven Flanke. Die grauen Pfeile zeigen die Datenwege, der rote Rückweg das neue Ergebnis. Registernummern sind fünf Bit breit, Daten 32 Bit. Diese Portstruktur und das kombinatorische Lesen sind Lehrmodellannahmen, keine allgemeine Vorgabe jeder physischen Registerbank. Gleichzeitiges Lesen und Schreiben derselben Nummer wird im Kursmodell ausgeschlossen.
+Mit A1 gleich fünf und A2 gleich sechs werden nach der Leselaufzeit die gespeicherten Werte sieben und drei geliefert. Die auf Addition eingestellte ALU berechnet zehn. A3 gleich sieben und WE3 gleich eins erlauben die Übernahme von WD3 gleich zehn in x7 an der aktiven Flanke. Die grauen Pfeile zeigen die Datenwege, der rote Rückweg das neue Ergebnis. Registernummern sind fünf Bit breit, Daten 32 Bit. Diese Portstruktur und das kombinatorische Lesen sind Lehrmodellannahmen, keine allgemeine Vorgabe jeder physischen Registerbank. Eine Instruktion darf dasselbe Register als Quelle und Ziel wählen: Sie liest den alten Wert und schreibt den neuen erst an der aktiven Flanke. Davon zu unterscheiden ist die spätere Pipeline-Frage, wann ein anderer Befehl einen gerade geschriebenen Wert lesen kann.
 :::
 
 ## Die Nullregel von `x0`
@@ -954,12 +954,12 @@ addi x6, x0, 3
 add  x7, x5, x6
 ```
 
-Die Übung bietet einen optionalen Ripes-Versuch mit Sollwerten.
+Transfer im Übungsblatt: neue Registerspur mit 12, 6 und 8; auch `x0` als Ziel.
 
 ::: notes
 Das Assemblerfragment zeigt die drei relevanten Anweisungen einer vollständigen Lehrdatei. addi heißt Add Immediate, Addition mit einer direkt angegebenen Konstante. Da x0 null liefert, erzeugen die ersten beiden Befehle die Registerwerte sieben und drei. add addiert die Registerquellen und schreibt zehn nach x7. Das Ziel steht jeweils zuerst. Diese Wirkungen reichen zum optionalen Versuch; Befehlscodierungen werden erst in Einheit 2 behandelt.
 
-Die Datei enthält zusätzlich den Textbereich, den Programmeinstieg main und eine Dauerschleife mit j, einem unbedingten Jump oder Sprung. Sie beendet sich nicht durch einen unbenannten Systemdienst. Nach den drei Rechenschritten kann der Zustand angehalten und geprüft werden. Ripes ist der visuelle Simulator; seine installierte Version und das gewählte Modell werden im Protokoll notiert. Die Folie nennt Sollwerte eines manuellen Programms, keine bereits beobachteten Simulatorergebnisse.
+Die Datei enthält zusätzlich den Textbereich, den Programmeinstieg main und eine Dauerschleife mit j, einem unbedingten Jump oder Sprung. Sie beendet sich nicht durch einen unbenannten Systemdienst. Nach den drei Rechenschritten kann der Zustand angehalten und geprüft werden. Ripes ist der visuelle Simulator; seine installierte Version und das gewählte Modell werden im Protokoll notiert. Die Folie nennt Sollwerte eines manuellen Programms, keine bereits beobachteten Simulatorergebnisse. Die optionale Übungsaufgabe verwendet bewusst eine andere Folge aus beispiele/lab_01_registerspur.s: x9 startet mit zwölf, x10 mit sechs und x11 mit acht. Nach der Addition steht 14 in x9; der anschließende Schreibversuch nach x0 verwirft das Ergebnis. Übertragen Sie dafür die Regel über alte Quellen und freigegebenes Ziel.
 :::
 
 ## Das Fundament für Einheit 2

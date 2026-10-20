@@ -21,9 +21,33 @@ function Pandoc(doc)
     end
   end
 
+  -- Die automatische Reveal-Titelfolie steht in den Metadaten, nicht in
+  -- doc.blocks. Ihre Notizen müssen auch im PDF unter dem Dokumenttitel
+  -- erscheinen; die folgenden Folien behalten dadurch ihre Reveal-Nummern.
+  local title_attributes = doc.meta["title-slide-attributes"]
+  local title_notes = title_attributes and title_attributes["data-notes"]
+  local has_title_notes = title_notes and pandoc.utils.stringify(title_notes) ~= ""
+  if has_title_notes then
+    total_slides = total_slides + 1
+  end
+
   local new_blocks = pandoc.List()
   local i = 1
-  local slide_num = 0
+  local slide_num = has_title_notes and 1 or 0
+
+  if has_title_notes then
+    new_blocks:insert(pandoc.RawBlock("latex", "\\begin{notesblock}"))
+    new_blocks:insert(pandoc.RawBlock("latex", string.format(
+      "{\\bfseries\\color{dhbwred}Notizen zur Titelfolie}\\hfill %d\\,/\\,%d\\par\\medskip",
+      1, total_slides
+    )))
+    -- data-notes ist Markdown in einem YAML-Textfeld. Hieraus entstehen
+    -- normale Absätze; LaTeX-Escaping übernimmt weiterhin Pandoc.
+    for _, nb in ipairs(pandoc.read(pandoc.utils.stringify(title_notes), "markdown").blocks) do
+      new_blocks:insert(nb)
+    end
+    new_blocks:insert(pandoc.RawBlock("latex", "\\end{notesblock}"))
+  end
 
   while i <= #blocks do
     local b = blocks[i]

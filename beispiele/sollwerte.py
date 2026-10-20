@@ -55,11 +55,9 @@ def main() -> None:
     if_d, id_d, ex_d, mem_d, wb_d = 200, 100, 150, 250, 100
     reg_overhead = 20
     single = if_d + id_d + ex_d + mem_d + wb_d + reg_overhead
-    # fünf Registerübergänge im Pipeline-Pfad einer Instruktion: 5 * 20 ps
-    # plus die längste reine Stufe (MEM = 250 ps) ergibt den Pipeline-Takt 270 ps
-    # laut Kursvertrag: „je Registerübergang zusammen 20 ps“ und Pipeline-Takt 270 ps.
-    # 250 + 20 = 270. Der Single-Cycle-Takt ist die Summe der Stufen plus ein
-    # Registerübergang am Ende: 800 + 20 = 820.
+    # Pro Pipeline-Takt: längste Stufe plus einmal Registeroverhead.
+    # Die Einzellatenz umfasst fünf solche Takte, nicht fünf Overheads
+    # zusätzlich innerhalb einer Taktperiode. Single Cycle: 800 + 20 = 820 ps.
     assert single == 820
     pipe_cycle = mem_d + reg_overhead
     assert pipe_cycle == 270

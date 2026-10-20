@@ -225,7 +225,7 @@ $$Y=(A+B)-(C+D),\quad A=5,\ B=10,\ C=3,\ D=2$$
 ::: notes
 A, B, C und D sind die didaktischen Eingabezahlen 5, 10, 3 und 2. Y ist das gesuchte Ergebnis. Wir legen die Eingaben in die temporären Register t0 bis t3 und behalten sie unverändert. Die erste Addition schreibt A plus B gleich 15 nach t4. Die zweite schreibt C plus D gleich 5 nach t5. Anschließend berechnet sub t6, t4, t5 die Differenz 15 minus 5 gleich 10.
 
-Die Abbildung führt die beiden oberen Summen entlang grauer Pfeile zur unteren Subtraktion. Die Pfeile transportieren 32-Bit-Werte. Der rote Rahmen markiert das endgültige Ergebnis in t6. Die vertikale Anordnung beschreibt Abhängigkeiten und keine Taktachse. Würden Sie die erste Summe überschreiben, bevor die Subtraktion sie liest, wäre die Rechnung verloren. Das bewusste Zuweisen von Eingaben, Zwischenergebnissen und Zielregistern ist der erste Schritt zur vollständigen Laborlösung.
+Die Abbildung führt die beiden oberen Summen entlang grauer Pfeile zur unteren Subtraktion. Die Pfeile transportieren 32-Bit-Werte. Der rote Rahmen markiert das endgültige Ergebnis in t6. Die vertikale Anordnung beschreibt Abhängigkeiten und keine Taktachse. Würden Sie die erste Summe überschreiben, bevor die Subtraktion sie liest, wäre die Rechnung verloren. Das bewusste Zuweisen von Eingaben, Zwischenergebnissen und Zielregistern wird im Labor auf eine andere Gleichung übertragen.
 :::
 
 ## Bitweise Logik arbeitet stellenweise
@@ -701,21 +701,21 @@ Dieses vollständige Assemblerprogramm gilt für die Kurs-Venus-Dienste. .text w
 Nach der Ausgabe benötigt das Programm keinen erhalten gebliebenen temporären Rechenwert mehr. Es setzt a0 ausdrücklich neu auf zehn und beendet den Lauf mit einem weiteren ecall. Die erwartete Konsolenzahl ist 42; ein bestimmtes Zeilenumbruchverhalten wird nicht vorausgesetzt. Die numerische Vorhersage folgt aus dem Dienstvertrag und der Rechnung, nicht aus einem hier behaupteten Venus-Lauf. Der kontrollierte Abschluss verhindert, dass man nach dem letzten Rechenbefehl ohne erklärte Umgebung weiterläuft. Dieses Muster bildet den Rahmen für Ihre eigene Gleichung.
 :::
 
-## Laborauftrag: rechnen, prüfen, ausgeben
+## Laborauftrag: Messkorrektur berechnen
 
-$$Y=(A+B)-(C+D)$$
+$$Y=(A-B)+4C$$
 
-- `t0`–`t3`: $A=5$, $B=10$, $C=3$, $D=2$
-- `t4`, `t5`: beide Zwischensummen; `t6`: Ergebnis
+- `t0`–`t2`: $A=12$, $B=19$, $C=5$
+- `t3`: Differenz; `t4`: vierfaches C; `t5`: Ergebnis
 - Vor der Ausgabe: Werte am Label `Ergebnis_pruefen` prüfen
 - Venus: Ergebnis nach `a1`, Dienst 1, danach Dienst 10
 
-Musterlösung nach eigener Bearbeitung: [vl2_gleichung.s](../beispiele/vl2_gleichung.s).
+Vergleich nach eigener Bearbeitung: [lab_02_messkorrektur.s](../beispiele/lab_02_messkorrektur.s).
 
 ::: notes
-A, B, C und D sind die vier Eingabewerte, Y ist die gesuchte Differenz der Summen. Die temporären Register t0 bis t3 behalten die Eingaben. Eine Lösung initialisiert sie mit li, Load Immediate, jeweils mit fünf, zehn, drei und zwei. add t4, t0, t1 bildet 15. add t5, t2, t3 bildet fünf. sub t6, t4, t5 schreibt zehn. Das Label Ergebnis_pruefen benennt die Stelle unmittelbar vor dem Vorbereiten der Ausgabe und erzeugt keinen Befehl.
+Das Übungsblatt überträgt den Registerplan aus der vorgeführten Summendifferenz auf eine neue Messkorrektur. A, B und C sind die Eingaben, Y das Ergebnis. Die temporären Register t0 bis t2 enthalten zwölf, 19 und fünf. sub t3, t0, t1 bildet minus sieben. slli t4, t2, 2 schiebt den kleinen Wert fünf um zwei Stellen nach links und bildet 20. add t5, t3, t4 ergibt 13. Die Eingaben bleiben dabei erhalten. Der Shift benötigt keine Multiplikationserweiterung.
 
-Halten Sie dort die Registeranzeige fest. Danach kopiert addi a1, t6, 0 das Ergebnis nach a1, dem Venus-Druckargument. a0 wählt Dienst eins für den ecall, Environment Call. Anschließend wählt a0 Dienst zehn zum Beenden. t6 ist der Rechenwert vor den Diensten, a0 keine dauerhaft gespeicherte Ergebnisvariable. Die verlinkte Datei enthält diesen vollständigen Rahmen. Varianten nach neuem Start: vier Nullen ergeben null; fünf, eins, zehn, zwei ergeben minus sechs; minus fünf, zehn, drei, zwei ergeben null.
+Ergebnis_pruefen markiert die Stelle vor der Ausgabevorbereitung. Dort prüfen Sie zuerst t3, t4 und t5. Danach kopiert die Lösung das Ergebnis nach a1; a0 wählt Venus-Dienst eins, anschließend Dienst zehn zum Beenden. a0 ist damit später eine Dienstkennung. Als Varianten ergeben drei Nullen null, die Eingaben minus acht, sieben, zwei ergeben minus sieben und neun, minus vier, minus zwei ergeben fünf. Jede Variante beginnt nach neuem Assemblieren und Zurücksetzen. Die vollständige Datei dient nach eigener Bearbeitung zum Vergleich, nicht als behaupteter Simulatorlauf.
 :::
 
 ## Fehlersuche: zuerst die Abweichung finden

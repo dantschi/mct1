@@ -14,5 +14,5 @@
   <rect class="bar" x="220" y="112" width="216" height="22"/>
   <rect class="dim" x="436" y="112" width="440" height="22"/>
   <text class="s" x="16" y="176">20 Instruktionen: 16400 ps gegenüber 24 × 270 ps = 6480 ps</text>
-  <text class="s" x="16" y="200">Speedup etwa 2,53. Füllung und Leerung: N + 5  1 Zyklen ohne Hazards.</text>
+  <text class="s" x="16" y="200">Speedup etwa 2,53. Füllung und Leerung: N + 5 − 1 Zyklen ohne Hazards.</text>
 </svg>

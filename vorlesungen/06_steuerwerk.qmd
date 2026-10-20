@@ -631,7 +631,7 @@ Nur Änderung eins erhält die spezifizierte Befehlswirkung sicher. Das Register
 ::: notes
 Das Lehrmodell liefert eine begründete Steuertabelle. Ripes ist ein visueller RISC-V-Simulator mit eigener Mikroarchitektur. Wir vergleichen deshalb die geforderten Funktionen und Ergebnisse, nicht ungeprüft sämtliche internen Bitcodes.
 
-Der Papierteil des Übungsblatts enthält Tabellenherleitung, Detaildecodierung, eine Boolesche Bedingung und Fehleranalyse. Boolesch bedeutet hier eine Funktion über null und eins. Die Simulatoraufgabe ergänzt Beobachtungen an vorhandenen Ports. Die verwendete Datei ist bereits im Repository vorhanden. Ihre Initialisierung und die interessierenden Maschinenbefehle lassen sich anhand von Labels unterscheiden; eine feste Anzahl Schritte pro Quelltextzeile wird nicht vorausgesetzt.
+Der Papierteil des Übungsblatts enthält Tabellenherleitung, Detaildecodierung, eine Boolesche Bedingung und Fehleranalyse. Boolesch bedeutet hier eine Funktion über null und eins. Die Simulatoraufgabe ergänzt Beobachtungen an vorhandenen Ports. Das folgende Beobachterprogramm ist die Vorlesungsdemonstration. Im Übungsblatt folgt ein neuer Bitprüfpfad aus beispiele/lab_06_bitpruefung.s: minus 13 plus 21 ergibt acht, die ODER-Verknüpfung minus fünf, der spätere UND-Vergleich wieder acht. Am Prüfpunkt steht t5 auf zwölf; nach der ausdrücklich verlangten Speicheränderung dagegen auf minus eins. Die jeweiligen Labels trennen Initialisierung und Kernbefehle; eine feste Anzahl Schritte pro Quelltextzeile wird nicht vorausgesetzt.
 :::
 
 ## Was sich in Ripes unterscheiden kann

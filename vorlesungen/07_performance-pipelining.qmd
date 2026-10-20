@@ -67,7 +67,7 @@ Load Word, kurz lw, lädt ein 32-Bit-Wort; Store Word, kurz sw, schreibt es. Ein
 ::: notes
 Unser Modell ist eine fünfstufige In-order-Pipeline. In order bedeutet: Befehle schreiten in Programmreihenfolge fort. Es wird höchstens eine neue Instruktion je Takt aufgenommen. Die Pipeline ist vor der betrachteten Folge leer; Anfangswerte sind schon hergestellt. Getrennte Zugriffe auf Befehle und Daten vermeiden den hier betrachteten Speicherkonflikt. Speicheradressen sind gültig und wortausgerichtet. Langsame Speicherantworten und Cachefehler werden nicht modelliert.
 
-Die Basis ist RV32I, also der 32-Bit-RISC-V-Ganzzahlbefehlssatz. Die C-Erweiterung für komprimierte Instruktionen ist ausgeschaltet; betrachtete Maschinenbefehle sind vier Byte lang. Die Rechenbeispiele nutzen die in Einheit 6 ergänzte Addition mit Konstante, addi. Die Registerbank erlaubt im Kursmodell kein wirksames Schreiben und Lesen desselben Registers innerhalb desselben Takts. Diese Konvention wird beim Warten ohne Forwarding und beim gleichzeitigen Registerzugriff ausdrücklich berücksichtigt.
+Die Basis ist RV32I, also der 32-Bit-RISC-V-Ganzzahlbefehlssatz. Die C-Erweiterung für komprimierte Instruktionen ist ausgeschaltet; betrachtete Maschinenbefehle sind vier Byte lang. Die Rechenbeispiele nutzen die in Einheit 6 ergänzte Addition mit Konstante, addi. Ein in WB am Taktende geschriebener Wert kann im Kursmodell erst in ID des folgenden Takts aus der Registerbank gelesen werden; ein WB→ID-Lesebypass ist nicht vorhanden. Diese Konvention wird beim Warten ohne Forwarding und beim gleichzeitigen Registerzugriff ausdrücklich berücksichtigt.
 :::
 
 ## Vereinbarung für Abhängigkeiten und Sprünge
@@ -467,7 +467,7 @@ Das Ergebnis lautet $0-4=-4$, als 32-Bit-Bitmuster 0xFFFFFFFC. Die Arithmetic Lo
 
 - Zwei unabhängige Befehle zwischen Schreiber und Leser
 - Schreiber in WB, Leser gleichzeitig in ID
-- EX-Forwarding allein erreicht den Leser im Folgetakt zu spät
+- Im Folgetakt ist der Schreiber nicht mehr in MEM/WB verfügbar
 - Kursmodell: einen Takt halten und danach neu lesen
 - Andere Registerbank oder zusätzlicher Lesebypass: anderes Modell
 
@@ -847,10 +847,12 @@ vl7_loaduse.s lädt mit lw, Load Word, 42 nach t0 und verdoppelt es mit add nach
 - Modell B: $3+4=7$ Takte
 - Gleiche Taktperiode: Kern-Speedup $8/7\approx1{,}14$
 
+Übungsblatt: neue Viererfolgen `lab_07_schedule_a.s` / `_b.s`, neun bzw. acht Takte.
+
 ::: notes
 Instruction Scheduling bedeutet zulässiges Umsortieren vorhandener Instruktionen. Die beiden vollständigen Dateien liegen unter beispiele/. Ihre Kernfolge enthält lw, Load Word, add zur Verdopplung und addi, Add Immediate, zur Erhöhung von a5. Der Anfangszustand ist gleich: Das Speicherwort ist 42 und a5 ist null. Am Ende sind t0 gleich 42, a0 gleich 84 und a5 gleich 1; t0 ist ein temporäres Register, a0 das Ergebnisregister und a5 der unabhängige Zähler.
 
-Im anfangs leeren Lehrfenster braucht A wegen unmittelbarer Load-Nutzung acht Takte und B durch die dazwischengeschobene vorhandene Erhöhung sieben. Bei gleicher Periode ist das Laufzeitverhältnis $8/7\approx1{,}14$. CPI, Cycles per Instruction, beträgt im endlichen Kernfenster $8/3$ beziehungsweise $7/3$, einschließlich der Randkosten. Ein globaler Ripes-Zähler erfasst auch Initialisierung, echte NOPs, la-Expansion, also Load Address, und Abschluss. Man kann diese Zähler daher nicht ungeprüft als acht beziehungsweise sieben ausgeben. Die Verbesserung der Kernfolge ist eine Modellprognose, keine hier gemessene Simulatorzeit.
+Im anfangs leeren Lehrfenster braucht A wegen unmittelbarer Load-Nutzung acht Takte und B durch die dazwischengeschobene vorhandene Erhöhung sieben. Bei gleicher Periode ist das Laufzeitverhältnis $8/7\approx1{,}14$. CPI, Cycles per Instruction, beträgt im endlichen Kernfenster $8/3$ beziehungsweise $7/3$, einschließlich der Randkosten. Ein globaler Ripes-Zähler erfasst auch Initialisierung, echte NOPs, la-Expansion, also Load Address, und Abschluss. Man kann diese Zähler daher nicht ungeprüft als acht beziehungsweise sieben ausgeben. Die Verbesserung der Kernfolge ist eine Modellprognose, keine hier gemessene Simulatorzeit. Das Übungsblatt verwendet bewusst andere Operanden und vier Kerninstruktionen aus beispiele/lab_07_schedule_a.s und lab_07_schedule_b.s. Für das Wort minus neun entstehen t2 gleich minus neun, a0 gleich 39, a5 gleich drei und a6 gleich null. Dieselbe Umordnung spart dort einen Takt: neun gegenüber acht. Die drei Befehle und acht gegenüber sieben dieser Folie gehören ausschließlich zum Vorlesungsbeispiel.
 :::
 
 ## Selbstkontrolle vor Übung und Quiz

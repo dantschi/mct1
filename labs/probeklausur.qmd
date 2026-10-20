@@ -260,7 +260,7 @@ Bewertung: Je Frage ein Punkt ausschließlich für die exakte Auswahl aller rich
 
 **2. A, B, C, D** — Alle vier Optionen: Das Bitmuster hat unsigned den Wert 251, signed den Wert 251 − 256 = −5. Vorzeichenerweiterung übernimmt das gesetzte Vorzeichenbit; Nullerweiterung füllt die oberen Stellen mit null. Die Interpretation und die Erweiterungsart sind unterschiedliche Entscheidungen.
 
-**3. B, D** — C und D: Der Multiplexer ist kombinatorisch und reagiert nach seiner Laufzeit. Das Register übernimmt bei der aktiven Flanke, sofern die Freigabe gesetzt ist. A verwechselt Auswahl und Speicherung; B beschreibt kein flankengetriggertes Register. Setup und Hold seien eingehalten.
+**3. B, D** — B und D: Der Multiplexer ist kombinatorisch und reagiert nach seiner Laufzeit. Das Register übernimmt bei der aktiven Flanke, sofern die Freigabe gesetzt ist. A verwechselt Auswahl und Speicherung; C beschreibt ein pegelgesteuertes statt eines flankengetriggerten Speicherelements. Setup und Hold seien eingehalten.
 
 **4. B** — Nur B: Das signed 12-Bit-Immediate reicht von −2048 bis 2047. Schreibzugriffe auf x0 werden verworfen; 2048 liegt außerhalb des Bereichs. RV32I-Ganzzahladdition behält die unteren 32 Bit und erzeugt keinen Überlauf-Trap.
 
@@ -280,7 +280,7 @@ Bewertung: Je Frage ein Punkt ausschließlich für die exakte Auswahl aller rich
 
 **11. B, C, D** — B, C und D: Gleiche Operanden erzeugen bei der Subtraktion null. PCSrc = Branch AND Zero wählt das Ziel aus altem PC und fertigem Byteoffset. A addiert die vier Byte des sequenziellen Pfads fälschlich zum genommenen Branchziel.
 
-**12. B** — Nur D: Beide Befehle sind Registeroperationen mit RegWrite = 1 und demselben Opcode. Die Detailsteuerung wertet die gültigen Funktionsfelder aus. ALUControl ist eine interne Kurscodierung und kein Instruktionsfeld der ISA.
+**12. B** — Nur B: Beide Befehle sind Registeroperationen mit RegWrite = 1 und demselben Opcode. Die Detailsteuerung wertet die gültigen Funktionsfelder aus. ALUControl ist eine interne Kurscodierung und kein Instruktionsfeld der ISA.
 
 **13. B, C** — B und C: MemtoReg wählt nur die Rückschreibquelle für die Registerbank; RegWrite sperrt deren Übernahme. X bezeichnet in der Tabelle ein Don’t Care, keinen elektrischen Pegel. Wird RegWrite fälschlich eins, kann die gewählte Quelle einen zusätzlichen Registerwert verändern.
 
@@ -298,7 +298,7 @@ Bewertung: Je Frage ein Punkt ausschließlich für die exakte Auswahl aller rich
 
 **19. A, B** — A und B: Der vereinbarte Venus-Druckdienst nutzt a0 = 1 und a1 = 42. ecall ist kein normaler jal-Aufruf und erzeugt keinen Link in ra. Ripes-Versionen und Linux haben eigene Dienstverträge; die Venus-Tabelle kann nicht unverändert übertragen werden.
 
-**20. A** — Nur C: -S beendet die Übersetzung nach der Assemblerausgabe. -march wählt die ISA und Erweiterungen, -mabi den binären Softwarevertrag. Ein startfähiges Programm benötigt unter anderem passenden Link- und Startkontext; keine dieser Optionen legt Taktperiode oder Pipeline fest.
+**20. A** — Nur A: -S beendet die Übersetzung nach der Assemblerausgabe. -march wählt die ISA und Erweiterungen, -mabi den binären Softwarevertrag. Ein startfähiges Programm benötigt unter anderem passenden Link- und Startkontext; keine dieser Optionen legt Taktperiode oder Pipeline fest.
 
 :::
 

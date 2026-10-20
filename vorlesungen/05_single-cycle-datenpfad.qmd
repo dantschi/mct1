@@ -5,6 +5,24 @@ author: "Prof. Dr.-Ing. Daniel Klünder"
 # Vortrag: quarto preview vorlesungen/05_single-cycle-datenpfad.qmd
 # Notizen: Taste S. Skript: --profile handout --to pdf
 format: revealjs
+title-slide-attributes:
+  data-notes: |
+    Diese Einheit erklärt, wie eine konkrete Schaltung die bisher bekannten
+    Befehlswirkungen erzeugt. Voraussetzungen sind Bitmuster und Logikbausteine
+    aus Einheit 1, Register und Befehlsfelder aus Einheit 2, Speicherzugriffe
+    und Sprünge aus Einheit 3 sowie die Unterscheidung von Befehlssatz und
+    Softwarekonvention aus Einheit 4. Eine Pipeline oder ein fertiger
+    Steuerdecoder werden noch nicht vorausgesetzt. Die Begriffe werden aus
+    ihrer Funktion im Datenweg hergeleitet.
+
+    Das Single-Cycle-Lehrmodell verarbeitet einen unterstützten Befehl je
+    Taktperiode. Es umfasst add, sub, and, or, lw, sw und beq und ist kein
+    vollständiger RV32I-Prozessor. Zuerst verfolgen wir Registerarithmetik,
+    danach Laden, Speichern und Branch-Entscheidung. Quellenwahl und
+    Schreibfreigabe erklären gemeinsam den neuen Zustand an der Flanke.
+    Die Timingrechnung verwendet erfundene Lehrwerte; Ripes liefert einen
+    Vergleich mit einer eigenen Mikroarchitektur. Die Übung überträgt das
+    Verfahren auf neue Operanden und einen Paketpfad.
 ---
 
 # Der Single-Cycle-Datenpfad
@@ -497,7 +515,7 @@ Beginnen Sie beim Lesen des Gesamtbilds mit der Instruktion und verfolgen Sie nu
 
 ![](../assets/images/single-cycle-datapath.svg){.nostretch style="max-height: 510px; width: auto;" fig-alt="Single-Cycle-Datenpfad des Kursmodells mit drei Multiplexern und Branch-UND"}
 
-Punkt = Verbindung; Kreuzung ohne Punkt = getrennte Leitungen.
+Punkt: verbunden. Kreuzung ohne Punkt: getrennt.
 
 ::: notes
 Oben liegen PC-Kandidaten und Entscheidung, unten Registerarithmetik, Speicherzugriff und Rückführung. ImmGen speist die ALU-Quellenauswahl und die Branch-Zielberechnung. RD2 hat einen Abzweig zu den Speicher-Schreibdaten; das ALU-Ergebnis einen Abzweig zum Register-Rückschreib-MUX.
@@ -608,7 +626,7 @@ Das bedeutet weder, dass eine einzelne Instruktion automatisch schneller fertig 
 ::: notes
 Die Papierrechnung beschreibt unseren Datenpfad. Ripes zeigt eine eigene Mikroarchitektur mit zusätzlichen Instruktionen. Wir suchen funktionale Entsprechungen, keine identische Anordnung aller Bauteile.
 
-Das Übungsblatt beginnt mit Aufgaben ohne Simulator. Der Ripes-Teil ergänzt die Beobachtung. Nutzen Sie für drei Traces die Dateien unter beispiele; ihre Labels benennen die interessierenden Instruktionen.
+Das Übungsblatt beginnt mit Aufgaben ohne Simulator. Der Ripes-Teil ergänzt die Beobachtung. Die drei folgenden Traces sind Vorlesungsdemonstrationen. Der praktische Transfer im Übungsblatt verwendet beispiele/lab_05_paketpfad.s mit ODER-Verknüpfung, Paketkopie und einer neuen Branch-Bedingung. Dort ergeben 40 ODER 22 den Wert 62; das kopierte Wort ist minus 24. Die Labels benennen die jeweils interessierenden Instruktionen.
 :::
 
 ## Lehrmodell und Ripes auseinanderhalten
