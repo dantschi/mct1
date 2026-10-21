@@ -58,7 +58,7 @@ Zur Vertiefung empfohlen:
 | Tool | Einsatz | Link |
 |------|---------|------|
 | **Venus** | Browser-basierter RISC-V-Assembler und Syscall-Simulation | [thaumicmekanism.github.io/venus](https://thaumicmekanism.github.io/venus/) |
-| **Ripes** | Visueller RISC-V-Simulator (Datenpfad, Pipeline, MMIO) | [github.com/mortbopet/Ripes](https://github.com/mortbopet/Ripes) |
+| **Ripes** | Visueller RISC-V-Simulator (Datenpfad, Pipeline, MMIO) | [ripes.dk](https://ripes.dk/) |
 | **RISC-V GNU Toolchain** | Assembler, Linker und Cross-Compiler | [github.com/riscv-collab/riscv-gnu-toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain) |
 | **Compiler Explorer** | C live als RISC-V-Assembler betrachten | [godbolt.org](https://godbolt.org/) |
 
