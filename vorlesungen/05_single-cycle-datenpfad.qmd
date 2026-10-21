@@ -22,7 +22,7 @@ title-slide-attributes:
     Schreibfreigabe erklären gemeinsam den neuen Zustand an der Flanke.
     Die Timingrechnung verwendet erfundene Lehrwerte; Ripes liefert einen
     Vergleich mit einer eigenen Mikroarchitektur. Die Übung überträgt das
-    Verfahren auf neue Operanden und einen Paketpfad.
+    Verfahren auf das Programm einer Paketwaage.
 ---
 
 # Der Single-Cycle-Datenpfad
@@ -626,7 +626,7 @@ Das bedeutet weder, dass eine einzelne Instruktion automatisch schneller fertig 
 ::: notes
 Die Papierrechnung beschreibt unseren Datenpfad. Ripes zeigt eine eigene Mikroarchitektur mit zusätzlichen Instruktionen. Wir suchen funktionale Entsprechungen, keine identische Anordnung aller Bauteile.
 
-Das Übungsblatt beginnt mit Aufgaben ohne Simulator. Der Ripes-Teil ergänzt die Beobachtung. Die drei folgenden Traces sind Vorlesungsdemonstrationen. Der praktische Transfer im Übungsblatt verwendet beispiele/lab_05_paketpfad.s mit ODER-Verknüpfung, Paketkopie und einer neuen Branch-Bedingung. Dort ergeben 40 ODER 22 den Wert 62; das kopierte Wort ist minus 24. Die Labels benennen die jeweils interessierenden Instruktionen.
+Das Übungsblatt beginnt mit Aufgaben ohne Simulator. Der Ripes-Teil ergänzt die Beobachtung. Die drei folgenden Traces sind Vorlesungsdemonstrationen. Im Übungsblatt verfolgen Sie das Programm einer Paketwaage, das dort vollständig abgedruckt ist: Zwei Loads holen das Bruttogewicht 1250 und die Tara 50, sub bildet das Nettogewicht 1200, sw legt es ab, und beq vergleicht es mit dem Sollgewicht 1200. Die Papieraufgaben ergänzen Sprungziele mit den Byteoffsets plus zwölf und minus acht, eine Fehlersuche an einem Store mit falscher Adresse und eine Taktrechnung. Im Ripes-Teil läuft dasselbe Programm; nach der verlangten Änderung des Bruttogewichts auf 1230 wird der Branch nicht genommen, und a0 wird null. Die Labels benennen die jeweils interessierenden Instruktionen.
 :::
 
 ## Lehrmodell und Ripes auseinanderhalten
