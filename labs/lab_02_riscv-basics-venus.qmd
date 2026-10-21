@@ -10,234 +10,507 @@ format:
     mainfont: TeX Gyre Heros
     sansfont: TeX Gyre Heros
     monofont: TeX Gyre Cursor
+    include-in-header:
+      text: |
+        \usepackage{tikz}
+        \usetikzlibrary{arrows.meta}
 ---
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung**
 :::
 
-## Aufgabe 1: Eine Registerspur (8 Punkte)
+## Aufgabe 1: Das Korrekturprogramm von Hand ausführen (8 Punkte)
 
-RV32I, 32-Bit-Register. Anfang `t0=t1=t2=0`; `t0=x5`, `t1=x6`, `t2=x7`.
-
-```asm
-addi t0, x0, 12
-addi t1, x0, -5
-sub  t2, t0, t1
-add  t0, t2, t1
-xori t1, t0, -1
-add  x0, t2, t0
-```
-
-1. Erstellen Sie eine Tabelle mit `t0`, `t1`, `t2` und `x0` nach jeder Zeile. (4 P)
-2. Welche alten Quellen liest Zeile 4? (1 P)
-3. Welchen Wert zeigt `x6` nach Zeile 5 und weshalb? (1 P)
-4. Welcher Rechenwert entsteht in Zeile 6, und welche Register ändern sich? (2 P)
-
-::: {.content-hidden when-profile="solution"}
-\vspace{8cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung {.unnumbered}
-
-| Zeile | `t0` | `t1` | `t2` | `x0` |
-|---|---|---|---|---|
-| 1 | 12 | 0 | 0 | 0 |
-| 2 | 12 | −5 | 0 | 0 |
-| 3 | 12 | −5 | 17 | 0 |
-| 4 | 12 | −5 | 17 | 0 |
-| 5 | 12 | −13 | 17 | 0 |
-| 6 | 12 | −13 | 17 | 0 |
-
-1. Je korrekter Zelle 1/6 P, insgesamt 4 P.
-2. t2 = 17 und t1 = −5; erst danach wird t0 geschrieben. 1 P.
-3. x6 ist der Alias von t1 und enthält `0xFFFFFFF3` = −13. 1 P.
-4. $17+12=29$, aber Ziel x0 verwirft 29. Kein Datenregister ändert sich. Je 1 P.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 2: Umlauf und Masken (10 Punkte)
-
-1. Bestimmen Sie zu jeder Addition Ergebniswort, signed Ergebnis, hinausfallenden Carry und signed Überlauf. Gespeichert werden 32 Bit. (6 P)
-
-| Quelle A | Quelle B |
-|---|---|
-| `0xFFFFFFFE` | `5` |
-| `0x60000000` | `0x30000000` |
-| `0x90000000` | `0x90000000` |
-
-2. Für `t0=0x0000006C`, `t1=0x00000033`: Bestimmen Sie `t2`, `t3` und `t4`. (3 P)
+Ein Drucksensor liefert ganzzahlige Rohwerte. Ein kurzes RV32I-Programm korrigiert sie nach $Y=(A-B)+4C$: $A$ ist der Rohwert, $B$ der Nullpunkt des Sensors und $C$ eine Temperaturstufe, die je Stufe vier Zählwerte ausgleicht. Das Programm begleitet Sie durch das ganze Blatt. Es beginnt nach Lehrannahme bei Adresse `0x1000`; ohne komprimierte Befehle ist jeder native Befehl vier Byte lang.
 
 ```asm
-and t2, t0, t1
-or  t3, t0, t1
-xor t4, t0, t1
+addi t0, x0, 12      # A: Rohwert
+addi t1, x0, 19      # B: Nullpunkt
+addi t2, x0, 5       # C: Temperaturstufe
+sub  t3, t0, t1      # A - B
+slli t4, t2, 2       # 4C durch Schieben
+add  t5, t3, t4      # Y
 ```
 
-3. Weshalb liefert `xor` hier keine normalisierte Wahrheitszahl? (1 P)
+1. Ergänzen Sie die Tabelle. Die erste Zeile ist ein Beispiel. (5 P)
 
-::: {.content-hidden when-profile="solution"}
-\vspace{8cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung {.unnumbered}
-
-| Quellen | Ergebniswort | signed | Carry | signed Überlauf |
-|---|---|---|---|---|
-| `FFFFFFFE`, 5 | `0x00000003` | 3 | 1 | nein |
-| `60000000`, `30000000` | `0x90000000` | −1879048192 | 0 | ja |
-| `90000000`, `90000000` | `0x20000000` | 536870912 | 1 | ja |
-
-1. Je Angabe 0,5 P. Im letzten Fall werden zwei negative signed Werte addiert, deren Summe unterhalb der darstellbaren Grenze liegt.
-2. `t2=0x00000020`, `t3=0x0000007F`, `t4=0x0000005F`. Je 1 P.
-3. XOR arbeitet unabhängig auf jeder Bitposition; das Ergebnis `0x5F` enthält mehrere gesetzte Bits. 1 P.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 3: Schiebeweiten prüfen (8 Punkte)
-
-Jede Zeile startet unabhängig mit `t0=0xFFFFFFF5` (−11), `t1=2`, `t5=35`.
-
-1. Bestimmen Sie Zielwort und effektive Schiebeweite beziehungsweise Füllbits. (4 P)
-
-```asm
-srl  t2, t0, t1
-sra  t3, t0, t1
-sll  t4, t0, t5
-srai t6, t0, 3
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
 ```
 
-2. Welches Ergebnis liefert die dritte Zeile bei `t5=66`? (1 P)
-3. Ist `slli t4, t0, 33` zulässig? Unterscheiden Sie die direkte von der Registerweite. (2 P)
-4. Vergleichen Sie `sra` von −11 um zwei Stellen mit einer mathematischen Division durch vier und Abschneiden zur null. (1 P)
+| Adresse | Befehl | gelesene Werte | Ergebnis | Wirkung |
+|----------|----------------------------|------------------------|----------|----------------|
+| `0x1000` | `addi t0, x0, 12` | 0 und Konstante 12 | 12 | t0 = 12 |
+| | `addi t1, x0, 19` | | | |
+| | `addi t2, x0, 5` | | | |
+| | `sub t3, t0, t1` | | | |
+| | `slli t4, t2, 2` | | | |
+| | `add t5, t3, t4` | | | |
 
-::: {.content-hidden when-profile="solution"}
-\vspace{9cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung {.unnumbered}
-
-1. `t2=0x3FFFFFFD` (Weite 2, Nullfüllung); `t3=0xFFFFFFFD` (−3, Vorzeichenfüllung); `t4=0xFFFFFFA8` (Weite $35\bmod32=3$); `t6=0xFFFFFFFE` (−2, Weite 3). Je 1 P.
-2. $66\bmod32=2$, Ergebnis `0xFFFFFFD4`. 1 P.
-3. Nein: Shift-Immediates sind in RV32I nur von 0 bis 31 codierbar. Bei der Registerform bestimmt dagegen der Inhalt der unteren fünf Bits die Weite. Je 1 P.
-4. SRA ergibt −3, Abschneiden von $-11/4$ zur null ergibt −2. 1 P.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 4: Direkte Konstanten (8 Punkte)
-
-1. Ordnen Sie zu: native Instruktion, Pseudoinstruktion oder unzulässiger Operand. Begründen Sie kurz. (6 P)
-
-```asm
-addi t0, x0, -2047
-addi t0, x0, -2049
-andi t0, t1, 2046
-andi t0, t1, 4094
-li   t0, 3000
-xori t0, t1, -2
+```{=latex}
+\renewcommand{\arraystretch}{1}
 ```
 
-2. Stellen Sie −19 als zwölf Bits, drei Hexziffern und vorzeichenerweitertes 32-Bit-Wort dar. (1 P)
-3. Ersetzen Sie das Subtrahieren von 37 durch `addi`. Warum funktioniert dasselbe Ein-Befehl-Schema beim Subtrahieren von −2050 nicht? (1 P)
+2. Geben Sie t3 als 32-Bit-Hexwort an. Unter welchen Architekturnamen `x…` finden Sie t3 und t5 in einer Registeranzeige? (1 P)
+3. Welchen Wert hat der PC nach dem letzten Befehl, und wie viele Byte belegt das Programm? (1 P)
+4. Um ein Register zu sparen, schreibt jemand in Zeile 4 `sub t0, t0, t1` und in Zeile 6 `add t5, t0, t4`. Welchen Wert hat t0 danach? Stimmt Y noch, und welche Eingabe ist anschließend verloren? (1 P)
 
 ::: {.content-hidden when-profile="solution"}
-\vspace{9cm}
+\vspace{4cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
+{{< pagebreak >}}
+
 ### Musterlösung {.unnumbered}
 
-1. In Reihenfolge: nativ (signed 12 Bit), unzulässig (kleiner als −2048), nativ, unzulässig (größer als 2047), pseudo, nativ. Je 1 P mit Begründung. Auch logische Immediates werden als signed zwölf Bit codiert; −2 wird auf `0xFFFFFFFE` erweitert.
-2. `1111 1110 1101` = `0xFED` → `0xFFFFFFED`. 1 P für alle drei Darstellungen.
-3. `addi t0, t0, -37`. Für die zweite Rechnung wäre +2050 nötig, außerhalb des Immediate-Bereichs. Je 0,5 P.
+| Adresse | Befehl | gelesene Werte | Ergebnis | Wirkung |
+|----------|----------------------------|------------------------|----------|----------------|
+| `0x1004` | `addi t1, x0, 19` | 0 und Konstante 19 | 19 | t1 = 19 |
+| `0x1008` | `addi t2, x0, 5` | 0 und Konstante 5 | 5 | t2 = 5 |
+| `0x100C` | `sub t3, t0, t1` | 12 und 19 | −7 | t3 = −7 |
+| `0x1010` | `slli t4, t2, 2` | 5, Weite 2 | 20 | t4 = 20 |
+| `0x1014` | `add t5, t3, t4` | −7 und 20 | 13 | t5 = 13 |
+
+1. Je Zeile 1 P. Die Eingaben t0 bis t2 bleiben erhalten, weil sie nur als Quellen vorkommen.
+2. t3 = `0xFFFFFFF9`, also −7. t3 ist x28, t5 ist x30 (1 P).
+3. PC = `0x1018`. Sechs Befehle zu je vier Byte belegen 24 Byte (1 P).
+4. sub liest den alten Wert 12 und schreibt $12-19=-7$ nach t0. Y $=-7+20=13$ stimmt weiterhin, aber der Rohwert $A=12$ ist überschrieben und für spätere Rechnungen verloren (1 P).
 :::
 
 {{< pagebreak >}}
 
-## Aufgabe 5: Registerbefehle codieren (14 Punkte)
+## Aufgabe 2: Statuswort und Messzähler (10 Punkte)
 
-R-Format von Bit 31 nach 0: funct7 (7), rs2 (5), rs1 (5), funct3 (3), rd (5), opcode (7 Bit). Für add: funct7 = `0000000`, funct3 = `000`, opcode = `0110011`. Für sub: funct7 = `0100000`, übrige Funktionswerte gleich.
+Neben dem Messwert liefert der Sensor ein Statuswort, hier t0 = `0x0000004D`; die unteren acht Bit sind $0100\,1101_2$. Bit 0 meldet „Messwert gültig“, Bit 1 „Überlast“ und Bit 7 „Selbsttest läuft“. Logische Immediates werden wie bei addi von zwölf auf 32 Bit vorzeichenerweitert.
 
-1. Codieren Sie `sub x12, x14, x9`: Felder, 32-Bit-Muster und Hexwort. (6 P)
-2. Decodieren Sie `0x012406B3`: Felder und Befehl. (6 P)
-3. Ändert ein neuer Inhalt von x14 das Wort aus Teil 1? Genügt der Opcode allein zur Unterscheidung von add und sub? (2 P)
+1. Ergänzen Sie Maske und Ergebnis. Jede Zeile startet mit t0 = `0x0000004D`. Die erste Zeile ist ein Beispiel. Tipp: Die Maske ist das vorzeichenerweiterte Immediate. (5 P)
 
-::: {.content-hidden when-profile="solution"}
-\vspace{10cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung {.unnumbered}
-
-1. Felder: `0100000 01001 01110 000 01100 0110011`. Vollständiges Wort: `01000000100101110000011000110011` = `0x40970633`. Je Feld 0,5 P, Bitwort 1 P, Hexwort 2 P.
-2. Felder: `0000000 10010 01000 000 01101 0110011`. Also `add x13, x8, x18`. Je Feld 0,5 P; Operation und richtige Operandenzuordnung zusammen 3 P.
-3. Nein: Register**nummern** sind codiert, keine aktuellen Inhalte. Der gemeinsame Opcode reicht nicht; die gültigen Funktionsfelder unterscheiden die Operationen. Je 1 P.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 6: Immediate-Wort und Byteadressen (12 Punkte)
-
-I-Format: imm (12), rs1 (5), funct3 (3), rd (5), opcode (7 Bit). Für addi gilt funct3 = `000` und opcode = `0010011`. `a0=x10`, `a1=x11`.
-
-1. Codieren Sie `addi a1, a0, -21` mit Feldern, Binärwort und Hexwort. (6 P)
-2. Der folgende native Ausschnitt beginnt bei `0x2400`. Nennen Sie alle Befehlsadressen, die Adresse von `Pruefen`, den PC nach dem letzten Befehl und den Platzbedarf. Welche Konstante steht zuletzt in t3? (4 P)
-
-```asm
-lui  t3, 0x2
-addi t3, t3, -1000
-Pruefen:
-add  t4, t3, x0
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
 ```
 
-3. Geben Sie die Bytefolge des Worts aus Teil 1 ab `0x3400` in Little Endian an. (2 P)
+| Befehl | Zweck | Maske (32 Bit) | Ergebnis |
+|----------------------------|----------------------------|------------------|------------------|
+| `andi t1, t0, 0x0F` | untere vier Bit behalten | `0x0000000F` | `0x0000000D` |
+| `andi t2, t0, 1` | Bit 0 prüfen | | |
+| `ori t3, t0, 0x80` | Bit 7 setzen | | |
+| `xori t4, t0, 2` | Bit 1 kippen | | |
+| `andi t5, t0, -16` | untere vier Bit löschen | | |
+| `xori t6, t0, -1` | alle Bit invertieren | | |
+
+```{=latex}
+\renewcommand{\arraystretch}{1}
+```
+
+2. Die unteren zwölf Bit des Statusworts sollen erhalten bleiben. Warum ist `andi t1, t0, 4095` keine gültige Instruktion? Geben Sie zwei Befehle an, die die Aufgabe lösen. (2 P)
+
+Ein 32-Bit-Register zählt die Messungen; jede Messung führt `addi t0, t0, 1` aus.
+
+3. Ergänzen Sie die Tabelle. Die erste Zeile ist ein Beispiel. (2 P)
+
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
+```
+
+| Zählerstand vorher | neues Wort | signed gelesen | vorzeichenlos gelesen |
+|--------------------|------------------|----------------------|----------------------|
+| `0x00000009` | `0x0000000A` | 10 | 10 |
+| `0x7FFFFFFF` | | | |
+| `0xFFFFFFFF` | | | |
+
+```{=latex}
+\renewcommand{\arraystretch}{1}
+```
+
+4. Nach 2 147 483 647 Messungen zeigt die Anzeige plötzlich −2 147 483 648. Hat der Prozessor einen Fehler gemeldet? Welche Lesart hätte die Anzeige verwenden müssen? (1 P)
 
 ::: {.content-hidden when-profile="solution"}
-\vspace{9cm}
+\vspace{3cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
 ### Musterlösung {.unnumbered}
 
-1. −21: `1111 1110 1011` = `0xFEB`. Felder: `111111101011 01010 000 01011 0010011`. Wort `11111110101101010000010110010011` = `0xFEB50593`. Immediate 1 P, Registerfelder 1 P, Funktionsfelder 1 P, Bitwort 1 P, Hexwort 2 P.
-2. Adressen `0x2400`, `0x2404`, `0x2408` (1 P); Pruefen = `0x2408` und nächster PC `0x240C` (1 P); zwölf Byte (1 P); $8192-1000=7192$ in t3 (1 P). Labels belegen keine Byte.
-3. Ab `0x3400`: `93 05 B5 FE`. Je Byte 0,5 P.
+| Befehl | Zweck | Maske (32 Bit) | Ergebnis |
+|----------------------------|----------------------------|------------------|------------------|
+| `andi t2, t0, 1` | Bit 0 prüfen | `0x00000001` | `0x00000001` |
+| `ori t3, t0, 0x80` | Bit 7 setzen | `0x00000080` | `0x000000CD` |
+| `xori t4, t0, 2` | Bit 1 kippen | `0x00000002` | `0x0000004F` |
+| `andi t5, t0, -16` | untere vier Bit löschen | `0xFFFFFFF0` | `0x00000040` |
+| `xori t6, t0, -1` | alle Bit invertieren | `0xFFFFFFFF` | `0xFFFFFFB2` |
+
+1. Je Zeile 1 P für Maske und Ergebnis. Bit 0 ist gesetzt, der Messwert ist gültig. Bei −16 und −1 füllt die Vorzeichenerweiterung die Maske oben mit Einsen; xori mit −1 invertiert deshalb alle 32 Bit.
+2. 4095 liegt außerhalb des signed Zwölf-Bit-Bereichs −2048 bis 2047 (1 P). Zum Beispiel `li t6, 4095` und `and t1, t0, t6`: Die positive Maske steht dann im Register (1 P).
+
+| Zählerstand vorher | neues Wort | signed gelesen | vorzeichenlos gelesen |
+|--------------------|------------------|----------------------|----------------------|
+| `0x7FFFFFFF` | `0x80000000` | −2 147 483 648 | 2 147 483 648 |
+| `0xFFFFFFFF` | `0x00000000` | 0 | 0 (Umlauf) |
+
+3. Je Zeile 1 P.
+4. Nein. addi speichert die unteren 32 Bit; ein signed Überlauf löst in RV32I keinen Trap aus und setzt kein Überlaufflag. Vorzeichenlos gelesen ist `0x80000000` der richtige Zählerstand 2 147 483 648 (1 P).
 :::
 
 {{< pagebreak >}}
 
-## Aufgabe 7: Eine Rechenvorschrift in Venus
+## Aufgabe 3: Mit Schieben multiplizieren und mitteln (8 Punkte)
 
-Implementieren Sie $Y=(A-B)+(C\cdot4)$ mit Schieben statt Multiplikationsbefehl. Eingaben in `t0`–`t2` bleiben erhalten; `t3` hält die Differenz, `t4` den verschobenen Wert und `t5` das Ergebnis.
+Zeile 5 des Korrekturprogramms bildet $4C$ durch Linksschieben, denn Multiplikationsbefehle gehören zur Erweiterung M, nicht zu RV32I. Außerdem mittelt das Gerät vier korrigierte Werte: Ihre Summe steht in t6, und `srai t6, t6, 2` teilt sie durch vier.
 
-1. Sagen Sie Zwischenwerte und Y für $(12,19,5)$, $(0,0,0)$, $(-8,7,2)$ und $(9,-4,-2)$ voraus.
-2. Schreiben Sie ein vollständiges Venus-Programm mit Einstieg main und Prüfmarke unmittelbar vor der Ausgabe.
-3. Prüfen Sie jede Variante nach Neustart. Venus-Kursvertrag: Druckdienst `a0=1`, Wert in `a1`; Abschluss `a0=10`, jeweils `ecall`.
-4. Notieren Sie Vorhersage, Registeranzeige vor der Ausgabe und Konsolenausgabe. Untersuchen Sie außerdem die native Entwicklung von `li t0, 7192`.
+1. Ergänzen Sie die Tabelle. Jede Zeile startet unabhängig. Die erste Zeile ist ein Beispiel. (4 P)
 
-Die neue Referenzdatei ist `beispiele/lab_02_messkorrektur.s`; vergleichen Sie erst nach Ihrer eigenen Implementierung.
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
+```
+
+| Befehl | Quellen vorher | Ergebnis (hex) | dezimal |
+|--------------------------|------------------------------|------------------|----------------|
+| `slli t4, t2, 2` | t2 = 5 | `0x00000014` | 20 |
+| `slli t4, t2, 2` | t2 = −2 = `0xFFFFFFFE` | | |
+| `srai t6, t6, 2` | t6 = 52 = `0x00000034` | | |
+| `srai t6, t6, 2` | t6 = −28 = `0xFFFFFFE4` | | |
+| `sll t4, t2, t5` | t2 = 5, t5 = 34 | | |
+
+```{=latex}
+\renewcommand{\arraystretch}{1}
+```
+
+2. Ein anderes Gerät zeigt bei der Summe −28 den Mittelwert 1 073 741 817 an; bei positiven Summen stimmt der Wert. Welcher Befehl steht dort vermutlich statt `srai`? Begründen Sie mit dem Bitmuster. (2 P)
+3. Die vier Werte −7, −8, −7 und −8 ergeben die Summe −30 = `0xFFFFFFE2`. Welchen Wert liefert `srai t6, t6, 2`? Wie liegt er zum mathematischen Mittelwert −7,5? (1 P)
+4. Mit t2 = 5 und t5 = 32 liefert `sll t4, t2, t5` den Wert 5. Warum? (1 P)
 
 ::: {.content-hidden when-profile="solution"}
-\vspace{8cm}
+\vspace{5cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
 ### Musterlösung {.unnumbered}
 
-Kern: `sub t3, t0, t1`; `slli t4, t2, 2`; `add t5, t3, t4`. Die vollständige neue Referenzdatei enthält Ausgabe und Abschluss.
+| Befehl | Quellen vorher | Ergebnis (hex) | dezimal |
+|--------------------------|------------------------------|------------------|----------------|
+| `slli t4, t2, 2` | t2 = −2 = `0xFFFFFFFE` | `0xFFFFFFF8` | −8 |
+| `srai t6, t6, 2` | t6 = 52 = `0x00000034` | `0x0000000D` | 13 |
+| `srai t6, t6, 2` | t6 = −28 = `0xFFFFFFE4` | `0xFFFFFFF9` | −7 |
+| `sll t4, t2, t5` | t2 = 5, t5 = 34 | `0x00000014` | 20 |
 
-| $(A,B,C)$ | `t3` | `t4` | Y |
+1. Je Zeile 1 P. Linksschieben um zwei Stellen vervierfacht auch negative Werte, solange keine relevante Stelle herausfällt. Bei sll zählen nur die unteren fünf Bit von t5: $34 \bmod 32 = 2$.
+2. `srli t6, t6, 2` (1 P). srli füllt links mit Nullen: Aus `0xFFFFFFE4` wird `0x3FFFFFF9` = 1 073 741 817. srai kopiert das Vorzeichenbit und liefert `0xFFFFFFF9` = −7 (1 P).
+3. `0xFFFFFFF8` = −8. srai rundet nach unten, nicht zur Null; Abschneiden ergäbe −7 (1 P).
+4. Nur die unteren fünf Bit von t5 zählen. 32 hat dort lauter Nullen, die effektive Weite ist 0 (1 P).
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 4: Konstanten im Befehl (8 Punkte)
+
+Die Zeilen 1 bis 3 des Korrekturprogramms setzen die Eingaben mit addi. Das Immediate-Feld ist zwölf Bit breit und signed: Es reicht von −2048 bis 2047. Eine direkt angegebene Shiftweite reicht von 0 bis 31.
+
+1. Ist die Zeile eine native Instruktion, eine Pseudoinstruktion oder unzulässig? Begründen Sie kurz. Die erste Zeile ist ein Beispiel. (3 P)
+
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
+```
+
+| Zeile | Art | Begründung |
+|----------------------------|--------------|----------------------------------------------|
+| `addi t1, x0, 19` | nativ | 19 liegt im Bereich −2048 bis 2047 |
+| `addi t1, x0, -2048` | | |
+| `addi t1, x0, 2048` | | |
+| `addi t3, t0, -19` | | |
+| `li t1, 3000` | | |
+| `mv t3, t0` | | |
+| `slli t4, t2, 32` | | |
+
+```{=latex}
+\renewcommand{\arraystretch}{1}
+```
+
+2. Weil der Nullpunkt fest 19 ist, kann `addi t3, t0, -19` die Zeilen 2 und 4 ersetzen. Geben Sie −19 als Zwölf-Bit-Muster, als drei Hexziffern und als vorzeichenerweitertes 32-Bit-Wort an. (1 P)
+3. Für welche der Konstanten $K=19$, $K=2048$ und $K=-2048$ lässt sich $\mathrm{t0}-K$ mit einem einzigen addi berechnen? (1 P)
+4. Ein neuer Sensor hat den Nullpunkt $B=3000$. Eine gültige native Entwicklung von `li t1, 3000` ist `lui t1, 0x1` gefolgt von `addi t1, t1, k`. Welchen Wert hat t1 nach lui, und welches k ist nötig? Tipp: lui setzt die Bits 31 bis 12 und löscht die unteren zwölf Bit. (2 P)
+5. Zeile 2 des Programms aus Aufgabe 1 lautet nun `li t1, 3000`. Wie viele Byte belegt das Programm jetzt, und an welcher Adresse steht sub? (1 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{4cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+| Zeile | Art | Begründung |
+|----------------------------|--------------|----------------------------------------------|
+| `addi t1, x0, -2048` | nativ | untere Grenze des Bereichs |
+| `addi t1, x0, 2048` | unzulässig | größer als 2047 |
+| `addi t3, t0, -19` | nativ | −19 liegt im Bereich, zieht 19 ab |
+| `li t1, 3000` | Pseudo | Assembler erzeugt mehrere native Befehle |
+| `mv t3, t0` | Pseudo | native Entwicklung `addi t3, t0, 0` |
+| `slli t4, t2, 32` | unzulässig | direkte Weite nur 0 bis 31 |
+
+1. Je Zeile 0,5 P.
+2. `1111 1110 1101` = `0xFED`, erweitert `0xFFFFFFED` (1 P). Kontrolle: $4077-4096=-19$.
+3. $K=19$ mit Immediate −19 und $K=2048$ mit Immediate −2048. Für $K=-2048$ wäre +2048 nötig, das außerhalb des Bereichs liegt (1 P).
+4. Nach lui: `0x00001000` = 4096 (1 P). $k=3000-4096=-1096$; das liegt im Bereich (1 P).
+5. Sieben native Befehle, also 28 Byte. sub steht jetzt bei `0x1010` (1 P).
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 5: Das Korrekturprogramm codieren (14 Punkte)
+
+Die Felder stehen von Bit 31 links bis Bit 0 rechts. Registerfelder enthalten Nummern: x0 = 0, t0 bis t2 = x5 bis x7, t3 bis t6 = x28 bis x31.
+
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[x=0.4cm,y=1cm,font=\footnotesize,
+  num/.style={font=\scriptsize,inner sep=1pt}]
+\node[anchor=east] at (-0.4,1.6) {R-Format};
+\foreach \a/\b/\n/\hi/\lo in {0/7/funct7/31/25, 7/12/rs2/24/20, 12/17/rs1/19/15, 17/20/funct3/14/12, 20/25/rd/11/7, 25/32/opcode/6/0} {
+  \draw[thick] (\a,1.25) rectangle (\b,1.95);
+  \node at ({(\a+\b)/2},1.6) {\n};
+  \node[num,anchor=south west] at (\a,1.95) {\hi};
+  \node[num,anchor=south east] at (\b,1.95) {\lo};
+}
+\node[anchor=east] at (-0.4,0.35) {I-Format};
+\foreach \a/\b/\n/\hi/\lo in {0/12/{imm[11:0]}/31/20, 12/17/rs1/19/15, 17/20/funct3/14/12, 20/25/rd/11/7, 25/32/opcode/6/0} {
+  \draw[thick] (\a,0) rectangle (\b,0.7);
+  \node at ({(\a+\b)/2},0.35) {\n};
+  \node[num,anchor=south west] at (\a,0.7) {\hi};
+  \node[num,anchor=south east] at (\b,0.7) {\lo};
+}
+\end{tikzpicture}
+\end{center}
+```
+
+| Befehl | opcode | funct3 | funct7 |
 |---|---|---|---|
-| $(12,19,5)$ | −7 | 20 | 13 |
-| $(0,0,0)$ | 0 | 0 | 0 |
-| $(-8,7,2)$ | −15 | 8 | −7 |
-| $(9,-4,-2)$ | 13 | −8 | 5 |
+| add | `0110011` | `000` | `0000000` |
+| sub | `0110011` | `000` | `0100000` |
+| addi | `0010011` | `000` | — |
 
-Eine gültige Entwicklung von 7192 ist `lui t0, 0x2` und `addi t0, t0, -1000`. Tatsächlich angezeigte Befehle und Registerwerte sind im eigenen Venus-Lauf festzuhalten; die Tabelle ist eine Modellvorhersage.
+1. Ergänzen Sie die Felder von `sub t3, t0, t1`. Die erste Zeile ist ein Beispiel. (2 P)
+
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
+```
+
+| Befehl | funct7 | rs2 | rs1 | funct3 | rd | opcode |
+|----------------------|------------|---------|---------|--------|---------|------------|
+| `add t5, t3, t4` | `0000000` | `11101` | `11100` | `000` | `11110` | `0110011` |
+| `sub t3, t0, t1` | | | | | | |
+
+```{=latex}
+\renewcommand{\arraystretch}{1}
+```
+
+2. Schreiben Sie das Wort von `sub t3, t0, t1` in Vierergruppen und als Hexwort. Zum Vergleich ergibt das Beispiel `0000 0001 1101 1110 0000 1111 0011 0011` = `0x01DE0F33`. (2 P)
+3. add und sub haben denselben opcode. Welches Feld unterscheidet sie, und welches Instruktionsbit ändert sich dabei? (1 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3cm}
+:::
+
+4. Ergänzen Sie die Felder des I-Formats und das Hexwort. Die erste Spalte ist ein Beispiel. (4 P)
+
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
+```
+
+| Feld | addi t0, x0, 12 | addi t1, x0, 19 | addi t3, t0, −19 |
+|--------------|------------------------|------------------------|------------------------|
+| imm[11:0] | `000000001100` | | |
+| rs1 | `00000` | | |
+| funct3 | `000` | | |
+| rd | `00101` | | |
+| opcode | `0010011` | | |
+| Hexwort | `0x00C00293` | | |
+
+```{=latex}
+\renewcommand{\arraystretch}{1}
+```
+
+5. Lesen Sie aus Ihrem Hexwort für `addi t3, t0, -19` die oberen drei Hexziffern als signed Zwölf-Bit-Zahl. Erhalten Sie −19 zurück? (1 P)
+6. Für eine neue Messung ist der Rohwert $A=30$. Welche Wörter des Programms aus Aufgabe 1 ändern sich? Warum bleibt das Wort von sub gleich? (2 P)
+7. Das Wort von `sub t3, t0, t1` liegt ab Adresse `0x100C`. Ergänzen Sie die Bytes in Little Endian. (2 P)
+
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
+```
+
+| Adresse | `0x100C` | `0x100D` | `0x100E` | `0x100F` |
+|------------|------------|------------|------------|------------|
+| Byte | | | | |
+
+```{=latex}
+\renewcommand{\arraystretch}{1}
+```
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+| Befehl | funct7 | rs2 | rs1 | funct3 | rd | opcode |
+|----------------------|------------|---------|---------|--------|---------|------------|
+| `sub t3, t0, t1` | `0100000` | `00110` | `00101` | `000` | `11100` | `0110011` |
+
+1. rs2 = 6 (t1), rs1 = 5 (t0), rd = 28 (t3). Felder 2 P, anteilig.
+2. `0100 0000 0110 0010 1000 1110 0011 0011` = `0x40628E33`. Vierergruppen 1 P, Hexwort 1 P.
+3. funct7: `0000000` bei add, `0100000` bei sub. Es ändert sich nur Instruktionsbit 30 (1 P).
+
+| Feld | addi t1, x0, 19 | addi t3, t0, −19 |
+|--------------|------------------------|------------------------|
+| imm[11:0] | `000000010011` | `111111101101` |
+| rs1 | `00000` | `00101` |
+| funct3 | `000` | `000` |
+| rd | `00110` | `11100` |
+| opcode | `0010011` | `0010011` |
+| Hexwort | `0x01300313` | `0xFED28E13` |
+
+4. Je Spalte Felder 1 P, Hexwort 1 P.
+5. `0xFED` = 4077; signed $4077-4096=-19$ (1 P).
+6. Nur das Wort der ersten Zeile: `addi t0, x0, 30` = `0x01E00293` (1 P). sub codiert die Registernummern 5, 6 und 28, nicht deren Inhalte (1 P).
+
+| Adresse | `0x100C` | `0x100D` | `0x100E` | `0x100F` |
+|------------|------------|------------|------------|------------|
+| Byte | `33` | `8E` | `62` | `40` |
+
+7. Je Byte 0,5 P. Das niederwertigste Byte liegt an der kleinsten Adresse.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 6: Fehlersuche bei falschen Korrekturwerten (12 Punkte)
+
+Drei Geräte sollen das Programm aus Aufgabe 1 mit $A=12$, $B=19$ und $C=5$ ausführen. Richtig wäre $Y=13$.
+
+**Gerät 1 meldet $Y=27$.**
+
+1. Angenommen, t4 = 20 stimmt. Welcher Wert stand dann in t3? Wie kann er aus 12 und 19 entstanden sein? (2 P)
+2. Ein Speicherabzug zeigt an den Adressen `0x100C` bis `0x100F` die Bytes `33`, `0E`, `53`, `40`. Setzen Sie das 32-Bit-Wort zusammen. (1 P)
+3. Zerlegen Sie das Wort in die Felder des R-Formats und geben Sie die Registernummern an. (3 P)
+
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
+```
+
+| funct7 | rs2 | rs1 | funct3 | rd | opcode |
+|--------------|--------------|--------------|------------|--------------|--------------|
+| | | | | | |
+
+```{=latex}
+\renewcommand{\arraystretch}{1}
+```
+
+4. Welcher Befehl steht dort, geschrieben mit Aliasnamen? Bestätigt das Ihre Vermutung aus Teil 1? Welche Bytes müssten ab `0x100C` stehen? (2 P)
+
+**Gerät 2 meldet $Y=33$.**
+
+5. Angenommen, t3 = −7 stimmt. Welcher Wert stand in t4? Welcher Befehl wurde vermutlich falsch eingegeben, und wie lautet er? (2 P)
+
+**Gerät 3 soll den neuen Sensor mit dem Nullpunkt 3000 bedienen.** Jemand hat Zeile 2 als `addi t1, x0, 3000` geschrieben; die Übersetzung scheitert.
+
+6. Warum? Wie schreiben Sie die Zeile, damit t1 = 3000 entsteht? (2 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{5cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+1. $27-20=7$ (1 P). $7=19-12$: Die Quellen der Subtraktion sind vertauscht, gerechnet wurde $B-A$ statt $A-B$ (1 P).
+2. Little Endian: Das Byte an der kleinsten Adresse ist das niederwertigste, also `0x40530E33` (1 P).
+
+| funct7 | rs2 | rs1 | funct3 | rd | opcode |
+|--------------|--------------|--------------|------------|--------------|--------------|
+| `0100000` | `00101` = 5 | `00110` = 6 | `000` | `11100` = 28 | `0110011` |
+
+3. Je Feld 0,5 P.
+4. opcode, funct3 und funct7 ergeben sub: `sub x28, x6, x5` = `sub t3, t1, t0` (1 P). Das bestätigt die vertauschten Quellen. Richtig wären die Bytes `33 8E 62 40` aus Aufgabe 5 (1 P).
+5. $33-(-7)=40=8\cdot5$ (1 P). Geschoben wurde um drei statt um zwei Stellen: `slli t4, t2, 3` statt `slli t4, t2, 2` (1 P).
+6. 3000 liegt außerhalb des Bereichs −2048 bis 2047 und passt nicht in das Immediate-Feld (1 P). Richtig ist `li t1, 3000` oder ausdrücklich `lui t1, 0x1` und `addi t1, t1, -1096` (1 P).
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 7: Die Messkorrektur in Venus prüfen
+
+Ergänzen Sie den folgenden Programmrahmen. `li` setzt die Eingaben; bei Werten von −2048 bis 2047 entsteht daraus ein einzelnes addi.
+
+```asm
+.text
+.globl main
+main:
+    li   t0, 12          # A: Rohwert
+    li   t1, 19          # B: Nullpunkt
+    li   t2, 5           # C: Temperaturstufe
+    # Lücke 1: drei Befehle, Ergebnis Y in t5
+Ergebnis_pruefen:
+    # Lücke 2: Y als Ganzzahl ausgeben
+    # Lücke 3: Programm beenden
+```
+
+Venus-Dienste der Kursumgebung: a0 enthält die Dienstnummer, danach folgt `ecall`. Dienst 1 gibt die Ganzzahl in a1 aus, Dienst 10 beendet das Programm.
+
+1. Füllen Sie die Lücken. Lücke 1 übernehmen Sie aus Aufgabe 1, für Lücke 2 und 3 genügen fünf Befehle.
+2. Öffnen Sie Venus unter [thaumicmekanism.github.io/venus](https://thaumicmekanism.github.io/venus/) und geben Sie das Programm im Tab *Editor* ein. Der Wechsel auf den Tab *Simulator* assembliert es. Die Programmansicht zeigt die Spalten *Machine Code* (Hexwort), *Basic Code* (native Befehle nach der Entwicklung) und *Original Code*. Notieren Sie die Wörter von `li t0, 12` und von sub und vergleichen Sie mit Aufgabe 5.
+3. Ein Klick auf einen Befehl setzt einen Haltepunkt (rote Zeile). Setzen Sie ihn auf den ersten Befehl nach `Ergebnis_pruefen` und starten Sie mit *Run*. Alternativ führt *Step* den grün markierten Befehl aus, *Prev* nimmt den letzten Schritt zurück. Prüfen Sie in der Registeransicht t3 bis t5 (x28 bis x30). Werte erscheinen standardmäßig vorzeichenlos hexadezimal, die Anzeigeeinstellung *Decimal* zeigt sie signed dezimal.
+4. Führen Sie das Programm zu Ende und notieren Sie die Konsolenausgabe.
+5. Sagen Sie für jede Zeile t3, t4 und Y voraus. Ändern Sie dann die drei li-Zeilen, assemblieren Sie neu und prüfen Sie. *Reset* setzt den Simulator auf den Anfangszustand zurück.
+
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
+```
+
+| A | B | C | t3 | t4 | Y |
+|----------|----------|----------|------------|------------|------------|
+| 12 | 19 | 5 | −7 | 20 | 13 |
+| 0 | 0 | 0 | | | |
+| −8 | 7 | 2 | | | |
+| 9 | −4 | −2 | | | |
+| 3012 | 3000 | 5 | | | |
+
+```{=latex}
+\renewcommand{\arraystretch}{1}
+```
+
+6. Wie viele native Befehle zeigt die Spalte *Basic Code* in der letzten Variante für die drei li-Zeilen? Vergleichen Sie mit Aufgabe 4. Ersetzen Sie testweise `li t1, 3000` durch `addi t1, x0, 3000` und notieren Sie die Meldung.
+
+Protokollieren Sie jeweils Vorhersage, Registeranzeige am Haltepunkt und Konsolenausgabe.
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+```asm
+.text
+.globl main
+main:
+    li   t0, 12          # A: Rohwert
+    li   t1, 19          # B: Nullpunkt
+    li   t2, 5           # C: Temperaturstufe
+    sub  t3, t0, t1      # A - B
+    slli t4, t2, 2       # 4C
+    add  t5, t3, t4      # Y
+Ergebnis_pruefen:
+    addi a1, t5, 0       # Druckwert nach a1
+    addi a0, x0, 1       # Dienst 1: Ganzzahl ausgeben
+    ecall
+    addi a0, x0, 10      # Dienst 10: beenden
+    ecall
+```
+
+Erwartung am Haltepunkt: t3 = `0xFFFFFFF9` (−7), t4 = `0x00000014` (20), t5 = `0x0000000D` (13). Die Konsole zeigt 13. `li t0, 12` wird zu `addi t0, x0, 12` = `0x00C00293`, sub hat das Wort `0x40628E33`.
+
+| A | B | C | t3 | t4 | Y |
+|----------|----------|----------|------------|------------|------------|
+| 0 | 0 | 0 | 0 | 0 | 0 |
+| −8 | 7 | 2 | −15 | 8 | −7 |
+| 9 | −4 | −2 | 13 | −8 | 5 |
+| 3012 | 3000 | 5 | 12 | 20 | 32 |
+
+Laut Venus-Quelltext entwickelt li Werte außerhalb von −2048 bis 2047 in lui und addi: `li t0, 3012` ergibt `lui t0, 1` und `addi t0, t0, -1084`, `li t1, 3000` ergibt `lui t1, 1` und `addi t1, t1, -1096`. Die drei li-Zeilen erzeugen also fünf native Befehle. `addi t1, x0, 3000` lehnt der Assembler ab, weil das Immediate außerhalb des Bereichs liegt. Das sind Modellvorhersagen; Anzeige und Meldungen der eigenen Venus-Version gehören ins Protokoll.
 :::
