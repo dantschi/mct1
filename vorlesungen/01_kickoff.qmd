@@ -954,12 +954,12 @@ addi x6, x0, 3
 add  x7, x5, x6
 ```
 
-Transfer im Übungsblatt: neue Registerspur mit 12, 6 und 8; auch `x0` als Ziel.
+Transfer im Übungsblatt: neue Registerspur mit 21 und 3; auch `x0` als Ziel.
 
 ::: notes
 Das Assemblerfragment zeigt die drei relevanten Anweisungen einer vollständigen Lehrdatei. addi heißt Add Immediate, Addition mit einer direkt angegebenen Konstante. Da x0 null liefert, erzeugen die ersten beiden Befehle die Registerwerte sieben und drei. add addiert die Registerquellen und schreibt zehn nach x7. Das Ziel steht jeweils zuerst. Diese Wirkungen reichen zum optionalen Versuch; Befehlscodierungen werden erst in Einheit 2 behandelt.
 
-Die Datei enthält zusätzlich den Textbereich, den Programmeinstieg main und eine Dauerschleife mit j, einem unbedingten Jump oder Sprung. Sie beendet sich nicht durch einen unbenannten Systemdienst. Nach den drei Rechenschritten kann der Zustand angehalten und geprüft werden. Ripes ist der visuelle Simulator; seine installierte Version und das gewählte Modell werden im Protokoll notiert. Die Folie nennt Sollwerte eines manuellen Programms, keine bereits beobachteten Simulatorergebnisse. Die optionale Übungsaufgabe verwendet bewusst eine andere Folge aus beispiele/lab_01_registerspur.s: x9 startet mit zwölf, x10 mit sechs und x11 mit acht. Nach der Addition steht 14 in x9; der anschließende Schreibversuch nach x0 verwirft das Ergebnis. Übertragen Sie dafür die Regel über alte Quellen und freigegebenes Ziel.
+Die Datei enthält zusätzlich den Textbereich, den Programmeinstieg main und eine Dauerschleife mit j, einem unbedingten Jump oder Sprung. Sie beendet sich nicht durch einen unbenannten Systemdienst. Nach den drei Rechenschritten kann der Zustand angehalten und geprüft werden. Ripes ist der visuelle Simulator; seine installierte Version und das gewählte Modell werden im Protokoll notiert. Die Folie nennt Sollwerte eines manuellen Programms, keine bereits beobachteten Simulatorergebnisse. Das Übungsblatt verwendet bewusst eine andere Folge; das Programm für den optionalen Ripes-Versuch ist dort vollständig abgedruckt. x9 startet mit 21, x10 mit drei. Die erste Addition schreibt 24 nach x11, der Schreibversuch nach x0 verwirft die Summe 45. Danach wird x9 aus seinem alten Wert zu 24, und die letzte Addition schreibt 48 nach x10. Übertragen Sie dafür die Regel über alte Quellen und freigegebenes Ziel.
 :::
 
 ## Das Fundament für Einheit 2
