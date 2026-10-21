@@ -448,7 +448,34 @@ Gruppencode 00 steht nun für die vier Registerbefehle `add`, `sub`, `and` und `
 
 ## Aufgabe 6: Das Programm in Ripes prüfen
 
-1. Öffnen Sie `beispiele/lab_06_minipfad.s` im RV32-Single-Cycle-Modell ohne C. Protokollieren Sie Version und Modell. Lesen Sie die tatsächliche Adresse B von `werte` ab; sie ersetzt `0x2000` aus Aufgabe 3.
+Ab `start` führt das Programm genau den Ablauf aus Aufgabe 3 aus. Davor lädt `la` die Adresse des Datenbereichs `werte` nach s0, und `li` setzt t5 auf 99.
+
+```asm
+.data
+.align 2
+werte: .word 12, 30, 0, 42
+.text
+.globl main
+main:
+    la s0, werte
+    li t5, 99
+start:
+    lw t1, 0(s0)
+    lw t2, 4(s0)
+    add t3, t1, t2
+    sw t3, 8(s0)
+    lw t4, 12(s0)
+    beq t3, t4, treffer
+kein_treffer:
+    add t5, x0, x0
+    beq x0, x0, fertig
+treffer:
+    add t5, t3, x0
+fertig:
+    beq x0, x0, fertig
+```
+
+1. Geben Sie das Programm im Editor von Ripes ein und wählen Sie das RV32-Single-Cycle-Modell ohne C. Protokollieren Sie Version und Modell. Lesen Sie die tatsächliche Adresse B von `werte` ab; sie ersetzt `0x2000` aus Aufgabe 3.
 2. Halten Sie vor jedem Befehl ab `start` an. Notieren Sie vor der Clock die Schreibfreigaben von Registerbank und Datenspeicher sowie die Auswahl vor ALU-Eingang B und am Rückschreib-MUX. Vergleichen Sie mit Ihrer Tabelle aus Aufgabe 2. Prüfen Sie nach der Clock Register, Speicherwort und PC.
 3. Bestätigen Sie bei `fertig` t1 bis t5 und die vier Wörter ab B.
 4. Ändern Sie im Datenabschnitt den Sollwert von 42 auf 41. Sagen Sie Pfad und t5 voraus, bevor Sie das Programm neu starten, und prüfen Sie dann.
