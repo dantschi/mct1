@@ -203,7 +203,7 @@
     <div class="slides">
 
 <section id="title-slide" data-notes="<p>Diese Einheit erklärt, wie eine konkrete Schaltung die bisher bekannten Befehlswirkungen erzeugt. Voraussetzungen sind Bitmuster und Logikbausteine aus Einheit 1, Register und Befehlsfelder aus Einheit 2, Speicherzugriffe und Sprünge aus Einheit 3 sowie die Unterscheidung von Befehlssatz und Softwarekonvention aus Einheit 4. Eine Pipeline oder ein fertiger Steuerdecoder werden noch nicht vorausgesetzt. Die Begriffe werden aus ihrer Funktion im Datenweg hergeleitet.</p>
-<p>Das Single-Cycle-Lehrmodell verarbeitet einen unterstützten Befehl je Taktperiode. Es umfasst add, sub, and, or, lw, sw und beq und ist kein vollständiger RV32I-Prozessor. Zuerst verfolgen wir Registerarithmetik, danach Laden, Speichern und Branch-Entscheidung. Quellenwahl und Schreibfreigabe erklären gemeinsam den neuen Zustand an der Flanke. Die Timingrechnung verwendet erfundene Lehrwerte; Ripes liefert einen Vergleich mit einer eigenen Mikroarchitektur. Die Übung überträgt das Verfahren auf neue Operanden und einen Paketpfad.</p>" class="quarto-title-block center">
+<p>Das Single-Cycle-Lehrmodell verarbeitet einen unterstützten Befehl je Taktperiode. Es umfasst add, sub, and, or, lw, sw und beq und ist kein vollständiger RV32I-Prozessor. Zuerst verfolgen wir Registerarithmetik, danach Laden, Speichern und Branch-Entscheidung. Quellenwahl und Schreibfreigabe erklären gemeinsam den neuen Zustand an der Flanke. Die Timingrechnung verwendet erfundene Lehrwerte; Ripes liefert einen Vergleich mit einer eigenen Mikroarchitektur. Die Übung überträgt das Verfahren auf das Programm einer Paketwaage.</p>" class="quarto-title-block center">
   <h1 class="title">Mikrocomputertechnik 1</h1>
   <p class="subtitle">Einheit 5: Der Single-Cycle-Datenpfad</p>
 
@@ -1578,7 +1578,7 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
 <h1>6. In Ripes beobachten und auf Papier erklären</h1>
 <aside class="notes">
 <p>Die Papierrechnung beschreibt unseren Datenpfad. Ripes zeigt eine eigene Mikroarchitektur mit zusätzlichen Instruktionen. Wir suchen funktionale Entsprechungen, keine identische Anordnung aller Bauteile.</p>
-<p>Das Übungsblatt beginnt mit Aufgaben ohne Simulator. Der Ripes-Teil ergänzt die Beobachtung. Die drei folgenden Traces sind Vorlesungsdemonstrationen. Der praktische Transfer im Übungsblatt verwendet beispiele/lab_05_paketpfad.s mit ODER-Verknüpfung, Paketkopie und einer neuen Branch-Bedingung. Dort ergeben 40 ODER 22 den Wert 62; das kopierte Wort ist minus 24. Die Labels benennen die jeweils interessierenden Instruktionen.</p>
+<p>Das Übungsblatt beginnt mit Aufgaben ohne Simulator. Der Ripes-Teil ergänzt die Beobachtung. Die drei folgenden Traces sind Vorlesungsdemonstrationen. Im Übungsblatt verfolgen Sie das Programm einer Paketwaage, das dort vollständig abgedruckt ist: Zwei Loads holen das Bruttogewicht 1250 und die Tara 50, sub bildet das Nettogewicht 1200, sw legt es ab, und beq vergleicht es mit dem Sollgewicht 1200. Die Papieraufgaben ergänzen Sprungziele mit den Byteoffsets plus zwölf und minus acht, eine Fehlersuche an einem Store mit falscher Adresse und eine Taktrechnung. Im Ripes-Teil läuft dasselbe Programm; nach der verlangten Änderung des Bruttogewichts auf 1230 wird der Branch nicht genommen, und a0 wird null. Die Labels benennen die jeweils interessierenden Instruktionen.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
