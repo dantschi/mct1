@@ -37,3 +37,9 @@ Papierpunkte nach Blatt: 60, 60, 60, 60, 50, 50, 60, 60, 60. Optionale Aufgaben 
 Die PDF-Seitenzahlen pro Fassung betragen nach Blatt 7, 7, 7, 8, 6, 6, 7, 8, 8. Einzeldateien und zwei Sammel-PDFs mit je 64 Seiten liegen lokal unter labs/_output/ und bleiben als Build-Artefakte unversioniert. Beide Sammelfassungen haben Lesezeichen je Blatt.
 
 Die Code- und Zeitangaben sind funktional geprüfte Modellvorhersagen. Es wurden keine eigenen Venus-/Ripes-Beobachtungen, privilegierten Hardwareläufe oder RISC-V-Compilerergebnisse erfunden. Tatsächliche Geräteadressen, Simulatorversionen und Beobachtungen werden weiterhin in den praktischen Aufgaben selbst protokolliert.
+
+## Nachtrag 21. Oktober 2026: Blatt 6 konkreter
+
+Blatt 6 war zu abstrakt. Die Papieraufgaben bauen jetzt aufeinander auf: Wirkung von fünf Befehlen mit Zahlenwerten bestimmen, das Steuerwerk eines Mini-Datenpfads (nur add, beq, lw, sw, Zweibit-Gruppencode) als Wahrheitstabelle, Formeln und Gatterschaltung selbst bauen, ein Programm damit verfolgen, einen Verdrahtungsfehler (MemtoReg an g0) finden und schließlich ALUOp/ALUControl für vier Rechenbefehle ergänzen. Entfallen sind die Bit-30-Sonderfälle, die Don't-Care-Formelvarianten und die Fehlerfolgen über Immediate-Bits als Registeradresse.
+
+Der Mini-Datenpfad ist als TikZ-Abbildung im Blatt enthalten. Die Ripes-Aufgabe verwendet beispiele/lab_06_minipfad.s, das denselben Ablauf wie die Papieraufgabe ausführt; beispiele/lab_06_bitpruefung.s entfällt. Papierpunkte bleiben 50. Sollwerte, Fehlerlauf und Ripes-Variante (Sollwert 41) wurden mit einer Python-Modellrechnung nachgerechnet; ein Ripes-Lauf fand nicht statt. Seitenzahl Blatt 6: Studierende 7, Musterlösung 10.

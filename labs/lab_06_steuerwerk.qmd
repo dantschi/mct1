@@ -10,29 +10,451 @@ format:
     mainfont: TeX Gyre Heros
     sansfont: TeX Gyre Heros
     monofont: TeX Gyre Cursor
+    include-in-header:
+      text: |
+        \usepackage{tikz}
+        \usetikzlibrary{arrows.meta}
 ---
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung**
 :::
 
-## Aufgabe 1: Einen Decoderentwurf korrigieren (12 Punkte)
+## Aufgabe 1: Was soll der Datenpfad tun? (8 Punkte)
 
-Single-Cycle-Kursmodell mit addi-Erweiterung. ALUSrc: 0 = RD2, 1 = Immediate. MemtoReg: 0 = ALU, 1 = Speicher. X ist nur bei gesperrter Registerübernahme unerheblich.
+Single-Cycle-Kursmodell aus Einheit 5 und 6. Jeder Befehl startet unabhängig mit t1 = 12, t2 = 30, s0 = `0x2000`; das Wort an `0x2004` ist 7. Die erste Zeile ist ein Beispiel, „—" bedeutet keine Wirkung.
 
-1. Prüfen Sie jede Zeile. Korrigieren Sie falsche Bits; kennzeichnen Sie auch eine vollständig richtige Zeile. (5 P)
+1. Ergänzen Sie die Tabelle. (4 P)
 
-| Befehl | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch |
-|---|---|---|---|---|---|---|
-| or | 0 | 0 | 1 | 0 | 0 | 0 |
-| addi | 1 | 1 | 1 | 0 | 0 | 0 |
-| sw | 1 | X | 1 | 0 | 1 | 0 |
-| lw | 1 | 1 | 1 | 0 | 0 | 0 |
-| beq | 1 | X | 0 | 0 | 0 | 1 |
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
+```
 
-2. Ordnen Sie jeder korrigierten Zeile ALUOp zu: 00 = ADD, 01 = SUB-Vergleich, 10 = Register-Funktionsfelder. Warum gehört addi zu 00? (3 P)
-3. Dürfen beim korrigierten sw sowohl MemtoReg = 0 als auch 1 verwendet werden? Begründen Sie. (2 P)
-4. Wie viele benannte Hauptsignale und Bits enthalten diese sechs Signale zusammen mit ALUOp? Ist PCSrc ein weiterer unabhängiger Hauptausgang? (2 P)
+| Befehl | ALU-Eingang B | ALU-Ergebnis | Datenspeicher | Register danach |
+|------------------------------|---------------|---------------|---------------------|---------------|
+| `add t3, t1, t2` | RD2 = 30 | 42 | — | t3 = 42 |
+| `lw t3, 4(s0)` | | | | |
+| `sw t2, 8(s0)` | | | | |
+| `beq t1, t2, ziel` | | | | |
+| `addi t3, t1, -2` | | | | |
+
+```{=latex}
+\renewcommand{\arraystretch}{1}
+```
+
+2. Bei zwei Befehlen ist es gleichgültig, ob das ALU-Ergebnis oder das Speicherwort zum Register-Schreibport läuft. Welche sind es, und warum? (2 P)
+3. addi gleicht bei ALU-Eingang B einem Befehl der Tabelle, beim Register-Schreibwert einem anderen. Welchen jeweils? Welche Werte folgen daraus für ALUSrc und MemtoReg? (2 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{5cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+| Befehl | ALU-Eingang B | ALU-Ergebnis | Datenspeicher | Register danach |
+|------------------------------|---------------|---------------|---------------------|---------------|
+| `lw t3, 4(s0)` | Immediate 4 | Adresse `0x2004` | liest 7 | t3 = 7 |
+| `sw t2, 8(s0)` | Immediate 8 | Adresse `0x2008` | schreibt 30 an `0x2008` | — |
+| `beq t1, t2, ziel` | RD2 = 30 | $12-30=-18$, Zero = 0 | — | — (PC + 4) |
+| `addi t3, t1, -2` | Immediate −2 | 10 | — | t3 = 10 |
+
+1. Je Zeile 1 P.
+2. sw und beq (1 P): Beide schreiben kein Register, RegWrite ist null. Die Auswahl ist daher ein Don't Care X (1 P). Die Store-Daten kommen bei sw direkt aus RD2.
+3. Eingang B wie lw (Immediate), Schreibwert wie add (ALU-Ergebnis) (1 P). Daraus folgen ALUSrc = 1 und MemtoReg = 0 (1 P).
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 2: Ein Steuerwerk für den Mini-Datenpfad bauen (16 Punkte)
+
+Der Mini-Datenpfad kennt nur `add`, `beq`, `lw` und `sw`. Ein Vorerkenner hat den Befehl bereits als gültig erkannt und liefert den Gruppencode $g_1g_0$: 00 = add, 01 = beq, 10 = lw, 11 = sw. Dieser Code ist eine Annahme des Mini-Modells, kein RISC-V-Feld. Die ALU kann nur addieren und subtrahieren; statt ALUOp genügt deshalb das Signal ALUSub. Gestrichelte Pfeile sind Steuersignale, gleichnamige Anschlüsse sind verbunden.
+
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm,font=\footnotesize,
+  blk/.style={draw,thick,inner sep=0pt},
+  dat/.style={-{Stealth[length=1.8mm]},thick},
+  ctl/.style={-{Stealth[length=1.5mm]},dashed},
+  lab/.style={font=\scriptsize,inner sep=1pt},
+  pt/.style={circle,fill,inner sep=0pt,minimum size=3.5pt}]
+% Bausteine
+\node[blk,minimum width=8mm,minimum height=10mm] (pc) at (0.45,0) {PC};
+\node[blk,minimum width=17mm,minimum height=18mm,align=center] (imem) at (2.35,0) {Befehls-\\speicher};
+\node[blk,minimum width=19mm,minimum height=24mm] (reg) at (5.6,0) {};
+\node[align=center] at (5.5,0.15) {Register-\\bank};
+\node[blk,minimum width=16mm,minimum height=7mm] (imm) at (5.6,-2.3) {ImmGen};
+\node[blk,minimum width=4.5mm,minimum height=13mm] (muxb) at (7.6,-0.55) {};
+\node[blk,minimum width=13mm,minimum height=20mm,align=center] (alu) at (9.3,0) {ALU\\$A\pm B$};
+\node[blk,minimum width=19mm,minimum height=19mm] (dmem) at (11.9,0) {};
+\node[align=center] at (12.1,-0.25) {Daten-\\speicher};
+\node[blk,minimum width=4.5mm,minimum height=13mm] (muxw) at (14.2,0) {};
+\node[blk,minimum width=16mm,minimum height=9mm,align=center] (pcsel) at (0.85,-2.2) {PC-Auswahl\\{\scriptsize PC+4 / Ziel}};
+\node[blk,minimum width=17mm,minimum height=7mm] (vor) at (2.35,2.6) {Vorerkenner};
+\node[blk,minimum width=34mm,minimum height=7mm,fill=black!8] (st) at (5.65,2.6) {Steuerwerk (Aufgabe 2)};
+% Anschlussnamen
+\node[lab,anchor=east] at (6.53,0.9) {RD1};
+\node[lab,anchor=east] at (6.53,-0.25) {RD2};
+\node[lab,anchor=west] at (4.67,-0.7) {WD};
+\node[lab] at (7.6,-0.25) {0};
+\node[lab] at (7.6,-0.85) {1};
+\node[lab,anchor=west] at (8.67,0.9) {A};
+\node[lab,anchor=west] at (8.67,-0.55) {B};
+\node[lab,anchor=west] at (10.97,0) {Adr.};
+\node[lab] at (11.5,-0.75) {WD};
+\node[lab,anchor=east] at (12.83,0.35) {RD};
+\node[lab] at (14.2,0.35) {1};
+\node[lab] at (14.2,-0.35) {0};
+% Datenwege
+\draw[dat] (pc.east) -- (imem.west);
+\draw[dat] (3.2,0.45) -- node[lab,above]{Registernr.} (4.65,0.45);
+\draw[dat] (3.2,-0.5) -- (3.9,-0.5) -- (3.9,-2.3) -- (imm.west);
+\draw[dat] (6.55,0.9) -- (8.65,0.9);
+\draw[dat] (6.55,-0.25) -- (7.375,-0.25);
+\node[pt] at (6.9,-0.25) {};
+\draw[dat] (6.9,-0.25) -- (6.9,-1.6) -- (11.5,-1.6) -- (11.5,-0.95);
+\draw[dat] (imm.east) -- (7.1,-2.3) -- (7.1,-0.85) -- (7.375,-0.85);
+\draw[dat] (7.825,-0.55) -- (8.65,-0.55);
+\draw[dat] (9.95,0) -- (10.95,0);
+\node[pt] at (10.4,0) {};
+\draw[dat] (10.4,0) -- (10.4,-2.1) -- (13.6,-2.1) -- (13.6,-0.35) -- (13.975,-0.35);
+\draw[dat] (12.85,0.35) -- (13.975,0.35);
+\draw[dat] (14.425,0) -- (14.8,0) -- (14.8,-3.0) -- (4.3,-3.0) -- (4.3,-0.7) -- (4.65,-0.7);
+\draw[dat] (0.45,-1.75) -- (pc.south);
+\draw[dat] (imem.north) -- node[lab,right]{Opcode} (vor.south);
+\draw[dat] (vor.east) -- node[lab,above]{$g_1g_0$} (st.west);
+\draw[ctl,thick] (st.east) -- (8.2,2.6) node[right,align=left,font=\scriptsize]{7 Steuersignale an die gleichnamigen\\gestrichelten Eingänge};
+% Steuereingänge
+\draw[ctl] (5.6,1.6) node[above]{RegWrite} -- (5.6,1.2);
+\draw[ctl] (7.6,0.55) -- (7.6,0.1);
+\node[anchor=west] at (7.68,0.4) {ALUSrc};
+\draw[ctl] (9.0,1.4) -- (9.0,1.0);
+\node[anchor=south east] at (9.1,1.4) {ALUSub};
+\draw[ctl] (9.65,1.0) -- (9.65,1.4);
+\node[anchor=south west] at (9.55,1.4) {Zero};
+\draw[ctl] (11.5,1.35) -- (11.5,0.95);
+\node[anchor=south] at (11.5,1.35) {MemRead};
+\draw[ctl] (12.3,1.8) -- (12.3,0.95);
+\node[anchor=south] at (12.3,1.8) {MemWrite};
+\draw[ctl] (14.2,1.05) -- (14.2,0.65);
+\node[anchor=south] at (14.2,1.05) {MemtoReg};
+\draw[ctl] (0.45,-3.1) -- (0.45,-2.65);
+\node[anchor=north] at (0.45,-3.1) {Branch};
+\draw[ctl] (1.25,-3.1) -- (1.25,-2.65);
+\node[anchor=north] at (1.25,-3.1) {Zero};
+\end{tikzpicture}
+\end{center}
+```
+
+| Signal | wirkt auf | 0 bedeutet | 1 bedeutet |
+|---|---|---|---|
+| ALUSrc | MUX vor ALU-Eingang B | RD2 | Immediate |
+| ALUSub | ALU | $A+B$ | $A-B$ |
+| MemtoReg | Rückschreib-MUX | ALU-Ergebnis | Speicherwort |
+| RegWrite | Registerbank | kein Schreiben | Schreiben an der Flanke |
+| MemRead | Datenspeicher | kein Lesen | Lesen |
+| MemWrite | Datenspeicher | kein Schreiben | Schreiben an der Flanke |
+| Branch | PC-Auswahl | immer PC + 4 | Ziel, falls Zero = 1 |
+
+1. Vervollständigen Sie die Wahrheitstabelle. Verwenden Sie X nur, wo die Auswahl nachweislich keine Wirkung hat. (6 P)
+
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
+```
+
+| $g_1g_0$ | Befehl | ALUSrc | ALUSub | MemtoReg | RegWrite | MemRead | MemWrite | Branch |
+|---|---|---|---|---|---|---|---|---|
+| 00 | add | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
+| 01 | beq | | | | | | | |
+| 10 | lw | | | | | | | |
+| 11 | sw | | | | | | | |
+
+```{=latex}
+\renewcommand{\arraystretch}{1}
+```
+
+2. Geben Sie jedes Signal als Formel in $g_1$ und $g_0$ an. Beispiel: $\mathrm{MemWrite}=g_1\land g_0$, denn nur sw schreibt in den Speicher. Tipp: Suchen Sie die Zeilen mit einer Eins. Manche Signale sind direkt ein Eingangsbit oder dessen Negation. (6 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{5cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung 1 und 2 {.unnumbered}
+
+| $g_1g_0$ | Befehl | ALUSrc | ALUSub | MemtoReg | RegWrite | MemRead | MemWrite | Branch |
+|---|---|---|---|---|---|---|---|---|
+| 01 | beq | 0 | 1 | X | 0 | 0 | 0 | 1 |
+| 10 | lw | 1 | 0 | 1 | 1 | 1 | 0 | 0 |
+| 11 | sw | 1 | 0 | X | 0 | 0 | 1 | 0 |
+
+1. Je Zeile 2 P, anteilig. Für MemtoReg bei beq und sw ist statt X auch ein konkreter Wert richtig, wenn die Begründung RegWrite = 0 nennt.
+2. Je Signal 1 P:
+   - $\mathrm{ALUSrc}=g_1$: lw und sw sind genau die Codes mit $g_1=1$.
+   - $\mathrm{ALUSub}=\overline{g_1}\land g_0$: nur beq.
+   - $\mathrm{MemtoReg}=g_1$ (X bei sw als 1, bei beq als 0 gewählt) oder ebenso richtig $g_1\land\overline{g_0}$.
+   - $\mathrm{RegWrite}=\overline{g_0}$: add und lw sind genau die Codes mit $g_0=0$.
+   - $\mathrm{MemRead}=g_1\land\overline{g_0}$: nur lw.
+   - $\mathrm{Branch}=\overline{g_1}\land g_0$: nur beq, also gleich ALUSub.
+:::
+
+{{< pagebreak >}}
+
+3. Zeichnen Sie das Steuerwerk mit Negationen (NICHT) und UND-Gattern in den Kasten. Welche Ausgänge brauchen kein eigenes UND-Gatter? (2 P)
+
+::: {.content-hidden when-profile="solution"}
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm,font=\footnotesize,
+  dat/.style={-{Stealth[length=1.8mm]},thick}]
+\draw[thick] (0,0) rectangle (9,6.6);
+\node[anchor=south west] at (0.15,0.15) {Steuerwerk};
+\draw[dat] (1.5,7.3) node[above]{$g_1$} -- (1.5,6.6);
+\draw[dat] (3.0,7.3) node[above]{$g_0$} -- (3.0,6.6);
+\foreach \y/\s in {5.9/ALUSrc,5.05/ALUSub,4.2/MemtoReg,3.35/RegWrite,2.5/MemRead,1.65/MemWrite,0.8/Branch}
+  \draw[dat] (9,\y) -- (9.8,\y) node[right]{\s};
+\end{tikzpicture}
+\end{center}
+```
+:::
+
+4. Die PC-Auswahl bildet $\mathrm{PCSrc}=\mathrm{Branch}\land\mathrm{Zero}$. Bestimmen Sie Branch, Zero und PCSrc für `beq` mit den Werten 7 und 7, `beq` mit 7 und 9 sowie `add t0, x0, x0`. (2 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{4cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung 3 und 4 {.unnumbered}
+
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm,font=\footnotesize,
+  dat/.style={-{Stealth[length=1.8mm]},thick},
+  w/.style={thick},
+  pt/.style={circle,fill,inner sep=0pt,minimum size=3.5pt},
+  inv/.style={draw,thick,minimum width=5mm,minimum height=5mm,inner sep=0pt},
+  gate/.style={draw,thick,minimum width=8mm,minimum height=9mm,inner sep=0pt}]
+% Eingänge und Negationen
+\draw[w] (0.8,8.0) node[above]{$g_1$} -- (0.8,0.9);
+\draw[w] (2.8,8.0) node[above]{$g_0$} -- (2.8,0.9);
+\node[pt] at (0.8,7.5) {};
+\node[pt] at (2.8,7.5) {};
+\draw[w] (0.8,7.5) -- (1.8,7.5) -- (1.8,7.3);
+\draw[w] (2.8,7.5) -- (3.8,7.5) -- (3.8,7.3);
+\node[inv] at (1.8,7.05) {1};
+\node[inv] at (3.8,7.05) {1};
+\draw[thick] (1.8,6.73) circle (0.07);
+\draw[thick] (3.8,6.73) circle (0.07);
+\draw[w] (1.8,6.66) -- (1.8,0.9);
+\draw[w] (3.8,6.66) -- (3.8,0.9);
+\node[below] at (0.8,0.9) {$g_1$};
+\node[below] at (1.8,0.9) {$\overline{g_1}$};
+\node[below] at (2.8,0.9) {$g_0$};
+\node[below] at (3.8,0.9) {$\overline{g_0}$};
+% Ausgänge ohne UND-Gatter
+\node[pt] at (0.8,6.1) {};
+\draw[dat] (0.8,6.1) -- (7.5,6.1) node[right]{ALUSrc};
+\node[pt] at (0.8,5.5) {};
+\draw[dat] (0.8,5.5) -- (7.5,5.5) node[right]{MemtoReg};
+\node[pt] at (3.8,4.9) {};
+\draw[dat] (3.8,4.9) -- (7.5,4.9) node[right]{RegWrite};
+% UND-Gatter
+\node[gate] at (5.6,3.9) {\&};
+\node[pt] at (0.8,4.1) {};
+\draw[w] (0.8,4.1) -- (5.2,4.1);
+\node[pt] at (3.8,3.7) {};
+\draw[w] (3.8,3.7) -- (5.2,3.7);
+\draw[dat] (6.0,3.9) -- (7.5,3.9) node[right]{MemRead};
+\node[gate] at (5.6,2.7) {\&};
+\node[pt] at (0.8,2.9) {};
+\draw[w] (0.8,2.9) -- (5.2,2.9);
+\node[pt] at (2.8,2.5) {};
+\draw[w] (2.8,2.5) -- (5.2,2.5);
+\draw[dat] (6.0,2.7) -- (7.5,2.7) node[right]{MemWrite};
+\node[gate] at (5.6,1.6) {\&};
+\node[pt] at (1.8,1.8) {};
+\draw[w] (1.8,1.8) -- (5.2,1.8);
+\node[pt] at (2.8,1.4) {};
+\draw[w] (2.8,1.4) -- (5.2,1.4);
+\draw[dat] (6.0,1.6) -- (7.5,1.6) node[right]{Branch};
+\node[pt] at (6.6,1.6) {};
+\draw[dat] (6.6,1.6) -- (6.6,0.9) -- (7.5,0.9) node[right]{ALUSub};
+\end{tikzpicture}
+\end{center}
+```
+
+3. Zwei Negationen und drei UND-Gatter; Punkte markieren Verbindungen, Kreuzungen ohne Punkt sind nicht verbunden (1 P). Kein eigenes UND-Gatter brauchen ALUSrc und MemtoReg (direkt $g_1$), RegWrite (nur $\overline{g_0}$) und ALUSub (gleich Branch) (1 P).
+
+| Fall | Branch | Zero | PCSrc |
+|---|---|---|---|
+| beq, 7 und 7 | 1 | 1 | 1 |
+| beq, 7 und 9 | 1 | 0 | 0 |
+| `add t0, x0, x0` | 0 | 1 | 0 |
+
+4. Je Fall 2/3 P. Branch folgt aus der Befehlsart, Zero aus dem ALU-Ergebnis.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 3: Ein Programm durch den Mini-Datenpfad verfolgen (10 Punkte)
+
+Der Mini-Datenpfad aus Aufgabe 2 arbeitet mit Ihrem Steuerwerk. Anfang: s0 = `0x2000`, t1 bis t4 = 0, t5 = 99. Die Datenwörter ab `0x2000` lauten 12, 30, 0, 42 (Wert A, Wert B, Summe, Sollwert).
+
+```asm
+start:        lw   t1, 0(s0)        # 0x100  Wert A
+              lw   t2, 4(s0)        # 0x104  Wert B
+              add  t3, t1, t2       # 0x108  Summe
+              sw   t3, 8(s0)        # 0x10C  Summe ablegen
+              lw   t4, 12(s0)       # 0x110  Sollwert
+              beq  t3, t4, treffer  # 0x114
+kein_treffer: add  t5, x0, x0       # 0x118
+              beq  x0, x0, fertig   # 0x11C
+treffer:      add  t5, t3, x0       # 0x120
+fertig:       beq  x0, x0, fertig   # 0x124
+```
+
+1. Füllen Sie die Tabelle bis zum Erreichen von `fertig` aus. Freigaben sind RegWrite, MemRead, MemWrite und Branch; tragen Sie diejenigen ein, die eins sind. Die letzte Zeile bestimmen Sie selbst. (7 P)
+
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
+```
+
+| PC | Befehl | $g_1g_0$ | ALU-Ergebnis | Freigaben = 1 | Wirkung | nächster PC |
+|--------|----------------------------------|-----|-----------|--------------|------------|---------|
+| `0x100` | `lw t1, 0(s0)` | | | | | |
+| `0x104` | `lw t2, 4(s0)` | | | | | |
+| `0x108` | `add t3, t1, t2` | | | | | |
+| `0x10C` | `sw t3, 8(s0)` | | | | | |
+| `0x110` | `lw t4, 12(s0)` | | | | | |
+| `0x114` | `beq t3, t4, treffer` | | | | | |
+| | | | | | | |
+
+```{=latex}
+\renewcommand{\arraystretch}{1}
+```
+
+2. Welche Befehle werden übersprungen? Woran erkennen Sie das in der beq-Zeile? (1 P)
+3. Geben Sie t1 bis t5 und die vier Datenwörter bei `fertig` an. (2 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{4cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+| PC | Befehl | $g_1g_0$ | ALU-Ergebnis | Freigaben = 1 | Wirkung | nächster PC |
+|--------|----------------------------------|-----|-----------|--------------|------------|---------|
+| `0x100` | `lw t1, 0(s0)` | 10 | `0x2000` | RegWrite, MemRead | t1 = 12 | `0x104` |
+| `0x104` | `lw t2, 4(s0)` | 10 | `0x2004` | RegWrite, MemRead | t2 = 30 | `0x108` |
+| `0x108` | `add t3, t1, t2` | 00 | 42 | RegWrite | t3 = 42 | `0x10C` |
+| `0x10C` | `sw t3, 8(s0)` | 11 | `0x2008` | MemWrite | Wort an `0x2008` = 42 | `0x110` |
+| `0x110` | `lw t4, 12(s0)` | 10 | `0x200C` | RegWrite, MemRead | t4 = 42 | `0x114` |
+| `0x114` | `beq t3, t4, treffer` | 01 | 0, Zero = 1 | Branch | — | `0x120` |
+| `0x120` | `add t5, t3, x0` | 00 | 42 | RegWrite | t5 = 42 | `0x124` |
+
+1. Je Zeile 1 P.
+2. Die beiden Befehle bei `kein_treffer` (`0x118`, `0x11C`): Branch = 1 und Zero = 1 ergeben PCSrc = 1, der PC springt nach `0x120`. 1 P.
+3. t1 = 12, t2 = 30, t3 = 42, t4 = 42, t5 = 42 (1 P); Datenwörter 12, 30, 42, 42 (1 P).
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 4: Fehlersuche im Steuerwerk (8 Punkte)
+
+Ein Team hat das Steuerwerk aus Aufgabe 2 aufgebaut und startet das Programm aus Aufgabe 3 mit demselben Anfangszustand. Bei `fertig` steht in t1 der Wert `0x2000` statt 12.
+
+1. Welcher Wert wurde offenbar statt des Speicherworts nach t1 geschrieben? Welches Steuersignal ist deshalb verdächtig? (2 P)
+2. Tatsächlich ist MemtoReg direkt mit $g_0$ verbunden; alle anderen Signale sind richtig. Vergleichen Sie $\mathrm{MemtoReg}=g_0$ für alle vier Gruppencodes mit Ihrer Tabelle. Bei welchem Befehl wirkt der Fehler, bei welchen ist er harmlos? (2 P)
+3. Verfolgen Sie das Programm mit diesem Fehler. Geben Sie t1 bis t5, das Wort an `0x2008` und den genommenen Pfad (`treffer` oder `kein_treffer`) an. (3 P)
+4. Geben Sie eine korrekte Formel für MemtoReg an. (1 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{10cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+1. Die ALU-Adresse `0x2000` des ersten Loads (1 P). Verdächtig ist MemtoReg, die Rückschreibauswahl (1 P). RegWrite war offensichtlich eins, sonst wäre t1 null geblieben.
+2. add: $g_0=0$, richtig. lw: $g_0=0$ statt 1, das ALU-Ergebnis wird geschrieben; hier wirkt der Fehler (1 P). beq und sw: 1 statt X, harmlos wegen RegWrite = 0 (1 P).
+3. t1 = `0x2000`, t2 = `0x2004`, t3 = `0x4004`, t4 = `0x200C` (2 P, anteilig). Das Wort an `0x2008` wird `0x4004`, denn Store-Adresse und Store-Daten aus RD2 sind unverändert richtig. beq vergleicht `0x4004` mit `0x200C`: kein Sprung, Pfad `kein_treffer`, t5 = 0 (zusammen 1 P).
+4. $\mathrm{MemtoReg}=g_1$ oder $\mathrm{MemtoReg}=g_1\land\overline{g_0}$. 1 P.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 5: Ausbaustufe mit vier Rechenbefehlen (8 Punkte)
+
+Gruppencode 00 steht nun für die vier Registerbefehle `add`, `sub`, `and` und `or`. Die Hauptsteuerung liefert statt ALUSub die Kategorie ALUOp; die ALU-Steuerung bildet daraus wie in Einheit 6 das Kommando ALUControl.
+
+| ALUOp | Bedeutung |
+|---|---|
+| 00 | Addition |
+| 01 | Subtraktion |
+| 10 | Operation aus funct3 und funct7 |
+
+| Befehl | funct3 | funct7 | ALUControl |
+|---|---|---|---|
+| add | 000 | 0000000 | 0010 |
+| sub | 000 | 0100000 | 0110 |
+| and | 111 | 0000000 | 0000 |
+| or | 110 | 0000000 | 0001 |
+
+1. Geben Sie ALUOp für die Gruppencodes 00, 01, 10 und 11 an. (2 P)
+2. t1 = 12 = $1100_2$, t2 = 10 = $1010_2$, s0 = `0x2000`. Bestimmen Sie ALUOp, ALUControl und ALU-Ergebnis. (5 P)
+
+```{=latex}
+\renewcommand{\arraystretch}{1.9}
+```
+
+| Befehl | ALUOp | ALUControl | ALU-Ergebnis |
+|---|---|---|---|
+| `add t0, t1, t2` | | | |
+| `sub t0, t1, t2` | | | |
+| `and t0, t1, t2` | | | |
+| `or t0, t1, t2` | | | |
+| `lw t0, 8(s0)` | | | |
+
+```{=latex}
+\renewcommand{\arraystretch}{1}
+```
+
+3. Warum kann die Hauptsteuerung die Rechenoperation jetzt nicht mehr allein aus $g_1g_0$ festlegen? (1 P)
+
+::: {.content-hidden when-profile="solution"}
+\vspace{3cm}
+:::
+
+::: {.content-visible when-profile="solution"}
+### Musterlösung {.unnumbered}
+
+1. 00 → 10, 01 → 01, 10 → 00, 11 → 00. Je 0,5 P.
+
+| Befehl | ALUOp | ALUControl | ALU-Ergebnis |
+|---|---|---|---|
+| `add t0, t1, t2` | 10 | 0010 | 22 |
+| `sub t0, t1, t2` | 10 | 0110 | 2 |
+| `and t0, t1, t2` | 10 | 0000 | 8 = $1000_2$ |
+| `or t0, t1, t2` | 10 | 0001 | 14 = $1110_2$ |
+| `lw t0, 8(s0)` | 00 | 0010 | Adresse `0x2008` |
+
+2. Je Zeile 1 P.
+3. Code 00 umfasst vier Operationen mit demselben Datenweg; erst funct3 und funct7 unterscheiden sie. 1 P.
+:::
+
+{{< pagebreak >}}
+
+## Aufgabe 6: Das Programm in Ripes prüfen
+
+1. Öffnen Sie `beispiele/lab_06_minipfad.s` im RV32-Single-Cycle-Modell ohne C. Protokollieren Sie Version und Modell. Lesen Sie die tatsächliche Adresse B von `werte` ab; sie ersetzt `0x2000` aus Aufgabe 3.
+2. Halten Sie vor jedem Befehl ab `start` an. Notieren Sie vor der Clock die Schreibfreigaben von Registerbank und Datenspeicher sowie die Auswahl vor ALU-Eingang B und am Rückschreib-MUX. Vergleichen Sie mit Ihrer Tabelle aus Aufgabe 2. Prüfen Sie nach der Clock Register, Speicherwort und PC.
+3. Bestätigen Sie bei `fertig` t1 bis t5 und die vier Wörter ab B.
+4. Ändern Sie im Datenabschnitt den Sollwert von 42 auf 41. Sagen Sie Pfad und t5 voraus, bevor Sie das Programm neu starten, und prüfen Sie dann.
+5. Beim `sw` zeigt Ripes am Rückschreib-MUX einen konkreten Auswahlwert, in Ihrer Tabelle steht X. Warum ist das kein Widerspruch?
+
+Die Initialisierung vor `start` und die Schleife bei `fertig` gehören nicht zum untersuchten Ablauf. Ripes kann Signale anders benennen und codieren als das Mini-Modell; den beq-Vergleich kann ein eigener Vergleicher übernehmen.
 
 ::: {.content-hidden when-profile="solution"}
 \vspace{7cm}
@@ -41,157 +463,9 @@ Single-Cycle-Kursmodell mit addi-Erweiterung. ALUSrc: 0 = RD2, 1 = Immediate. Me
 ::: {.content-visible when-profile="solution"}
 ### Musterlösung {.unnumbered}
 
-1. or korrekt. addi: MemtoReg muss 0 sein. sw: RegWrite muss 0 sein. lw: MemRead muss 1 sein. beq: ALUSrc muss 0 sein. Je richtige Zeilenentscheidung 1 P.
-2. Kategorien in Tabellenreihenfolge: 10, 00, 00, 00, 01. Je 0,5 P. addi benötigt unabhängig von den Immediate-Bits immer Addition (0,5 P).
-3. Ja. RegWrite = 0 verhindert jede Registerübernahme; die Store-Daten kommen separat aus RD2. Urteil und Datenweg je 1 P.
-4. Sieben Signale, acht Bits wegen des zweibittigen ALUOp (zusammen 1 P). PCSrc wird aus Branch und Zero abgeleitet (1 P).
-:::
+Erwartung bei `fertig`: t1 = 12, t2 = 30, t3 = 42, t4 = 42, t5 = 42; Wörter ab B: 12, 30, 42, 42. Der Branch `beq t3, t4, treffer` wird genommen.
 
-{{< pagebreak >}}
+Mit Sollwert 41 wird t4 = 41. Der Branch ist nicht genommen, das Programm läuft über `kein_treffer` und setzt t5 = 0. Wörter ab B: 12, 30, 42, 41.
 
-## Aufgabe 2: Rechenkategorie und Detailkommando (10 Punkte)
-
-Unabhängige Fälle mit a2 = 25, a3 = 12. Gültige Register-Funktionsfelder: AND = (funct3 111, funct7 0000000), SUB = (000, 0100000). addi hat Opcode 0010011 und funct3 000.
-
-Interne ALUControl-Codes: AND 0000, OR 0001, ADD 0010, SUB 0110.
-
-1. Bestimmen Sie ALUOp, ALUControl, Quelle B und Ergebnis für alle Zeilen. (8 P)
-
-```asm
-and  a1, a2, a3
-sub  a1, a3, a2
-addi a1, a2, -13
-addi a1, a2, 1536
-```
-
-2. Warum verlangt das gesetzte Instruktionsbit 30 der letzten Zeile keine Subtraktion? (1 P)
-3. Ein Registermuster hat funct3 = 110 und funct7 = 0100000. Darf unser Decoder daraus OR ableiten, obwohl nur das Paar (110, 0000000) als OR definiert wurde? (1 P)
-
-::: {.content-hidden when-profile="solution"}
-\vspace{9cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung {.unnumbered}
-
-| Zeile | ALUOp | ALUControl | Quelle B | Ergebnis a1 |
-|---|---|---|---|---|
-| AND | 10 | 0000 | a3 = 12 | 8 |
-| SUB | 10 | 0110 | a2 = 25 | −13 |
-| ADDI −13 | 00 | 0010 | Immediate −13 | 12 |
-| ADDI 1536 | 00 | 0010 | Immediate 1536 | 1561 |
-
-1. Je Eintrag 0,5 P.
-2. Bit 30 ist bei addi ein Immediate-Bit. Kategorie 00 erzwingt ADD; das Wort ist kein R-Format. 1 P.
-3. Nein. Nur die vollständige gültige Kombination darf als unterstützte OR-Instruktion akzeptiert werden; eine einzelne Feldübereinstimmung genügt nicht. 1 P.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 3: Neue Boolesche Steuerbedingungen (10 Punkte)
-
-R, L, S, B, I sind gegenseitig ausschließende Erkennungssignale für Registeroperationen, lw, sw, beq und addi. ALUOp verwendet 10 für R, 01 für B, sonst 00.
-
-1. Leiten Sie die beiden einzelnen ALUOp-Bits sowie MemRead und MemWrite als Boolesche Funktionen her. (4 P)
-2. Prüfen Sie die Gleichwertigkeit der beiden Rückschreibauswahlen für alle fünf Gruppen: $W_1=L\lor B$ und $W_2=L\lor S\lor B$. Warum bleiben beide zulässig? (3 P)
-3. Warum wäre $W_3=L\lor I$ als MemtoReg-Funktion falsch? (1 P)
-4. Eine andere Funktion ist für $(A,B)=(0,0)$ frei, bei (0,1) null und bei (1,0), (1,1) eins. Geben Sie zwei unterschiedliche zulässige Formeln an. (2 P)
-
-::: {.content-hidden when-profile="solution"}
-\vspace{9cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung {.unnumbered}
-
-1. $\mathrm{ALUOp}_1=R$, $\mathrm{ALUOp}_0=B$, $\mathrm{MemRead}=L$, $\mathrm{MemWrite}=S$. Je 1 P.
-
-| Gruppe | R | L | S | B | I |
-|---|---|---|---|---|---|
-| $W_1$ | 0 | 1 | 0 | 1 | 0 |
-| $W_2$ | 0 | 1 | 1 | 1 | 0 |
-
-2. Tabellen je 1 P, Begründung 1 P: Der einzige Unterschied liegt bei sw, dessen RegWrite null ist. Auch bei beq darf die Auswahl eins sein.
-3. Bei addi würde Speicher statt ALU-Ergebnis zurückgeschrieben; dort ist RegWrite eins. 1 P.
-4. Beispielsweise $f=A$ und $g=A\lor\overline{B}$. Beide erfüllen die drei festgelegten Zeilen, unterscheiden sich aber bei (0,0). Je 1 P. X bezeichnet hier Entwurfsfreiheit, keinen elektrischen dritten Logikpegel.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 4: Fehler mit genau bestimmten Nebenwirkungen (10 Punkte)
-
-Gültige, beschreibbare, natürlich ausgerichtete Adressen; Little Endian. Jeder Fall startet unabhängig.
-
-1. `or t0, t1, t2` mit t1 = `0x9000` und t2 = `0x10`. Nur MemWrite ist irrtümlich eins; das betroffene Speicherwort war −1. Bestimmen Sie Speicheradresse, Store-Daten, t0 und neue Bytes. (4 P)
-2. `sw a1, -8(s2)` mit s2 = `0x900C`, a1 = 128. Fehler: RegWrite = 1 und MemtoReg = 0. Der Registeradressport erhält Bits 11:7 des Befehlsworts. Bestimmen Sie regulären Store und zusätzlich beschriebenes Register samt Wert. (4 P)
-3. Ein anderer Store nutzt Offset −32 bei denselben fehlerhaften Freigaben. Was ändert sich am zusätzlichen Registereffekt, und weshalb? (2 P)
-
-::: {.content-hidden when-profile="solution"}
-\vspace{9cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung {.unnumbered}
-
-1. OR-Ergebnis und Adresse `0x9010`; Speicher-Schreibdaten aus RD2 = 16; t0 = `0x9010`; Bytes `10 00 00 00`. Je 1 P.
-2. Regulärer Store: Adresse `0x9004`, Daten 128 (zusammen 2 P). Die unteren fünf Immediate-Bits von −8 sind `11000` = 24: x24 erhält zusätzlich die ALU-Adresse `0x9004` (zusammen 2 P).
-3. −32 hat untere fünf Bits `00000`, also Ziel x0. Der falsche Registerschreibversuch wird verworfen; es gibt keinen zusätzlichen sichtbaren Registereffekt. Ziel und Erklärung je 1 P. Der eigentliche Store erfolgt weiterhin an `0x8FEC`.
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 5: Null ist noch keine Sprungfreigabe (8 Punkte)
-
-Befehlsadresse `0x5A0`, fertiger Branch-Byteoffset −32. Drei unabhängige Fälle:
-
-| Fall | Befehl | Operanden |
-|---|---|---|
-| A | beq | 11, 11 |
-| B | beq | 11, −11 |
-| C | addi a0, x0, 0 | 0, Immediate 0 |
-
-1. Bestimmen Sie jeweils Branch, Zero, PCSrc und nächsten PC. (4 P)
-2. Nennen Sie ALUOp und ALUControl für die drei Fälle. Kurscodes aus Aufgabe 2 gelten. (2 P)
-3. Warum ist Branch in B trotzdem eins? Warum ist PCSrc in C trotz Zero eins gleich null? (2 P)
-
-::: {.content-hidden when-profile="solution"}
-\vspace{8cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung {.unnumbered}
-
-| Fall | Branch | Zero | PCSrc | nächster PC |
-|---|---|---|---|---|
-| A | 1 | 1 | 1 | `0x580` |
-| B | 1 | 0 | 0 | `0x5A4` |
-| C | 0 | 1 | 0 | `0x5A4` |
-
-1. Je Eintrag 1/3 P.
-2. A und B: ALUOp 01, ALUControl 0110; C: ALUOp 00, ALUControl 0010. Je korrektem Code 1/3 P.
-3. Branch kennzeichnet die Befehlsfamilie (1 P); PCSrc verlangt Branch und Zero gleichzeitig, und addi ist kein Branch (1 P).
-:::
-
-{{< pagebreak >}}
-
-## Aufgabe 6: Eine Bitprüfung in Ripes
-
-1. Öffnen Sie `beispiele/lab_06_bitpruefung.s` im RV32-Single-Cycle-Modell ohne C. Protokollieren Sie Version und Modell.
-2. Beginnen Sie bei Beobachtung. Notieren Sie vor jeder Clock Rechenoperation, ALU-Quelle, Rückschreibquelle und Schreibfreigaben; danach Register, Speicherwort und PC.
-3. Begründen Sie vor dem Lauf, welcher Pfad der Branch nehmen muss. Prüfen Sie t0 bis t5 und das zweite Pufferwort bei inspect.
-4. Verändern Sie in einem separaten Lauf das zweite Speicherwort zwischen Store und Load auf null. Welcher Pfad und t5-Wert entstehen jetzt?
-5. Erklären Sie am Store, weshalb ein konkreter Rückschreib-MUX-Wert mit X in Ihrer Papiertabelle vereinbar ist.
-
-::: {.content-hidden when-profile="solution"}
-\vspace{8cm}
-:::
-
-::: {.content-visible when-profile="solution"}
-### Musterlösung {.unnumbered}
-
-Regulär: t0 = −13, t1 = 8, t2 = −5, zweites Wort = −5, t3 = −5, t4 = 8. Der Branch wird genommen und t5 = 12. Bitweise gilt $(A\lor B)\land B=B$; hier liefert die Maske daher genau t1.
-
-Nach der gezielten Speicheränderung liest t3 null und t4 wird null. Der Branch ist nicht genommen, t5 = −1. Die Software setzt inspect über einen separaten beq-Jump fort und erreicht Pass nicht.
-
-Beim Store ist RegWrite null. Der gewählte Rückschreibwert wird nicht übernommen; die Speicher-Schreibdaten kommen aus RD2. Die Tabelle beschreibt Sollwerte, keine bereits erfolgten Ripes-Beobachtungen.
+Beim Store ist RegWrite null. Der gewählte Rückschreibwert wird nicht übernommen; die Store-Daten kommen aus RD2. Ripes zeigt eine konkrete Realisierung, das X der Tabelle erlaubt beide Werte. Das sind Modellvorhersagen; Portnamen und Codierungen der eigenen Ripes-Version sind im Protokoll festzuhalten.
 :::
