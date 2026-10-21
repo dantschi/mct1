@@ -796,13 +796,13 @@ Bei dem Wort 42 sehen Sie als zusammengesetztes Wort 0x0000002A, in Little-Endia
 - Neue Daten: `.word -5, 8, -2, 7, -1, 0`
 - Vor jedem Load die Längengrenze prüfen
 - Nur bei negativem geladenem Wert den Zähler erhöhen
-- Varianten: $N=0$, $N=1$, $N=6$ und nur nichtnegative Werte
-- Vergleich: [lab_03_negative_zaehlen.s](../beispiele/lab_03_negative_zaehlen.s)
+- Varianten: $N=0$, $N=1$, $N=6$ und ein Grenzwert statt null
+- Anzahl zusätzlich im Ergebniswort hinter den Daten ablegen
 
 ::: notes
-Das Übungsblatt überträgt die Schutzbedingung und die Pointerbewegung der Summenschleife auf eine neue Arbeit: negative Elemente zählen. Die sechs Wörter enthalten minus fünf, acht, minus zwei, sieben, minus eins und null. t0 zählt verarbeitete Elemente, t1 enthält die Länge, s1 den laufenden Pointer und s0 die Anzahl negativer Werte. Nach jedem Load prüft bge t2, x0, Next, ob der geladene signed Wert nichtnegativ ist. Nur andernfalls erhöht addi s0, s0, 1 die Anzahl. Pointer und Elementzähler werden unabhängig vom Vorzeichen weitergeschaltet.
+Das Übungsblatt überträgt die Schutzbedingung und die Pointerbewegung der Summenschleife auf eine neue Arbeit: Ein Frostwächter zählt negative Messwerte. Die sechs Wörter enthalten minus fünf, acht, minus zwei, sieben, minus eins und null. t0 zählt verarbeitete Elemente, t1 enthält die Länge, s1 den laufenden Pointer und s0 die Anzahl negativer Werte. Nach jedem Load prüft bge t2, x0, Next, ob der geladene signed Wert nichtnegativ ist. Nur andernfalls erhöht addi s0, s0, 1 die Anzahl. Pointer und Elementzähler werden unabhängig vom Vorzeichen weitergeschaltet. Auf Papier verfolgen Sie dieselbe Schleife mit der Lehrbasis 0x2000, suchen Fehler ausgehend von ihrem Symptom und ersetzen die Null im Datentest durch einen Grenzwert.
 
-Für N gleich sechs erwarten Sie drei Treffer bei sechs Loads. Bei N gleich null gibt es keinen Load und Ergebnis null; bei eins einen Load und Ergebnis eins. Eine Folge ausschließlich nichtnegativer Werte ergibt auch bei positiver Länge null. Am Label Ergebnis_pruefen wird zuerst s0 beurteilt. Grenzen und Daten müssen zusammenpassen; die Länge ist keine automatisch gespeicherte Arrayeigenschaft. Die neue Lösung verwendet bgeu für die nichtnegative Längenzählung und bge für die signed Datenprüfung. Diese unterschiedlichen Vergleiche erfüllen verschiedene Aufgaben.
+Für N gleich sechs erwarten Sie drei Treffer bei sechs Loads. Bei N gleich null gibt es keinen Load und Ergebnis null; bei eins einen Load und Ergebnis eins. Nach Done legt sw s0, 24(s3) die Anzahl im Ergebniswort direkt hinter den sechs Messwerten ab; s3 hält dafür die feste Basis, weil der laufende Pointer nur für N gleich sechs dort endet. Am Label Ergebnis_pruefen wird danach s0 beurteilt. Das vollständige Venus-Programm steht im Übungsblatt. Grenzen und Daten müssen zusammenpassen; die Länge ist keine automatisch gespeicherte Arrayeigenschaft. Beide Tests verwenden bge: Für den kleinen nichtnegativen Zähler genügt der signed Vergleich, für die Messwerte ist er nötig.
 :::
 
 ## Ausgabe: der Zählwert bleibt vor dem Dienst prüfbar
