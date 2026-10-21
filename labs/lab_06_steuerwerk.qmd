@@ -475,16 +475,38 @@ fertig:
     beq x0, x0, fertig
 ```
 
-1. Geben Sie das Programm im Editor von Ripes ein und wählen Sie das RV32-Single-Cycle-Modell ohne C. Protokollieren Sie Version und Modell. Lesen Sie die tatsächliche Adresse B von `werte` ab; sie ersetzt `0x2000` aus Aufgabe 3.
+1. Geben Sie das Programm im Editor von Ripes ein. Wählen Sie im Tab *Processor* den Single-Cycle-Prozessor (RV32I, ohne C) mit dem Layout *Extended*; nur dieses zeigt das Steuerwerk. Protokollieren Sie Version und Modell. Lesen Sie die tatsächliche Adresse B von `werte` ab; sie ersetzt `0x2000` aus Aufgabe 3.
 2. Halten Sie vor jedem Befehl ab `start` an. Notieren Sie vor der Clock die Schreibfreigaben von Registerbank und Datenspeicher sowie die Auswahl vor ALU-Eingang B und am Rückschreib-MUX. Vergleichen Sie mit Ihrer Tabelle aus Aufgabe 2. Prüfen Sie nach der Clock Register, Speicherwort und PC.
 3. Bestätigen Sie bei `fertig` t1 bis t5 und die vier Wörter ab B.
 4. Ändern Sie im Datenabschnitt den Sollwert von 42 auf 41. Sagen Sie Pfad und t5 voraus, bevor Sie das Programm neu starten, und prüfen Sie dann.
 5. Beim `sw` zeigt Ripes am Rückschreib-MUX einen konkreten Auswahlwert, in Ihrer Tabelle steht X. Warum ist das kein Widerspruch?
 
-Die Initialisierung vor `start` und die Schleife bei `fertig` gehören nicht zum untersuchten Ablauf. Ripes kann Signale anders benennen und codieren als das Mini-Modell; den beq-Vergleich kann ein eigener Vergleicher übernehmen.
+Die Initialisierung vor `start` und die Schleife bei `fertig` gehören nicht zum untersuchten Ablauf.
+
+{{< pagebreak >}}
+
+**Signale in Ripes ablesen.** Fahren Sie mit der Maus über einen Anschluss: Ein Tooltip zeigt Name und Wert. *Display signal values* blendet alle Werte ein, Rechtsklick auf einen Anschluss und *Show value* einen einzelnen. Ein Multiplexer markiert den gewählten Eingang mit einem grünen Punkt; 1-Bit-Leitungen sind bei 1 grün, bei 0 grau. Alle Steuersignale kommen aus der Komponente `control`:
+
+| Mini-Modell | Ausgang von `control` | geht an | Werte in Ripes |
+|-----------|----------------------------|---------------------------|------------------------|
+| RegWrite | `reg_do_write_ctrl` | `registerFile`, `wr_en` | 0 / 1 |
+| MemWrite | `mem_do_write_ctrl` | `data_mem`, `wr_en` | 0 / 1 |
+| MemRead | `mem_ctrl` | `data_mem`, `op` | Zugriffsart LW, SW oder NOP |
+| ALUSrc | `alu_op2_ctrl` | MUX `alu_op2_src` | 0 = Register, 1 = Immediate |
+| MemtoReg | `reg_wr_src_ctrl` | MUX `reg_wr_src` | 0 = Speicher, 1 = ALU, 2 = PC + 4 |
+| ALUSub | `alu_ctrl` | `alu`, `ctrl` | Operation, z. B. ADD |
+| Branch | `do_branch` | UND-Gatter `br_and` | 0 / 1 |
+
+Drei Abweichungen vom Mini-Modell sollten Sie kennen:
+
+- Der Rückschreib-MUX ist umgekehrt codiert und hat einen dritten Eingang für PC + 4.
+- Bei `beq` berechnet die ALU das Sprungziel PC + Immediate. ALU-Eingang B steht deshalb auf Immediate, und `alu_ctrl` zeigt ADD. Den Vergleich übernimmt die Komponente `branch`; ihr Ausgang `res` entspricht Zero.
+- Der Datenspeicher hat kein eigenes Lese-Bit; `op` zeigt die Zugriffsart.
+
+Die Namen gelten für aktuelle Ripes-Versionen. Notieren Sie Abweichungen Ihrer Version im Protokoll.
 
 ::: {.content-hidden when-profile="solution"}
-\vspace{7cm}
+\vspace{5cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
@@ -494,5 +516,16 @@ Erwartung bei `fertig`: t1 = 12, t2 = 30, t3 = 42, t4 = 42, t5 = 42; Wörter ab 
 
 Mit Sollwert 41 wird t4 = 41. Der Branch ist nicht genommen, das Programm läuft über `kein_treffer` und setzt t5 = 0. Wörter ab B: 12, 30, 42, 41.
 
-Beim Store ist RegWrite null. Der gewählte Rückschreibwert wird nicht übernommen; die Store-Daten kommen aus RD2. Ripes zeigt eine konkrete Realisierung, das X der Tabelle erlaubt beide Werte. Das sind Modellvorhersagen; Portnamen und Codierungen der eigenen Ripes-Version sind im Protokoll festzuhalten.
+Erwartete Ripes-Werte laut Ripes-Quellcode, Spalten in der Reihenfolge der Zuordnungstabelle:
+
+| Befehl | RegWrite | MemWrite | `mem_ctrl` | ALU-Eingang B | Rückschreib-MUX | Branch |
+|---|---|---|---|---|---|---|
+| lw | 1 | 0 | LW | 1 (Imm.) | 0 (Speicher) | 0 |
+| add | 1 | 0 | NOP | 0 (Reg.) | 1 (ALU) | 0 |
+| sw | 0 | 1 | SW | 1 (Imm.) | 1 (ALU) | 0 |
+| beq | 0 | 0 | NOP | 1 (Imm.) | 1 (ALU) | 1 |
+
+Abweichend von der Tabelle aus Aufgabe 2 sind nur die Codierung des Rückschreib-MUX sowie bei beq die Immediate-Auswahl und ADD statt Subtraktion, weil die Ripes-ALU dort das Sprungziel bildet.
+
+Beim Store ist RegWrite null. Der gewählte Rückschreibwert wird nicht übernommen; die Store-Daten kommen aus RD2. Ripes wählt dort konkret das ALU-Ergebnis (`reg_wr_src` = 1), das X der Tabelle erlaubt beide Werte. Das sind Modellvorhersagen; Portnamen und Codierungen der eigenen Ripes-Version sind im Protokoll festzuhalten.
 :::
