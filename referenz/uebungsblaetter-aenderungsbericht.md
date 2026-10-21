@@ -42,4 +42,24 @@ Die Code- und Zeitangaben sind funktional geprüfte Modellvorhersagen. Es wurden
 
 Blatt 6 war zu abstrakt. Die Papieraufgaben bauen jetzt aufeinander auf: Wirkung von fünf Befehlen mit Zahlenwerten bestimmen, das Steuerwerk eines Mini-Datenpfads (nur add, beq, lw, sw, Zweibit-Gruppencode) als Wahrheitstabelle, Formeln und Gatterschaltung selbst bauen, ein Programm damit verfolgen, einen Verdrahtungsfehler (MemtoReg an g0) finden und schließlich ALUOp/ALUControl für vier Rechenbefehle ergänzen. Entfallen sind die Bit-30-Sonderfälle, die Don't-Care-Formelvarianten und die Fehlerfolgen über Immediate-Bits als Registeradresse.
 
-Der Mini-Datenpfad ist als TikZ-Abbildung im Blatt enthalten. Die Ripes-Aufgabe enthält das vollständige Programm, das denselben Ablauf wie die Papieraufgabe ausführt; Studierende brauchen kein Repository. Derselbe Code liegt zusätzlich unter beispiele/lab_06_minipfad.s; beispiele/lab_06_bitpruefung.s entfällt. Papierpunkte bleiben 50. Sollwerte, Fehlerlauf und Ripes-Variante (Sollwert 41) wurden mit einer Python-Modellrechnung nachgerechnet; ein Ripes-Lauf fand nicht statt. Seitenzahl Blatt 6: Studierende 7, Musterlösung 10.
+Der Mini-Datenpfad ist als TikZ-Abbildung im Blatt enthalten. Die Ripes-Aufgabe enthält das vollständige Programm, das denselben Ablauf wie die Papieraufgabe ausführt, sowie eine Tabelle, die die Signale des Mini-Modells den Ripes-Anschlüssen zuordnet; Studierende brauchen kein Repository. Eine separate Datei unter beispiele/ gibt es für Blatt 6 nicht mehr; beispiele/lab_06_bitpruefung.s entfällt. Papierpunkte bleiben 50. Sollwerte, Fehlerlauf und Ripes-Variante (Sollwert 41) wurden mit einer Python-Modellrechnung nachgerechnet; ein Ripes-Lauf fand nicht statt. Seitenzahl Blatt 6: Studierende 8, Musterlösung 11.
+
+## Nachtrag 21. Oktober 2026: Blätter 1–9 und Quizze nach dem Muster von Blatt 6
+
+Alle übrigen Blätter und alle Quizze wurden nach dem Muster der neuen Fassung von Blatt 6 überarbeitet: konkrete Zahlen statt Sonderfall-Spitzfindigkeiten, Beispielzeilen und Ausfülltabellen, kleine Teilaufgaben mit sichtbaren Punkten, ein durchgehendes Anwendungsszenario je Blatt und eine Fehlersuche, die bei einem beobachteten Symptom beginnt. Die Papierpunkte bleiben unverändert (60, bei den Blättern 5 und 6 je 50).
+
+| Blatt | Szenario | Seiten Studierende / Musterlösung |
+|---|---|---|
+| 1 | Klimaschrank: Anzeigewerte, Temperaturen im Zweierkomplement, Messprotokoll im Speicher, Hand-/Automatikbetrieb als MUX, Regelabweichung, Registerspur | 7 / 11 |
+| 2 | Drucksensor mit Korrektur Y = (A − B) + 4C: Registerspur, Statusmasken, Schieben, Immediates, Codierung, Fehlersuche im Speicherabzug | 8 / 11 |
+| 3 | Frostwächter: Messreihe im Speicher, Teilzugriffe, Store-Codierung, Frostanzeige mit Branch, Zählschleife, Fehlersuche | 8 / 13 |
+| 4 | Abfüllautomat: jal/ret, Registervertrag, Frame, Programmspur, drei fehlerhafte Fassungen, Ausbau mit zwei Aufrufen | 8 / 8 |
+| 5 | Paketwaage: Ports vor der Flanke, Load/Store, Branch-Entscheidung, Fehlersuche ALUSrc beim Store, Taktperiode | 8 / 12 |
+| 6 | Mini-Datenpfad: Steuerwerk bauen, Programm verfolgen, Verdrahtungsfehler, ALUOp-Ausbau | 8 / 11 |
+| 7 | Sensorknoten am Wassertank: Speedup, Forwarding, Load-Use, Umordnen, zwei Fehlerbilder, Flush und Vorhersage | 7 / 11 |
+| 8 | Pumpenstation: Gerätekarte, Füllstandsanzeige, Tasterabfrage mit Entprellen, Timer-Interrupt, Handler-Frame, Venus-Ausgabe | 9 / 14 |
+| 9 | Lüfterregler eines Schaltschranks: Werkzeugkette, Schleifen und Arrays von C nach Assembler, Zustandsautomat, Fehlersuche, Stackframe, Datenpfad und Pipeline | 10 / 16 |
+
+Kein Blatt verweist mehr auf das Repository. Programme, die in Ripes oder Venus laufen sollen, stehen vollständig im Blatt; reine Referenzlösungen stehen in der Musterlösung. Die Dateien beispiele/lab_0*_* sind gelöscht, die Notizen der Vorlesungen 1–9 beschreiben das jeweilige Blatt ohne Dateipfad. Bedienhinweise zu Ripes und Venus stammen aus der offiziellen Dokumentation (Ripes docs, Venus-Wiki der Linie 61c-teach) bzw. dem Ripes-Quellcode und sind im Blatt als versionsabhängig gekennzeichnet; einen eigenen Simulatorlauf gab es nicht.
+
+Geprüft: Alle Zahlenwerte, Programmläufe, Fehlervarianten und Codierungen mit Python-Modellrechnungen (RV32I-Semantik, zyklengenaues Pipeline-Kursmodell für Blatt 7); C-Funktionen von Blatt 9 zusätzlich mit dem Host-gcc (kein Nachweis einer RISC-V-Übersetzung). Teilpunkte je Aufgabe summieren sich zur Aufgabenpunktzahl. Alle 18 PDF-Fassungen mit Quarto und XeLaTeX gebaut und Seite für Seite angesehen. Quizze: je 10 Fragen, 11 Felder, genau eine richtige Antwort, richtige Position auf 1–4 verteilt (je 2–3-mal), richtige Antwort nur in zwei Fragen allein am längsten, Kodierung und CRLF unverändert.
