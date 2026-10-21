@@ -39,7 +39,7 @@ Ein durchgängiges Beispiel: Schalter lesen, Bit auswählen, Pixel setzen.
 ::: notes
 Die erste Frage verbindet Speicherbefehle mit einer Adresskarte: Eine Adresse kann statt einer Speicherzelle ein Geräteregister auswählen. Die zweite Frage betrifft den zeitlichen Ablauf: Ein Programm kann regelmäßig nachsehen oder durch eine gemeldete Unterbrechung reagieren. Die dritte Frage betrifft den dabei benötigten Zustand und die Parameter einer Dienstanforderung.
 
-Ein Handler ist die Routine, die einen Trap, also einen durch Exception oder Interrupt ausgelösten Kontrollübergang, behandelt. Ein Konsolendienst im Simulator ist eine andere Ebene. Wir verwenden deshalb einen Schalter und einen Pixel als einfachen Gerätefall und getrennte Papiermodelle für Trap und Dienst. So können Sie den Datenwert, die Adresse und den gerade geltenden Vertrag jeweils benennen. Die späteren Übungsaufgaben übertragen diese Regeln auf neue Beispiele: zwei ausgewählte Eingangsbits bestimmen den zweiten Pixel, vier gleiche Proben bestätigen einen Zustand und die Venus-Ausgabe berechnet dreimal n minus vier. Die Dateien lab_08_zweibit_anzeige.s und lab_08_messwertausgabe.s enthalten die passenden Vergleichsprogramme. Die Laborwerte und der Vierprobenfilter ersetzen nicht die anders gewählten Demonstrationswerte dieser Vorlesung.
+Ein Handler ist die Routine, die einen Trap, also einen durch Exception oder Interrupt ausgelösten Kontrollübergang, behandelt. Ein Konsolendienst im Simulator ist eine andere Ebene. Wir verwenden deshalb einen Schalter und einen Pixel als einfachen Gerätefall und getrennte Papiermodelle für Trap und Dienst. So können Sie den Datenwert, die Adresse und den gerade geltenden Vertrag jeweils benennen. Das Übungsblatt überträgt diese Regeln auf eine kleine Pumpenstation: Zwei Schwimmerschalter bestimmen über eine Maske die Farbe eines Füllstandspixels, ein Pumpentaster wird abgefragt und mit drei gleichen Proben entprellt, ein Timer-Interrupt zeigt Eintritt, Rückkehr und Registersicherung eines Handlers, und die Venus-Ausgabe berechnet den Wasserstand dreimal n minus vier. Die Programme für Ripes und Venus stehen vollständig im Blatt. Seine Papierkarte verwendet andere Lehradressen als diese Vorlesung; im Simulator gelten die exportierten Adressen der geladenen Plattform.
 :::
 
 ## Was aus Einheit 1–7 weiterverwendet wird
@@ -830,7 +830,7 @@ la heißt Load Address und ist eine Pseudoinstruktion. lw heißt Load Word und l
 
 ## Selbstkontrolle und Übergang zur Übung
 
-Transfer: Zweibit-Anzeige, Vierprobenfilter und Messwert $3n-4$.
+Transfer: Füllstandsanzeige, entprellter Pumpentaster, Timer-Handler und Wasserstand $3n-4$.
 
 - Wie unterscheiden sich Pegel, Ereignis und entprellter Zustand?
 - Welche Trap-Daten und Register muss der Handler erhalten?
