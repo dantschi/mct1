@@ -74,3 +74,7 @@ desktop.ini
 labs/*.pdf
 labs/*.tex
 labs/_output/
+
+# Python-Cache
+__pycache__/
+*.pyc
