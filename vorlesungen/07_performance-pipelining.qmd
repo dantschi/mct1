@@ -27,6 +27,26 @@ Der Single-Cycle-Datenpfad aus Einheit 5 und das Steuerwerk aus Einheit 6 erklä
 Performance bezeichnet hier die Leistung bezogen auf eine bestimmte Aufgabe: etwa eine kürzere Programmlaufzeit oder einen höheren Durchsatz. Pipelining ist die zeitliche Überlappung aufeinanderfolgender Arbeitsschritte. Diese Mikroarchitektur muss weiterhin dieselben sichtbaren Register- und Speicherergebnisse liefern wie die sequenzielle Ausführung. Die Notizen erläutern Begriffe, Modellannahmen und Beispiele als begleitendes Skript. Die zugehörige Folie darf beim Lesen danebenliegen.
 :::
 
+## Fünf Stufen – fünfmal so schnell?
+
+- Single-Cycle-Datenpfad aus Einheit 5: $T_\mathrm{clk}\geq7{,}3\,\mathrm{ns}$
+- Nun trennen Register die Bereiche IF, ID, EX, MEM und WB
+
+Wie schnell ist danach …
+
+1. ein einzelner `lw`?
+2. eine lange Befehlsfolge?
+
+| A | B | C | D |
+|:---:|:---:|:---:|:---:|
+| etwa fünfmal so schnell | schneller, aber weniger als fünfmal | gleich schnell | langsamer |
+
+::: notes
+Bevor wir neue Begriffe einführen, legen Sie sich auf eine Vorhersage fest. Ausgangspunkt ist der Single-Cycle-Datenpfad aus Einheit 5. Dort begrenzt im Rechenbeispiel der Pfad von Load Word, kurz lw, die gemeinsame Taktperiode auf mindestens 7,3 Nanosekunden. Auch ein add übernimmt sein früher gültiges Ergebnis erst an derselben Flanke. Nun setzen wir zwischen Befehlsholen IF, Decodieren ID, Rechnen EX, Datenzugriff MEM und Rückschreiben WB jeweils ein Register. Jeder dieser Bereiche wird damit zu einer eigenen Taktstufe.
+
+Entscheiden Sie zunächst allein und ohne Rechnung, welche Antwort für den einzelnen lw und welche für eine lange Befehlsfolge gilt. Beide Fragen dürfen verschiedene Antworten haben. Vergleichen Sie dann Ihre Wahl mit Ihrer Sitznachbarschaft und begründen Sie sie mit dem kritischen Pfad aus Einheit 5: Was begrenzt künftig die Taktperiode, und wie viele Takte durchläuft ein Befehl? Anschließend stimmen wir erneut ab. Wir lösen die Fragen hier bewusst nicht auf. Am Ende des ersten Abschnitts können Sie Ihre Antwort selbst nachrechnen.
+:::
+
 ## Was Sie heute erklären können sollen
 
 1. Laufzeit aus Befehlszahl, Takten und Taktperiode bestimmen
@@ -238,7 +258,7 @@ Für sehr große $N$: $S\rightarrow820/270\approx3{,}04$.
 ::: notes
 $t$ bezeichnet die Gesamtzeit der betrachteten Folge, $S$ den Speedup oder Beschleunigungsfaktor. ps bedeutet Pikosekunde. Alle zwanzig Instruktionen schließen ab, und es gibt in dieser Rechnung keine Zusatzzyklen. Im Single-Cycle-Modell ergibt sich $20\cdot820=16400$ ps. Die anfangs leere Pipeline benötigt $20+4=24$ Takte und damit $24\cdot270=6480$ ps. Das Verhältnis ist ungefähr 2,5309 und wird auf 2,53 gerundet.
 
-Für eine allgemeine Folge lautet das Verhältnis $S(N)=N\cdot820/((N+4)\cdot270)$. Wenn $N$ sehr groß wird, wird der Randanteil $4/N$ klein. Der Grenzwert ist daher $820/270\approx3{,}04$, nicht fünf. Der Idealwert fünf bräuchte unter anderem fünf gleich lange Stufen, vernachlässigbaren Registeraufwand und eine lange Folge ohne Zusatzzyklen. Die tatsächliche Stufenzahl allein garantiert keinen solchen Gewinn.
+Für eine allgemeine Folge lautet das Verhältnis $S(N)=N\cdot820/((N+4)\cdot270)$. Wenn $N$ sehr groß wird, wird der Randanteil $4/N$ klein. Der Grenzwert ist daher $820/270\approx3{,}04$, nicht fünf. Der Idealwert fünf bräuchte unter anderem fünf gleich lange Stufen, vernachlässigbaren Registeraufwand und eine lange Folge ohne Zusatzzyklen. Die tatsächliche Stufenzahl allein garantiert keinen solchen Gewinn. Damit ist die Einstiegsfrage beantwortet: Ein einzelner Befehl ist in diesem Modell langsamer fertig, eine lange Folge wird schneller, aber nicht fünfmal so schnell.
 :::
 
 ## Kurzaufgabe: Was sagt CPI allein?

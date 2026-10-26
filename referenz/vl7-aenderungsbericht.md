@@ -11,7 +11,9 @@ Die Vorlesung führt vom bekannten Single-Cycle-Datenpfad und Steuerwerk zur zei
 5. Branch-Entscheidung, Flush, Kosten und einfache Vorhersagen.
 6. Papierprognose, dokumentierte Ripes-Konfiguration und funktionaler Vergleich.
 
-60 inhaltliche Folienabschnitte haben jeweils eigene zusammenhängende Skriptnotizen. Die zusätzliche automatische Titelfolie hat ebenfalls Speaker-Notizen: insgesamt 61 Reveal-Folien. Die Notizen erklären lokale Begriffe und Abkürzungen, Abbildungen, Ausgangswerte, Rechenwege, Gültigkeitsgrenzen und Übungslösungen. Redundante kurze Abschnitte und übertriebene Aussagen wurden zusammengeführt beziehungsweise ersetzt.
+Vor den Lernzielen steht die Einstiegsfrage „Fünf Stufen – fünfmal so schnell?“. Sie knüpft an den kritischen Pfad aus Einheit 5 an ($T_\mathrm{clk}\geq7{,}3\,\mathrm{ns}$). Die Studierenden sagen vorher, wie sich die Zeit für einen einzelnen `lw` und für eine lange Befehlsfolge ändert, wenn Register die fünf Bereiche trennen. Erwartet sind „langsamer“ beziehungsweise „schneller, aber weniger als fünfmal“. Die Auflösung folgt in Abschnitt 1 mit 1350 statt 820 ps Einzellatenz und dem Grenzwert von etwa 3,04. Die Notizen der Einstiegsfolie nennen sie bewusst nicht, weil sie im Handout erscheinen. Für diese Ergänzung wurden die Markdown-Struktur mit Pandoc und `git diff --check` geprüft; ein Quarto-Render steht noch aus.
+
+61 inhaltliche Folienabschnitte haben jeweils eigene zusammenhängende Skriptnotizen. Die zusätzliche automatische Titelfolie hat ebenfalls Speaker-Notizen: insgesamt 62 Reveal-Folien. Die Notizen erklären lokale Begriffe und Abkürzungen, Abbildungen, Ausgangswerte, Rechenwege, Gültigkeitsgrenzen und Übungslösungen. Redundante kurze Abschnitte und übertriebene Aussagen wurden zusammengeführt beziehungsweise ersetzt.
 
 Vorausgesetzt werden Register und Logik aus Einheit 1, Maschinenbefehle aus Einheit 2, Speicher und Branches aus Einheit 3, Registerrollen aus Einheit 4 sowie Datenpfad und Steuerung aus Einheit 5–6. Compiler-Scheduling und Sprungvorhersage werden neu eingeführt. Der Zweibitzähler ist als Vertiefung gekennzeichnet.
 
