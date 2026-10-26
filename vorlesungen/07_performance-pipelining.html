@@ -233,6 +233,56 @@ Prof.&nbsp;Dr.-Ing. Daniel Klünder
           display:block!important;
       }</style></aside>
 </section>
+<section id="fünf-stufen-fünfmal-so-schnell" class="slide level2">
+<h2>Fünf Stufen – fünfmal so schnell?</h2>
+<ul>
+<li>Single-Cycle-Datenpfad aus Einheit 5: <span class="math inline">\(T_\mathrm{clk}\geq7{,}3\,\mathrm{ns}\)</span></li>
+<li>Nun trennen Register die Bereiche IF, ID, EX, MEM und WB</li>
+</ul>
+<p>Wie schnell ist danach …</p>
+<ol type="1">
+<li>ein einzelner <code>lw</code>?</li>
+<li>eine lange Befehlsfolge?</li>
+</ol>
+<table class="caption-top">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;">A</th>
+<th style="text-align: center;">B</th>
+<th style="text-align: center;">C</th>
+<th style="text-align: center;">D</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">etwa fünfmal so schnell</td>
+<td style="text-align: center;">schneller, aber weniger als fünfmal</td>
+<td style="text-align: center;">gleich schnell</td>
+<td style="text-align: center;">langsamer</td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>Bevor wir neue Begriffe einführen, legen Sie sich auf eine Vorhersage fest. Ausgangspunkt ist der Single-Cycle-Datenpfad aus Einheit 5. Dort begrenzt im Rechenbeispiel der Pfad von Load Word, kurz lw, die gemeinsame Taktperiode auf mindestens 7,3 Nanosekunden. Auch ein add übernimmt sein früher gültiges Ergebnis erst an derselben Flanke. Nun setzen wir zwischen Befehlsholen IF, Decodieren ID, Rechnen EX, Datenzugriff MEM und Rückschreiben WB jeweils ein Register. Jeder dieser Bereiche wird damit zu einer eigenen Taktstufe.</p>
+<p>Entscheiden Sie zunächst allein und ohne Rechnung, welche Antwort für den einzelnen lw und welche für eine lange Befehlsfolge gilt. Beide Fragen dürfen verschiedene Antworten haben. Vergleichen Sie dann Ihre Wahl mit Ihrer Sitznachbarschaft und begründen Sie sie mit dem kritischen Pfad aus Einheit 5: Was begrenzt künftig die Taktperiode, und wie viele Takte durchläuft ein Befehl? Anschließend stimmen wir erneut ab. Wir lösen die Fragen hier bewusst nicht auf. Am Ende des ersten Abschnitts können Sie Ihre Antwort selbst nachrechnen.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
 <section id="was-sie-heute-erklären-können-sollen" class="slide level2">
 <h2>Was Sie heute erklären können sollen</h2>
 <ol type="1">
@@ -629,7 +679,7 @@ L_\mathrm{pipe}=5\cdot270\,\mathrm{ps}=1350\,\mathrm{ps}\]</span></p>
 <p>Für sehr große <span class="math inline">\(N\)</span>: <span class="math inline">\(S\rightarrow820/270\approx3{,}04\)</span>.</p>
 <aside class="notes">
 <p><span class="math inline">\(t\)</span> bezeichnet die Gesamtzeit der betrachteten Folge, <span class="math inline">\(S\)</span> den Speedup oder Beschleunigungsfaktor. ps bedeutet Pikosekunde. Alle zwanzig Instruktionen schließen ab, und es gibt in dieser Rechnung keine Zusatzzyklen. Im Single-Cycle-Modell ergibt sich <span class="math inline">\(20\cdot820=16400\)</span> ps. Die anfangs leere Pipeline benötigt <span class="math inline">\(20+4=24\)</span> Takte und damit <span class="math inline">\(24\cdot270=6480\)</span> ps. Das Verhältnis ist ungefähr 2,5309 und wird auf 2,53 gerundet.</p>
-<p>Für eine allgemeine Folge lautet das Verhältnis <span class="math inline">\(S(N)=N\cdot820/((N+4)\cdot270)\)</span>. Wenn <span class="math inline">\(N\)</span> sehr groß wird, wird der Randanteil <span class="math inline">\(4/N\)</span> klein. Der Grenzwert ist daher <span class="math inline">\(820/270\approx3{,}04\)</span>, nicht fünf. Der Idealwert fünf bräuchte unter anderem fünf gleich lange Stufen, vernachlässigbaren Registeraufwand und eine lange Folge ohne Zusatzzyklen. Die tatsächliche Stufenzahl allein garantiert keinen solchen Gewinn.</p>
+<p>Für eine allgemeine Folge lautet das Verhältnis <span class="math inline">\(S(N)=N\cdot820/((N+4)\cdot270)\)</span>. Wenn <span class="math inline">\(N\)</span> sehr groß wird, wird der Randanteil <span class="math inline">\(4/N\)</span> klein. Der Grenzwert ist daher <span class="math inline">\(820/270\approx3{,}04\)</span>, nicht fünf. Der Idealwert fünf bräuchte unter anderem fünf gleich lange Stufen, vernachlässigbaren Registeraufwand und eine lange Folge ohne Zusatzzyklen. Die tatsächliche Stufenzahl allein garantiert keinen solchen Gewinn. Damit ist die Einstiegsfrage beantwortet: Ein einzelner Befehl ist in diesem Modell langsamer fertig, eine lange Folge wird schneller, aber nicht fünfmal so schnell.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
