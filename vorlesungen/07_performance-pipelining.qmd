@@ -355,7 +355,7 @@ Ein Data Hazard betrifft einen benötigten Datenwert, der noch nicht regulär ve
 ::: notes
 Die bislang gezeigten Instruktionen waren unabhängig. Nun schreibt eine ältere Instruktion einen Wert, den eine jüngere benötigt. Die Programmwirkung legt fest, welchen Wert der Leser erhalten muss. Durch Überlappung kann der Leser jedoch beginnen, bevor das reguläre Registerschreiben abgeschlossen ist.
 
-Read After Write, kurz RAW, bezeichnet diese Leser-nach-Schreiber-Abhängigkeit. Sie ist kein elektrischer Zusammenstoß. Zunächst bestimmen wir Produzent, Verbraucher und den richtigen Datenwert. Anschließend vergleichen wir Warten und Weiterleitung. Forwarding, auch Bypassing genannt, ist eine zusätzliche Datenverbindung, die ein bereits verfügbares Ergebnis vor dem regulären Registerlesen nutzbar macht.
+Read After Write, kurz RAW, bezeichnet diese Leser-nach-Schreiber-Abhängigkeit. Sie ist kein elektrischer Zusammenstoß. Zunächst bestimmen wir Produzent, Verbraucher und den richtigen Datenwert. Anschließend vergleichen wir Warten und Weiterleitung. Forwarding, auch Bypassing genannt, leitet ein bereits verfügbares Ergebnis direkt zum benötigten Operanden in EX, Execute oder Rechenstufe, weiter, bevor es regulär in WB, Write Back oder Rückschreiben, übernommen wird. Der Verbraucher kann zuvor in ID, Instruction Decode oder Decodieren mit Registerlesen, einen alten Registerbankwert gelesen haben. Die Quellenauswahl vor der Recheneinheit ersetzt diesen alten Wert beim Rechnen durch das passende Ergebnis. Das ist kein zusätzlicher Rückweg zum Registerlesen in ID.
 :::
 
 ## Ein konkretes Produzent-Verbraucher-Paar
@@ -406,7 +406,7 @@ Im Kursmodell wird der neue Registerwert erst im Folgetakt lesbar:
 Drei Zusatzzyklen. Bei Schreiben und Lesen im selben Takt wären es zwei.
 
 ::: notes
-Forwarding heißt Weiterleitung eines Werts vor dem regulären Registerzugriff. Hier fehlt diese Verbindung; eine Hazard-Erkennung hält stattdessen den Verbraucher fest. IF ist Instruction Fetch, ID Instruction Decode, EX Execute, MEM Memory Access und WB Write Back. Im Raster bleibt sub in ID, während add weiterläuft und t0 in Takt 5 schreibt. Nach der ausdrücklich vereinbarten Registerbankkonvention kann sub den neuen Wert erst in ID von Takt 6 lesen. Es rechnet dann in Takt 7 und endet in Takt 9. Gegenüber dem ungehaltenen Abschluss in Takt 6 sind das drei Zusatzzyklen.
+Forwarding leitet einen bereits bereiten Ergebniswert ohne Umweg über die Registerbank direkt zum Rechenoperanden weiter. Es ersetzt dort gegebenenfalls den zuvor gelesenen alten Registerbankwert. Hier fehlt diese Verbindung; eine Hazard-Erkennung hält stattdessen den Verbraucher fest. IF ist Instruction Fetch, ID Instruction Decode, EX Execute, MEM Memory Access und WB Write Back. Im Raster bleibt sub in ID, während add weiterläuft und t0 in Takt 5 schreibt. Nach der ausdrücklich vereinbarten Registerbankkonvention kann sub den neuen Wert erst in ID von Takt 6 lesen. Es rechnet dann in Takt 7 und endet in Takt 9. Gegenüber dem ungehaltenen Abschluss in Takt 6 sind das drei Zusatzzyklen.
 
 Das ist eine Modellannahme. Eine Registerbank, die innerhalb eines Takts zuerst schreibt und danach denselben Wert liest, könnte sub bereits in ID von Takt 5 versorgen; dann wären es zwei Zusatzzyklen. Auch ein zusätzlicher Rückweg zum Registerleseeingang würde das Modell verändern. Fehlendes Forwarding bedeutet mit ausreichender Erkennung längeres Warten, nicht zwangsläufig ein falsches Ergebnis. Die nächste Frage lautet, wann das Ergebnis 10 tatsächlich erstmals bereitsteht.
 :::
@@ -485,16 +485,45 @@ Das Ergebnis lautet $0-4=-4$, als 32-Bit-Bitmuster 0xFFFFFFFC. Die Arithmetic Lo
 
 ## Sonderfall: WB und ID im selben Takt
 
-- Zwei unabhängige Befehle zwischen Schreiber und Leser
-- Schreiber in WB, Leser gleichzeitig in ID
-- Im Folgetakt ist der Schreiber nicht mehr in MEM/WB verfügbar
-- Kursmodell: einen Takt halten und danach neu lesen
-- Andere Registerbank oder zusätzlicher Lesebypass: anderes Modell
+Anfang: `t0=99`, `t1=7`, `t2=3`, `t4=4`, `a5=0`.
+
+```asm
+add  t0, t1, t2     # I1: erzeugt 10
+addi a5, a5, 1      # I2: unabhängige Arbeit
+xor  a6, a6, a6     # I3: unabhängige Arbeit
+sub  t3, t0, t4     # I4: braucht den neuen Wert 10
+```
+
+- In Takt 5: I1 in WB, I4 in ID
+- Neuer `t0`-Wert im Kursmodell erst in ID von Takt 6 lesbar
+- EX-Forwarding allein schließt diese Lücke nicht
 
 ::: notes
-WB bedeutet Write Back, das Registerschreiben; ID bedeutet Instruction Decode, einschließlich Registerlesen; EX bedeutet Execute, die Rechenstufe. Betrachten Sie einen Schreiber mit Fetch in Takt 1 und einen Leser mit Fetch in Takt 4. Zwei unabhängige Instruktionen liegen dazwischen. Der Schreiber ist in WB von Takt 5, der Leser in ID desselben Takts. Nach unserer Konvention liest er dort noch nicht den neu geschriebenen Wert.
+WB bedeutet Write Back, das Registerschreiben; ID bedeutet Instruction Decode, einschließlich Registerlesen; EX bedeutet Execute, die Rechenstufe. I1 bis I4 bezeichnen die vier Instruktionen in Programmreihenfolge. Die temporären Register t0, t1, t2 und t4 enthalten die angegebenen Anfangswerte, a5 beginnt bei null. Der alte a6-Wert darf beliebig sein: xor, exklusives Oder, mit zweimal derselben Quelle ergibt null. Alle Anfangswerte liegen vor der Kernfolge bereits bereit.
 
-Ohne Halt wäre er erst in EX von Takt 6. Zu diesem Zeitpunkt steht der Schreiber nicht mehr im MEM/WB-Register zwischen Memory Access und Write Back; die beiden üblichen EX-Weiterleitungsquellen reichen allein nicht. Eine ausreichende Hazard-Erkennung hält den Leser daher einen Takt in ID und lässt ihn in Takt 6 neu lesen. Eine Registerbank mit Schreiben vor Lesen oder ein zusätzlicher Rückweg von WB nach ID würde diesen Sonderfall anders behandeln. Die ALU, Arithmetic Logic Unit, ist die Recheneinheit. Deshalb verallgemeinern wir das stallfreie unmittelbare ALU-Paar nicht auf jede Entfernung zwischen Schreiber und Leser.
+add erzeugt aus sieben und drei den neuen t0-Wert zehn. Die beiden unabhängigen Befehle erhöhen a5 auf eins und setzen a6 auf null. sub benötigt danach zehn minus vier, also sechs in t3. Der Schreiber beginnt in Fetch von Takt 1 und steht in WB von Takt 5. Der Leser beginnt in Fetch von Takt 4 und steht gleichzeitig in ID. Dort sieht er im vereinbarten Registerbankmodell noch den alten Wert 99, denn die zehn wird erst am Taktende geschrieben.
+
+Ohne Halt würde I4 in Takt 6 rechnen. Dann enthält MEM/WB, das Register zwischen Memory Access und Write Back, bereits I2 mit Ziel a5. I1 ist aus diesem Weiterleitungspfad verschwunden; kein passender neuer t0-Wert kann den alten Operanden ersetzen. Die Hazard-Erkennung hält daher I4 einen Takt in ID. Im nächsten Raster sehen wir, wie das erneute Lesen in Takt 6 den richtigen Wert bereitstellt. Das Problem ist die Verfügbarkeit, nicht eine falsche Befehlsreihenfolge.
+:::
+
+## Ein Haltezyklus löst den WB/ID-Konflikt
+
+| Eintrag / Takt | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| I1: `add` | IF | ID | EX | MEM | WB | | | | |
+| I2: `addi` | | IF | ID | EX | MEM | WB | | | |
+| I3: `xor` | | | IF | ID | EX | MEM | WB | | |
+| I4: `sub` | | | | IF | ID alt | ID neu | EX | MEM | WB |
+| Bubble | | | | | | EX | MEM | WB | |
+
+ID alt: `t0=99`. Nach einem Takt Halt: ID neu mit `t0=10`; Ergebnis `t3=6`.
+
+::: notes
+IF heißt Instruction Fetch, Befehlsholen; ID heißt Instruction Decode mit Registerlesen; EX heißt Execute, Rechnen; MEM heißt Memory Access, Datenzugriff; WB heißt Write Back, Rückschreiben beziehungsweise Abschluss. Die horizontale Achse zählt relative Takte. Jede Zeile verfolgt dieselbe Instruktion aus der vorherigen Folie. Die beiden ID-Felder von I4 sind keine zwei Befehle: Der Verbraucher bleibt über die Grenze zu Takt 6 erhalten und liest dann erneut.
+
+In Takt 5 steht I1 in WB, während I4 noch 99 liest. An der folgenden Flanke schreibt I1 die zehn. I4 wird in ID gehalten; in die sonst folgende EX-Stufe wird für Takt 6 eine wirkungslose Bubble eingesetzt. Die älteren Instruktionen I2 und I3 laufen weiter. In ID von Takt 6 ist zehn aus der Registerbank lesbar. Der wieder gelesene Operand wandert über ID/EX, das Register zwischen Decodieren und Rechnen, nach EX von Takt 7. Dort berechnet sub zehn minus vier gleich sechs. Dieser Operand kommt aus dem erneuten Registerlesen, nicht aus einem Forwarding-Treffer in Takt 7.
+
+I4 beendet WB in Takt 9. Vier Instruktionen bräuchten ohne Konflikt acht Takte; hier kommt genau ein Haltezyklus hinzu. Die Bubble wandert durch EX6, MEM7 und WB8 und zählt nicht als zusätzliche Programminstruktion. Eine Registerbank mit Schreiben vor Lesen im selben Takt oder ein eigener WB→ID-Lesebypass könnte den Konflikt ohne diesen Halt lösen. Das wäre eine andere Modellkonvention; die normalen EX-Weiterleitungen allein leisten dies nicht.
 :::
 
 # 4. Load-Use, Stall und Scheduling
