@@ -1,775 +1,772 @@
 ---
 title: "Mikrocomputertechnik 1"
-subtitle: "Einheit 9: C, Assembler und Abschlussprojekt"
+subtitle: "Einheit 9: Klausurwiederholung zu Vorlesung 1–7"
 author: "Prof. Dr.-Ing. Daniel Klünder"
-# Vortrag: quarto preview vorlesungen/09_wrap-up-c-to-assembly.qmd
-# Notizen: Taste S. Skript: --profile handout --to pdf
+# Dateiname für bestehende Kurslinks beibehalten.
 format: revealjs
 title-slide-attributes:
   data-notes: |
-    Diese abschließende Einheit verbindet C-Kontrollstrukturen mit den
-    bekannten Register-, Speicher- und Sprungbefehlen. Voraussetzungen
-    sind die Inhalte aus Einheit 1–8: Datenrepräsentation, Adressrechnung,
-    Funktionskonvention, Stack, Datenpfad, Pipeline und Geräteverträge.
-    Wir unterscheiden manuelle Lehrübersetzung und tatsächliche
-    Compilerausgabe. Das Abschlussprojekt ist ein Code-Schloss mit
-    vollständig benannter Übergangstabelle, Ereigniserkennung und Anzeige.
-    Die Notizen erläutern die Herleitung als Skript; Papieraufgaben prüfen
-    den Lernstand. Bearbeitungszeiten sind Planungsschätzungen, und die
-    Beispiele ersetzen keine verbindlichen Angaben zur eigentlichen Klausur.
+    Diese Einheit wiederholt ausschließlich die Inhalte der ersten sieben
+    Vorlesungen. Sie verbindet Zahlendarstellung und Logik mit RISC-V-Befehlen,
+    Speicher, Funktionen, Datenpfad, Steuerwerk und Pipeline. Kenntnisse aus
+    Vorlesung 8 werden nicht benötigt. Ziel ist, bekannte Prinzipien auf neue
+    Aufgaben anzuwenden und Rechenwege begründen zu können. Die kurzen
+    Selbsttests werden zunächst ohne Lösung bearbeitet; die Notizen enthalten
+    anschließend Herleitung und Ergebnis. Zusammen mit den Folien bilden sie
+    ein kompaktes Wiederholungsskript. Zahlen und Adressen in Rechenbeispielen
+    sind didaktische Annahmen, keine Messungen. Übung 9 ergänzt eigenständige
+    Papieraufgaben mit Musterlösung; das Quiz prüft zentrale Unterscheidungen.
 ---
 
-# C, Assembler und Abschlussprojekt
+## Sieben Vorlesungen, ein Zusammenhang
 
-::: notes
-C ist die hier betrachtete höhere Programmiersprache. Assemblertext beschreibt Maschinenoperationen symbolisch. Die letzte Einheit verbindet die Ebenen, statt einen weiteren Prozessorbaustein vorauszusetzen: Aus einer Bedingung werden Vergleiche und Sprünge, aus einem Arrayindex eine Byteadresse, und aus einer Funktion ein Ablauf nach dem bekannten Registervertrag.
-
-Das Abschlussprojekt nutzt diese Mechanismen für ein Code-Schloss. Sein gespeicherter Zustand, die Erkennung eines Eingabeereignisses und die Ausgabe einer Farbe werden getrennt entwickelt und anschließend zusammengesetzt. Die Notizen erklären Begriffe, Annahmen, Code und Rechenwege als begleitendes Skript. Manuelle Assemblerformen sind Lehrübersetzungen, keine behaupteten Compilerergebnisse. Ein Simulatorversuch muss zusätzlich die konkrete Gerätekarte berücksichtigen.
-:::
-
-## Ziele der abschließenden Einheit
-
-1. Dateien und Aufgaben der Werkzeugkette unterscheiden
-2. C-Bedingungen und Schleifen nachvollziehbar übersetzen
-3. Werte über normale Funktionsaufrufe korrekt erhalten
-4. Ereignis und Zustandsübergang getrennt entwerfen
-5. Ergebnisse durch Traces und Grenzfälle prüfen
-
-::: notes
-Die Werkzeugkette, auf Englisch Toolchain, führt vom Quelltext über Übersetzung und Bindung zum für eine Umgebung bestimmten Programm. Ein Trace ist eine schrittweise Verfolgung mit angegebenem Anfangszustand. Er zeigt nicht nur einen Endwert, sondern auch den tatsächlich durchlaufenen Kontrollpfad. Grenzfälle prüfen zum Beispiel eine Schleife ohne Durchlauf oder einen ungültigen Zustandswert.
-
-Die ersten drei Ziele wiederholen Register, Sprünge, Speicher und Funktionen aus den bisherigen Einheiten. Neu ist ihre systematische Verbindung mit C und einem endlichen Zustandsautomaten. Im Projekt kommt ein bloß gehaltener Tastenzustand nicht automatisch einem neuen Ereignis gleich. Deshalb wird die Eingabe vor der Übergangsfunktion aufbereitet. Die Papieraufgaben folgen denselben Entscheidungen und verlangen jeweils eine Begründung. Die Aufgabentypen dienen der Vorbereitung; konkrete Klausurregeln werden daraus nicht abgeleitet.
-:::
-
-## Bekanntes Wissen gezielt verbinden
-
-| Einheit | Heute benötigt |
+| Grundlage | Darauf aufbauende Frage |
 |:---|:---|
-| 1–3: Werte, Befehle und Speicher | Masken, Vergleiche und Arrayadressen |
-| 4: Funktionen und Stack | Argumente, Rückkehrlink und Sicherung |
-| 5–7: Datenpfad und Pipeline | Befehlswirkung und Zeitmodell unterscheiden |
-| 8: Geräte und Dienste | Registerkarte, Eingabesemantik und Ausgabe |
+| 1: Bits, Logik, Register | Wie werden Werte dargestellt und gespeichert? |
+| 2–3: Befehle, Speicher, Sprünge | Welche Zustandsänderung beschreibt das Programm? |
+| 4: Funktionen und Stack | Was bleibt über einen Aufruf hinweg erhalten? |
+| 5–6: Datenpfad und Steuerung | Welche Quellen und Freigaben bewirken den Befehl? |
+| 7: Pipeline und Performance | Wann sind Ergebnisse verfügbar, wie lange dauert es? |
 
 ::: notes
-Ein Wert und seine Adresse sind verschiedene Größen. Eine Bitmaske wählt Positionen aus, ein Sprung verändert den Kontrollfluss. Die Funktions-ABI, Application Binary Interface oder binäre Aufrufkonvention, legt Registerrollen, Stackausrichtung und Rückgaben fest. Genau diese Kenntnisse nutzen wir für die folgenden Assemblerfunktionen.
+Die Wiederholung folgt derselben Abstraktionskette wie die Veranstaltung. Zunächst beschreiben Bits Werte, kombinatorische Logik berechnet neue Werte und Register halten den Zustand. Der Befehlssatz legt fest, welche Zustandsänderungen ein Programm verlangen darf. Speicherzugriffe und Sprünge verbinden einzelne Rechnungen zu vollständigen Abläufen. Funktionen benötigen zusätzlich einen verlässlichen Vertrag zwischen aufrufendem und aufgerufenem Code.
 
-Die ISA, Instruction Set Architecture oder Befehlssatzarchitektur, beschreibt die beobachtbare Befehlswirkung. Ein Datenpfad und eine Pipeline sind konkrete Mikroarchitekturen. Ein C-Programm bekommt deshalb nicht allein durch eine Registerzuordnung eine feste Laufzeit. Auch MMIO, Memory-Mapped Input/Output oder Gerätezugriff über Speicheradressen, bleibt ein Plattformvertrag. Wir verwenden für das Projekt die Geräteexports der Installation und für Rechenbeispiele ausdrücklich angegebene Werte. Optimierungstheorie, Linkerskripte und ein Betriebssystemkernel werden nicht vorausgesetzt.
+Datenpfad und Steuerwerk realisieren diesen Vertrag in Hardware. Eine Pipeline überlappt mehrere Befehle, muss aber dieselben sichtbaren Ergebnisse liefern. Deshalb fragen wir bei jeder Aufgabe zuerst nach der Befehlswirkung und anschließend nach ihrer zeitlichen Umsetzung. Ein richtig berechneter Endwert beweist noch keine korrekte Registererhaltung oder ein korrektes Zeitdiagramm. Umgekehrt sagt eine niedrige Taktzahl ohne Taktperiode wenig über die Laufzeit aus. Die Folien enthalten kurze Entscheidungs- und Rechenaufgaben. Versuchen Sie, die Antwort vor dem Lesen der Notizen zu begründen; das macht Lücken im Verständnis sichtbar.
 :::
 
-## Gemeinsame Annahmen
+## Den Vertrag vor der Rechnung festlegen
 
-- RV32I, keine komprimierten Instruktionen in den Kernbeispielen
-- ILP32: `int` und Zeiger je 32 Bit, Arrayelement hier vier Byte
-- Skalare Argumente und Ergebnisse nach dem bekannten Funktionsvertrag
-- Arrayzugriffe gültig; betrachtete vorzeichenbehaftete C-Rechnungen ohne Überlauf
-- Lehrübersetzung, Simulatorbeobachtung und Compilerausgabe getrennt
+- ISA: RV32I, 32-Bit-Register, Byteadressen, hier Little Endian
+- Keine komprimierten Befehle: echte Instruktionen belegen vier Byte
+- ABI: ILP32, skalare Rückgabe in `a0`, Stackausrichtung 16 Byte
+- Datenpfad: acht ausdrücklich unterstützte Befehle aus Vorlesung 5–6
+- Pipeline: fünf Stufen und die Konventionen aus Vorlesung 7
 
 ::: notes
-RV32I bezeichnet die 32-Bit-RISC-V-Ganzzahlbasis. Die C-Erweiterung für komprimierte Instruktionen ist ausgeschaltet; betrachtete Maschinenbefehle belegen vier Byte. Das hat nichts mit der Programmiersprache C zu tun. ILP32 benennt ein Datenmodell mit 32-Bit-int, long und Zeigern. In unseren Arraybeispielen belegt daher ein int vier Byte.
+ISA bedeutet Instruction Set Architecture, also Befehlssatzarchitektur. RV32I ist die 32-Bit-Ganzzahlbasis von RISC-V. Ein Architekturregister hält 32 Bit; eine Speicheradresse bezeichnet ein Byte. Little Endian ist die im Kurs vereinbarte Byteordnung. Ohne die komprimierte Erweiterung C belegen die betrachteten echten Instruktionen vier Byte. Ein Pseudobefehl ist dagegen keine verlässliche Zähleinheit.
 
-ABI bedeutet Application Binary Interface, die binäre Funktionskonvention. Wir behandeln kleine Ganzzahlergebnisse in a0, Argumente ab a0 und 16-Byte-Stackausrichtung. Andere Rückgabeformen liegen außerhalb. Die Zahlenbeispiele sind so gewählt, dass C-Rechnungen mit vorzeichenbehafteten int-Werten definiert bleiben. Die Maschine rechnet dagegen mit 32-Bit-Mustern modulo $2^{32}$. Nicht jede solche Bitoperation entspricht einer definierten C-Operation für alle Eingaben. Diese Grenzen werden bei Multiplikation, Vergleich und Arrays wieder aufgegriffen.
+ABI steht für Application Binary Interface, die binäre Aufrufkonvention. ILP32 bezeichnet hier das Datenmodell mit 32-Bit-int, long und Zeigern sowie die passende Ganzzahlkonvention. Einfache skalare Rückgaben stehen in a0. Der Stackzeiger ist während standardkonformer Funktionen auf 16 Byte ausgerichtet.
+
+Unser Datenpfad unterstützt Addition, Subtraktion, bitweises UND und ODER, also add, sub, and und or. Dazu kommen lw, Load Word oder Wort laden, sw, Store Word oder Wort speichern, beq, Branch if Equal oder Gleichheitssprung, und seit Vorlesung 6 addi, Add Immediate oder Addition einer Konstanten. Andere bekannte Befehle sind damit nicht automatisch implementiert. Die Pipeline ist ebenfalls ein Lehrmodell. Trennen Sie Befehlswirkung, Aufrufvertrag und Hardwaremodell ausdrücklich; so vermeiden Sie, eine lokale Vereinfachung als allgemeine RISC-V-Regel zu verwenden.
 :::
 
-# 1. Von C zu einem Programm für das Ziel
-
-::: notes
-Quelltext läuft nicht unmittelbar im bekannten Datenpfad. Eine Werkzeugkette bereitet ihn auf, übersetzt ihn, codiert die Maschinenbefehle und verbindet die benötigten Teile. Anschließend muss die Ausführungsumgebung das Programm laden und starten. Das sind verschiedene Aufgaben, auch wenn ein einzelner Treiberbefehl mehrere davon anstößt.
-
-Wir benutzen die klassische Trennung in Präprozessor, Compiler, Assembler und Linker. Sie ist ein verständliches Modell der Verarbeitungsschritte, keine Zusage, dass jede Implementierung vier unabhängige Prozesse startet. An den erzeugten Dateitypen erkennen Sie, welchen Stand ein Programm erreicht hat und weshalb eine Objektdatei oder ein Assemblertext noch nicht automatisch in Venus läuft.
-:::
-
-## Werkzeugkette und Zwischenergebnisse
-
-![](../assets/images/vl9-toolchain.svg){.nostretch fig-alt="Quelltext wird vorverarbeitet, übersetzt, assembliert und mit weiteren Objekten verbunden; Laden und Start folgen separat"}
-
-::: notes
-Die Abbildung beginnt oben links beim C-Text, verläuft durch die vier Werkzeugfelder von links nach rechts und endet unten rechts beim Programm. Aus C-Quelltext entsteht durch den Präprozessor ein vorverarbeiteter Text. Der Compiler prüft und übersetzt die Sprachstruktur, hier zu Assemblertext. Das Assemblerwerkzeug erzeugt ein Objekt mit Code, Daten und weiteren Informationen. Der Linker verbindet dieses Objekt mit passenden weiteren Objekten und löst ihre Beziehungen. Die grauen Felder benennen Verarbeitungsschritte; die Pfeile zeigen die Reihenfolge und die Beschriftungen die jeweiligen Zwischendateien.
-
-Die Endungen .c, .i, .s und .o kennzeichnen hier typische Zwischenergebnisse. ELF heißt Executable and Linkable Format, ein verbreitetes Format für Objekte und Programme; allein die Endung .elf beweist keine Ausführbarkeit. Laden und Starten sind anschließend eigene Aufgaben der Umgebung. Ein mit einer Toolchain erstelltes Programm braucht passende Eintrittsadresse, Speicherbelegung und gegebenenfalls Laufzeit. Venus, der Kurs-Instruktionssimulator, erwartet dagegen seinen unterstützten Assemblertext und seinen Dienstvertrag.
-:::
-
-## Den Treiber gezielt anhalten
-
-| Option | Ergebnis des betrachteten Aufrufs |
-|:---|:---|
-| `-E` | Vorverarbeiteter Text |
-| `-S` | Assemblertext |
-| `-c` | Objektdatei, noch nicht gelinkt |
-| Ohne diese Stoppoptionen | Linkschritt, falls Eingaben und Zielumgebung passen |
-
-Compileroptionen sind kein Beweis für eine bereits erfolgreiche Ausführung.
-
-::: notes
-GCC bedeutet GNU Compiler Collection. Sein Treiber kann mehrere Verarbeitungsschritte koordinieren. -E stoppt nach der Vorverarbeitung, -S nach der Übersetzung zu Assemblertext und -c nach Erzeugung einer Objektdatei. Eine .o-Datei kann bereits Maschinenbefehle enthalten, aber noch offene Beziehungen zu Symbolen anderer Dateien besitzen.
-
-Ohne eine dieser Stoppoptionen kann der Treiber den Linker aufrufen. Auch dann fehlen bei einem unpassenden Ziel möglicherweise Bibliotheken, Startcode oder ein Speicherlayout. Die Optionen sind keine Aussage, dass der erzeugte Text oder das Programm schon im Simulator ausgeführt wurde. Ein Header wird nicht zum Programmstart, und eine Fehlermeldung des Linkers ist nicht automatisch eine falsche Syntax im C-Code. Diese Unterscheidungen helfen, einen Buildfehler der richtigen Stufe zuzuordnen.
-:::
-
-## Host und Ziel ausdrücklich wählen
-
-Aufrufschema bei vorhandener passender RISC-V-Toolchain:
-
-```bash
-riscv64-unknown-elf-gcc \
-  -march=rv32i -mabi=ilp32 -O2 -S \
-  beispiele/vl9_control.c -o control.s
-```
-
-Ein gewöhnliches `gcc` auf dem Arbeitsrechner wählt dessen eigenes Ziel.
-
-::: notes
-Host ist der Rechner, auf dem die Werkzeuge laufen; Target ist das Ziel, für das sie Code erzeugen. GCC heißt GNU Compiler Collection. Eine entsprechend gebaute riscv64-unknown-elf-gcc-Toolchain kann auch ein RV32-Ziel unterstützen; der Name allein garantiert das nicht. -march=rv32i wählt die RISC-V-Ganzzahlbasis, -mabi=ilp32 das 32-Bit-Daten- und Aufrufmodell. -O2 wählt eine Optimierungsstufe. -S fordert Assemblertext und -o den Ausgabepfad control.s an.
-
-Die Datei beispiele/vl9_control.c existiert im Repository. Der gezeigte Aufruf ist eine Arbeitsanleitung, kein protokollierter Cross-Compiler-Lauf. Ein auf dem Host aufgerufenes gcc ohne passendes Ziel erzeugt nicht automatisch RV32-Code. Die Zeilenfortsetzung mit Rückstrich ist Shellsyntax. Auch ein korrekt erzeugter Assemblertext benötigt für Ausführung noch eine passende Umgebung. Bei einem Vergleich dokumentieren Sie Toolchainversion, Ziel und sämtliche relevanten Optionen.
-:::
-
-## Deklaration, Implementierung und offenes Symbol
-
-- Ein Header kann eine Funktion deklarieren
-- Die Implementierung kann in einem anderen Objekt liegen
-- Der Assembler kennt nicht jede endgültige Zieladresse
-- Relocation beschreibt noch anzupassende Stellen
-- Der Linker verbindet kompatible Teile
-
-::: notes
-Eine Deklaration beschreibt, wie eine Funktion aufgerufen wird, zum Beispiel Name, Parameter und Rückgabe. Die Implementierung enthält ihre eigentliche Arbeit. Ein include der üblichen stdio.h-Deklarationen liefert deshalb nicht automatisch den Maschinenkörper von printf, der formatierten Ausgabefunktion.
-
-Ein Symbol benennt eine Funktion oder Datenposition. Ein noch undefiniertes externes Symbol kann in einem anderen Objekt bereitgestellt werden. Relocation, Relokation oder Adressanpassung, hält fest, welche codierte Stelle nach der Platzierung angepasst werden muss. Manche lokale Beziehungen kann bereits der Assembler bestimmen. Andere werden beim Linken aufgelöst. Der Linker verbindet passende Code- und Datenbereiche und kann Bibliotheken einbeziehen. Er erzeugt aber weder einen beliebigen Gerätevertrag noch automatisch eine funktionierende Ausgabe für jedes Bare-Metal-System, also ein System ohne Betriebssystem. Startcode, Bibliothek und Umgebung müssen zusammenpassen.
-:::
-
-## Optimierung erhält Verhalten, keine feste Schablone
-
-Vorhandene C-Funktion:
-
-```c
-int constant_sum(void) {
-    int a = 5;
-    int b = 10;
-    return a + b;
-}
-```
-
-Das Ergebnis ist 15; eigene Register für `a` und `b` sind nicht vorgeschrieben.
-
-::: notes
-constant_sum ist eine Funktion ohne Parameter mit einer int-Rückgabe. a und b sind lokale Variablen mit den Werten fünf und zehn. Die Addition ergibt 15 und hat hier keinen vorzeichenbehafteten Überlauf. Eine Übersetzung kann die Variablen einzeln abbilden oder die konstante Rechnung zusammenfassen. Der Quelltext verlangt die Rückgabe 15, nicht zwei bestimmte Speicherorte.
-
-Registerallokation ist die Auswahl der Register für benötigte Werte. Bei hoher Registerbelastung, Register Pressure, kann Spilling Werte vorübergehend in den Speicher auslagern. Die ABI, Application Binary Interface, erzwingt nicht s0 für die erste lokale Variable. Veränderte erhaltene s-Register müssten in einer normalen Funktion allerdings restauriert werden. -O0 garantiert keine solche Registerzuordnung, -O2 oder -O3 keinen bestimmten Pipelineplan. Die Folie zeigt Quellcode aus beispiele/vl9_control.c und eine begründete mögliche Optimierung, keinen erfundenen Compileroutput.
-:::
-
-# 2. Kontrollfluss und Adressrechnung übersetzen
-
-::: notes
-Die folgenden Assemblerformen sind manuelle Lehrübersetzungen. Sie sollen dieselbe beobachtbare Wirkung wie der angegebene C-Code haben, verlangen aber keine bestimmte Ausgabe eines Compilers. Wir legen die Registerrollen jeweils lokal fest und begründen Sprünge durch die zugehörige Bedingung.
-
-Ein Label ist eine Marke für eine Codeadresse, kein Befehl und keine gespeicherte Variable. Ein bedingter Sprung entscheidet, welcher Block ausgeführt wird. Eine Rückkante erzeugt Wiederholung. Für Arrays kommt zusätzlich die Umrechnung vom Elementindex zum Byteoffset hinzu. Diese drei Mechanismen reichen bereits für viele verständliche Programme und für wesentliche Teile des Abschlussprojekts.
-:::
-
-## C lesen: Ein kleiner Sprachschlüssel
-
-```c
-int plus_one(int x) {
-    return x + 1;
-}
-```
-
-- `int`: hier vorzeichenbehafteter 32-Bit-Ganzzahltyp
-- `=` weist zu, `==` prüft Gleichheit
-- `{ ... }` fasst Anweisungen zu einem Block zusammen
-- `return` liefert das Ergebnis und beendet die Funktion
-- `p[i]` liest das Arrayelement mit Index `i`
-
-::: notes
-Für die folgenden Beispiele genügt dieser kleine Ausschnitt der C-Sprache. int benennt den Ganzzahltyp, plus_one den Funktionsnamen und x den Parameter. Die Klammern hinter dem Namen enthalten die Parameterliste; die geschweiften Klammern begrenzen den Funktionskörper. return gibt das berechnete Ergebnis zurück und beendet diesen Funktionsaufruf. Mit x gleich drei entsteht hier vier. Die zuvor vereinbarte Voraussetzung eines darstellbaren Ergebnisses gilt weiterhin.
-
-Ein Semikolon beendet die gezeigte Anweisung. Das einzelne Gleichheitszeichen weist einer Variablen einen Wert zu, das doppelte prüft Gleichheit. Ein Array enthält aufeinanderfolgende Elemente gleichen Typs; sein erster Index ist null. In unseren Beispielen bezeichnet p einen Zeiger auf solche Elemente und p[i] den Wert an Position i. unsigned kennzeichnet einen vorzeichenlosen Typ, etwa für eine Länge. if, while und for werden unmittelbar mit ihren Beispielen erklärt. Ein gesonderter C-Sprachkurs wird für diese kleinen Übersetzungsmuster nicht vorausgesetzt.
-:::
-
-## Gleichheit: genau einen Zweig ausführen
-
-```c
-int choose(int a, int b) {
-    if (a == b) {
-        return 1;
-    } else {
-        return 2;
-    }
-}
-```
-
-Bei `a == b` liefert `choose` 1, sonst 2.
-
-::: notes
-choose ist eine int-Funktion mit den Parametern a und b. == prüft Gleichheit, während = eine Zuweisung wäre. Bei gleichen Werten wird eins zurückgegeben, bei verschiedenen zwei. Die beiden Zweige schließen sich aus; es wird nicht erst der eine und danach der andere ausgeführt. choose(5,5) ergibt eins, choose(5,10) zwei.
-
-Nach der normalen ABI, Application Binary Interface oder binären Aufrufkonvention, liegen diese skalaren Parameter in a0 und a1 und die Rückgabe in a0. Die Parameternamen a und b sind nicht dieselben Dinge wie die Registernamen a0 und a1, auch wenn die Namen ähnlich aussehen. Gleichheit von Bitmustern benötigt keine getrennte signed- und unsigned-Sprungvariante. Der Compiler könnte den Fall anders anordnen. Wir verwenden im nächsten Ausschnitt die umgekehrte Bedingung, damit der Gleichheitszweig ohne ersten Sprung weiterläuft.
-:::
-
-## Gleichheit als Branch und gemeinsames Ende
+## ISA und Mikroarchitektur beantworten andere Fragen
 
 ```asm
-choose:
-    bne a0, a1, choose_else
-    li  a0, 1
-    j   choose_end
-choose_else:
-    li  a0, 2
-choose_end:
-    ret
+add a0, t0, t1
 ```
 
-Ohne den Sprung zum Ende würde auch der Else-Zweig erreicht.
+| Ebene | Was lässt sich daraus ableiten? |
+|:---|:---|
+| ISA | Alte Quellwerte addieren, untere 32 Bit nach `a0` |
+| ABI | `a0` ist ein Argument- und Rückgaberegister |
+| Mikroarchitektur | Konkreter Datenweg, Taktzahl, Konfliktbehandlung |
+
+Gleiche Befehlswirkung verlangt keine gleiche Ausführungszeit.
 
 ::: notes
-bne heißt Branch if Not Equal. Die Funktion springt bei ungleichen Parametern in a0 und a1 zum Else-Zweig. Bei Gleichheit setzt li, Load Immediate, die Rückgabe in a0 auf eins. j ist ein unbedingter Pseudobefehl ohne Rückkehrlink und überspringt die nachfolgende Zuweisung zwei. ret springt über ra, Return Address, zum normalen Aufrufer zurück. Das ist eine manuelle Funktionsübersetzung, kein vollständiges Programm mit Einstieg und Ausgabe.
+ISA heißt Instruction Set Architecture, Befehlssatzarchitektur. Sie legt die sichtbare Wirkung einer Instruktion fest. add liest hier die alten Registerwerte aus t0 und t1, addiert modulo zwei hoch 32 und schreibt nach a0. t0 und t1 sind die temporären Register x5 und x6, a0 ist x10. Welche Werte gerade darin stehen, muss die Aufgabe zusätzlich angeben.
 
-Die ABI, Application Binary Interface, erlaubt dieser Leaf-Funktion, also einer Funktion ohne Unteraufruf, die Argumentregister zu verändern. Sie benutzt kein erhaltenes s-Register und braucht für diesen Ablauf keinen Stackframe. Fehlt j choose_end, läuft die Ausführung bei Gleichheit anschließend in choose_else und überschreibt eins mit zwei. Dieser Fehler ist durch einen Trace mit gleichen Parametern erkennbar. Ein einziges Beispiel mit ungleichen Parametern würde ihn dagegen nicht aufdecken.
+ABI bedeutet Application Binary Interface, die binäre Aufrufkonvention. Sie gibt den Registern Rollen beim Zusammenarbeiten von Funktionen. Dass a0 häufig eine Rückgabe trägt, ändert die Hardwarewirkung von add nicht. Außerhalb einer Aufrufgrenze ist es weiterhin ein beschreibbares Ganzzahlregister.
+
+Eine Mikroarchitektur ist die konkrete Realisierung des Befehlssatzes. Ein Single-Cycle-Prozessor führt den Befehl innerhalb einer langen Periode aus; eine Pipeline kann seine Teilaufgaben auf mehrere kürzere Perioden verteilen und mit anderen Instruktionen überlappen. Beide müssen dieselbe beobachtbare Addition liefern. Taktzahl und Forwarding ergeben sich daher nicht aus dem ISA-Namen allein. Auch RISC-V als regelmäßig aufgebauter, erweiterbarer Befehlssatz garantiert weder einen bestimmten internen Aufbau noch eine höhere Geschwindigkeit. In Klausuraufgaben müssen Behauptungen zur Zeit stets zu den genannten Modellannahmen passen.
 :::
 
-## Kontrollfluss als gerichteter Graph
+## Bitmuster brauchen eine Interpretation
 
-![](../assets/images/vl9-if-kontrollfluss.svg){.nostretch fig-alt="Gleichheitsentscheidung führt entweder zum Then- oder zum Else-Block; beide treffen sich vor der Rückkehr"}
+Für acht Bit:
+
+$$1010\,1100_2=\mathtt{0xAC}$$
+
+| Lesart | Wert |
+|:---|---:|
+| Ohne Vorzeichen | $172$ |
+| Zweierkomplement | $172-256=-84$ |
+| Vorzeichenerweitert auf 32 Bit | `0xFFFFFFAC` |
+
+Selbsttest: Welchen Wert hat das Muster `0x7C` in beiden Lesarten?
 
 ::: notes
-Die Abbildung zeigt einen Kontrollflussgraphen, also die möglichen Reihenfolgen von Programmblöcken. Oben steht die Prüfung der Parameterregister a0 und a1, links die Rückgabe eins bei Gleichheit und rechts die Rückgabe zwei bei Ungleichheit. In beiden Fällen wird das Ergebnis nach a0 geschrieben. Beide Wege treffen sich am gemeinsamen Ende. Die Pfeile kennzeichnen mögliche Folgeblöcke, keine Taktzahlen oder physikalischen Leitungen.
+Ein Bitmuster enthält für sich genommen keine Information darüber, ob es eine vorzeichenlose Zahl, eine Zahl im Zweierkomplement, eine Adresse oder Befehlsbits beschreibt. Hexadezimal fasst jeweils vier Bits in einer Ziffer zusammen: 1010 ergibt A und 1100 ergibt C. Der vorzeichenlose Wert ist die Summe der gesetzten Zweierpotenzen, hier 128 plus 32 plus 8 plus 4 gleich 172.
 
-Then bedeutet den bei wahrer Bedingung ausgeführten Zweig, Else den anderen. Im Graphen ist j End der unbedingte Sprung zum gemeinsamen Ende; ret bedeutet die Rückkehr zum Aufrufer. Rot hebt die Überspringkante nach dem Then-Zweig hervor. Diese Kante ist für die Anordnung nötig, bei der der Else-Block danach im Speicher steht. Der Graph macht dadurch den vorherigen fehlenden-Sprung-Fehler räumlich sichtbar. Eine andere gültige Übersetzung könnte beide Zweige unmittelbar zurückkehren lassen und hätte dann keinen gemeinsamen Endblock. Der Quelltext bestimmt die Wirkung, nicht zwingend genau diesen Graphen.
+Im achtbittigen Zweierkomplement hat das höchste Bit das Gewicht minus 128. Gleichwertig ziehen wir bei gesetztem höchstem Bit 256 vom vorzeichenlosen Wert ab: 172 minus 256 ergibt minus 84. Die Vorzeichenerweiterung wiederholt dieses höchste Bit in den neu hinzukommenden Stellen. Das 32-Bit-Muster 0xFFFFFFAC beschreibt deshalb weiterhin minus 84. Nullerweiterung zu 0x000000AC würde stattdessen den Wert 172 erhalten.
+
+Beim Selbsttest ist 0x7C gleich 01111100, also 64 plus 32 plus 16 plus 8 plus 4 gleich 124. Das höchste Bit ist null, daher liefern beide Lesarten 124. Der achtbittige Zweierkomplementbereich reicht von minus 128 bis 127; für minus 128 existiert in derselben Breite kein positives Gegenstück.
 :::
 
-## while: Prüfung vor jedem Durchlauf
+## Übertrag und Überlauf getrennt prüfen
 
-```c
-int count_to_ten(int i) {
-    while (i < 10) {
-        i++;
-    }
-    return i;
-}
-```
+Beispiel mit acht Bit:
 
-Start 0: zehn Körperausführungen und elf Prüfungen.
+$$0110\,1000_2+0011\,0100_2=1001\,1100_2$$
+
+- Unsigned: $104+52=156$, kein Übertrag aus Bit 7
+- Signed: zwei positive Operanden, negatives Ergebnis $-100$
+- Vorzeichenbehafteter Überlauf trotz fehlenden äußeren Übertrags
+
+RV32I-Rechnungen behalten die unteren 32 Bit; kein Überlauf-Flag.
 
 ::: notes
-count_to_ten ist eine int-Funktion mit Anfangsparameter i. Die Bedingung i kleiner zehn wird vor dem Körper geprüft. i++ erhöht i um eins. Bei Start null wird für die Werte null bis neun erhöht; die letzte Prüfung mit i gleich zehn beendet die Schleife. Damit entstehen zehn Körperausführungen, aber elf Bedingungsprüfungen. Die Rückgabe ist zehn.
+Die Rechnung nutzt absichtlich nur acht Bit, damit alle Stellen sichtbar bleiben. Unsigned bedeutet ohne Vorzeichen, signed hier Zweierkomplement. Die mathematische Summe 156 passt in den vorzeichenlosen Bereich von null bis 255; es entsteht kein neuntes Ergebnisbit. Im Zweierkomplement ist 156 dagegen außerhalb des Bereichs minus 128 bis 127. Das gespeicherte Muster 0x9C wird als minus 100 gelesen. Zwei positive Summanden und ein negatives Ergebnis zeigen den vorzeichenbehafteten Überlauf.
 
-Bei Start zehn oder zwölf gibt es keinen Körperdurchlauf; die Rückgabe bleibt zehn beziehungsweise zwölf. Ein while-Körper wird also nicht zwingend einmal ausgeführt. Die Werte bleiben in diesen Beispielen im definierten int-Bereich. Ein optimierender Compiler könnte diese Wirkung ohne eine tatsächlich durchlaufene Zählschleife herstellen. Die folgende manuelle Übersetzung behält die Schritte bewusst bei, damit Prüfung, Rückkante und Abbruch nachvollziehbar sind.
+Der umgekehrte Fall ist ebenfalls möglich: 0xFF plus eins ergibt in acht Bit null mit äußerem Übertrag. Signed ist dies minus eins plus eins gleich null und damit ohne Überlauf. Die Prüfungen beantworten unterschiedliche Fragen. Bei einer Addition im Zweierkomplement entsteht Überlauf genau dann, wenn gleichnamige Vorzeichen der Eingaben zu einem andersnamigen Vorzeichen des Ergebnisses führen.
+
+RV32I, die 32-Bit-RISC-V-Ganzzahlbasis, rechnet bei add und addi modulo zwei hoch 32. Die oberen herausfallenden Bits werden verworfen; ein Überlauf erzeugt weder ein arithmetisches Statusflag noch allein deshalb einen Trap. Aus der vorzeichenbehafteten Lesart eines Registers folgt keine andere Additionsschaltung.
 :::
 
-## while: Die Abbruchbedingung invertieren
+## Logik: auswählen und bitweise rechnen
+
+Ein Ein-Bit-Multiplexer mit Auswahl $S$:
+
+$$Y=(\overline{S}\land A)\lor(S\land B)$$
+
+Ein Volladdierer mit eingehendem Übertrag $C_\mathrm{in}$:
+
+$$Z=A\oplus B\oplus C_\mathrm{in}$$
+$$C_\mathrm{out}=(A\land B)\lor(A\land C_\mathrm{in})\lor(B\land C_\mathrm{in})$$
+
+Selbsttest: $S=1$ sowie $A=B=C_\mathrm{in}=1$ — welche Ausgaben?
+
+::: notes
+Kombinatorische Logik berechnet ihre Ausgabe aus den aktuellen Eingaben, ohne selbst einen gespeicherten Ablaufzustand zu besitzen. Ein Multiplexer wählt einen von mehreren Eingängen. In der ersten Gleichung bedeutet das Dach logisches UND, das nach unten offene Zeichen logisches ODER und der Überstrich Negation. Bei S gleich null bleibt A, bei S gleich eins B. Für Wortdaten wird diese Auswahl für alle Bitpositionen parallel ausgeführt.
+
+Der Volladdierer addiert zwei Eingangsbits A und B sowie den eingehenden Übertrag C-in. Z ist das Summenbit; das eingekreiste Plus steht für exklusives ODER. C-out ist genau dann eins, wenn mindestens zwei der drei Eingaben eins sind. Für A, B und C-in gleich eins ergibt die Summe drei, binär 11: Z ist eins und C-out ebenfalls eins. Für S gleich eins ist die Multiplexerausgabe B, hier also eins. Die beiden Schaltungen sind getrennte Beispiele.
+
+Bitweise Maschinenoperationen führen die Logik unabhängig je Position aus. Eine UND-Maske erhält ausgewählte Bits, eine ODER-Maske setzt Bits, exklusives ODER kippt Bits. Eine UND-Maske mit 0x0F erhält beispielsweise das untere Nibble, also die unteren vier Bits. Für Vereinfachungen gilt beispielsweise $(A\land B)\lor(A\land\overline{B})=A\land(B\lor\overline{B})=A$: Das Eingangsbit B ändert hier den Ausgang nicht.
+:::
+
+## Register: Die Flanke entscheidet
+
+![](../assets/images/vl1-register-trace.svg){.nostretch fig-alt="Zeitdiagramm: Daten 5, 7, 9 und Schreibfreigaben 1, 0, 1 ergeben nach den drei steigenden Flanken Ausgaben 5, 5, 9"}
+
+Selbsttest: Warum erscheint der Eingabewert 7 nie am Ausgang?
+
+::: notes
+Die Abbildung zeigt von oben nach unten CLK, Clock oder Takt, D als Dateneingang, WE, Write Enable oder Schreibfreigabe, und Q als gespeicherten Ausgang. Die Zeit läuft nach rechts. Die drei roten senkrechten Markierungen kennzeichnen steigende Flanken, keine Zeitintervalle. Q beginnt mit drei. An der ersten Flanke sind D gleich fünf und WE gleich eins; nach der Übernahmeverzögerung erscheint fünf. An der zweiten Flanke liegt zwar sieben an D, aber WE ist null. Q bleibt deshalb fünf. An der dritten Flanke wird bei WE gleich eins der Wert neun übernommen.
+
+Die Höhe des Takts allein genügt nicht für eine weitere Übernahme. Das verwendete Register reagiert auf die aktive Flanke und ist kein während der gesamten hohen Phase transparenter Speicher. Setup-Zeit bezeichnet die erforderliche Stabilität vor der Flanke, Hold-Zeit die erforderliche Stabilität danach. Die Zeichnung nimmt diese Bedingungen als erfüllt an und ist nicht maßstäblich für konkrete Verzögerungen.
+
+Der Selbsttest trennt Quellenwert und Zustandsänderung: Ein gültiger Wert kann am Eingang vorhanden sein, ohne gespeichert zu werden. Dieselbe Unterscheidung begegnet später bei RegWrite für die Registerbank und MemWrite für den Datenspeicher.
+:::
+
+## Registerbank und Nullregister
 
 ```asm
-count_to_ten:
-    li t0, 10
-count_test:
-    bge a0, t0, count_end
-    addi a0, a0, 1
-    j count_test
-count_end:
-    ret
+# Anfang: t0 = 18, t1 = 7
+add  t0, t0, t1
+sub  x0, t0, t1
+addi t2, x0, -6
 ```
 
-::: notes
-a0 enthält den Parameter i und anschließend die skalare Rückgabe nach der ABI, Application Binary Interface. t0 ist ein temporäres Register mit der Grenze zehn. li, Load Immediate, ist ein Pseudobefehl. bge, Branch if Greater or Equal, prüft vorzeichenbehaftet, ob der Abbruchfall i größer oder gleich zehn vorliegt. addi, Add Immediate, erhöht a0 um eins. j springt zur Kopfprüfung zurück; ret kehrt über ra, Return Address, zurück.
+| Danach | Wert |
+|:---|---:|
+| `t0` | $25$ |
+| `x0` | $0$ |
+| `t2` | $-6$ |
 
-Die Marken count_test und count_end bezeichnen Adressen. Bei Start null wird bge elfmal geprüft; bei Start zwölf wird der Körper vollständig übersprungen. Diese Funktion ruft keine andere auf und verändert kein erhaltenes s-Register. Der temporäre Grenzwert t0 bleibt deshalb für diesen Ablauf verfügbar. Würde man im Körper einen Unteraufruf ergänzen, müsste man seine möglichen Änderungen von t0 neu berücksichtigen. Die Form ist keine Garantie einer tatsächlichen Compilerübersetzung.
+::: notes
+Der RV32I-Assemblercode beschreibt drei nacheinander ausgeführte Instruktionen. RV32I ist die 32-Bit-Ganzzahlbasis von RISC-V. t0, t1 und t2 sind Namen für die temporären Register x5, x6 und x7; x0 ist das feste Nullregister. add addiert die beiden alten Quellwerte und schreibt das Ergebnis in das links stehende Zielregister. Quelle und Ziel dürfen dieselbe Registernummer besitzen: Die erste Instruktion liest 18 und sieben und hinterlässt 25 in t0.
+
+sub bildet anschließend 25 minus sieben gleich 18. Weil das Ziel x0 ist, wird der Schreibversuch verworfen; x0 liest weiterhin null. addi, Add Immediate, addiert die codierte Konstante minus sechs zum Nullwert und schreibt das 32-Bit-Muster 0xFFFFFFFA nach t2.
+
+Eine Registerbank hat im Kursmodell zwei Leseports und einen Schreibport. Die Quellennummern wählen gespeicherte Daten aus; sie sind nicht selbst die Operandenwerte. Der Befehlsvertrag verbietet weder das Lesen und Schreiben desselben Registers noch benötigt er dafür grundsätzlich eine zweite Instruktion. Zusätzliche Wartezyklen zwischen verschiedenen Instruktionen sind erst eine Frage der konkreten Pipeline.
 :::
 
-## signed und unsigned sind unterschiedliche Vergleiche
+## Dieselben Bits, andere Operation
 
-Das Bitmuster `0xFFFFFFFF`:
+Anfang: `t0 = 0xFFFFFFF0`, Schiebebetrag vier.
 
-| Betrachtung | Wert | Vergleich mit 10 |
+| Operation | Ergebnis |
+|:---|:---|
+| `srli t1, t0, 4` | `0x0FFFFFFF` |
+| `srai t1, t0, 4` | `0xFFFFFFFF` |
+| `slli t1, t0, 4` | `0xFFFFFF00` |
+
+Bei Vergleich mit `x0`: `blt` nimmt den Sprung, `bltu` nicht.
+
+::: notes
+Das Muster 0xFFFFFFF0 beschreibt im 32-Bit-Zweierkomplement minus 16, vorzeichenlos aber 4294967280. Die logische Rechtsverschiebung srli, Shift Right Logical Immediate, füllt die oberen vier Stellen mit Nullen und liefert 0x0FFFFFFF. Die arithmetische Rechtsverschiebung srai, Shift Right Arithmetic Immediate, wiederholt das bisherige höchste Bit und ergibt 0xFFFFFFFF, also minus eins. Die Linksverschiebung slli, Shift Left Logical Immediate, schiebt vier Nullen nach und verwirft die oberen vier Bits. Das Ergebnis ist 0xFFFFFF00; die Ausgangsbreite bleibt 32 Bit.
+
+blt bedeutet Branch if Less Than und vergleicht die Quellen vorzeichenbehaftet. Minus 16 ist kleiner als null, daher wird ein gültiges Ziel genommen. bltu, Branch if Less Than Unsigned, verwendet dieselben Bits vorzeichenlos: 4294967280 ist nicht kleiner als null. Das Register selbst speichert keinen Typ.
+
+Bei registergesteuerten Shifts der 32-Bit-RISC-V-Ganzzahlbasis RV32I zählen nur die unteren fünf Bits des Schiebebetragsregisters; ein Inhalt 36 bewirkt daher ebenfalls vier Stellen. Bei den gezeigten Immediate-Shifts muss der codierte Schiebebetrag zwischen null und 31 liegen. Die allgemeine zwölfbittige signed-Immediate-Regel lässt sich darauf nicht unverändert anwenden.
+:::
+
+## Immediate und Pseudobefehl unterscheiden
+
+- `addi` und logische I-Immediates: zwölf Bit mit Vorzeichenerweiterung
+- Bereich: $-2048$ bis $2047$
+- `andi t0, t1, -1` erhält alle Bits von `t1`
+- `li t0, 2048` ist erlaubt, braucht aber mehrere echte RV32I-Befehle
+
+Selbsttest: Ist `addi t0, x0, 2048` ein gültiger Maschinenbefehl?
+
+::: notes
+Ein Immediate ist eine im Maschinenwort codierte Konstante. Bei addi, Add Immediate, ist das Feld zwölf Bit breit und wird vor der 32-Bit-Addition vorzeichenerweitert. Der Zweierkomplementbereich ist minus zwei hoch elf bis zwei hoch elf minus eins, also minus 2048 bis 2047. Der Selbsttest ist deshalb zu verneinen: 2048 passt nicht als positive Zahl in dieses Feld.
+
+Auch andi, AND Immediate, verwendet ein vorzeichenerweitertes Immediate. Minus eins wird zu 32 Einsen und erhält bei bitweisem UND jedes Bit des Registers t1. Die zwölf Bits werden nicht einfach als positive Maske 0x00000FFF verwendet. Für spezielle Shift-Immediates gelten die zuvor besprochenen zusätzlichen Formatregeln.
+
+li bedeutet Load Immediate und ist ein Pseudobefehl des Assemblers. Zum Laden von 2048 ist beispielsweise die echte Folge lui t0, 1 und addi t0, t0, -2048 möglich: 4096 minus 2048 ergibt 2048. lui, Load Upper Immediate, setzt dazu die oberen 20 Bits und unten zwölf Nullen. Die konkrete Expansion wird am Maschinenlisting geprüft. Für Takt- und Befehlszählungen zählen die expandierten Instruktionen; Direktiven, Labels und Kommentare zählen nicht als ausgeführte Befehle.
+:::
+
+## Maschinenwort: Felder vor Hexziffern
+
+| Format | Felder von Bit 31 nach Bit 0 |
+|:---|:---|
+| R | funct7 · rs2 · rs1 · funct3 · rd · opcode |
+| I | imm[11:0] · rs1 · funct3 · rd · opcode |
+
+- `rd`, `rs1`, `rs2` codieren Registernummern mit je fünf Bit
+- Opcode und Funktionsfelder bestimmen gemeinsam die Operation
+- I-Format: Bits 24–20 gehören zum Immediate, nicht zu `rs2`
+
+::: notes
+R bezeichnet das Registerformat, I das Immediate-Format. Im R-Format sind die Feldbreiten von links nach rechts sieben, fünf, fünf, drei, fünf und sieben Bit. Im I-Format ersetzt das zwölfbittige Immediate die oberen beiden Felder. rd heißt Destination Register oder Zielregister; rs1 und rs2 heißen Source Register eins und zwei. opcode ist der siebenbittige Operationscode, funct3 und funct7 sind zusätzliche drei- beziehungsweise siebenbittige Funktionsfelder. Die Punkte in der Tabelle trennen Felder; sie sind keine Rechenzeichen.
+
+Die Registernummer x10 wird als 01010 codiert, unabhängig davon, welcher Datenwert gerade in x10 liegt. add und sub teilen opcode und funct3, unterscheiden sich aber in funct7. Der Opcode allein bestimmt daher nicht immer die vollständige Operation.
+
+Besonders wichtig für die spätere Hazard-Erkennung ist die Formatabhängigkeit: Bei addi ist das Bitfenster 24 bis 20 Teil der Konstanten. Ein zufälliger Zahlenvergleich dieses Fensters mit einem älteren Zielregister beweist keine Datenabhängigkeit. Erst der decodierte Befehl sagt, welche Register tatsächlich gelesen werden. Codieren Sie deshalb zunächst Felder und Breiten, setzen Sie anschließend das Wort zusammen und gruppieren Sie erst zuletzt in Hexziffern.
+:::
+
+## Papiercheck: Ein negatives addi codieren
+
+```asm
+addi x12, x9, -20
+```
+
+| Feld | Inhalt |
+|:---|:---|
+| imm[11:0] | `1111 1110 1100` |
+| rs1 / funct3 | `01001` / `000` |
+| rd / opcode | `01100` / `0010011` |
+
+Welche Hexdarstellung entsteht? Lösung und Rückprüfung in den Notizen.
+
+::: notes
+addi, Add Immediate, liest hier x9, addiert minus 20 und schreibt nach x12. Die Registerinhalte werden für die Codierung nicht benötigt. Zwölfbittiges Zweierkomplement für minus 20 erhalten wir als 4096 minus 20 gleich 4076, hexadezimal FEC. Das ergibt die zwölf Bits 111111101100. rs1, Source Register eins, ist neun, binär 01001. rd, Destination Register, ist zwölf, binär 01100. Für addi gilt funct3 gleich 000 und opcode gleich 0010011.
+
+Mit den richtigen Bitpositionen ergibt sich das Wort aus 0xFEC00000 für das Immediate, 0x00048000 für rs1, 0x00000600 für rd und 0x13 für den Opcode. Die disjunkten Felder ergeben zusammen 0xFEC48613. Zur Rückprüfung isolieren wir Bits 31 bis 20 und erhalten FEC; als zwölfbittige Zahl mit gesetztem Vorzeichenbit bedeutet dies 4076 minus 4096 gleich minus 20. Bits 19 bis 15 ergeben neun, Bits elf bis sieben zwölf.
+
+Little Endian betrifft erst die Ablage dieses fertigen Worts im Speicher: An aufsteigenden Adressen stünden die Bytes 13, 86, C4, FE. Die Feldreihenfolge im 32-Bit-Wort wird dadurch nicht umgedreht. Diese Rechnung ist eine manuelle Codierung, kein behaupteter Toolchain-Lauf.
+:::
+
+## Speicher: Adresse, Inhalt und Byteordnung
+
+Ein Wort `0xA1B2C3D4` liegt ab der gültigen Adresse `0x2400`.
+
+| Byteadresse | 0x2400 | 0x2401 | 0x2402 | 0x2403 |
+|:---|:---:|:---:|:---:|:---:|
+| Inhalt hex | D4 | C3 | B2 | A1 |
+
+- Little Endian: niederwertigstes Byte an der kleinsten Adresse
+- Wortausrichtung: effektive Adresse durch vier teilbar
+- Ein 32-Bit-Adressraum bedeutet nicht vier GiB eingebauten Speicher
+
+::: notes
+Ein Speicherzugriff benötigt eine Adresse und liefert oder verändert den dort gespeicherten Inhalt. Die angenommene Adresse 0x2400 ist keine Zahl aus dem Datenwort. Little Endian bestimmt die Reihenfolge der vier Bytes: D4 enthält die niederwertigsten acht Bits und liegt an der kleinsten Adresse. Ein Wortlesezugriff auf 0x2400 setzt daraus wieder 0xA1B2C3D4 zusammen.
+
+Alignment bedeutet Ausrichtung. Für die im Kurs verwendeten natürlich ausgerichteten Wortzugriffe prüfen wir die effektive Byteadresse modulo vier. Die Basis 0x23FE wäre beispielsweise nicht wortausgerichtet; zusammen mit einem Offset von zwei ergäbe sie aber die korrekt ausgerichtete Zugriffsadresse 0x2400. Entscheidend ist daher nicht der Offset allein. Der Umgang mit fehlgerichteten Zugriffen außerhalb unseres Modells hängt von der Ausführungsumgebung ab.
+
+32-Bit-Byteadressen unterscheiden theoretisch zwei hoch 32 Bytepositionen, also vier GiB, Gibibyte. Daraus folgt weder, dass alle Adressen gültig sind, noch dass so viel Arbeitsspeicher bestückt ist. Für Papierrechnungen werden deshalb Gültigkeit und Inhalt der verwendeten Speicherbereiche angegeben. Prüfen Sie bei einer Speicheransicht zusätzlich, ob sie Bytes oder bereits zusammengesetzte Wörter zeigt.
+:::
+
+## Zugriffsbreite und Erweiterung
+
+Weiterhin: `s0 = 0x2400`, Byte dort `0xD4`.
+
+| Befehl | Wirkung |
+|:---|:---|
+| `lb t0, 0(s0)` | `t0 = 0xFFFFFFD4`, also $-44$ |
+| `lbu t1, 0(s0)` | `t1 = 0x000000D4`, also $212$ |
+| `sb t2, 1(s0)`, `t2 = 0x12345678` | Nur Byte `0x2401` wird `0x78` |
+
+Das anschließende `lw` ab `0x2400` liefert `0xA1B278D4`.
+
+::: notes
+s0 ist hier das Basisregister x8. lb heißt Load Byte und liest ein Byte, das anschließend auf die 32-Bit-Registerbreite vorzeichenerweitert wird. Das Byte D4 hat den vorzeichenlosen Wert 212; sein höchstes Bit ist eins. Als achtbittiges Zweierkomplement beschreibt es deshalb 212 minus 256 gleich minus 44. Die Erweiterung zu 0xFFFFFFD4 erhält diesen Wert.
+
+lbu, Load Byte Unsigned, liest genau dieselbe Bytezelle, erweitert jedoch mit Nullen und liefert 212. Der Speicherinhalt wird von keinem der beiden Loads verändert. Der Unterschied entsteht bei der Aufbereitung zum Registerwort.
+
+sb, Store Byte, schreibt nur die unteren acht Bits von t2 an die effektive Adresse s0 plus eins, also 0x2401. Der Wert 0x78 ersetzt dort C3. Die übrigen Bytes D4, B2 und A1 bleiben erhalten. Ein anschließendes lw, Load Word, auf der ausgerichteten Basisadresse setzt die Bytes D4, 78, B2, A1 zum Wort 0xA1B278D4 zusammen. Entsprechend liest oder schreibt ein Halbwortbefehl zwei Byte; lh erweitert anhand von Bit 15, lhu mit Nullen. Breite und Erweiterungsart sind Teile des Befehlsvertrags.
+:::
+
+## Arrays: Index in Byteoffset übersetzen
+
+Angenommen: vier Byte pro Element, Basis `s0 = 0x3500`, Index `t0 = 3`.
+
+```asm
+slli t1, t0, 2
+add  t1, s0, t1
+lw   a0, 0(t1)
+```
+
+$$\mathrm{Adresse}(A[3])=\mathtt{0x3500}+4\cdot3=\mathtt{0x350C}$$
+
+Bei bereits fortgeschaltetem Pointer nicht noch einmal den Index addieren.
+
+::: notes
+Der Code ist ein Ausschnitt der 32-Bit-RISC-V-Ganzzahlbasis RV32I für ein gültiges Array mit mindestens vier 32-Bit-Elementen. s0 hält die Basisadresse, t0 den nichtnegativen Index. slli, Shift Left Logical Immediate, verschiebt den Index um zwei Stellen und berechnet damit für diesen gültigen kleinen Index zwölf Byte. add bildet aus der Basis und diesem Byteoffset die Adresse 0x350C in t1. lw, Load Word, liest das dort gespeicherte Wort nach a0. Der Wert des Elements wurde nicht vorgegeben; aus seiner Adresse allein lässt er sich nicht bestimmen.
+
+Das Immediate eines Loads ist ein konstanter signed-Byteoffset, kein variabler Registerindex. Deshalb ist eine Schreibweise mit t0 als lw-Offset kein Ersatz für die vorgelagerte Rechnung. Die Alternative ist ein laufender Pointer: Nach jedem verarbeiteten Wort wird die Adresse um vier erhöht. Dann darf der Schleifenindex nicht zusätzlich in dieselbe Adresse eingerechnet werden.
+
+Die Skalierung mit vier gilt für die hier vereinbarte Elementbreite. Ein Bytearray benötigt Faktor eins, ein Halbwortarray Faktor zwei. Vor einem Zugriff müssen außerdem Indexgrenze, gültiger Speicherbereich und gegebenenfalls Ausrichtung feststehen. Eine korrekte Adressformel schützt nicht automatisch vor einem Zugriff hinter das Arrayende.
+:::
+
+## Store- und Branch-Felder richtig zusammensetzen
+
+| Format | Aufbau des Immediate-Werts |
+|:---|:---|
+| S: `sw` | imm[11:5] aus [31:25], imm[4:0] aus [11:7] |
+| B: `beq` | imm[12\|10:5\|4:1\|11] aus [31\|30:25\|11:8\|7] |
+
+Für Branches: Bit 0 ist null; danach signed-Byteoffset.
+
+$$PC=\mathtt{0x180},\quad\mathrm{Offset}=-12$$
+$$PC_\mathrm{Ziel}=\mathtt{0x174},\qquad PC_\mathrm{weiter}=\mathtt{0x184}$$
+
+::: notes
+sw heißt Store Word und verwendet das S-Format. Es hat zwei Quellregister, aber kein Zielregister rd. Deshalb können die Bits elf bis sieben den unteren Teil des zwölfbittigen Immediate-Werts tragen. Für einen Offset minus acht ist das zusammengesetzte zwölfbittige Muster FF8: Die oberen sieben Bits lauten 1111111, die unteren fünf 11000.
+
+beq, Branch if Equal, nutzt das B-Format. Die Schreibweise mit senkrechten Trennzeichen benennt einzelne Bitgruppen, keine logische ODER-Operation. Instruktionsbit 31 liefert Offsetbit zwölf, Bit sieben liefert Offsetbit elf, Bits 30 bis 25 liefern zehn bis fünf, Bits elf bis acht liefern vier bis eins. Das fehlende niederwertigste Bit wird als null ergänzt; danach wird das Ergebnis vorzeichenerweitert. Ein Offset minus zwölf hat als 13-Bit-Muster 0x1FF4 die Gruppen 1, 111111, 1010, 1 in der Tabellenreihenfolge.
+
+PC ist der Program Counter, die Adresse der aktuellen Instruktion. Der Byteoffset bezieht sich auf diesen alten PC, nicht auf PC plus vier. Hexadezimal ist zwölf gleich 0xC; 0x180 minus 0xC ergibt 0x174. Ohne genommenen Sprung folgt 0x184. Unser Immediate-Generator liefert bereits den fertigen Byteoffset; ein weiteres Linksverschieben wäre falsch.
+:::
+
+## Schleifen: Kontrollfluss vollständig verfolgen
+
+```asm
+# Anfang: s0 = gültige Arraybasis, s1 = 3, t0 = t1 = 0
+Loop:
+  bge  t0, s1, Done
+  lw   t2, 0(s0)
+  add  t1, t1, t2
+  addi s0, s0, 4
+  addi t0, t0, 1
+  jal  x0, Loop
+Done:
+```
+
+Arraywerte: `[7, -2, 4]`. Selbsttest: Endsumme und dynamische Befehlszahl?
+
+::: notes
+Der Ausschnitt summiert ein gültiges Array mit drei Wörtern. s0 enthält den laufenden Pointer, s1 die nichtnegative Anzahl, t0 die Zahl bereits verarbeiteter Elemente, t1 die laufende Summe und t2 den jeweils geladenen Wert. bge, Branch if Greater or Equal, beendet die Schleife, sobald t0 mindestens s1 ist. lw, Load Word, liest das aktuelle Wort; add summiert; die beiden addi-Befehle erhöhen Pointer und Zähler. jal x0 springt ohne gespeicherten Rückkehrlink zum Label Loop. Done bezeichnet die erste Instruktion außerhalb des gezählten Ausschnitts.
+
+Am Schleifenkopf gehören zusammen: t0 gleich null, eins, zwei, drei und t1 gleich null, sieben, fünf, neun. Nach drei Durchläufen ist die Endsumme neun und s0 um zwölf Byte erhöht. Die Kopfbedingung wird viermal ausgeführt. Die übrigen fünf Befehle werden je dreimal ausgeführt. Dynamisch schließen daher vier plus fünf mal drei gleich 19 Instruktionen ab. Labels und Anfangswertvorgaben zählen nicht; die Initialisierung liegt außerhalb der Zählgrenze.
+
+Bei s1 gleich null wird schon die erste Bedingung genommen. Es findet kein Load statt, die Summe bleibt null und der Ausschnitt führt genau eine Instruktion aus. Dieser Randfall erklärt, weshalb der Test vor dem Zugriff stehen muss.
+:::
+
+## Aufruf und Rückkehr sind Adressoperationen
+
+Bei altem $PC=\mathtt{0x200}$:
+
+| Befehl | Ziel | Linkwert |
+|:---|:---|:---|
+| `jal ra, +32` | `0x220` | `ra = 0x204` |
+| `jalr ra, 0(t0)`, `t0 = 0x301` | `0x300` | `ra = 0x204` |
+| `ret` | `ra` mit Bit 0 gelöscht | kein gespeicherter Link |
+
+`ret` stellt weder `sp` noch gesicherte Register automatisch wieder her.
+
+::: notes
+PC bedeutet Program Counter, das Befehlsadressregister. jal heißt Jump and Link und berechnet sowohl das Ziel als auch den Rückkehrlink aus dem alten PC. Für einen Byteoffset von 32, also 0x20, entstehen Ziel 0x220 und Link 0x204. ra, Return Address, ist der Konventionsname von x1; der Befehl kann grundsätzlich ein anderes Zielregister für den Link verwenden.
+
+jalr, Jump and Link Register, bildet das Ziel aus dem alten rs1-Quellwert und dem signed-Immediate und löscht anschließend Zielbit null. Bei t0 gleich 0x301 und Offset null wird 0x300 angesprungen. Der Link bleibt alter PC plus vier. Das Löschen nur eines Bits garantiert allgemein keine Vier-Byte-Ausrichtung; unser konkretes Beispiel ist korrekt ausgerichtet.
+
+ret, Return, ist der Pseudobefehl jalr x0, 0(ra). x0 verwirft den neu berechneten Link. Die Instruktion springt lediglich zur vorhandenen Rückkehradresse. Der Stackzeiger sp, Stack Pointer, und gesicherte Register müssen zuvor durch explizite Befehle wiederhergestellt sein. Die Tabelle behandelt die drei Fälle unabhängig mit jeweils genanntem Anfangszustand; sie ist keine direkt hintereinander ausgeführte Befehlsfolge.
+:::
+
+## ABI: Wer muss welchen Wert erhalten?
+
+| Registergruppe | Vertrag über einen normalen Aufruf |
+|:---|:---|
+| `a0–a7`, `t0–t6` | Caller muss noch benötigte Werte schützen |
+| `s0–s11` | Callee muss geänderte Werte wiederherstellen |
+| `ra` | Ein weiterer Aufruf kann den alten Link überschreiben |
+| `sp` | Bei Rückkehr wieder der Eintrittswert |
+
+Selbsttest: Ein Wert in `t2` wird nach `jal` noch benötigt. Ist er sicher?
+
+::: notes
+ABI bedeutet Application Binary Interface, die binäre Funktionskonvention. Caller ist die aufrufende Funktion, Callee die aufgerufene; eine Funktion kann beide Rollen besitzen. a0 bis a7 sind Argumentregister, a0 trägt auch unsere einfache skalare Rückgabe. t0 bis t6 sind temporäre Register. Beide Gruppen sind caller-saved: Benötigt der Caller ihren alten Wert später noch, muss er selbst eine sichere Lebensdauer herstellen, etwa durch einen Stackslot oder ein korrekt gesichertes s-Register.
+
+Die Antwort zum Selbsttest lautet deshalb: t2 ist durch den Aufrufvertrag nicht geschützt. Es kann zufällig unverändert bleiben, doch darauf darf der aufrufende Code nicht vertrauen. Callee-saved sind s0 bis s11: Wer sie verändert, muss am Ende den Eintrittswert wiederherstellen. Eine Kopie nach s0 ohne Sicherung des vorherigen s0 verletzt ebenfalls die Konvention.
+
+jal, Jump and Link, schreibt einen Rückkehrlink nach ra, Return Address. Eine Nichtblattfunktion, die einen normalen weiteren Aufruf durchführt und anschließend zurückkehren will, muss den eigenen Link vorher bewahren. sp, Stack Pointer, bezeichnet den Stackzeiger. Er muss ausgerichtet bleiben und bei Rückkehr wieder den Eintrittswert haben. Die Hardware prüft diese Pflichten nicht automatisch; sie entstehen aus dem Softwarevertrag.
+:::
+
+## Stackframe: Platz, Inhalt und Ausrichtung
+
+Angenommen: `sp = 0xA000`, Sicherung von `ra` und `s0`.
+
+```asm
+addi sp, sp, -16
+sw   ra, 12(sp)
+sw   s0,  8(sp)
+# ... Funktionsrumpf ...
+lw   s0,  8(sp)
+lw   ra, 12(sp)
+addi sp, sp, 16
+ret
+```
+
+Neuer `sp = 0x9FF0`; Slots bei `0x9FFC` und `0x9FF8`.
+
+::: notes
+sp ist der Stack Pointer, ra die Return Address und s0 ein zu erhaltendes Register. Der Prolog in RV32I, der 32-Bit-RISC-V-Ganzzahlbasis, reserviert einen 16-Byte-Frame, obwohl nur zwei Wörter, zusammen acht Byte, gesichert werden. Die Standard-Ganzzahlkonvention ILP32 mit 32-Bit-int, long und Zeigern verlangt die 16-Byte-Ausrichtung des Stackzeigers während der Funktion. Beide Sicherungen teilen sich denselben Frame; die übrigen acht Byte sind hier Padding, also ungenutzter Ausrichtungsraum.
+
+addi, Add Immediate, verändert zunächst nur den Zeiger. Erst sw, Store Word, schreibt die Registerwerte in den reservierten Speicher. Von 0xA000 um 16 Byte nach unten gelangen wir zu 0x9FF0. Der Slot 12(sp) liegt bei 0x9FFC, 8(sp) bei 0x9FF8. Beide Wortadressen sind ausgerichtet und gehören zum angenommenen gültigen Stackbereich.
+
+Der Epilog stellt mit lw, Load Word, zuerst die alten Werte wieder her und gibt danach den Frame frei. ret springt über den restaurierten Link zurück. Die Auslassung markiert bewusst einen nicht dargestellten Funktionsrumpf; dies ist ein Frame-Schema, keine vollständig spezifizierte Rechenfunktion. Der Stack arbeitet nach dem Prinzip zuletzt angelegt, zuerst freigegeben. Bei verschachtelten Aufrufen reserviert jede Funktion ihren eigenen, nicht überlappenden Frame.
+:::
+
+## Nichtblattfunktion: Zwei Lebensdauern schützen
+
+```asm
+# compose(x): helper(x) + x; helper(x) liefert x + 5
+compose:
+  addi sp, sp, -16
+  sw   ra, 12(sp)
+  sw   s0,  8(sp)
+  addi s0, a0, 0
+  jal  ra, helper
+  add  a0, a0, s0
+  lw   s0,  8(sp)
+  lw   ra, 12(sp)
+  addi sp, sp, 16
+  ret
+```
+
+Für $x=6$: Ergebnis $17$; alter `s0`, `ra` und `sp` wiederhergestellt.
+
+::: notes
+Der Code verwendet RV32I, die 32-Bit-RISC-V-Ganzzahlbasis, und den Vertrag der Ganzzahl-ABI, Application Binary Interface. sp ist der Stack Pointer oder Stackzeiger. a0 trägt anfangs das Argument x und am Ende das Ergebnis. helper ist eine separat angenommene vertragskonforme Blattfunktion, die addi a0, a0, 5 und ret ausführt. Sie benötigt keinen eigenen Frame und verändert kein s-Register. Für die kleinen Beispielwerte tritt kein relevanter Zahlenbereichsrand auf.
+
+compose muss zwei verschiedene Lebensdauern schützen. Der Eintrittswert von ra, Return Address, wird vom jal-Aufruf, Jump and Link, überschrieben; er liegt deshalb vorher im Stackslot 12(sp). Das ursprüngliche x in a0 muss nach helper noch verfügbar sein. compose kopiert es mit addi s0, a0, 0 nach s0. Weil s0 callee-saved ist, bewahrt die Funktion dessen fremden Eintrittswert im Slot 8(sp).
+
+Für x gleich sechs bleibt in s0 sechs stehen, helper liefert elf in a0 und add berechnet 17. Anschließend lädt lw, Load Word, s0 und ra aus den mit sw, Store Word, belegten Slots und der 16-Byte-Frame wird freigegeben; ret kehrt zum unmittelbaren Aufrufer von compose zurück. Würde x ungeschützt in t0 aufbewahrt, könnte eine andere zulässige Implementierung von helper es zerstören. Die gezeigte Sicherung bleibt dagegen unabhängig von deren temporären Registern korrekt.
+:::
+
+## Single Cycle: Berechnen, dann übernehmen
+
+![](../assets/images/vl5-takt-zustand.svg){.nostretch fig-alt="Zwischen zwei steigenden Flanken: alter Zustand, kombinatorisch berechnete Schreibdaten und Folgeadresse, danach Übernahme mit Freigabe"}
+
+- Datenweg liefert den möglichen neuen Wert
+- Steuerwerk wählt Quellen und erlaubt Zustandsänderungen
+- Fünf logische Tätigkeiten sind hier keine fünf Takte
+
+::: notes
+Single Cycle bedeutet, dass ein unterstützter Befehl innerhalb einer Taktperiode ausgeführt wird. Die Abbildung liest sich von links nach rechts. Nach der ersten steigenden Flanke liegt der alte Zustand vor, hier a0 gleich sieben und PC gleich 0x100. PC heißt Program Counter, das Befehlsadressregister. Die kombinatorische Schaltung bereitet während der Periode WD gleich 150 und nextPC gleich 0x104 vor. WD, Write Data, bezeichnet die Daten am Registerschreibport. Erst die nächste aktive Flanke übernimmt sie bei gesetzter Schreibfreigabe; dann ist a0 tatsächlich 150.
+
+Das Bild ist ein übernommenes Zahlenbeispiel aus Vorlesung 5 und zeigt Eingang, Berechnung und gespeicherten Ausgang getrennt. Die rote Umrandung markiert die Übernahme, keine zusätzliche Rechenstufe. Die Zeitachse ist schematisch, ohne gemessene Nanosekunden.
+
+IF, Instruction Fetch oder Befehl holen, ID, Instruction Decode oder decodieren und Register lesen, EX, Execute oder rechnen, MEM, Memory Access oder Datenzugriff, und WB, Write Back oder Rückschreiben, bezeichnen in diesem Modell Tätigkeiten innerhalb derselben Periode. Erst Pipeline-Register machen daraus getrennte Taktstufen. Eine gültige Leitung ohne Freigabe verändert noch keinen gespeicherten Zustand.
+:::
+
+## Load und Store: Adresse und Daten
+
+![](../assets/images/vl5-pfad-lw.svg){.nostretch fig-alt="Load-Pfad: Basis B und Offset vier zur ALU, geladener Wert 88 über MemtoReg zurück zur Registerbank"}
+
+`lw`: Adresse $B+4$ → Wert $88$ nach `a0`.\
+`sw`: Adresse $B+8$ ← Wert aus `a0`, kein Registerziel.
+
+::: notes
+lw heißt Load Word, sw Store Word. Für das abgebildete Load-Beispiel enthält s1 die gültige, ausgerichtete Basis B; das Wort an B plus vier hat den angenommenen Wert 88. Die Registerbank liefert RD1, Read Data eins, als Basis. ImmGen, Immediate Generator, liefert vier. Der Multiplexer ALUSrc, ALU Source, wählt mit eins dieses Immediate als zweiten Eingang der ALU, Arithmetic Logic Unit oder arithmetisch-logischen Recheneinheit. Ihr Ergebnis ist die Adresse B plus vier.
+
+Der Datenspeicher liefert dort 88. MemtoReg, Memory to Register, wählt mit eins diesen Lesewert anstelle der Adresse. RegWrite, Register Write, erlaubt die Übernahme nach a0; MemRead, Memory Read, ist eins und MemWrite, Memory Write, null. Die roten Pfeile zeigen den benötigten Datenweg, graue Wege ungewählte Alternativen. Der Rückweg transportiert den Speicherinhalt zur Registerbank. Er schreibt nicht sofort ohne Flanke. PC, Program Counter oder Befehlsadressregister, und Befehlsholen sind in dieser Detailabbildung ausgelassen.
+
+Beim darunter genannten Store berechnet die ALU entsprechend B plus acht. Die Schreibdaten stammen separat aus dem zweiten Registerlesewert RD2, Read Data zwei, hier a0. MemWrite muss eins und RegWrite null sein. Ein Fehler in MemtoReg ist bei korrekt gesperrtem Registerschreiben für den Store bedeutungslos; ein Fehler in MemWrite ist es nicht.
+:::
+
+## Branch: Bedingung und Ziel getrennt herleiten
+
+Für `beq t0, t1, Ziel`:
+
+$$\mathrm{Zero}=(R[t0]-R[t1]=0)$$
+$$PC_\mathrm{Ziel}=PC+\mathrm{Byteoffset}$$
+$$\mathrm{PCSrc}=\mathrm{Branch}\land\mathrm{Zero}$$
+
+Bei `PC = 0x400`, Offset $+20$:
+
+Gleichheit → `0x414`; Ungleichheit → `0x404`.
+
+::: notes
+beq bedeutet Branch if Equal und vergleicht die beiden Registerinhalte. R[t0] und R[t1] bezeichnen diese Inhalte; die Registernamen sind keine Zahlenwerte für die Subtraktion. Unser Lehrmodell nutzt die ALU, Arithmetic Logic Unit, zum Subtrahieren. Das Signal Zero ist eins, wenn das Ergebniswort null ist. Die Gleichheit funktioniert unabhängig von einer signed- oder unsigned-Interpretation.
+
+Parallel bildet ein Zieladdierer aus dem alten PC, Program Counter, und dem bereits vorzeichenerweiterten Byteoffset die Sprungadresse. 20 dezimal sind 0x14; deshalb ergibt sich aus 0x400 das Ziel 0x414. Der andere Kandidat ist PC plus vier gleich 0x404. PCSrc, Program Counter Source, wählt erst dann das Ziel, wenn sowohl Branch als Freigabe dieser Befehlsart als auch Zero eins sind.
+
+Eine sub-Instruktion mit Ergebnis null setzt zwar ebenfalls Zero, aber Branch ist null. Sie springt daher nicht. Umgekehrt reicht ein beq-Opcode ohne Gleichheit nicht für einen genommenen Sprung. beq schreibt weder ein allgemeines Register noch den Datenspeicher. Andere Implementierungen können einen separaten Vergleicher benutzen; die hier gezeigten internen Wege sind die Annahme des Kursmodells.
+:::
+
+## Der längste Pfad begrenzt den Takt
+
+Angenommene Lehrwerte für einen vollständigen Load-Pfad:
+
+| Befehlslesen | Registerlesen | Rechnen | Datenlesen | Rückweg |
+|:---:|:---:|:---:|:---:|:---:|
+| 180 ps | 90 ps | 140 ps | 240 ps | 90 ps |
+
+Zusätzlich 20 ps für Registerausgang und Setup zusammen:
+
+$$T_\mathrm{SC}=180+90+140+240+90+20=760\,\mathrm{ps}$$
+
+Auch ein `add` erhält im selben Single-Cycle-Modell einen ganzen Takt.
+
+::: notes
+T-SC ist die Taktperiode des Single-Cycle-Modells. ps bedeutet Pikosekunde, ein Billionstel einer Sekunde. Die angegebenen Verzögerungen sind neue didaktische Annahmen und ersetzen für dieses Rechenbeispiel die Zahlen der ursprünglichen Vorlesung. Der Load-Pfad wird ausdrücklich als längster relevanter Pfad angenommen; weitere Steuer- und Auswahlverzögerungen sind in den jeweiligen Teilwerten enthalten. Die 20 Pikosekunden berücksichtigen zusammen Ausgangsverzögerung eines Registers und notwendige Setup-Zeit vor der nächsten Übernahme.
+
+Die Summe der fünf kombinatorischen Teilwege ist 740 Pikosekunden; zusammen mit dem Registeranteil ergeben sich 760. Eine frühere Flanke könnte Daten übernehmen, bevor sie stabil sind. Die passende maximale Frequenz wäre im Modell eins durch 760 Pikosekunden, ungefähr 1,32 Gigahertz.
+
+Ein add benötigt zwar keinen Datenlesezugriff. Ein Prozessor mit festem gemeinsamen Single-Cycle-Takt schließt aber auch add erst mit der nächsten Flanke ab. Die unbenötigte Pfadlaufzeit wird nicht als eigener kürzerer Takt genutzt. Eine Pipeline kann diese Wartezeit anders verteilen; dafür kommen mehrere Registerübergänge und eine andere Latenz hinzu. Laufzeiten sind deshalb immer zusammen mit dem Architekturmodell zu beurteilen.
+:::
+
+## Steuertabelle aus der Wirkung ableiten
+
+| Befehl | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| `add/sub/and/or` | 0 | 0 | 1 | 0 | 0 | 0 |
+| `lw` | 1 | 1 | 1 | 1 | 0 | 0 |
+| `sw` | 1 | X | 0 | 0 | 1 | 0 |
+| `beq` | 0 | X | 0 | 0 | 0 | 1 |
+| `addi` | 1 | 0 | 1 | 0 | 0 | 0 |
+
+Erst Quellen wählen, dann erlaubte Zustandsänderungen prüfen.
+
+::: notes
+Die Tabelle beschreibt genau das erweiterte Subset aus Vorlesung 6, nicht jeden RV32I-Befehl. RV32I ist die 32-Bit-RISC-V-Ganzzahlbasis. ALU steht für Arithmetic Logic Unit. ALUSrc wählt den zweiten Rechenoperanden: null bedeutet Registerwert, eins Immediate. MemtoReg, Memory to Register, wählt den Registerschreibwert: null bedeutet ALU-Ergebnis, eins Speicherlesewert. RegWrite erlaubt das Schreiben eines Registers. MemRead und MemWrite erlauben Lesen beziehungsweise Schreiben des Datenspeichers. Branch gibt den Gleichheitssprung frei.
+
+Bei Registeroperationen werden zwei Register gelesen und das Rechenergebnis zurückgeschrieben. Ein Load nutzt Basis plus Immediate und schreibt den gelesenen Inhalt zurück. Ein Store benutzt dieselbe Adressaddition, schreibt aber den zweiten Registerwert in den Speicher. beq vergleicht zwei Register, erlaubt keinen dieser beiden Schreibzugriffe und lässt die separate Zielauswahl zu. addi verbindet Immediate als Rechenquelle mit ALU-Ergebnis als Schreibquelle.
+
+X heißt Don't Care: Bei sw und beq verhindert RegWrite gleich null ohnehin eine Übernahme. Deshalb ist die dortige Rückschreibquellenauswahl unerheblich. Andere Signale werden dadurch nicht beliebig. Die Haupttabelle legt Quellen und Freigaben fest; welche Rechenoperation im Detail erforderlich ist, wird zusätzlich durch die ALU-Steuerung bestimmt.
+:::
+
+## Hauptsteuerung und ALU-Steuerung trennen
+
+| Gruppe | ALUOp | ALUControl im Kurs |
 |:---|:---:|:---|
-| Vorzeichenbehaftet | $-1$ | kleiner |
-| Vorzeichenlos | $4294967295$ | größer |
+| `lw/sw/addi` | `00` | Addition `0010` |
+| `beq` | `01` | Subtraktion `0110` |
+| `add/sub/and/or` | `10` | Funktionsfelder auswerten |
 
-`bge` und `bgeu` prüfen unterschiedliche Ordnungen.
+Registergruppe: `add 0010`, `sub 0110`, `and 0000`, `or 0001`.
 
-::: notes
-Signed bedeutet vorzeichenbehaftet, unsigned vorzeichenlos. Das 32-Bit-Muster 0xFFFFFFFF ist als Zweierkomplement minus eins, als vorzeichenlose Zahl 4294967295. Gegen zehn ist es deshalb im ersten Fall kleiner und im zweiten größer. bge, Branch if Greater or Equal, verwendet die vorzeichenbehaftete Ordnung; bgeu, Branch if Greater or Equal Unsigned, die vorzeichenlose.
-
-Bei count_to_ten mit dem int-Anfangswert minus eins muss die Schleife bis zehn laufen. Eine Ersetzung durch bgeu würde sofort abbrechen und die Wirkung ändern. Ein explizit vorzeichenloser Index mit gegebener Grenze benötigt dagegen eine passende unsigned-Prüfung. Gleichheit ist hiervon nicht betroffen, weil dieselben Bitmuster verglichen werden. Die Interpretation wird vom jeweiligen Datentyp und der Aufgabe bestimmt; ein Register trägt dafür kein automatisch mitgespeichertes C-Typkennzeichen.
-:::
-
-## for: Vier Phasen auseinanderhalten
-
-![](../assets/images/vl9-schleifenphasen.svg){.nostretch fig-alt="Initialisierung erfolgt einmal, Prüfung entscheidet über Körper und Ende, Update führt zur nächsten Prüfung zurück"}
+Selbsttest: Warum macht Bit 30 aus `addi` keine Subtraktion?
 
 ::: notes
-Die Abbildung zeigt eine kopfgesteuerte Schleife von links nach rechts mit einer Rückkante unter den vier Phasen. Zuerst wird einmal initialisiert. Dann entscheidet die Bedingung, ob der Körper ausgeführt wird oder die Schleife endet. Nach dem Körper folgt das Update und die Rückkante zur erneuten Prüfung. Rot markiert den wiederholten Weg. Die Pfeile beschreiben Kontrollfluss, keine Pipeline-Takte.
+ALU bedeutet Arithmetic Logic Unit, die arithmetisch-logische Einheit. ALUOp, ALU Operation, ist die zweibittige Aufgabenkategorie aus der Hauptsteuerung. ALUControl ist das vierbittige konkrete Rechenkommando unserer Detailsteuerung. Die dargestellten Werte sind eine interne Kurscodierung; die RISC-V-Spezifikation schreibt diese Leitungen nicht vor.
 
-Ein for mit Initialisierung, Bedingung und Update kann in diesem einfachen Fall durch entsprechend angeordneten while-Code dargestellt werden. Dabei müssen die genauen Sprachregeln erhalten bleiben. Insbesondere muss ein continue, also das vorzeitige Fortsetzen des nächsten Durchlaufs, bei for noch das Update erreichen. Einfach an einen while-Kopf zu springen wäre nicht für jeden solchen Fall gleichwertig. Wir übersetzen zunächst eine Folge ohne continue und können dadurch die vier Phasen eindeutig zuordnen.
+Load Word, lw, Store Word, sw, und Add Immediate, addi, benötigen fest Addition. beq, Branch if Equal, benutzt im Modell die Subtraktion zum Gleichheitstest. Nur in der hier unterstützten Registergruppe muss aus den zusätzlichen Befehlsfeldern zwischen add, sub, and und or gewählt werden. add und sub besitzen funct3 gleich 000 und unterscheiden sich durch funct7 gleich 0000000 beziehungsweise 0100000. and hat funct3 gleich 111, or gleich 110, jeweils mit funct7 gleich 0000000.
+
+Bit 30 ist bei addi Teil des Immediate-Werts, kein allgemeines Subtraktionsbit. Beispielsweise hat das gültige Immediate minus eins alle zwölf Bits gesetzt. Dennoch muss addi eine Addition mit minus eins ausführen. Eine korrekte Decodierung berücksichtigt deshalb zuerst die Instruktionsgruppe und erst dann deren passende Funktionsfelder. Gleiche Bitpositionen haben in verschiedenen Formaten unterschiedliche Aufgaben. Die zwei Steuerungsebenen sind kombinatorische Funktionen und benötigen keine zwei eigenen Takte.
 :::
 
-## Summe von null bis vier
+## Don't Care: Welche Wirkung bleibt?
 
-```c
-int sum_0_to_4(void) {
-    int sum = 0;
-    for (int i = 0; i < 5; i++) {
-        sum += i;
-    }
-    return sum;
-}
-```
+Für gültig erkannte Gruppen $R,L,S,B,I$:
 
-$$0+1+2+3+4=10$$
+$$\mathrm{RegWrite}=R\lor L\lor I,\quad
+\mathrm{ALUSrc}=L\lor S\lor I$$
+
+| Änderung bei `sw` | Folge |
+|:---|:---|
+| MemtoReg kippt, RegWrite = 0 | Keine sichtbare Wirkung |
+| MemWrite wird 0 | Gewünschter Store fehlt |
+| RegWrite wird 1 | Unerlaubter Registerschreibversuch möglich |
+
+X: Auswahl unerheblich bei gesperrter Übernahme.
 
 ::: notes
-sum_0_to_4 ist eine Funktion ohne Parameter. sum beginnt bei null. i beginnt ebenfalls bei null und ist im Schleifenbereich gültig. Vor jedem Körperdurchlauf wird i kleiner fünf geprüft. sum += i addiert den aktuellen Index; danach erhöht i++ den Index. Die addierten Werte sind null, eins, zwei, drei und vier, nicht fünf. Alle Zwischenwerte liegen im definierten int-Bereich.
+R erkennt eine der vier gültigen Registeroperationen, L Load Word, S Store Word, B Branch if Equal und I Add Immediate. Die fünf Ein-Bit-Gruppensignale schließen sich für eine gültige Instruktion gegenseitig aus. RegWrite, Register Write, darf genau bei R, L oder I eins sein; ALUSrc, ALU Source für die Arithmetic Logic Unit, wählt genau bei L, S oder I das Immediate. Das logische ODER in den Formeln beschreibt diese Bedingungen.
 
-Die Summe entwickelt sich zu 0, 1, 3, 6 und 10. Die Prüfung findet sechsmal statt, der Körper fünfmal. Die entsprechende vorhandene manuelle Assemblerfunktion steht in beispiele/vl9_sum_0_to_4.s. Eine Summe der Werte eins bis zehn mit Ergebnis 55 wäre eine andere Aufgabenstellung. Der Funktionsname, die Grenze und die tatsächlich addierten Werte helfen, solche ähnlich aussehenden Aufgaben sicher auseinanderzuhalten.
+MemtoReg, Memory to Register, ist nur eine Quellenauswahl vor dem Registerschreibport. Bei einem sw, Store Word, ist RegWrite null; die Auswahl verändert deshalb kein Architekturregister. MemWrite, Memory Write, ist dagegen die erforderliche Freigabe des eigentlichen Stores. Wird sie null, bleibt der gewünschte Speicherzustand aus.
+
+Ein fälschlich gesetztes RegWrite kann beim S-Format die Bits elf bis sieben als Zielnummer missbrauchen, obwohl sie hier Immediate-Bits sind. Ob tatsächlich ein Registerwert sichtbar verändert wird, hängt zusätzlich von dieser Nummer, dem gewählten Datenwort und dessen altem Wert ab. Insbesondere verwirft x0 einen Schreibversuch. Ein Don't Care ist also eine begründete Unbeobachtbarkeit unter gültigen Voraussetzungen. Es erlaubt weder ungültige Opcode-Muster noch ein beliebiges Setzen von Schreibfreigaben.
 :::
 
-## Arrayindex wird zum Byteoffset
+## Performance: Drei Größen zusammen betrachten
 
-![](../assets/images/vl9-arrayadresse.svg){.nostretch fig-alt="Fünf int-Wörter ab 0x2000, Index 3 liegt zwölf Byte weiter an 0x200C"}
+$$t=N\cdot\mathrm{CPI}\cdot T,\qquad
+\mathrm{CPI}=\frac{C}{N}$$
 
-$$A_i=B+4i,\qquad 0\leq i<n$$
+Gleiche Aufgabe, jeweils $N=120$ abgeschlossene Instruktionen:
+
+| Entwurf | CPI | Taktperiode | Laufzeit |
+|:---|:---:|:---:|---:|
+| A | $1{,}5$ | $2\,\mathrm{ns}$ | $360\,\mathrm{ns}$ |
+| B | $2$ | $1{,}2\,\mathrm{ns}$ | $288\,\mathrm{ns}$ |
+
+B ist trotz höherem CPI um Faktor $1{,}25$ schneller.
 
 ::: notes
-$B$ ist die Arraybasis, $i$ der Elementindex, $n$ die Anzahl vorhandener Elemente und $A_i$ die Adresse des ausgewählten int-Worts. Im vereinbarten ILP32-Modell, mit 32-Bit-int, long und Zeigern, benötigt ein int vier Byte. p bezeichnet den Zeiger auf das erste Arrayelement. Die Abbildung zeigt die angenommenen Werte 10, 20, 30, 40 und 50 an aufsteigenden wortausgerichteten Adressen ab 0x2000.
+N ist die dynamische Zahl abgeschlossener Maschineninstruktionen innerhalb der angegebenen Zählgrenze. C ist die dafür benötigte Taktzahl und CPI heißt Cycles per Instruction, mittlere Takte je abgeschlossener Instruktion. T ist die Taktperiode; ns bedeutet Nanosekunde. Die Laufzeit t ist C mal T und damit N mal CPI mal T. Die Werte sind ein angenommenes Vergleichsbeispiel, keine Messung.
 
-Der rote Rahmen hebt Index drei hervor; die übrigen grauen Felder zeigen seine Nachbarelemente. Index drei hat den Byteoffset $3\cdot4=12$ und die Adresse 0x200C; dort steht der Wert 40. Index vier liegt bei 0x2010. Die Adresse 0x2014 liegt eine Position hinter dem Array und darf nicht als sechstes Element geladen werden. Adresse, Offset und gelesener Wert sind verschiedene Größen. Die Positionsrechnung setzt gültigen Index, passendes Objekt und keine unzulässige Adressrechnung voraus. Ein Shift um zwei prüft diese Voraussetzungen nicht von selbst.
+Für A ergeben 120 mal 1,5 gleich 180 Takte mit je zwei Nanosekunden eine Laufzeit von 360 Nanosekunden. B benötigt 240 Takte, hat aber die kürzere Periode: 240 mal 1,2 ergibt 288 Nanosekunden. Der Speedup ist die alte durch die neue Laufzeit, also 360 durch 288 gleich 1,25. Eine isolierte Betrachtung von CPI hätte hier zur falschen Rangfolge geführt.
+
+Auch N darf bei einem allgemeinen Vergleich unterschiedlicher Übersetzungen variieren. Hier wurde es ausdrücklich gleichgesetzt, damit der Takt-CPI-Zusammenhang sichtbar wird. Eine Pseudobefehlszeile kann mehrere echte Befehle darstellen; verworfene Instruktionen und Hardware-Bubbles erhöhen N nicht. Sie können jedoch C und damit die Laufzeit erhöhen. Ein fairer Vergleich nennt Aufgabe, Anfangszustand und Zählgrenze.
 :::
 
-## Arraysumme in C: Grenze vor dem Lesen
+## Pipeline: Überlappung erhöht den Durchsatz
 
-Vorhandene Funktion aus `beispiele/vl9_control.c`:
+| Instruktion / Takt | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| I1 | IF | ID | EX | MEM | WB | | |
+| I2 | | IF | ID | EX | MEM | WB | |
+| I3 | | | IF | ID | EX | MEM | WB |
 
-```c
-int sum_array(const int *p, unsigned int n) {
-    int sum = 0;
-    unsigned int i;
-    for (i = 0; i < n; i++) {
-        sum += p[i];
-    }
-    return sum;
-}
-```
+Ohne Zusatzzyklen: $C=N+4$.
+
+Mit den zuvor angenommenen Lehrwerten: $T_\mathrm{P}=240+20=260\,\mathrm{ps}$.
+
+Einzelbefehl: $1300\,\mathrm{ps}$ Latenz; danach ideal ein Abschluss je Takt.
 
 ::: notes
-p ist ein Zeiger auf das erste int-Element des Arrays. const bedeutet hier, dass die Funktion die Elemente nicht über diesen Zeiger verändert. n ist die Anzahl vorhandener Elemente und unsigned int ein vorzeichenloser Ganzzahltyp. Auch i, der Index, ist vorzeichenlos. Die lokale vorzeichenbehaftete Variable sum wird vor der Schleife auf null gesetzt. Im vereinbarten ILP32-Modell haben int, long und Zeiger 32 Bit.
+Die Tabelle liest sich waagerecht als Weg einer Instruktion und senkrecht als gleichzeitig belegte Stufen. IF heißt Instruction Fetch, Befehl holen; ID Instruction Decode, decodieren und Register lesen; EX Execute, rechnen; MEM Memory Access, Datenzugriff; WB Write Back, Rückschreiben. Pipeline-Register zwischen den Stufen transportieren Daten, Zielnummer, Gültigkeit und die zur selben Instruktion gehörenden Steuersignale. Ein Strukturkonflikt entsteht, wenn mehrere Instruktionen gleichzeitig dieselbe unzureichend verfügbare Hardwarequelle benötigen. Getrennte Befehls- und Datenzugriffspfade vermeiden hier den Konflikt zwischen IF und MEM; das Raster nimmt keine Strukturkonflikte an.
 
-Die Initialisierung i gleich null erfolgt einmal. Vor jedem Zugriff wird i kleiner n geprüft, nach jedem Körperdurchlauf wird i um eins erhöht. sum += p[i] liest das ausgewählte Element und addiert es zum bisherigen Summenwert. return liefert die Summe zurück. Für n gleich null wird kein Element gelesen. Die Funktion benötigt n gültige Elemente und darstellbare vorzeichenbehaftete Zwischensummen; sie prüft die tatsächliche Objektgröße nicht selbst. Der folgende Assemblerkörper bildet einen einzigen erfolgreichen Durchlauf ab. Die vollständige Übersetzung muss zusätzlich Initialisierung, Grenzvergleich, Rückkante und Rückgabe enthalten.
+Gezählt wird von der ersten IF-Stufe einer leeren Pipeline bis zur letzten WB-Stufe. Die erste Instruktion braucht fünf Takte. Jede weitere ergänzt bei konfliktfreier Überlappung einen Takt; deshalb C gleich fünf plus N minus eins, also N plus vier. Drei Instruktionen benötigen sieben Takte. Die vier Zusatzpositionen sind bereits in dieser Formel enthalten und werden nicht nochmals als Leerung addiert.
+
+Die angenommenen Teilzeiten 180, 90, 140, 240 und 90 Pikosekunden stammen von der vorherigen Timing-Rechnung. Die längste Stufe plus 20 Pikosekunden Registeranteil ergibt die Pipeline-Periode 260 Pikosekunden. Ein Einzelbefehl braucht fünf mal 260 gleich 1300 Pikosekunden und hat damit eine größere Latenz als die 760 Pikosekunden des Single-Cycle-Entwurfs. Der Gewinn entsteht beim Durchsatz vieler überlappter Befehle, nicht bei dieser Einzellatenz.
 :::
 
-## Der Körper einer Arraysumme
+## Forwarding: Verfügbarkeit entscheidet
 
-Lehrrollen: `t0` Basis, `t1` Index, `t2` Summe.
+![](../assets/images/vl7-forwarding-pfade.svg){.nostretch fig-alt="Ein Multiplexer vor der ALU wählt den alten ID/EX-Wert, ein bereites EX/MEM-Ergebnis oder den tatsächlichen MEM/WB-Rückschreibwert"}
+
+- Jüngster Treffer; RegWrite = 1 und `rd ≠ x0`
+- Load nach EX: Adresse statt geladener Daten
+
+::: notes
+Forwarding, auch Bypassing oder Weiterleitung, ersetzt einen zuvor in ID gelesenen alten Registerwert am Recheneingang in EX. ID heißt Instruction Decode, EX Execute, MEM Memory Access und WB Write Back. ID/EX, EX/MEM und MEM/WB bezeichnen die Pipeline-Register zwischen diesen Stufen. In der Abbildung laufen drei mögliche Quellen von links zum MUX, Multiplexer oder Quellenauswahl, und weiter zur ALU, Arithmetic Logic Unit.
+
+Der obere Weg trägt den ursprünglich gelesenen Registerwert. Der rot hervorgehobene mittlere Weg zeigt ein bereits bereites Rechenergebnis aus EX/MEM. Unten steht der tatsächliche Rückschreibwert aus MEM/WB; bei einem Load ist dies das geladene Wort. Die Abbildung stellt einen Registeroperanden dar; der zweite benötigt gegebenenfalls dieselbe Behandlung. Die Farben kennzeichnen Quellen, keine gemessenen Zeitwerte.
+
+Bei add t0, t1, t2, anschließend addi t0, t0, 2 und danach sub t3, t0, t4 muss sub den jüngeren Wert aus addi verwenden. Voraussetzung eines Treffers sind eine tatsächlich benutzte Quelle, gesetztes RegWrite und ein Ziel rd ungleich x0. Ein Load hat nach EX zunächst nur die Adresse erzeugt. Diese darf nicht als geladener Datenwert weitergereicht werden. Auch ein Forwarding-Treffer auf die jüngere, noch nicht fertige Load-Quelle erlaubt keinen Rückgriff auf einen veralteten älteren Wert.
+:::
+
+## Load-Use: Eine Lücke bleibt erforderlich
 
 ```asm
-slli t3, t1, 2
-add  t4, t0, t3
-lw   t5, 0(t4)
-add  t2, t2, t5
+lw  t0, 0(s0)     # gültige Adresse, Wort dort = 31
+sub t1, t0, t2    # t2 = 6
 ```
 
-Länge vorher prüfen; der Shift allein verhindert keinen Zugriff außerhalb.
+| Instruktion / Takt | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `lw` | IF | ID | EX | MEM | WB | | |
+| `sub` | | IF | ID | ID | EX | MEM | WB |
+| Bubble | | | | EX | MEM | WB | |
+
+Im Takt 4 warten PC und IF/ID; der Load läuft weiter. Ergebnis: `t1 = 25`.
 
 ::: notes
-slli heißt Shift Left Logical Immediate. Die Verschiebung des gültigen Index t1 um zwei bildet den Byteoffset t3. add addiert ihn zur Basis t0 und schreibt die effektive Adresse nach t4. lw, Load Word, liest das dortige vier Byte breite Wort nach t5. Die zweite Addition erhöht die laufende Summe t2. t0 bis t5 sind temporäre Register; ihre Zuordnung ist hier eine bewusste Lehrentscheidung.
+lw, Load Word, liefert das angenommene Speicherwort 31. sub benötigt diesen Wert als ersten Operanden und zieht den alten Inhalt sechs von t2 ab. IF heißt Instruction Fetch, ID Instruction Decode mit Registerlesen, EX Execute, MEM Memory Access und WB Write Back. Der Load berechnet erst in EX, Takt drei, die Adresse. Der geladene Inhalt liegt erst nach MEM, Takt vier, bereit und kann über MEM/WB zur EX-Stufe des Verbrauchers in Takt fünf weitergeleitet werden.
 
-Für Index drei am Array ab 0x2000 entsteht der Offset zwölf, die Adresse 0x200C und das gelesene Wort 40. Die Speicherladung liefert nicht den Offset. Dieser Ausschnitt ist nur der Körper einer vorher geprüften Schleife, nicht die ganze Funktion. Die komplette Lehrfunktion liegt in beispiele/vl9_sum_array.s. Ihre C-Entsprechung in vl9_control.c verlangt n gültige Elemente und Zwischenadditionen ohne signed-Überlauf. Die Folge enthält außerdem eine unmittelbare Datenabhängigkeit nach dem Load; daraus kann im Pipeline-Modell ein Stall entstehen, obwohl die funktionale Summe richtig bleibt.
+Ohne Warten wäre sub bereits in Takt vier in EX und damit zu früh. Die Hazard-Erkennung hält daher den Program Counter PC und das Pipeline-Register IF/ID über den betroffenen Übergang fest. sub bleibt in ID, während der ältere Load nach MEM weiterläuft. In ID/EX wird eine Bubble, also ein ungültiger und wirkungsloser Eintrag, eingefügt. Die Bubble läuft anschließend durch MEM und WB; sie ist keine zusätzliche abgeschlossene Programminstruktion. Für die zwei echten Instruktionen ergeben sich sieben statt sechs Takte.
+
+Eine unabhängige vorhandene Instruktion wie addi a2, a2, 1 könnte zwischen beide Befehle verschoben werden, sofern dadurch weder deren Eingaben noch beobachtbare Wirkungen verändert werden. Das ist Scheduling. Ein eingefügter NOP, No Operation oder wirkungsloser Programmbefehl, füllt ebenfalls Zeit, spart aber keine Ausführungszeit.
 :::
 
-## Grenze, Null-Länge und C-Gültigkeit
-
-Für `sum_array(p, n)`:
-
-- `n = 0`: kein Zugriff, Ergebnis null
-- Fünf gültige Werte 10, 20, 30, 40, 50: Ergebnis 150
-- Index immer kleiner als die vorhandene Länge
-- Jede betrachtete vorzeichenbehaftete Zwischenaddition muss definiert sein
-
-::: notes
-sum_array ist die Funktion aus beispiele/vl9_control.c. p zeigt auf die Elemente, n ist eine vorzeichenlose Länge, sum die vorzeichenbehaftete int-Summe und i der vorzeichenlose Index. Für n gleich null ist die Kopfbedingung sofort falsch und p wird nicht dereferenziert, also kein Element über den Zeiger gelesen. Für die fünf genannten Werte sind die Zwischenstände 10, 30, 60, 100 und 150.
-
-Ein vorzeichenbehafteter C-Überlauf hat undefiniertes Verhalten. Dass ein RISC-V-add einen 32-Bit-Wert modulo $2^{32}$ bildet, rechtfertigt daher keine Gleichsetzung für beliebige Eingaben. Auch die benötigten Adressen müssen innerhalb des vorhandenen Arrays liegen. Ein Compiler kann unter den Sprachvoraussetzungen optimieren. Die manuelle Übersetzung ist für die benannten gültigen Fälle gedacht; sie stellt keine automatische Grenzprüfung für beliebige Zeiger und Längen bereit.
-:::
-
-## Kurzaufgabe: Den ersten Fehler suchen
-
-Lehrfragment eines If-Else mit Ergebnis in `a0`:
+## WB und ID: Unsere Konvention beachten
 
 ```asm
-bne a0, a1, Else
-li  a0, 1
-Else:
-li  a0, 2
+add  t0, t1, t2   # I1
+addi a4, a4, 1    # I2: unabhängig
+xor  a5, a5, a5   # I3: unabhängig
+sub  t3, t0, t4   # I4
 ```
 
-Welcher Test zeigt den Fehler, und welche Kante fehlt?
+- I1 in WB und I4 in ID: beide zunächst im Takt 5
+- Registerwert erst ab ID im Takt 6 lesbar; kein WB→ID-Bypass
+- I4 wartet einen Takt: EX in 7, WB in 9
+
+EX-Forwarding allein löst diesen besonderen Konflikt nicht.
 
 ::: notes
-a0 und a1 sind die beiden Parameterregister; nach dem Fragment soll a0 das Ergebnis enthalten. bne bedeutet Branch if Not Equal. Bei Ungleichheit wird Else direkt erreicht und zwei geschrieben. Dieser Test allein würde einen korrekten Eindruck erwecken. Bei Gleichheit läuft dagegen zunächst li, Load Immediate, mit eins und danach ebenfalls die Zuweisung zwei. Der Endwert ist fälschlich zwei.
+WB bedeutet Write Back, Rückschreiben, ID Instruction Decode mit Registerlesen und EX Execute, Rechnen. Die vier nativen Befehle der 32-Bit-RISC-V-Ganzzahlbasis RV32I sind add, Add, addi, Add Immediate, xor, Exclusive OR, und sub, Subtract. t0 wird nur von I1 erzeugt und von I4 benötigt. a4 und a5 dienen unabhängigem Zwischenraum; xor eines Registers mit sich selbst liefert null.
 
-Zwischen der ersten Zuweisung und Else fehlt ein unbedingter Sprung zu einem gemeinsamen Ende, oder alternativ eine direkte Rückkehr aus dem Gleichheitszweig. Der geeignete Gegenbeispieltest lautet etwa a0 gleich fünf und a1 gleich fünf. Der erwartete Wert ist eins. Ein nachvollziehbarer Trace benennt hier die erste abweichende Kontrollkante statt nur festzustellen, dass der Endwert falsch ist. Das Fragment enthält absichtlich weder Funktionsmarke noch ret; es dient ausschließlich der Fehleranalyse.
+In einer zunächst leeren Fünfstufenpipeline liegt I1 in den Takten eins bis fünf in IF, Instruction Fetch oder Befehl holen, ID, EX, MEM, Memory Access oder Datenzugriff, und WB. I4 würde in Takt fünf ID und in Takt sechs EX erreichen. Unser Lehrmodell schreibt die Registerbank erst am Ende von WB. Der neue t0-Wert ist daher erst im folgenden Takt sechs beim Registerlesen verfügbar. Ein gleichzeitiger WB-zu-ID-Lesebypass ist ausdrücklich nicht vorhanden.
+
+Das Pipeline-Register MEM/WB trägt in Takt sechs bereits I2. Der für I4 benötigte Wert von I1 steht dann auch nicht mehr an den vereinbarten EX-Forwardingquellen bereit. I4 muss deshalb ID in Takt sechs wiederholen, den neuen Wert lesen und erst in Takt sieben rechnen. Im Takt sechs befindet sich eine Bubble in EX; I4 schließt in Takt neun ab. Andere Registerbanken können innerhalb derselben Periode zuerst schreiben und dann lesen; dafür ergäbe sich ein anderes Raster. Das ist keine abweichende ISA-Regel.
 :::
 
+## Branch: Falschen Pfad verwerfen
 
-# 3. Funktionen und Aufrufkonvention
-
-::: notes
-Die bisherigen Muster beschreiben einzelne Kontrollstrukturen. Sobald eine Funktion eine andere aufruft, muss zusätzlich klar sein, welche Werte einen Aufruf überleben und wohin die aufgerufene Funktion zurückkehrt. Die Aufrufkonvention, Application Binary Interface oder ABI, legt diese Schnittstelle zwischen getrennt übersetzten Funktionen fest.
-
-Die Beispiele setzen die Funktionskonvention aus Einheit 4 voraus: a0 bis a7 dienen der Parameterübergabe, a0 enthält hier das skalare Ergebnis, ra, Return Address, die Rücksprungadresse und sp, Stack Pointer, den Stackzeiger. Wir beginnen mit einer Blattfunktion ohne weitere Aufrufe. Anschließend kommt ein Aufruf hinzu, bei dem die Rücksprungadresse gesichert werden muss. Diese Unterscheidung erklärt den Stackframe aus dem tatsächlichen Bedarf.
-:::
-
-## Blattfunktion: Kein Aufruf, kein Frame nötig
-
-C-Lehrbeispiel: `int calc(int a) { return a * 2; }`
-
-Manuell für gültige C-Eingaben übersetzt:
+Anfang: `t0 = t1`; Branch wird in EX entschieden.
 
 ```asm
-calc:
-    slli a0, a0, 1
-    ret
+beq  t0, t1, Target
+sw   t2, 0(s0)       # jüngerer falscher Pfad
+addi t3, t3, 1       # jüngerer falscher Pfad
+Target:
+add  a0, a1, a2
 ```
 
-Beispiel: `a = -3` → Ergebnis `-6`
+- EX-Entscheidung: zwei jüngere Befehle im Flug
+- Flush verhindert deren Register- und Speicherwirkung
+- Zwei Zusatzzyklen je genommenem Branch
 
 ::: notes
-Eine Blattfunktion ruft keine weitere Funktion auf. Im gewählten Application Binary Interface, ABI, kommt der Parameter a in a0 an und das skalare Ergebnis wird in a0 zurückgegeben. slli bedeutet Shift Left Logical Immediate und verschiebt um die konstante Bitanzahl eins. Für das Beispiel minus drei entsteht das 32-Bit-Muster von minus sechs. ret ist ein Pseudobefehl für die Rückkehr über ra, Return Address, das Register mit der Rücksprungadresse.
+beq, Branch if Equal, wird wegen der angenommenen Gleichheit genommen. EX heißt Execute, die dritte Pipeline-Stufe. Bis zur Entscheidung wird ohne Vorhersage einer Zielumleitung sequenziell weitergeholt. Während beq in EX steht, befindet sich sw, Store Word, in ID, Instruction Decode, und addi, Add Immediate, in IF, Instruction Fetch. Beide gehören zum falschen Pfad.
 
-Die gezeigte Funktion verändert keine callee-saved Register, benötigt keinen lokalen Speicher und überschreibt ra nicht durch einen weiteren Aufruf. Deshalb braucht sie hier keinen Stackframe. Die Gleichheit zum vorzeichenbehafteten C-Ausdruck gilt nur, wenn das mathematische Doppelte als int darstellbar ist: im vereinbarten 32-Bit-Modell von $-2^{30}$ bis $2^{30}-1$ einschließlich. Außerhalb dieses Bereichs hat die C-Multiplikation undefiniertes Verhalten, während die Maschinenverschiebung weiterhin ein Bitmuster liefert. Dies ist ein manuelles Lehrbeispiel, keine Ausgabe eines ausgeführten Compilers.
+Flush heißt Verwerfen. Die Gültigkeit beziehungsweise die wirksamen Steuersignale der beiden jüngeren Einträge werden gelöscht, bevor sie Register oder Speicher verändern können. Das Wort an s0 bleibt durch diesen sw unverändert, und t3 wird durch dieses addi nicht erhöht. Der Zielbefehl add beginnt im nächsten Takt mit IF. Ältere Instruktionen bleiben gültig und laufen weiter.
+
+Die zwei verlorenen Abschlusspositionen ergeben im vereinbarten Modell zwei Zusatzzyklen pro genommenem Branch. Ein nicht genommener Branch erfordert bei sequenziellem Holen keinen solchen Flush. Ein Stall hält hingegen noch benötigte Arbeit fest; er verwirft nicht bloß falsche Arbeit. Ein Hardware-Flush beseitigt auch kein bereits ausgeführtes fremdes Speicherereignis rückwirkend. Genau deshalb muss die Entscheidung hier vor den Seiteneffekten der jüngeren Befehle wirksam werden. Die Kosten gelten für EX-Auflösung und die genannten Fetch-Annahmen.
 :::
 
-## Ein weiterer Aufruf verändert `ra`
+## Vorhersage: Erst prognostizieren, dann lernen
 
-Lehrfunktion `double_plus_one(a) = calc(a) + 1`:
+Ein-Bit-Prädiktor: Anfang `T`; tatsächliche Folge `T, N, T, T, N`.
 
-```asm
-double_plus_one:
-    addi sp, sp, -16
-    sw   ra, 12(sp)
-    call calc
-    addi a0, a0, 1
-    lw   ra, 12(sp)
-    addi sp, sp, 16
-    ret
-```
+| Auftreten | 1 | 2 | 3 | 4 | 5 |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| Vorhersage vorher | T | T | N | T | T |
+| Tatsächlich | T | N | T | T | N |
+| Fehler | nein | ja | ja | nein | ja |
 
-`calc` ist die Blattfunktion der vorherigen Folie.
+Zwei-Bit-Zähler: `00/01 → N`, `10/11 → T`; bei T erhöhen, bei N senken, jeweils sättigend.
 
 ::: notes
-double_plus_one erhält ihren Parameter und liefert ihr Ergebnis in a0 gemäß dem Application Binary Interface, ABI. addi bedeutet Add Immediate und verändert zunächst sp, Stack Pointer, um minus 16. sw, Store Word, sichert die eingehende Rücksprungadresse ra, Return Address, zwölf Byte oberhalb dieses neuen Stackzeigers. call ist ein Pseudobefehl für einen Funktionsaufruf und schreibt eine neue Rücksprungadresse nach ra. Ohne Sicherung wäre die Rückkehr zum ursprünglichen Aufrufer verloren.
+T steht für Taken, also genommen, N für Not Taken, nicht genommen. Ein Prädiktor speichert Informationen früherer Sprungausgänge, um die Richtung beim nächsten Auftreten zu schätzen. Wir betrachten einen einzelnen statischen Branch ohne Wechselwirkung mit anderen Branches. Der Ein-Bit-Prädiktor sagt den gespeicherten letzten Ausgang voraus und übernimmt anschließend den tatsächlichen neuen Ausgang.
 
-calc verdoppelt den Parameter und kehrt zur Addition eins zurück. Mit minus drei als Eingabe entsteht minus fünf, mit 21 entsteht 43. lw, Load Word, holt danach die ursprüngliche Rücksprungadresse zurück. Der Stackzeiger wird vollständig wiederhergestellt, bevor ret zum Aufrufer springt. Die reservierten 16 Byte halten die vereinbarte Stackausrichtung ein, obwohl nur vier Byte Nutzdaten gespeichert werden. Der Ausschnitt definiert double_plus_one vollständig und setzt die bereits gezeigte calc-Funktion voraus; beide zusammen stehen in beispiele/vl9_calls.s. Beide C-Zwischenresultate müssen darstellbar sein.
+Mit Anfang T entstehen vor den fünf Entscheidungen die Vorhersagen T, T, N, T, T. Die tatsächliche Folge T, N, T, T, N weicht an den Positionen zwei, drei und fünf ab. Es gibt drei Fehler; der Endzustand ist N. Würde man erst aktualisieren und danach die Vorhersage notieren, würde man unzulässig Wissen aus der Zukunft verwenden.
+
+Der aus Vorlesung 7 bekannte Zwei-Bit-Prädiktor benutzt einen sättigenden Zähler von null bis drei. Zustände 00 und 01 sagen N, 10 und 11 sagen T voraus. Bei T wird um eins erhöht, höchstens bis 11; bei N um eins verringert, mindestens bis 00. Für dieselbe Folge mit Anfang 11 lauten die Vorhersagen T, T, T, T, T, die Folgezustände 11, 10, 11, 11, 10: zwei Fehler, an den Positionen zwei und fünf. Nach einem einzelnen N aus stark T bleibt die Richtung daher T. Eine Vorhersage garantiert keine Richtigkeit; bei Fehlvorhersage muss die Pipeline den korrekten Pfad herstellen.
 :::
 
-## Stackframe als Adressrechnung
+## Gesamtaufgabe: Vom Takt zur Zeit
 
-![](../assets/images/vl9-aufruf-stack.svg){width=88% fig-alt="Stack wächst von 0x2000 nach 0x1FF0, ra liegt als Wort bei 0x1FFC"}
+30 Instruktionen, vier Datenwartezyklen, drei genommene Branches. EX-Auflösung, sequenzielles Holen.
 
-Vier Byte für `ra`, insgesamt 16 Byte reserviert.
+$$C=30+4+4+2\cdot3=44,\qquad\mathrm{CPI}=\frac{44}{30}\approx1{,}47$$
+
+| Modell | Taktperiode | Laufzeit |
+|:---|:---:|---:|
+| Pipeline | $260\,\mathrm{ps}$ | $44\cdot260=11\,440\,\mathrm{ps}$ |
+| Single Cycle | $760\,\mathrm{ps}$ | $30\cdot760=22\,800\,\mathrm{ps}$ |
+
+Speedup $S=22\,800/11\,440\approx1{,}99$.
 
 ::: notes
-sp bedeutet Stack Pointer und zeigt vor dem Aufruf in diesem Zahlenbeispiel auf 0x2000. Der Stack wächst zu kleineren Adressen. addi, Add Immediate, verändert hier den Stackzeiger. Nach der Subtraktion von 16 Byte, hexadezimal 0x10, steht sp auf 0x1FF0. Die Speicheradresse des gesicherten ra, Return Address, ergibt sich aus dem neuen sp plus zwölf Byte, also 0x1FFC. sw, Store Word, speichert den Registerwert an dieser Adresse. Ein Wort belegt die vier Byte 0x1FFC bis 0x1FFF.
+N zählt die 30 abgeschlossenen Maschineninstruktionen des angenommenen Programmausschnitts. C ist die Taktzahl vom ersten IF, Instruction Fetch, der leeren Pipeline bis zum letzten WB, Write Back. CPI bedeutet Cycles per Instruction, mittlere Takte je Instruktion. Die vier Datenwartezyklen sind zusätzliche, bereits vollständig bestimmte Kosten; dazu gehören gegebenenfalls Load-Use-Konflikte, also unmittelbar benötigte geladene Werte, oder WB/ID-Konflikte, also gleichzeitiges Write Back und Instruction Decode mit Registerlesen. Die Aufgabe nimmt an, dass die genannten Kosten sich nicht überlappen. Die drei genommenen Branches kosten bei sequenziellem Holen und Entscheidung in EX, Execute, jeweils zwei zusätzliche Takte.
 
-Die Abbildung zeigt Adressen von oben nach unten zunehmend. Der rote Rahmen markiert den belegten Bereich für die Rücksprungadresse, die grauen Felder die übrigen reservierten Byte. Diese dienen hier nur dazu, einen 16-Byte-Frame zu bilden. Das konkrete Adressbeispiel ist ein Lehrmodell, kein gemessener Speicherstand. Für die Rückkehr müssen der gespeicherte ra-Wert und der ursprüngliche Stackzeiger wiederhergestellt werden. Die Funktionsschnittstelle legt keine feste Adresse 0x2000 fest; erforderlich sind ein gültiger Stackbereich und die passende Ausrichtung.
+Damit addieren sich 30 Instruktionspositionen, vier Positionen für die endliche Pipeline, vier Datenwartepositionen und sechs Branchpositionen zu 44 Takten. Die erste Vier und die zweite Vier haben unterschiedliche Ursachen. CPI ist 44 durch 30, gerundet 1,47. Mit der zuvor angenommenen Pipeline-Taktperiode von 260 Pikosekunden entstehen 11440 Pikosekunden, also 11,44 Nanosekunden.
+
+Der Single-Cycle-Vergleich führt dieselben 30 Instruktionen mit je einem Takt zu 760 Pikosekunden aus, insgesamt 22800 Pikosekunden. Der Speedup ist 22800 durch 11440, ungefähr 1,99. Für eine konkrete Befehlsfolge muss ein Zeitdiagramm zunächst prüfen, welche Zusatzzyklen tatsächlich auftreten; sich überlappende Ursachen dürfen nicht doppelt addiert werden. Bei einem Prädiktor wären Fehlvorhersagen statt automatisch alle genommenen Branches zu zählen.
 :::
 
-## Welche Werte überleben einen Aufruf?
+## Selbstkontrolle: Begründen statt wiedererkennen
 
-| Registergruppe | Verantwortung bei einem normalen Funktionsaufruf |
-|---|---|
-| `a0–a7`, `t0–t6` | Aufrufer sichert noch benötigte Werte |
-| `s0–s11` | Aufgerufene Funktion erhält eingehende Werte |
-| `ra` | Verschachtelter Aufruf überschreibt Rücksprungadresse |
-| `sp` | Bei Rückkehr wiederherstellen, Ausrichtung beachten |
+1. Ein Bitmuster in beiden Zahlenlesarten erklären und erweitern
+2. Befehle codieren, Adressen berechnen und Kontrollfluss verfolgen
+3. Registerleben über Aufrufe und Stackframes prüfen
+4. Datenquellen, Freigaben und Fehlerwirkungen herleiten
+5. Pipeline-Konflikte zeichnen und Laufzeit mit Einheiten berechnen
 
-Beispiel: Ein Zähler in `t0` ist nach `call calc` nicht zugesichert.
-
-::: notes
-Die Registergruppen sind Teil des Application Binary Interface, ABI, also der vereinbarten Binärschnittstelle für normale Funktionsaufrufe. a bezeichnet Argumentregister, t temporäre Register und s gesicherte Register. Die erste Gruppe ist caller-saved: Wer ihren alten Inhalt nach dem Aufruf noch braucht, muss ihn vorher sichern. Dass die konkrete calc-Funktion nur a0 verändert, ist keine allgemeine Zusicherung für andere Implementierungen.
-
-Die s-Register sind callee-saved. Eine aufgerufene Funktion darf sie benutzen, muss aber vor ihrer Rückkehr die eingehenden Werte wiederherstellen. ra steht für Return Address und sp für Stack Pointer. Der gezeigte Stackframe sichert ra, weil ein weiterer Aufruf diese Adresse überschreibt. Für einen Schleifenzähler, der mehrere Aufrufe überleben muss, kommt beispielsweise ein korrekt gesichertes s-Register oder ein Stackplatz infrage. Diese Regeln betreffen normale Aufrufe. Aus ihnen folgt keine allgemeine Registererhaltung für ecall, den umgebungsabhängigen Systemdienst aus Einheit 8.
-:::
-
-## Funktion, Programmeinstieg und Dauerbetrieb
-
-- `ret` benötigt eine gültige Rücksprungadresse
-- Ein Programmeinstieg braucht eine passende Laufzeitumgebung
-- Ein Systemdienst über `ecall` folgt der jeweiligen Umgebung
-- Das Code-Schloss läuft dauerhaft in seiner Hauptschleife
+Weiterarbeit: [Übung 9](../labs/lab_09_wrap-up-state-machine.pdf) mit Papieraufgaben und [Wiederholungsquiz](../quizacademy/quiz_09_wrap-up-c-to-assembly.csv).
 
 ::: notes
-ret ist eine Rückkehr über ra, Return Address. Eine isolierte Funktion ist deshalb noch kein vollständiges Programm: Ein Aufrufer muss Parameter, gegebenenfalls einen Stack und eine gültige Rücksprungadresse bereitstellen. Ein vom Linker erzeugtes Programm benötigt außerdem einen passenden Einstieg und gegebenenfalls Initialisierung durch die Laufzeitumgebung.
+Die fünf Punkte sind ein Prüfverfahren für den eigenen Lernstand. Erklären Sie zum ersten Punkt beispielsweise, weshalb dasselbe Byte je nach Load vorzeichen- oder nullerweitert wird. Beim zweiten Punkt sollten Sie aus einem negativen Immediate ein Feldmuster und aus einem Arrayindex eine Byteadresse herleiten können. Verfolgen Sie eine Schleife einschließlich des ersten abgelehnten Durchlaufs. Beim dritten Punkt unterscheiden Sie Rückkehrlink, noch benötigten Argumentwert und zu erhaltende Register.
 
-ecall heißt Environment Call. Welche Dienstnummern und Register damit verbunden sind, hängt vom Ausführungssystem ab. In der im Kurs verwendeten Venus-Konvention stehen beispielsweise die Dienstnummer in a0 und ein Argument in a1. Diese Konvention ist weder eine Eigenschaft des RISC-V-Befehlssatzes noch automatisch für Ripes gültig. Das folgende Ripes-Projekt beendet sich bewusst nicht durch ret oder einen Systemdienst, sondern wiederholt Eingabelesen, Zustandsberechnung und Anzeige. Seine Hilfsfunktionen sind Blattfunktionen; der Einstieg selbst kehrt nicht zu einem Aufrufer zurück. Dadurch benötigt diese konkrete Struktur keine Sicherung einer eingehenden Rücksprungadresse.
-:::
+Für die Hardwarefragen beginnen Sie mit der geforderten Zustandsänderung und verfolgen danach Quellen, Datenweg und Schreibfreigaben. Für die Pipelinefragen benennen Sie erst den Produzenten, den Verbraucher und die Verfügbarkeit des Werts, bevor Sie Stalls eintragen. Prüfen Sie zuletzt die Zählgrenze und die Einheiten der Laufzeit. Diese Reihenfolge verhindert viele auswendig gelernte, aber falsch angewendete Tabellenwerte.
 
-# 4. Abschlussprojekt: Code-Schloss
-
-::: notes
-Das Abschlussprojekt verbindet die Kontrollstrukturen dieser Einheit mit den Ein- und Ausgaben aus Einheit 8. Ein D-Pad, Directional Pad, liefert vier Richtungstasten; eine LED-Matrix zeigt den Zustand durch die Farbe eines Pixels. LED bedeutet Light Emitting Diode. Die Bedienregel ist bewusst klein genug, um sie vollständig mit einer Tabelle und kurzen Tests zu prüfen.
-
-Zunächst beschreiben wir das gewünschte Verhalten ohne Speicheradressen oder Register. Danach übersetzen wir Rohwerte in Ereignisse und erst dann Ereignisse in Zustandsübergänge. Diese Reihenfolge hilft, einen falschen Übergang von einem falsch erkannten Tastendruck zu unterscheiden. Das Programm ist ein Lehrmodell für eine endliche Zustandsmaschine und kein Sicherheitskonzept für ein reales Türschloss.
-:::
-
-## Vier Zustände und eine klare Bedienregel
-
-| Zustand | Anzeige | Fortschritt |
-|---|---|---|
-| S0 | Rot | Geschlossen, erwartet UP |
-| S1 | Gelb | UP erkannt, erwartet DOWN |
-| S2 | Blau | UP und DOWN erkannt, erwartet RIGHT |
-| S3 | Grün | Offen, bleibt bis LEFT offen |
-
-`LEFT` setzt jeden Zustand auf S0 zurück.
-
-Falsche einzelne Codetaste in S0–S2 → S0.
-
-::: notes
-Die Zustände S0 bis S3 beschreiben den bisher erreichten Fortschritt der Eingabefolge UP, DOWN, RIGHT. Die Anzeige verwendet Rot, Gelb, Blau und Grün, damit dieser Fortschritt beobachtbar ist. LEFT ist unabhängig vom aktuellen Fortschritt eine Rücksetztaste. In S3 verändern UP, DOWN und RIGHT den offenen Zustand nicht; nur LEFT schließt wieder.
-
-Eine falsche einzelne Codetaste in S0, S1 oder S2 verwirft den bisherigen Fortschritt. Beispielsweise führt S1 mit erneutem UP nach S0 und nicht nach S1. Ein fehlendes Eingabeereignis verändert einen gültigen Zustand nicht. Mehrere Tasten gelten nicht als gültige einzelne Codetaste; sie erzeugen gemäß der folgenden Eingaberegel kein Ereignis. Die Zustandsmaschine soll also keine Priorität aus der Reihenfolge der Speicherzugriffe ableiten. Diese Regeln sind die gemeinsame Spezifikation für das Vorlesungsbeispiel, das zugehörige Quiz und das vollständige Code-Schloss-Lehrprogramm. Das Übungsblatt überträgt Zustandsautomat und Ereigniserkennung auf einen Lüfterregler mit eigener Übergangstabelle.
-:::
-
-## Zustandsgraph: Erfolgsweg und Rücksetzen
-
-![](../assets/images/vl9-schloss-zustaende.svg){width=92% fig-alt="UP, DOWN, RIGHT führen über vier Zustände zum offenen Schloss, LEFT führt zurück"}
-
-Die vollständige Tabelle ergänzt die übrigen Fälle.
-
-::: notes
-Der Graph zeigt die vier Zustände des Code-Schlosses als Knoten. Die roten Kanten markieren die erfolgreiche Folge UP, DOWN, RIGHT von S0 über S1 und S2 nach S3. Die graue Rücksetzlinie führt mit LEFT von den drei späteren Zuständen nach S0. Auch LEFT in S0 führt wieder nach S0; diese Selbstkante ist aus Platzgründen im Hinweis beschrieben. Die Farbnamen über den Zuständen bezeichnen die Ausgabe, die rote Kantenfarbe selbst kennzeichnet den Erfolgsweg und ist keine zusätzliche Anzeigefarbe.
-
-Ein Zustandsgraph kann bei vielen Selbst- und Rückkanten unübersichtlich werden. Deshalb stellt diese Abbildung bewusst die Orientierung bereit, während die nächste Folie alle Übergänge tabellarisch festlegt. Insbesondere fehlen hier die Rückkehr bei einer falschen einzelnen Codetaste und die Selbstübergänge ohne Ereignis. Man darf die ausgelassenen Fälle nicht als beliebige Implementierungsfreiheit interpretieren.
-:::
-
-## Vollständige Übergangstabelle
-
-Ereignisse: 0 keines, 1 UP, 2 DOWN, 3 RIGHT, 4 RESET durch LEFT.
-
-| Aktueller Zustand | 0 | 1 | 2 | 3 | 4 |
-|---|---:|---:|---:|---:|---:|
-| S0 | S0 | S1 | S0 | S0 | S0 |
-| S1 | S1 | S0 | S2 | S0 | S0 |
-| S2 | S2 | S0 | S0 | S3 | S0 |
-| S3 | S3 | S3 | S3 | S3 | S0 |
-
-Ungültiger Zustandswert → S0, auch ohne Ereignis.
-
-::: notes
-Die Tabelle beschreibt eine endliche Zustandsmaschine, englisch Finite State Machine, kurz FSM. Die Zeile ist der aktuelle Zustand, die Spalte das bereits erkannte Ereignis und der Eintrag der Folgezustand. Das Ereignis null bedeutet keine neue gültige Einzeltaste. Die Ereigniscodes sind eine Softwareschnittstelle und nicht die Bitpositionen der späteren Rohmaske.
-
-Jeder gültige Zustand hat für jedes Ereignis genau einen Folgezustand. Die erste Spalte erhält den Zustand, die letzte setzt ihn zurück. Die drei mittleren Spalten bilden den Erfolgsweg beziehungsweise die beschriebenen Fehlerfälle. S3 bleibt bei Codetasten offen. Ein beschädigter Zustand, beispielsweise der Zahlenwert 99, wird unabhängig vom Ereignis nach S0 korrigiert. Dieser Zusatzfall steht außerhalb der vier Tabellenzeilen, gehört aber zur Implementierung. Entscheidend ist, das Ergebnis tatsächlich in das Zustandsregister zu schreiben; ein Sprung zu einer Marke namens S0 allein verändert noch keine gespeicherten Daten.
-:::
-
-## Rohwerte einmal pro Abfrage lesen
-
-D-Pad-Register relativ zur exportierten Basisadresse:
-
-| Taste | Wortoffset | Bit in unserer Rohmaske |
-|---|---:|---:|
-| UP | 0 Byte | 1 |
-| DOWN | 4 Byte | 2 |
-| LEFT | 8 Byte | 4 |
-| RIGHT | 12 Byte | 8 |
-
-Alle vier Register jeweils einmal lesen und daraus eine Maske bilden.
-
-::: notes
-Das D-Pad, Directional Pad, ist das Eingabegerät des Ripes-Projekts. Seine Register werden über Memory-Mapped Input/Output, MMIO, also Speicheradressen für Ein- und Ausgabe, gelesen. Ein Wort ist hier vier Byte breit. Die Tabelle nennt relative Offsets, keine universellen Basisadressen. Für die konkrete Installation müssen Geräte eingerichtet und die exportierten Symbole geprüft werden.
-
-Der im Kurs dokumentierte Ripes-Quellstand meldet eine gehaltene Taste oder einen seit dem letzten Lesen erfassten Druck. Das Lesen löscht den gespeicherten Druckindikator. Deshalb liest die Hilfsfunktion jedes Richtungsregister genau einmal pro Abfrage, verwendet dessen niedrigstes Bit und kombiniert die vier Ergebnisse zu einer Rohmaske. Ein vorher erfasster kurzer Druck kann dadurch sichtbar werden. Die vier nacheinander ausgeführten Lesezugriffe bilden jedoch keine atomare Aufnahme aller Tasten zum exakt gleichen Zeitpunkt. Die Bedienregel bezieht sich auf die so gewonnene Abfragegruppe. Das konkrete Geräteverhalten muss am installierten Ripes überprüft werden.
-:::
-
-## Rohmaske ist noch kein Ereignis
-
-![](../assets/images/vl9-eingabe-ereignis.svg){width=92% fig-alt="Freigabe und Einzelmaskenprüfung erzeugen aus Rohwerten akzeptierte Ereignisse"}
-
-Mehrere gesetzte Bits: kein Ereignis, aber Gruppe verbraucht.
-
-::: notes
-Die Abbildung trennt drei Größen: Rohmaske, Eingabefreigabe und Ereignis. Die roten Pfeile zeigen ihren Datenfluss von links nach rechts. Die Rohmaske entsteht aus den vier Geräteabfragen. Die Freigabe merkt sich, ob eine vollständig leere Abfragegruppe seit der letzten Betätigung erkannt wurde. Erst dann erzeugt eine neue nichtleere Gruppe gegebenenfalls ein Ereignis. Die Zuordnung lautet Rohmaske eins zu UP-Ereignis eins, zwei zu DOWN-Ereignis zwei, acht zu RIGHT-Ereignis drei und vier zu RESET-Ereignis vier. Die Zahlen acht und drei zeigen besonders deutlich, dass beide Codierungen verschieden sind.
-
-Beim Start ist die Freigabe geschlossen. Eine leere Gruppe öffnet sie. Die erste nichtleere Gruppe schließt sie wieder, auch wenn mehrere Bits gesetzt sind und deshalb kein Ereignis entsteht. Ein verbleibender Einzelwert nach einem Mehrfachdruck wird damit nicht nachträglich als neue Betätigung gewertet. Erst vollständiges Loslassen, in Form einer leeren Abfragegruppe, erlaubt das nächste Ereignis. Dies verhindert Mehrfachwertung beim Halten; es ist keine Zusicherung einer physikalischen Entprellung.
-:::
-
-## Beispieltrace: Drücken und Loslassen
-
-![](../assets/images/vl9-schloss-trace.svg){width=94% fig-alt="Neun Abfragegruppen zeigen Rohmasken, Ereignisse und Fortschritt bis zum Rücksetzen"}
-
-Jede Spalte ist eine Abfragegruppe, keine feste Zeitdauer.
-
-::: notes
-Der Trace beginnt mit S0 und einer geschlossenen Eingabefreigabe. Die erste Rohmaske null öffnet die Freigabe. Danach erzeugt die Maske eins das UP-Ereignis und führt nach S1. Ein weiterer Wert eins bei gehaltener Taste erzeugt kein neues Ereignis; S1 bleibt erhalten. Erst null gibt die nächste Betätigung frei. Auf die Maske zwei folgt damit DOWN und S2. Nach erneutem null führt die Maske acht zu RIGHT und S3. Nach einer weiteren leeren Gruppe führt vier zu RESET und S0.
-
-Die Zeilen zeigen die Rohmaske, das abgeleitete Ereignis und den Zustand nach der Verarbeitung. Die Werte gehören jeweils zu derselben Abfragegruppe. Der rote Rahmen markiert die drei gültigen Codeereignisse und das Rücksetzen. Eine Ausführungsgeschwindigkeit wird nicht behauptet. Bei einer Mehrfachmaske wie drei wären UP und DOWN gemeinsam beobachtet worden. Sie würde kein Ereignis auslösen und müsste vollständig verschwinden, bevor eine neue gültige Einzeltaste verarbeitet werden kann.
-:::
-
-## Reine Übergangsfunktion
-
-`beispiele/vl9_next_state.s`
-
-- Eingabe: `a0` Zustand, `a1` Ereignis
-- Ausgabe: `a0` Folgezustand
-- Keine Gerätezugriffe, keine Ausgabe, kein Stackframe
-- Ungültigen Zustand zuerst erkennen
-
-Fragment des Anfangs:
-
-```asm
-li   t0, 3
-bgtu a0, t0, next_zero
-li   t0, 4
-beq  a1, t0, next_zero
-```
-
-::: notes
-Die vollständige manuelle Funktion next_state steht in der genannten Datei. Sie setzt die Übergangstabelle um und kann unabhängig vom Gerät geprüft werden. a0 und a1 sind gemäß dem Application Binary Interface, ABI, die Parameterregister; a0 wird anschließend zum Ergebnisregister. t0 ist ein temporäres Register. Der Ereignisparameter muss einen gültigen Code von null bis vier enthalten.
-
-bgtu bedeutet Branch if Greater Than Unsigned und ist ein Pseudobefehl für einen vorzeichenlosen Größer-Vergleich. Jeder 32-Bit-Zustandswert außerhalb null bis drei wird damit nach next_zero geleitet; auch das Bitmuster für minus eins liegt vorzeichenlos außerhalb des Bereichs. beq bedeutet Branch if Equal und prüft anschließend Ereignis vier, RESET. Der gezeigte Anfang ist ausdrücklich ein Fragment, keine vollständige Funktion. Die Datei enthält auch alle anderen Tabellenfälle und Rückkehrbefehle. Die Funktion verwendet nur temporäre und Argumentregister, ruft keine weitere Funktion auf und braucht deshalb keinen Stackframe.
-:::
-
-## Vollständiges Ripes-Lehrprogramm
-
-`beispiele/vl9_code_lock.s` enthält:
-
-1. Dauernde Hauptschleife und Freigabemerker
-2. `read_sample`: vier Gerätewerte → Rohmaske
-3. `next_state`: Zustand und Ereignis → Folgezustand
-4. `state_colour`: Zustand → RGB-Wort
-
-Geräte: ein D-Pad und eine LED-Matrix, erstes Pixel.
-
-::: notes
-Die Datei enthält das vollständige manuelle Ripes-Lehrprogramm einschließlich aller Hilfsfunktionen. RGB bedeutet Red, Green, Blue; das verwendete LED-Gerät, Light Emitting Diode, erwartet im dokumentierten Kursstand ein Farbwort 0x00RRGGBB. Ein Store Word schreibt es in das erste Pixel der über die Symbole adressierten LED-Matrix. Die Symbolnamen D_PAD_0_BASE und LED_MATRIX_0_BASE müssen zu den eingerichteten Geräten passen.
-
-Die Hauptschleife hält den Zustand in s0, die beiden Basisadressen in s1 und s2 und die Freigabe in s3. Diese gesicherten Register überleben die normalen Funktionsaufrufe gemäß dem Application Binary Interface, ABI. Die Blattfunktionen verändern sie nicht. Da die Hauptschleife nie zum ursprünglichen Einstieg zurückkehrt, braucht sie dessen Rücksprungadresse nicht zu sichern. Alle Hilfsfunktionen kehren jeweils über die durch call gesetzte Adresse zurück. Das Programm ist als vollständige Lehrvorlage bereitgestellt, nicht als Bericht über einen ausgeführten Ripes-Lauf. Die Übung verwendet dieselbe Entwurfsmethode für einen anderen Anwendungsfall: einen dreistufigen Lüfterregler. Dessen Stufen, PLUS-/MINUS-/STOP-Ereignisse und Farben legt das Übungsblatt selbst fest. Es enthält auch das vollständige Ripes-Programm, in das die Studierenden nur ihre Übergangsfunktion einsetzen. Insbesondere ist LEFT dort STOP mit Ereigniscode drei und kein Code-Schloss-Ereignis mit Nummer vier.
-:::
-
-## Zustandsberechnung muss gespeichert werden
-
-Teil der Hauptschleife:
-
-```asm
-update:
-    mv   a0, s0
-    call next_state
-    mv   s0, a0
-    call state_colour
-    sw   a0, 0(s2)
-    j    main_loop
-```
-
-Auch bei Ereignis 0 wird `next_state` aufgerufen.
-
-::: notes
-s0 ist das gesicherte Register mit dem aktuellen Zustand, s2 die Basisadresse der LED-Matrix. LED bedeutet Light Emitting Diode. a0 enthält vor dem ersten Aufruf den Zustand, a1 bereits das erkannte Ereignis. mv bedeutet Move und ist ein Pseudobefehl für die Registerkopie. call ruft die reine Übergangsfunktion auf; diese liefert ihren Folgezustand gemäß dem Application Binary Interface, ABI, in a0. Die zweite Kopie schreibt ihn tatsächlich nach s0.
-
-state_colour erhält denselben Folgezustand in a0 und ersetzt ihn durch das RGB-Farbwort, Red, Green, Blue. sw bedeutet Store Word und schreibt vier Byte zum ersten Pixel an Offset null. j ist ein unbedingter Sprung zur nächsten Abfrage. Der Ausschnitt setzt die übrige Hauptschleife und die Hilfsfunktionen aus beispiele/vl9_code_lock.s voraus. Er wird auch ohne neues Ereignis durchlaufen. So kann ein beschädigter Zustandswert wie 99 in S0 zurückgeführt werden. Ohne die Rückkopie nach s0 würde zwar eine Funktion null zurückgeben, der nächste Durchlauf aber erneut mit dem alten Wert arbeiten.
-:::
-
-## Tests aus der Spezifikation ableiten
-
-| Test | Erwartung |
-|---|---|
-| UP, DOWN, RIGHT mit Freigabe dazwischen | S0 → S1 → S2 → S3 |
-| UP halten | Nur erster gültiger Druck zählt |
-| Mehrfachdruck, dann nur eine Taste gehalten | Kein neues Ereignis |
-| S1 und neuer UP-Druck | S0 |
-| S3 und neuer DOWN-Druck | S3 |
-| LEFT in jedem Zustand | S0 |
-| Zustandswert 99, kein Ereignis | S0 wird gespeichert |
-
-::: notes
-Die Tabelle ist eine Sammlung von Sollfällen, keine Behauptung über bereits ausgeführte Simulatorversuche. Zwischen zwei gültigen neuen Betätigungen muss jeweils eine vollständig leere Abfragegruppe liegen. Auch LEFT kann erst dann als neues Ereignis entstehen. Die Übergangsfunktion selbst kennt diese Freigaberegel nicht; sie sieht nur den bereits aufbereiteten Ereigniscode.
-
-Ein geeigneter Testbericht enthält daher neben dem sichtbaren Farbwechsel die Rohmaske, den Ereigniscode und den Zustand. Bei UP halten sollte die Rohmaske wiederholt eins sein, aber nur beim ersten freigegebenen Auftreten Ereignis eins entstehen. Bei einem Mehrfachdruck muss auch der Übergang zu einer noch gehaltenen einzelnen Taste ereignislos bleiben. Für den Zusatzfall 99 genügt keine grüne oder rote Anzeige als alleiniger Nachweis: Es ist ausdrücklich zu prüfen, dass das Zustandsregister anschließend null enthält. Diese Tests unterscheiden Fehler der Eingabeerkennung, der Übergangstabelle und der Speicherung.
-:::
-
-# 5. Rückblick: Eine Anweisung durch alle Ebenen
-
-::: notes
-Das Projekt verwendet bekannte Maschinenanweisungen für Registerkopien, Vergleiche und Speicherzugriffe. Zum Abschluss verbinden wir diese Anweisungen erneut mit dem Hardwaremodell aus den Einheiten 5 bis 7. Die Befehlssatzarchitektur, Instruction Set Architecture oder ISA, beschreibt ihre sichtbare Wirkung. Datenpfad und Steuerwerk legen fest, wie unser Lehrprozessor diese Wirkung hervorbringt.
-
-Wir betrachten dafür eine Load-Anweisung und eine direkt folgende Addition. Auf Programmebene geht es um eine Datenabhängigkeit, im Datenpfad um Quellen und Ziele und in der Pipeline um den Zeitpunkt der Verfügbarkeit. Die Wiederholung führt keine neue Prozessorarchitektur ein. Sie macht sichtbar, wie die verschiedenen Kursthemen beim Lesen und Prüfen eines Programms zusammenwirken.
-:::
-
-## Hauptsteuerung des bekannten Teilmodells
-
-| Signal | `lw` | `sw` | `beq` | `add/sub/and/or` |
-|---|---:|---:|---:|---:|
-| RegWrite | 1 | 0 | 0 | 1 |
-| ALUSrc | 1 | 1 | 0 | 0 |
-| MemRead | 1 | 0 | 0 | 0 |
-| MemWrite | 0 | 1 | 0 | 0 |
-| MemtoReg | 1 | X | X | 0 |
-| Branch | 0 | 0 | 1 | 0 |
-| ALUOp | 00 | 00 | 01 | 10 |
-
-`X`: Wert ohne Einfluss auf das Ergebnis in diesem Fall.
-
-::: notes
-Diese Tabelle wiederholt die Hauptsteuerung des eingeschränkten Einzyklusmodells aus den Einheiten 5 und 6. RegWrite aktiviert das Schreiben eines Registers. ALUSrc wählt für den zweiten Eingang der Arithmetic Logic Unit, ALU, zwischen Registerwert und Immediate. MemRead und MemWrite aktivieren Datenlesen beziehungsweise Datenschreiben. MemtoReg wählt beim Rückschreiben Speicherwert oder ALU-Ergebnis. Branch kennzeichnet den bedingten Sprung und ALUOp ist die zweibittige Kategorie für die weitere ALU-Steuerung.
-
-Bei lw, Load Word, addiert die ALU Basis und Offset, liest den Speicher und schreibt das gelesene Wort in ein Register. sw, Store Word, berechnet ebenfalls eine Adresse, schreibt aber kein Register. Deshalb ist MemtoReg dort ohne Einfluss und als X markiert. X darf nicht als Erlaubnis für einen unbeabsichtigten Speicherzugriff verstanden werden; MemWrite ist eindeutig festgelegt. ALUOp gleich 10 fasst die vier genannten Registeroperationen zusammen. Deren Unterscheidung erfolgt durch die separate ALU-Steuerung mit Funktionsfeldern. Diese internen Steuercodes sind keine RISC-V-Opcodewerte und decken nicht sämtliche Befehle des Projekts ab.
-:::
-
-## Load-Use: Wert ist erst nach MEM verfügbar
-
-```asm
-lw  t0, 0(a0)
-add t1, t0, t0
-```
-
-![](../assets/images/vl9-loaduse.svg){width=90% fig-alt="Load in MEM Takt 4, gehaltene Decode-Stufe und Addition mit Forwarding in Takt 5"}
-
-Lehrmodell mit Forwarding: ein Stall, insgesamt sieben Takte.
-
-::: notes
-lw bedeutet Load Word und liest das Wort an der Adresse in a0 nach t0. add benötigt diesen Wert unmittelbar für beide Operanden und schreibt nach t1. Eine Read-After-Write-Abhängigkeit liegt vor: Der Verbraucher liest einen Wert, den die ältere Anweisung erst erzeugen muss.
-
-Die Pipeline verwendet die fünf Stufen IF, Instruction Fetch, ID, Instruction Decode mit Registerlesen, EX, Execute, MEM, Memory Access, und WB, Write Back. Im Kursmodell gibt es Forwarding von EX/MEM und MEM/WB sowie einen Load-Use-Stall. lw hat seine Daten erst am Ende von MEM in Takt vier. Ohne Pause läge EX der Addition ebenfalls in Takt vier und damit zu früh. Der rote Rahmen markiert die gehaltene ID-Stufe, der rote Pfeil die Weiterleitung zum Verbraucher. Die Addition bleibt deshalb einen Takt in ID; in EX entsteht eine Bubble ohne architektonische Schreibwirkung. In Takt fünf wird der Speicherwert von MEM/WB zu beiden Eingängen der ALU, Arithmetic Logic Unit, weitergeleitet. Zwei Anweisungen benötigen ideal sechs Takte vom leeren bis zum geleerten Prozessor, mit diesem Stall sieben. Das Beispiel benötigt keinen gleichzeitigen Registerbankschreib- und -lesezugriff auf dasselbe Register.
-:::
-
-## Fehleranalyse: Die erste Abweichung eingrenzen
-
-Bei einer falschen Anzeige prüfen Sie der Reihe nach:
-
-1. Stimmen Basisadresse, Offset und gelesene Rohmaske?
-2. Entsteht das passende einzelne Ereignis?
-3. Liefert die Übergangstabelle den erwarteten Zustand?
-4. Wird das Ergebnis in `s0` gespeichert?
-5. Passt das Farbwort zum Zustand und LED-Gerät?
-
-::: notes
-Die Prüfreihenfolge folgt dem Datenfluss und kann bei einem konkreten Solltrace abgearbeitet werden. MMIO bedeutet Memory-Mapped Input/Output, also Ein- und Ausgabe über Speicheradressen. Eine falsche Basisadresse oder ein falscher Offset kann bereits die Rohmaske verfälschen. Die Eingabefreigabe entscheidet danach, ob eine nichtleere Gruppe ein neues Ereignis darstellt.
-
-Erst wenn dieses Ereignis korrekt ist, lohnt der Vergleich mit der Zustandsübergangstabelle. s0 ist das gesicherte Register, in dem die Hauptschleife den Fortschritt speichert. Ein korrekt berechnetes Ergebnis ist wirkungslos, wenn es nicht dorthin kopiert wird. Abschließend werden Zustand und RGB-Farbwort, Red, Green, Blue, sowie das Format des LED-Geräts, Light Emitting Diode, verglichen. Bei jeder Stufe wird ein erwarteter Zwischenwert dem beobachteten gegenübergestellt. Ein Testbericht sollte den ersten Unterschied benennen und nach einer Korrektur auch die angrenzenden Fälle prüfen, etwa Halten und Mehrfachdruck.
-:::
-
-## Transferaufgaben für Papier und Simulator
-
-- C-Bedingung in passende Vergleichsrichtung übersetzen
-- Arrayadresse und Schleifenanzahl begründen
-- Stackadresse und Registerverantwortung berechnen
-- Eingabetrace mit Übergangstabelle vervollständigen
-- Einen Load-Use-Stall im bekannten Modell einzeichnen
-
-Übungsblatt 9: Lüfterregler mit Anlaufschleife, Messpuffer, Stackframe und Zustandsautomat.
-
-::: notes
-Diese Aufgaben greifen ausschließlich die im Kurs eingeführten Modelle auf. Bei C-Kontrollfluss zählen die Bedeutung der Bedingung und die Richtung der Sprungkante. Bei Arrays gehören Elementgröße, gültiger Indexbereich und tatsächlicher Speicherzugriff zusammen. Beim Stack ist die Adresse aus dem veränderten Stackzeiger zu berechnen; außerdem muss begründet werden, welcher Wert einen Aufruf überleben soll.
-
-Für einen Eingabetrace werden Rohmaske und Freigabe zuerst in Ereignisse übersetzt. Danach liefert die Zustandstabelle den neuen Fortschritt. Eine Pipelinezeichnung braucht eine klare Stufenlegende und die vereinbarten Weiterleitungspfade. Diese Aufgaben können ohne Simulator bearbeitet werden und eignen sich zur Vorbereitung auf vergleichbare Klausuraufgaben. Die konkrete Prüfungsgestaltung wird dadurch nicht festgelegt. Das Übungsblatt bündelt diese Aufgabentypen in einem durchgehenden Lüfterregler: Werkzeugkette, Anlaufschleife mit einem signed-unsigned-Fehler, Zuluftsumme im Messpuffer, Übergangstabelle mit Eingabetrace, Fehlersuche bei fehlender Rückkopie nach s0, Stackframe einer Vorschaufunktion sowie Steuersignale und Load-Use-Stall beim Lesen des D-Pads. Die praktische Aufgabe ergänzt das Papiermodell durch einen dokumentierten Ripes-Lauf mit den Geräten der eigenen Installation; dort ist nur die Übergangsfunktion selbst zu schreiben.
-:::
-
-## Das sollten Sie jetzt erklären können
-
-1. Welche Datei erzeugt jede Stufe der Werkzeugkette?
-2. Warum braucht `a == b` eine passende Abzweigung?
-3. Wann benötigt eine Funktion einen Stackframe?
-4. Warum sind Rohmaske und Ereignis verschieden?
-5. Wie verbindet eine Speicheranweisung Software und Datenpfad?
-
-::: notes
-Die Werkzeugkette führt vom präprozessierten C-Text über Assemblertext und Objektdatei zum verknüpften Programm. Die Objektdatei kann noch offene Symbole und Relokationen enthalten; der Programmeinstieg braucht außerdem eine passende Umgebung. Ein Vergleich in C muss durch einen Maschinenvergleich mit der richtigen Vorzeicheninterpretation und einer vollständigen Kontrollflussstruktur umgesetzt werden.
-
-Ein Stackframe entsteht aus konkretem Speicher- und Sicherungsbedarf, etwa der durch einen weiteren Aufruf überschriebenen Rücksprungadresse. Rohmasken beschreiben die beobachteten Tastenbits, Ereignisse dagegen die gemäß Freigaberegel akzeptierte neue Betätigung. Eine Speicheranweisung berechnet im Datenpfad eine Adresse, aktiviert den richtigen Speicherzugriff und führt gegebenenfalls Daten zu einem Zielregister zurück. Diese Antworten verbinden die bisherigen Einheiten. Die zusätzliche Notizspur erläutert Begriffe, Voraussetzungen, Beispiele und Lösungen so, dass das PDF-Handout auch als begleitendes Skript gelesen werden kann.
+Übung 9 enthält weitere, von den Folien verschiedene Papierbeispiele aus Vorlesung 1 bis 7. Die separate Musterlösung erläutert Rechenwege und Bewertungen. Das Quiz prüft dazu zehn Verständnisentscheidungen mit jeweils genau einer richtigen Antwort. Es verwendet damit ein anderes Antwortformat als eine mögliche Mehrfachauswahl in einer Klausur. Diese Wiederholung benötigt weder die Inhalte von Vorlesung 8 noch neue Compiler- oder Gerätekenntnisse. Fachliche Grundlage bleiben die früheren Folien und Harris/Harris, Digital Design and Computer Architecture, RISC-V Edition.
 :::
