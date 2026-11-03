@@ -28,24 +28,26 @@ Beantworten Sie die nachfolgenden Fragen im Multiple-Choice-Format. Bei jeder Fr
 
 **Hilfsmittel:** Das offizielle RISC-V Green Card / Reference Sheet wird ausgeteilt. Alle Aufgaben sind auf Papier ohne Simulator oder Compiler lösbar.
 
+**Stoffumfang:** Vorlesungen 1–7 und deren Wiederholung in Einheit 9.
+
 Markieren Sie bei den Fragen 1–20 jeweils alle richtigen Optionen. Eine vollständig richtige Auswahl erhält einen Punkt, jede andere Auswahl null Punkte. Es gibt keine Teilpunkte und keinen Punktabzug. Ab Aufgabe 2 sind Rechenwege beziehungsweise Begründungen anzugeben; dort sind Teilpunkte möglich.
 
 | Aufgabe | Inhalt | Punkte | Richtzeit | erreicht |
 |:---:|:---|---:|---:|:---:|
-| 1 | 20 Multiple-Choice-Fragen, Einheiten 1–9 | 20 | 20 min | |
+| 1 | 20 Multiple-Choice-Fragen, Vorlesungen 1–7 | 20 | 20 min | |
 | 2 | Zahlendarstellung, Logik und Register | 10 | 10 min | |
-| 3 | C-Schleife, Array und RV32I | 16 | 16 min | |
+| 3 | Array und Schleife in RV32I | 16 | 16 min | |
 | 4 | Funktionsaufruf und Stacktrace | 10 | 10 min | |
 | 5 | Datenpfad und Steuerwerk | 12 | 12 min | |
 | 6 | Pipeline und Laufzeit | 12 | 12 min | |
-| 7 | I/O und Zustandsmaschine | 10 | 10 min | |
+| 7 | Maschinencode und Bytefolge | 10 | 10 min | |
 | | **Summe** | **90** | **90 min** | |
 
 Die Richtzeiten umfassen Lesen und Bearbeiten und dienen der Zeiteinteilung.
 
-**Gemeinsame Annahmen:** RV32I ohne komprimierte Instruktionen, 32-Bit-Register, Little Endian und Byteadressierung. Echte Instruktionen sind vier Byte lang. Registerarithmetik behält die unteren 32 Bit. Normale Funktionsaufrufe verwenden die ILP32-Konvention: skalare Ergebnisse in `a0`, Stack an Aufrufgrenzen auf 16 Byte ausgerichtet. `int` und Zeiger haben im C-Zielmodell 32 Bit; alle angegebenen C-Zwischensummen sind darstellbar. Datenadressen und Speicherbereiche sind gültig, soweit nicht ausdrücklich nach einer Bereichsgrenze gefragt wird.
+**Gemeinsame Annahmen:** RV32I ohne komprimierte Instruktionen, 32-Bit-Register, Little Endian und Byteadressierung. Echte Instruktionen sind vier Byte lang. Registerarithmetik behält die unteren 32 Bit. Normale Funktionsaufrufe verwenden die ILP32-Konvention: skalare Ergebnisse in `a0`, Stackzeiger während standardkonformer Funktionen auf 16 Byte ausgerichtet. Die Arrayelemente sind 32-Bit-Wörter. Datenadressen und Speicherbereiche sind gültig, soweit nicht ausdrücklich nach einer Bereichsgrenze gefragt wird.
 
-Datenpfad, Pipeline und Gerätekarte sind die jeweils ausdrücklich angegebenen Lehrmodelle. Zeit- und Adresswerte sind Aufgabenannahmen, keine gemessenen Eigenschaften eines Prozessors oder Simulators.
+Datenpfad und Pipeline sind die jeweils ausdrücklich angegebenen Lehrmodelle. Zeit- und Adresswerte sind Aufgabenannahmen, keine gemessenen Eigenschaften eines Prozessors oder Simulators.
 
 {{< pagebreak >}}
 
@@ -73,12 +75,12 @@ Das achtbittige Muster `1111 1011` wird ohne Änderung der Bits betrachtet. Welc
 
 ### Frage 3: Logik und gespeicherter Zustand (1 Punkt)
 
-Ein Multiplexer und ein positiv flankengetriggertes Register liegen zwischen zwei steigenden Taktflanken. Welche Aussagen treffen zu?
+Ein Multiplexer und ein positiv flankengetriggertes Register werden ohne Reset betrachtet. Welche Aussagen treffen zu?
 
 - $\square$ A: Ein Multiplexer übernimmt seine neue Auswahl erst an der nächsten Taktflanke.
 - $\square$ B: Ein Multiplexer kann seinen Ausgang nach einer Auswahländerung zwischen Flanken ändern.
 - $\square$ C: Das Register folgt bei dauerhaft hohem Takt jeder Änderung seines Dateneingangs.
-- $\square$ D: Das Register kann seinen Ausgang ohne neue aktive Flanke beibehalten.
+- $\square$ D: Ohne neue aktive Flanke bleibt der gespeicherte Registerwert erhalten.
 
 ### Frage 4: Register und Immediates (1 Punkt)
 
@@ -175,12 +177,12 @@ Im Kursmodell werden `add` und `sub` mit gleichem Opcode, aber unterschiedlichen
 
 ### Frage 13: Auswahl und Schreibfreigabe (1 Punkt)
 
-Ein korrekt gesteuerter `sw` hat `RegWrite=0`. Welche Aussagen über `MemtoReg` treffen zu?
+Ein korrekt gesteuerter `sw t0, 4(t1)` hat `RegWrite=0`. Welche Aussagen über `MemtoReg` treffen zu?
 
 - $\square$ A: Der Steuerungswert X kennzeichnet einen zwingend hochohmigen elektrischen Pegel.
 - $\square$ B: Die Werte null und eins lassen den sichtbaren Zustand dieses Stores unverändert.
 - $\square$ C: Die Auswahl des Rückschreibwerts ist wegen der gesperrten Registerübernahme unerheblich.
-- $\square$ D: Nach irrtümlichem Setzen von `RegWrite` bleibt diese Auswahl weiterhin unerheblich.
+- $\square$ D: Auch bei `RegWrite=1` kann keine Rückschreibquelle ein Register verändern.
 
 ### Frage 14: Laufzeitvergleich (1 Punkt)
 
@@ -200,54 +202,54 @@ Ein isolierter Branch hat die tatsächliche Folge T, T, N (genommen, genommen, n
 - $\square$ C: Die Vorhersage ist bei allen drei Ausführungen unzutreffend.
 - $\square$ D: Die nächste Vorhersage nach dem letzten Branch ist genommen.
 
-### Frage 16: MMIO und C (1 Punkt)
+### Frage 16: Logisch und arithmetisch schieben (1 Punkt)
 
-Ein C-Programm liest über einen `volatile`-Zeiger aus einem gültigen Memory-Mapped-I/O-Register. Welche Aussagen treffen zu?
+Die folgenden RV32I-Befehle werden unabhängig voneinander mit `t0=0x80000008` und `t2=35` betrachtet. Welche Aussagen treffen zu?
 
-- $\square$ A: Die Geräteadresse ist durch die Basis-ISA RV32I für alle Plattformen festgelegt.
-- $\square$ B: `volatile` ersetzt die nötige Synchronisation mit weiteren Prozessorkernen.
-- $\square$ C: Wiederholte Zugriffe bleiben nach dem Zugriffsvertrag für den Compiler beobachtbar.
-- $\square$ D: Die Adresse und mögliche Lese-Nebenwirkungen folgen dem jeweiligen Gerätevertrag.
+- $\square$ A: `srai t1, t0, 3` ergibt das Muster `0xF0000001`.
+- $\square$ B: `srli t1, t0, 3` ergibt das Muster `0xF0000001`.
+- $\square$ C: `srl t1, t0, t2` verschiebt mit dem gesamten Betrag 35.
+- $\square$ D: `srl t1, t0, t2` verwendet einen Schiebebetrag von drei.
 
 {{< pagebreak >}}
 
 ## Fragen 17–20
 
-### Frage 17: Polling-Aufwand (1 Punkt)
+### Frage 17: Load-Use mit Forwarding (1 Punkt)
 
-Eine Abfrage benötigt bei angenommenen 10 MHz genau 100 Takte und erfolgt alle 5 ms. Welche Aussagen treffen zu?
+Eine anfangs leere Fünfstufen-Kurspipeline mit EX-Forwarding führt `lw t0, 0(s0)` und direkt danach `sub a0, t0, t1` aus. `s0` zeigt auf ein gültiges Wort. Welche Aussagen treffen zu?
 
-- $\square$ A: Eine einzelne Abfrage benötigt eine Zeit von zehn Mikrosekunden.
-- $\square$ B: Die Abfragen belegen ohne weitere Arbeit zwei Prozent der Prozessorzeit.
-- $\square$ C: Eine einzelne Abfrage benötigt eine Zeit von hundert Mikrosekunden.
-- $\square$ D: Eine Abfrageperiode umfasst bei diesen Werten eintausend Prozessortakte.
+- $\square$ A: Der geladene Wert steht bereits nach EX zur Weiterleitung bereit.
+- $\square$ B: Ein Datenwartezyklus genügt für die korrekte Ausführung.
+- $\square$ C: Vom ersten IF bis zum letzten WB werden sieben Takte benötigt.
+- $\square$ D: Die Bubble erhöht die Zahl abgeschlossener Programmbefehle auf drei.
 
-### Frage 18: Privilegierter Trap (1 Punkt)
+### Frage 18: Der jüngste Produzent gewinnt (1 Punkt)
 
-Ein Interrupt wird im vereinbarten Machine-Mode-Modell angenommen; es gibt keine Delegation und keinen verschachtelten Trap. Welche Aussagen treffen zu?
+Die Fünfstufen-Kurspipeline führt mit Forwarding `add t0, t1, t2`, `addi t0, t0, 4` und `sub a0, t0, t4` aus. Anfangs gelten `t1=6`, `t2=5` und `t4=3`. Welche Aussagen treffen zu?
 
-- $\square$ A: Der Hardwareeintritt sichert alle Integerregister automatisch auf den Stack.
-- $\square$ B: `mcause` enthält gemeinsam Interruptkennzeichen und Ursachencode.
-- $\square$ C: Veränderte Integerregister müssen bei Bedarf softwareseitig gesichert werden.
-- $\square$ D: `mret` verwendet `mepc` und stellt den vorgesehenen Privilegienstatus wieder her.
+- $\square$ A: Der Verbraucher `sub` muss das ältere Ergebnis elf verwenden.
+- $\square$ B: Für `sub` hat der Treffer aus EX/MEM Vorrang vor MEM/WB.
+- $\square$ C: Der letzte Befehl schreibt den Wert zwölf nach `a0`.
+- $\square$ D: `add` und `addi` erzeugen verschiedene Versionen von `t0`.
 
-### Frage 19: Dienstvertrag von Venus (1 Punkt)
+### Frage 19: Benutzte Quellregister (1 Punkt)
 
-In der im Kurs vereinbarten Venus-Distribution soll `ecall` die Ganzzahl 42 drucken. Welche Aussagen treffen zu?
+Auf `lw t0, 0(s0)` folgt `addi a0, x0, 5`; die Adresse ist gültig. `t0` heißt auch `x5`. Beim `addi` sind die Instruktionsbits 24–20 gleich `00101`. Welche Aussagen treffen zu?
 
-- $\square$ A: Vor dem Aufruf enthält `a0` die Dienstkennung eins.
-- $\square$ B: Vor dem Aufruf enthält `a1` den zu druckenden Wert 42.
-- $\square$ C: Die Instruktion sichert wie `jal` eine Rückkehradresse in `ra`.
-- $\square$ D: Dieser Registervertrag gilt auch für Ripes und Linux.
+- $\square$ A: Zwischen diesen Befehlen besteht keine Registerdatenabhängigkeit.
+- $\square$ B: Die Bits `00101` bezeichnen beim `addi` das Quellregister `x5`.
+- $\square$ C: Ein Wartezyklus ist allein wegen dieser Bitübereinstimmung nötig.
+- $\square$ D: `addi` liest `x0` und den Inhalt von `t0` als seine beiden Quellen.
 
-### Frage 20: Werkzeugkette (1 Punkt)
+### Frage 20: Flush bei genommenem Branch (1 Punkt)
 
-Eine GNU-Zieltoolchain wird mit `-march=rv32i -mabi=ilp32 -S` für eine gültige C-Datei aufgerufen. Welche Aussagen treffen zu?
+Ein `beq` wird in EX als genommen erkannt. Bis dahin wurde sequenziell geholt: Ein jüngerer `sw` steht in ID, ein jüngerer `addi` in IF. Welche Aussagen treffen zu?
 
-- $\square$ A: Die erzeugte Assemblerdatei muss noch assembliert und passend gelinkt werden.
-- $\square$ B: Die Option `-march` legt die konkrete Taktperiode des Zielprozessors fest.
-- $\square$ C: Die Option `-S` erzeugt bereits ein vollständig gelinktes ausführbares Programm.
-- $\square$ D: Die Option `-mabi` wählt anstelle der Aufrufkonvention eine Pipelinevariante.
+- $\square$ A: Beide jüngeren Einträge müssen ihre Gültigkeit verlieren.
+- $\square$ B: Der verworfene Store darf den Datenspeicher nicht verändern.
+- $\square$ C: Die zwei verworfenen Einträge erhöhen die abgeschlossene Befehlszahl $N$.
+- $\square$ D: Ein Flush hält die jüngeren Befehle bis zur nächsten Taktflanke nur an.
 
 ::: {.content-visible when-profile="solution"}
 {{< pagebreak >}}
@@ -278,27 +280,27 @@ Bewertung: Je Frage ein Punkt ausschließlich für die exakte Auswahl aller rich
 
 **10. A, C** — A und C: Die ALU bildet die effektive Adresse aus rs1 und Immediate. Der Speicherinhalt dieser Adresse wird in rd geschrieben. B verwechselt Datenquelle und Ziel; D beschreibt einen Store statt eines Loads.
 
-**11. B, C, D** — B, C und D: Gleiche Operanden erzeugen bei der Subtraktion null. PCSrc = Branch AND Zero wählt das Ziel aus altem PC und fertigem Byteoffset. A addiert die vier Byte des sequenziellen Pfads fälschlich zum genommenen Branchziel.
+**11. B, C, D** — B, C und D: Gleiche Operanden erzeugen bei der Subtraktion null. $\mathrm{PCSrc}=\mathrm{Branch}\land\mathrm{Zero}$ wählt das Ziel aus altem PC und fertigem Byteoffset. A addiert die vier Byte des sequenziellen Pfads fälschlich zum genommenen Branchziel.
 
 **12. B** — Nur B: Beide Befehle sind Registeroperationen mit RegWrite = 1 und demselben Opcode. Die Detailsteuerung wertet die gültigen Funktionsfelder aus. ALUControl ist eine interne Kurscodierung und kein Instruktionsfeld der ISA.
 
 **13. B, C** — B und C: MemtoReg wählt nur die Rückschreibquelle für die Registerbank; RegWrite sperrt deren Übernahme. X bezeichnet in der Tabelle ein Don’t Care, keinen elektrischen Pegel. Wird RegWrite fälschlich eins, kann die gewählte Quelle einen zusätzlichen Registerwert verändern.
 
-**14. A, C, D** — A, C und D: Die Zeit ist N · CPI · Taktperiode, also 400 ns beziehungsweise 200 ns. Der Speedup von B gegenüber A beträgt 2. B ist als Aussage falsch: Ein kleinerer CPI allein genügt ohne Vergleich der Taktperiode nicht.
+**14. A, C, D** — A, C und D: Die Zeit ist $N\cdot\mathrm{CPI}\cdot T$, also 400 ns beziehungsweise 200 ns. Der Speedup von B gegenüber A beträgt 2. B ist als Aussage falsch: Ein kleinerer CPI allein genügt ohne Vergleich der Taktperiode nicht.
 
 {{< pagebreak >}}
 
-**15. A** — Nur A: Die erste Vorhersage N ist falsch; danach wird T gespeichert. Die zweite Vorhersage T ist richtig und hält T. Die dritte Vorhersage T ist falsch und speichert N. Es gibt zwei Fehler. B ignoriert die erste Aktualisierung, C übersieht den zweiten Treffer, D verwechselt alte Vorhersage und neuen Zustand.
+**15. A** — Nur A: Vor der ersten Ausführung wird N vorhergesagt, dann T gespeichert. Die zweite Vorhersage T ist richtig; die dritte Vorhersage T ist falsch und speichert N. Es gibt zwei Fehler. B ignoriert die erste Aktualisierung, C übersieht den zweiten Treffer, D verwechselt alte Vorhersage und neuen Zustand.
 
-**16. C, D** — C und D: volatile bewahrt die nach C beobachtbaren Zugriffe; die konkrete Adresse und Seiteneffekte legt die Plattform fest. A verallgemeinert eine Speicherkarte zur ISA-Regel. B ist falsch: volatile ersetzt weder Synchronisation noch Speicherattribute oder notwendige FENCE-Anweisungen.
+**16. A, D** — A und D: Die arithmetische Rechtsverschiebung wiederholt das gesetzte Vorzeichenbit und liefert `0xF0000001`. Die logische Variante `srli` füllt mit Nullen und ergibt `0x10000001`, weshalb B falsch ist. Bei einem registergesteuerten RV32I-Shift zählen nur die unteren fünf Bits des Betrags; `35` hat dort den Wert drei. C verwendet fälschlich alle Bits.
 
-**17. A** — Nur A: 100 Takte / 10 MHz = 10 Mikrosekunden. Der Zeitanteil ist 10 / 5000 = 0,002 = 0,2 Prozent, nicht zwei Prozent. Die Periode umfasst 50000 Takte; hundert Mikrosekunden wären tausend Takte. Alle Werte sind Aufgabenannahmen.
+**17. B, C** — B und C: Ein Load berechnet in EX erst die Adresse und liefert den geladenen Wert nach MEM. Die unmittelbar folgende Subtraktion wartet einen Takt und nutzt den Wert danach über MEM/WB. Die leere Fünfstufenpipeline benötigt für zwei Instruktionen ohne Zusatzkosten sechs, mit Load-Use sieben Takte. A verwechselt Adresse und Daten; D zählt die ungültige Hardware-Bubble als Programminstruktion.
 
-**18. B, C, D** — B, C und D: mcause beschreibt die Ursache; mepc enthält die Fortsetzung, und mret bearbeitet auch den Status. Die Hardware sichert nicht sämtliche Integerregister auf einen Speicherstack. Ein Handler muss von ihm veränderten unterbrochenen Registerzustand erhalten; die normale Caller-saved-Regel erlaubt hier kein beliebiges Clobbern.
+**18. B, C, D** — B, C und D: `add` erzeugt elf, `addi` daraus 15. Die nachfolgende Subtraktion braucht den jüngeren Wert 15 aus EX/MEM und berechnet $15-3=12$. Der ältere Wert elf kann gleichzeitig in MEM/WB stehen, darf aber nicht gewinnen. A verletzt die sequenzielle Befehlswirkung.
 
-**19. A, B** — A und B: Der vereinbarte Venus-Druckdienst nutzt a0 = 1 und a1 = 42. ecall ist kein normaler jal-Aufruf und erzeugt keinen Link in ra. Ripes-Versionen und Linux haben eigene Dienstverträge; die Venus-Tabelle kann nicht unverändert übertragen werden.
+**19. A** — Nur A: `addi` liest hier nur `x0`; der zweite Rechenoperand ist das Immediate fünf. Die Bits 24–20 gehören beim I-Format zu dieser Konstanten und benennen kein `rs2`. B und D erfinden eine Registerquelle; C folgert einen Stall aus einem unbenutzten Bitfenster. Der Load schreibt `t0`, doch der Folgebefehl verwendet dessen Wert nicht.
 
-**20. A** — Nur A: -S beendet die Übersetzung nach der Assemblerausgabe. -march wählt die ISA und Erweiterungen, -mabi den binären Softwarevertrag. Ein startfähiges Programm benötigt unter anderem passenden Link- und Startkontext; keine dieser Optionen legt Taktperiode oder Pipeline fest.
+**20. A, B** — A und B: Die zwei jüngeren Einträge gehören zum falschen Pfad. Ihr Flush muss die Zustandswirkungen verhindern, bevor der Store den Speicher oder `addi` ein Register verändert. Verworfene Einträge erhöhen die abgeschlossene Befehlszahl $N$ nicht, können aber Zeit kosten; C ist falsch. D beschreibt Halten statt Verwerfen und verwechselt damit Stall und Flush.
 
 :::
 
@@ -346,20 +348,11 @@ d) Nach der steigenden Flanke $Q=1$, beim dauerhaft hohen Takt weiterhin $Q=1$. 
 
 {{< pagebreak >}}
 
-# Aufgabe 3: C-Schleife, Array und RV32I (16 Punkte)
+# Aufgabe 3: Array und Schleife in RV32I (16 Punkte)
 
-Die Funktion berechnet die Summe der ersten `n` Arrayelemente:
+Die Blattfunktion `sum_first` soll die ersten `n` Elemente eines Arrays addieren und die Summe zurückgeben. Für `n=0` liefert sie null, ohne ein Arrayelement zu lesen.
 
-```c
-int sum_first(const int *v, unsigned n) {
-    int sum = 0;
-    for (unsigned i = 0; i < n; i++)
-        sum = sum + v[i];
-    return sum;
-}
-```
-
-Es gilt $0\le n\le4$. Ab `0x3000` liegen vier 32-Bit-Integer lückenlos: −2, 5, 7, −3. Bei Eintritt enthält `a0` die Basisadresse `0x3000`, `a1` die Länge `n`. Der gültige Stack ist ausgerichtet; die Funktion darf aber ohne Stackframe auskommen. Alle signed C-Zwischensummen sind darstellbar.
+Es gilt $0\le n\le4$. Ab `0x3000` liegen vier 32-Bit-Zweierkomplementwerte lückenlos: −2, 5, 7, −3. Bei Eintritt enthält `a0` die Basisadresse `0x3000`, `a1` die vorzeichenlose Länge `n`. Ein Element mit Index `i` steht vier mal `i` Byte hinter der Basis; die Indizes beginnen bei null. Die Funktion benötigt keine Unteraufrufe und darf ohne Stackframe auskommen.
 
 a) Schreiben Sie eine vollständige RV32I-Blattfunktion `sum_first` mit Schleife und Rückkehr. Verwenden Sie `t0` für die unveränderte Arraybasis, `t1` für den Index und `t2` für die Summe; `t3`–`t5` dürfen Hilfswerte halten. Nutzen Sie für die Länge einen unsigned Vergleich und prüfen Sie die Grenze vor jedem Load. Verwenden Sie echte Instruktionen; als einzige Pseudoinstruktion ist `ret` erlaubt. Das Ergebnis gehört in `a0`. (12 Punkte)
 
@@ -399,7 +392,7 @@ Bewertung: Basis erhalten 1, Index null 1, Summe null 1, korrekter unsigned Abbr
 
 b) Bestimmen Sie für `n=0` und `n=3` jeweils den Rückgabewert und die Zahl der Array-Loads. (2 Punkte)
 
-c) Geben Sie Adresse und Wert von `v[2]` an. Erläutern Sie außerdem, weshalb das modulo-Verhalten der RV32I-Addition keinen signed Überlauf in C legitimiert. (2 Punkte)
+c) Geben Sie die Byteadresse und den gespeicherten Zahlenwert des Elements mit Index zwei an. Begründen Sie die Skalierung des Index in der Adressrechnung. (2 Punkte)
 
 ::: {.content-hidden when-profile="solution"}
 Ergebnisse und Begründung:
@@ -412,7 +405,7 @@ Ergebnisse und Begründung:
 
 b) `n=0`: Ergebnis 0, kein Array-Load. `n=3`: Ergebnis $-2+5+7=10$, drei Array-Loads. Je 0,5 Punkte für die vier Angaben.
 
-c) $A_2=\mathtt{0x3000}+4\cdot2=\mathtt{0x3008}$; Wert 7. Adresse und Wert zusammen ein Punkt (je 0,5). Signed C-Überlauf ist undefiniert, während RV32I-Addition die unteren 32 Bit behält. Die Übersetzung des angegebenen C-Verhaltens setzt darstellbare Zwischensummen voraus. Ein Punkt für diese Unterscheidung.
+c) $A_2=\mathtt{0x3000}+4\cdot2=\mathtt{0x3008}$; Wert 7. Ein Punkt für die Adresse, 0,5 Punkte für den Wert. Ein Element belegt vier Byte und der Speicher ist byteadressiert; deshalb entspricht Index zwei einem Abstand von acht Byte. 0,5 Punkte für diese Begründung. Die Adresse ist nicht der Inhalt des Elements.
 
 Korrekturhinweis: Ein Grenzfehler wird am fehlerhaften Prüfungsteil bewertet. Nachfolgende korrekte Rechen- und Adressierungsarbeit bleibt separat bewertbar; ein Folgefehler wird nicht mehrfach abgezogen.
 :::
@@ -453,7 +446,7 @@ b) Geben Sie für beide Stores die effektive Adresse und das dort abgelegte 32-B
 
 c) Warum wird `ra` gesichert? Warum beträgt der Frame trotz nur zwei gesicherter Wörter 16 Byte? (2 Punkte)
 
-d) Nur die Instruktion `lw ra, 12(sp)` wird nicht ausgeführt; alle angegebenen Adressen bleiben unverändert. Welche Adresse wählt dann der erste Sprung bei `0x1124`? (1 Punkt)
+d) Nur die Instruktion `lw ra, 12(sp)` wird durch eine wirkungslose Instruktion ersetzt; alle angegebenen Adressen bleiben unverändert. Welche Adresse wählt dann der erste Sprung bei `0x1124`? (1 Punkt)
 
 ::: {.content-hidden when-profile="solution"}
 Adressen, Wörter und Begründungen:
@@ -462,6 +455,8 @@ Adressen, Wörter und Begründungen:
 :::
 
 ::: {.content-visible when-profile="solution"}
+{{< pagebreak >}}
+
 ## Musterlösung und Bewertung
 
 | gerade ausgeführt | PC danach | `a0` | `s0` | `ra` | `sp` |
@@ -473,7 +468,7 @@ a) Je 0,5 Punkte pro Tabellenzelle. Double verdoppelt vier zu acht; F addiert de
 
 b) Store bei `0x1104`: Adresse `0x1FFC`, Wort `0x00001004`. Store bei `0x1108`: Adresse `0x1FF8`, Wort `0x00000063`. Je 0,5 Punkte pro Adresse beziehungsweise Wort.
 
-c) Der innere `jal` überschreibt `ra` mit `0x1114`; F braucht später aber seine äußere Rückkehradresse `0x1004`. Ein Punkt. Zwei Wörter belegen acht Byte; der 16-Byte-Frame erhält die vereinbarte Stackausrichtung an der inneren Aufrufgrenze. Ein Punkt. `ret` würde weder Werte laden noch `sp` korrigieren.
+c) Der innere `jal` überschreibt `ra` mit `0x1114`; F braucht später aber seine äußere Rückkehradresse `0x1004`. Ein Punkt. Zwei Wörter belegen acht Byte; der 16-Byte-Frame erhält die vereinbarte Stackausrichtung während der gesamten Funktion. Ein Punkt. `ret` würde weder Werte laden noch `sp` korrigieren.
 
 d) Ziel `0x1114` statt `0x1004`, weil die innere Linkadresse in `ra` bleibt. Ein Punkt.
 :::
@@ -532,7 +527,7 @@ d) `t0` erhält `0x200C`, also dezimal 8204. Der MUX wählt wegen MemtoReg = 0 d
 
 # Aufgabe 6: Pipeline und Laufzeit (12 Punkte)
 
-Fünf Stufen: IF (Befehl holen), ID (decodieren und Register lesen), EX (rechnen), MEM (Datenzugriff), WB (Rückschreiben / Abschluss). Anfangs leere Pipeline, höchstens ein neuer Befehl pro Takt, getrennte Befehls- und Datenzugriffe; jeder Load braucht eine MEM-Stufe. Forwarding aus EX/MEM und MEM/WB und Load-Use-Erkennung sind vorhanden. Ein Load liefert seine Daten erst nach MEM. Der Stall hält PC und IF/ID und erzeugt eine Bubble in ID/EX; ältere Arbeit läuft weiter.
+Fünf Stufen: IF (Befehl holen), ID (decodieren und Register lesen), EX (rechnen), MEM (Datenzugriff), WB (Rückschreiben / Abschluss). Anfangs leere Pipeline, höchstens ein neuer Befehl pro Takt, getrennte Befehls- und Datenzugriffe; jeder Load braucht eine MEM-Stufe. Forwarding aus EX/MEM und MEM/WB und Load-Use-Erkennung sind vorhanden. Der jüngste passende Produzent ist maßgeblich; ist sein Wert noch nicht bereit, muss gewartet werden. Ein Schreibversuch auf `x0` erzeugt keine Forwardingquelle. Ein Load liefert seine Daten erst nach MEM. Der Stall hält PC und IF/ID und erzeugt eine Bubble in ID/EX; ältere Arbeit läuft weiter. Am Ende von WB geschriebene Registerwerte sind erst im Folgetakt in ID lesbar; ein gleichzeitiger WB→ID-Bypass fehlt.
 
 Vor dem Ausschnitt steht `s0=0x3000`; dort liegt das Wort 7:
 
@@ -587,47 +582,44 @@ c) `t0=12`, `a0=24`. Je 0,5 Punkte.
 
 d) $C=N+4+S+2B=100+4+8+2\cdot3=118$ Takte.
 $\mathrm{CPI}=118/100=1{,}18$.
-$T=118\cdot2\,\mathrm{ns}=236\,\mathrm{ns}$.
+$t=118\cdot2\,\mathrm{ns}=236\,\mathrm{ns}$.
 Vergleichszeit $100\cdot1\cdot8\,\mathrm{ns}=800\,\mathrm{ns}$, Speedup $800/236\approx3{,}39$. Je ein Punkt pro gefragter Größe. Der CPI enthält hier Füllen, Leeren und Zusatzkosten; die übrigen Teilgrößen werden bei plausibler Weiterrechnung mit einem zuvor falschen C nicht erneut abgezogen.
 :::
 
 {{< pagebreak >}}
 
-# Aufgabe 7: I/O und Zustandsmaschine (10 Punkte)
+# Aufgabe 7: Maschinencode und Bytefolge (10 Punkte)
 
-**Papier-Gerätekarte:** Schalterwort bei `0xF0000000`; Bit 0 ist UP, Bit 1 DOWN, Bit 2 RESET, jeweils aktiv bei eins. Das Register liefert nur den momentanen Pegel, hat keine Lese-Nebenwirkung und speichert keine Ereignisse. Acht LED-Pixel liegen ab `0xF0000020` im Abstand von vier Byte. Diese Adressen sind Aufgabenannahmen.
+Es gelten RV32I, Little Endian und die gemeinsamen Annahmen. Die unten angegebenen Namen `x11` und `x14` bezeichnen Registernummern, nicht deren Inhalte. Ein Referenzblatt darf verwendet werden.
 
-**Ereignisvertrag:** Eine Abfrage mit Rohmaske null gibt die Eingabe frei. Die nächste nichtleere Maske verbraucht diese Freigabe. Nur genau eine Taste liefert UP, DOWN oder RESET; eine Mehrfachmaske liefert kein Ereignis und verlangt ebenfalls vollständiges Loslassen. Ohne Freigabe entsteht kein Ereignis. Anfangs ist die Freigabe geschlossen.
+**I-Format von Bit 31 nach Bit 0:** `imm[11:0]`, `rs1`, `funct3`, `rd`, `opcode`.
 
-**Zustandsvertrag:** Anfang S0. UP führt S0 nach S1, DOWN führt S1 nach S2. Andere einzelne Codetasten setzen S0 und S1 nach S0 zurück. S2 bleibt bei UP und DOWN offen. RESET setzt jeden Zustand nach S0. Kein Ereignis erhält jeden gültigen Zustand.
+**S-Format von Bit 31 nach Bit 0:** `imm[11:5]`, `rs2`, `rs1`, `funct3`, `imm[4:0]`, `opcode`.
 
-a) Berechnen Sie die Adresse von Pixel 3. Welches Ergebnis liefert das Maskieren der Rohmaske `0b0101` mit `0b0001`? (2 Punkte)
+Für `addi` gelten `funct3=000`, `opcode=0010011`; für `sw` gelten `funct3=010`, `opcode=0100011`.
 
-b) Tragen Sie Ereignis und Zustand **nach** jeder Abfrage ein. Schreiben Sie „–“ für kein Ereignis. (5 Punkte)
+Die Formate haben von links nach rechts die Feldbreiten I: 12, 5, 3, 5, 7 Bit beziehungsweise S: 7, 5, 5, 3, 5, 7 Bit.
 
-\begingroup
-\setlength{\tabcolsep}{2pt}
-\renewcommand{\arraystretch}{1.8}
-\begin{tabular}{|p{1.8cm}|*{10}{p{1cm}|}}
-\hline
-Rohmaske & 0 & 1 & 1 & 0 & 3 & 2 & 0 & 2 & 0 & 4 \\ \hline
-Ereignis & & & & & & & & & & \\ \hline
-Zustand & & & & & & & & & & \\ \hline
-\end{tabular}
-\endgroup
+a) Codieren Sie `addi x14, x11, -28`. Tragen Sie alle Felder binär ein und geben Sie das vollständige 32-Bit-Maschinenwort hexadezimal an. (4 Punkte)
 
-c) Ein unabhängiger Puls liegt vollständig zwischen 6 und 8 ms; das Pegelregister wird bei 0, 5 und 10 ms gelesen. Wird der Puls erkannt? Begründen Sie und nennen Sie eine geeignete Gegenmaßnahme. (2 Punkte)
+| `imm[11:0]` | `rs1` | `funct3` | `rd` | `opcode` |
+|:---:|:---:|:---:|:---:|:---:|
+| | | | | |
 
-d) Im folgenden C-Ausschnitt startet `state` mit S0. Die reine Funktion `next_state` hat keine Nebenwirkungen und gibt bei UP den neuen Zustand S1 zurück. Erklären Sie den Fehler und korrigieren Sie die Zeile. (1 Punkt)
+b) Codieren Sie `sw x14, -36(x11)`. Tragen Sie alle Felder binär ein und geben Sie das vollständige 32-Bit-Maschinenwort hexadezimal an. (3 Punkte)
 
-```c
-next_state(state, UP);
-```
+| `imm[11:5]` | `rs2` | `rs1` | `funct3` | `imm[4:0]` | `opcode` |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| | | | | | |
+
+c) Das Instruktionswort aus a) liegt ab Byteadresse `0x5400`. Geben Sie die vier Bytewerte mit ihren Adressen an. (2 Punkte)
+
+d) Eine ältere Instruktion schreibt `x4`. In den Bits 24–20 des `addi` aus a) steht ebenfalls `00100`. Begründet allein diese Übereinstimmung eine Register-Datenabhängigkeit? Erklären Sie anhand des Formats. (1 Punkt)
 
 ::: {.content-hidden when-profile="solution"}
-Rechnungen und Begründungen:
+Maschinenwörter, Byteadressen und Begründung:
 
-\vspace{6cm}
+\vspace{8cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
@@ -635,18 +627,27 @@ Rechnungen und Begründungen:
 
 ## Musterlösung und Bewertung
 
-a) $A_3=\mathtt{0xF0000020}+4\cdot3=\mathtt{0xF000002C}$. Die Maske liefert eins. Je ein Punkt. Das einzelne Maskenresultat ist kein Beleg für genau eine gedrückte Taste: `0b0101` enthält zusätzlich RESET.
+a) Das zwölfbittige Zweierkomplement ist $4096-28=4068$, also `0xFE4` = `1111 1110 0100`.
 
-| Rohmaske | 0 | 1 | 1 | 0 | 3 | 2 | 0 | 2 | 0 | 4 |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| Ereignis | – | UP | – | – | – | – | – | DOWN | – | RESET |
-| Zustand | S0 | S1 | S1 | S1 | S1 | S1 | S1 | S2 | S2 | S0 |
+| `imm[11:0]` | `rs1` | `funct3` | `rd` | `opcode` |
+|:---:|:---:|:---:|:---:|:---:|
+| `111111100100` | `01011` | `000` | `01110` | `0010011` |
 
-b) Je 0,25 Punkte pro Zelle, insgesamt fünf. Maske drei verbraucht die Freigabe ohne Ereignis; die nachfolgende Maske zwei wird daher ebenfalls ignoriert. Erst null gibt erneut frei. Zustandsfolgefehler aus einem zuvor falsch bestimmten Ereignis werden bei ansonsten korrekter Anwendung der Zustandsregeln nicht doppelt abgezogen.
+Maschinenwort `0xFE458713`. Ein Punkt für das Immediate, ein Punkt für beide Registernummern (je 0,5), ein Punkt für die korrekte Feldanordnung mit `funct3` und Opcode, ein Punkt für das zusammengesetzte Hexwort.
 
-c) Nein: Alle angegebenen Abfragen liegen außerhalb des Pulses und lesen null. Ein Punkt für Urteil mit zeitlicher Begründung (je 0,5). Eine passend schnellere Abfrage, ein dokumentierter Ereignisspeicher oder ein geeigneter Interruptpfad wären Gegenmaßnahmen. Ein Punkt für eine passende Maßnahme; keine beliebige Hardwarefähigkeit wird vorausgesetzt.
+b) Das zwölfbittige Zweierkomplement ist $4096-36=4060$, also `0xFDC` = `1111 1101 1100`. Die oberen sieben Bits sind `1111110`, die unteren fünf `11100`. Der Offset wird in Byte codiert, nicht durch vier geteilt.
 
-d) Der zurückgegebene neue Zustand wird verworfen; `state` bleibt S0. Richtig: `state = next_state(state, UP);`. Je 0,5 Punkte für Erklärung und Korrektur.
+| `imm[11:5]` | `rs2` | `rs1` | `funct3` | `imm[4:0]` | `opcode` |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| `1111110` | `01110` | `01011` | `010` | `11100` | `0100011` |
+
+Maschinenwort `0xFCE5AE23`. Ein Punkt für die beiden Immediate-Teile (je 0,5), ein Punkt für die beiden Registerfelder mit richtiger Feldanordnung und den vorgegebenen Funktions-/Opcode-Feldern, ein Punkt für das Hexwort. `sw` hat kein Zielregisterfeld `rd`; `rs2` benennt die Datenquelle.
+
+c) `0x5400`: `0x13`, `0x5401`: `0x87`, `0x5402`: `0x45`, `0x5403`: `0xFE`. Je 0,5 Punkte. Little Endian legt das niederwertigste Byte an der kleinsten Adresse ab; die Feldpositionen innerhalb des Instruktionsworts ändern sich dadurch nicht.
+
+d) Nein. Beim I-Format gehören Bits 24–20 zum Immediate und sind kein `rs2`-Feld. Dieses `addi` liest nur `x11`; allein aus dem Schreiben von `x4` entsteht daher keine Abhängigkeit. Ein Punkt für die begründete Verneinung.
+
+Korrekturhinweis: Ein falsch gebildetes Immediate wird dort bewertet. Korrekte Feldanordnung und Hexzusammensetzung aus diesem Muster bleiben getrennt bewertbar. In c) wird die Little-Endian-Zerlegung des in a) angegebenen Maschinenworts bewertet; ein dortiger Codierfehler wird nicht erneut abgezogen.
 :::
 
 ::: {.content-visible when-profile="solution"}
@@ -659,14 +660,12 @@ Diese Übersicht dient der Korrektur und enthält keine zusätzlichen Aufgaben.
 | Einheit | Inhalte in den Multiple-Choice-Fragen | Vertiefung auf Papier |
 |:---:|:---|:---|
 | 1 | 1–3, 6: Abstraktion, Bitmuster, Logik, Speicherung, Byteordnung | Aufgabe 2 |
-| 2 | 1, 4–5, 19: Register, Immediates, Codierung, Dienste | Aufgaben 3–4 |
-| 3 | 2, 5–7: Erweiterung, Formate, Speicher, Branches | Aufgabe 3 |
-| 4 | 8–9: Sprung, Link, ABI und Registererhaltung | Aufgabe 4 |
+| 2 | 1, 4–5, 16, 19: Register, Immediates, Codierung, Shifts | Aufgaben 3 und 7 |
+| 3 | 5–7, 11: Erweiterung, Formate, Speicher, Branches | Aufgaben 3, 5 und 7 |
+| 4 | 8–9: Sprung, Link, ABI und Registererhaltung | Aufgaben 3–4 |
 | 5 | 10–11: Adressrechnung, Rückschreiben, Branchpfad | Aufgabe 5 |
 | 6 | 11–13: Hauptsteuerung, ALU-Steuerung, Don’t Care | Aufgabe 5 |
-| 7 | 14–15: Laufzeit, CPI und Sprungvorhersage | Aufgabe 6 |
-| 8 | 16–19: MMIO, volatile, Abfragekosten, Trap, Dienstvertrag | Aufgabe 7 |
-| 9 | 20: Werkzeugkette und Zielauswahl | Aufgaben 3 und 7: C und Zustandsmaschine |
+| 7 | 14–15, 17–20: Laufzeit, CPI, Vorhersage, Forwarding, Stall, Flush | Aufgaben 6 und 7d |
 
 Geplante Verteilung: 20 Minuten für 20 Auswahlfragen; 70 Minuten für sechs Papieraufgaben mit 70 Punkten. Die Punkte folgen dem Arbeitsaufwand und der Zahl eigenständiger Schritte. Kleine Einzelangaben erhalten entsprechend halbe oder Viertelpunkte. Der Zeitrahmen ist eine didaktische Schätzung für vorbereitete Studierende, keine mit einer Studierendengruppe gemessene Bearbeitungszeit.
 

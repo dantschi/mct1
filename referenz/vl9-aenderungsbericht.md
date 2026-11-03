@@ -40,7 +40,7 @@ Die Studierendenfassung enthält Schreibflächen und ein leeres Stufenraster. Da
 
 Das Quiz behält zehn Fragen im unveränderten CSV-Schema mit elf semikolongetrennten Spalten, vier Optionen und genau einer richtigen Antwort. Die Themen reichen von Zahlendarstellung und Logik über ISA, Speicher, Kontrollfluss und ABI bis zu Datenpfad, Steuerung und Performance. Der Schlüssel lautet B, D, C, A, D, C, D, B, C, A. Nur bei Frage 6 und 8 ist die richtige Antwort allein am längsten.
 
-Die bestehende Probeklausur wurde nicht geändert. Sie enthält weiterhin zusätzliche Themen aus Vorlesung 8 und der früheren Einheit 9; diese sind kein Bestandteil der neuen Wiederholung und des neuen Übungsblatts.
+Die Probeklausur wurde anschließend ebenfalls auf Vorlesung 1–7 eingegrenzt. Ihre Aufgaben, Lösungen und Prüfungen sind im [Änderungsbericht zur Probeklausur](probeklausur-aenderungsbericht.md) dokumentiert.
 
 ## Tatsächlich erfolgte Prüfungen
 
