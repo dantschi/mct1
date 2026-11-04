@@ -16,7 +16,7 @@ format:
           \usepackage{amssymb}
 ---
 
-Beantworten Sie die nachfolgenden Fragen im Multiple-Choice-Format. Bei jeder Frage können eine, mehrere oder alle Antwortmöglichkeiten richtig sein. Jede Teilaufgabe wird mit einem Punkt bewertet – dieser wird nur bei vollständig korrekter Antwort vergeben.
+Aufgabe 1 enthält zehn Fragen im Multiple-Choice-Format. Bei jeder Frage können eine, mehrere oder alle Antwortmöglichkeiten richtig sein. Jede vollständig korrekte Auswahl erhält einen Punkt. Die Aufgaben 2–7 sind Papieraufgaben mit den jeweils angegebenen Punkten; dort sind Teilpunkte möglich.
 
 ::: {.content-visible when-profile="solution"}
 **Musterlösung mit Bewertungshinweisen**
@@ -30,7 +30,7 @@ Beantworten Sie die nachfolgenden Fragen im Multiple-Choice-Format. Bei jeder Fr
 
 **Stoffumfang:** Vorlesungen 1–7 und deren Wiederholung in Einheit 9.
 
-Markieren Sie bei den Fragen 1–10 jeweils alle richtigen Optionen. Eine vollständig richtige Auswahl erhält einen Punkt, jede andere Auswahl null Punkte. Es gibt keine Teilpunkte und keinen Punktabzug. Ab Aufgabe 2 sind Rechenwege beziehungsweise Begründungen anzugeben; dort sind Teilpunkte möglich.
+Markieren Sie in Aufgabe 1 alle richtigen und keine falschen Optionen. Jede andere Auswahl erhält null Punkte; es gibt keinen Punktabzug. Geben Sie bei den Aufgaben 2–7 Rechenwege beziehungsweise Begründungen an.
 
 | Aufgabe | Inhalt | Punkte | Richtzeit | erreicht |
 |:---:|:---|---:|---:|:---:|
@@ -144,7 +144,7 @@ Zwei Ausführungen haben jeweils `N=100` Maschineninstruktionen. A hat `CPI=1` u
 - $\square$ C: Die Ausführung B benötigt insgesamt eine Zeit von 200 ns.
 - $\square$ D: Der Quotient Zeit A durch Zeit B beträgt zwei.
 
-### Frage 10: Der jüngste Produzent gewinnt (1 Punkt)
+### Frage 10: Forwarding (1 Punkt)
 
 Die Fünfstufen-Kurspipeline führt mit Forwarding `add t0, t1, t2`, `addi t0, t0, 4` und `sub a0, t0, t4` aus. Anfangs gelten `t1=6`, `t2=5` und `t4=3`. Welche Aussagen treffen zu?
 
@@ -261,7 +261,7 @@ Ergebnisse und Begründung:
 
 ## Musterlösung und Bewertung
 
-a) Von oben nach unten: `bgeu`, `2`, `t0`, `0`, `t5`, `t2`. Je ein Punkt. Die vollständige Funktion lautet:
+a) Von oben nach unten: `bgeu`, `2`, `t0` (auch `a0` beziehungsweise `x10` zulässig), `0`, `t5`, `t2`. Je ein Punkt. Für die dritte Lücke in `add t4, ____, t3` wird `a0` beziehungsweise `x10` ohne Punktabzug akzeptiert: Es enthält während der gesamten Schleife unverändert die Arraybasis und wird erst bei der Rückgabe überschrieben. Die folgende Musterfunktion verwendet `t0`:
 
 ```asm
 sum_first:
@@ -395,7 +395,7 @@ b) $13-13=0$: `Zero=1` (0,5 Punkte). $\mathrm{PCSrc}=\mathrm{Branch}\land\mathrm
 
 # Aufgabe 6: Pipeline und Laufzeit (10 Punkte)
 
-Fünf Stufen: IF (Befehl holen), ID (decodieren und Register lesen), EX (rechnen), MEM (Datenzugriff), WB (Rückschreiben / Abschluss). Anfangs leere Pipeline, höchstens ein neuer Befehl pro Takt, getrennte Befehls- und Datenzugriffe; jeder Load braucht eine MEM-Stufe. Forwarding aus EX/MEM und MEM/WB und Load-Use-Erkennung sind vorhanden. Der jüngste passende Produzent ist maßgeblich; ist sein Wert noch nicht bereit, muss gewartet werden. Ein Schreibversuch auf `x0` erzeugt keine Forwardingquelle. Ein Load liefert seine Daten erst nach MEM. Der Stall hält PC und IF/ID und erzeugt eine Bubble in ID/EX; ältere Arbeit läuft weiter. Am Ende von WB geschriebene Registerwerte sind erst im Folgetakt in ID lesbar; ein gleichzeitiger WB→ID-Bypass fehlt.
+Fünf Stufen: IF (Befehl holen), ID (decodieren und Register lesen), EX (rechnen), MEM (Datenzugriff), WB (Rückschreiben / Abschluss). Anfangs leere Pipeline, höchstens ein neuer Befehl pro Takt, getrennte Befehls- und Datenzugriffe; jeder Load braucht eine MEM-Stufe. Forwarding aus EX/MEM und MEM/WB und Load-Use-Erkennung sind vorhanden. Der jüngste passende Produzent ist maßgeblich; ist sein Wert noch nicht bereit, muss gewartet werden. Ein Schreibversuch auf `x0` erzeugt keine Forwardingquelle. Ein Load liefert seine Daten erst nach MEM. Der Stall hält PC und IF/ID und erzeugt eine Bubble in ID/EX; ältere Arbeit läuft weiter.
 
 Vor dem Ausschnitt steht `s0=0x3000`; dort liegt das Wort 7:
 
@@ -444,6 +444,8 @@ a) * bedeutet gehalten; in Takt 4 liegt eine wirkungslose Bubble in EX. Ein Punk
 
 b) Das Loadwort ist vor Ende von Takt 4 noch nicht verfügbar und erreicht addi in EX bei Takt 5 aus MEM/WB. Ein Punkt. Das ALU-Ergebnis von addi liegt bereits nach dessen EX vor und wird in Takt 6 aus EX/MEM an beide benutzten Quellen von add weitergereicht. Ein Punkt.
 
+In Takt 5 fallen zwar das WB von `lw` und das ID von `add` zusammen. Für `add` ist jedoch der jüngere Produzent `addi` maßgeblich. Dessen Ergebnis wird in Takt 6 weitergeleitet; der ältere Loadwert darf nicht verwendet werden. Das Raster gilt daher sowohl bei Registerlesen erst im Folgetakt nach WB als auch bei Schreiben vor Lesen innerhalb desselben Takts. Die Aufgabe prüft Load-Use und EX-Forwarding; sie erfordert keinen zusätzlichen Stall wegen einer WB/ID-Konvention.
+
 c) $C=N+4+S+2B=100+4+8+2\cdot3=118$ Takte.
 $t=118\cdot2\,\mathrm{ns}=236\,\mathrm{ns}$.
 Vergleichszeit $100\cdot1\cdot8\,\mathrm{ns}=800\,\mathrm{ns}$, Speedup $800/236\approx3{,}39$. Je ein Punkt für Taktzahl, Gesamtzeit und Speedup. Die übrigen Teilgrößen werden bei plausibler Weiterrechnung mit einem zuvor falschen C nicht erneut abgezogen.
@@ -451,26 +453,20 @@ Vergleichszeit $100\cdot1\cdot8\,\mathrm{ns}=800\,\mathrm{ns}$, Speedup $800/236
 
 {{< pagebreak >}}
 
-# Aufgabe 7: Maschinencode und Bytefolge (6 Punkte)
+# Aufgabe 7: Store codieren und im Speicher darstellen (6 Punkte)
 
-Es gelten RV32I, Little Endian und die gemeinsamen Annahmen. Die unten angegebenen Namen `x11` und `x14` bezeichnen Registernummern, nicht deren Inhalte. Ein Referenzblatt darf verwendet werden.
+Ein Array aus sechs 32-Bit-Wörtern beginnt bei `0x6000`; die Indizes beginnen bei null. `s1` (`x9`) zeigt auf das Element mit Index fünf. `a2` (`x12`) enthält den Wert 13, der das Element mit Index zwei überschreiben soll. Alle Speicherzugriffe sind gültig und ausgerichtet. Verwenden Sie `s1` als Basisregister.
 
-**I-Format von Bit 31 nach Bit 0:** `imm[11:0]`, `rs1`, `funct3`, `rd`, `opcode`.
+a) Bestimmen Sie die Zieladresse und den vorzeichenbehafteten Byteoffset relativ zu `s1`. (1 Punkt)
 
-Für `addi` gelten `funct3=000` und `opcode=0010011`. Die Feldbreiten sind von links nach rechts 12, 5, 3, 5 und 7 Bit.
+b) Geben Sie eine einzelne native RV32I-Instruktion für diesen Speicherzugriff an. Codieren Sie sie: Benennen Sie die Felder des verwendeten Formats, tragen Sie deren Inhalte binär ein und bilden Sie das vollständige 32-Bit-Maschinenwort in Hexadezimalschreibweise. Nutzen Sie das ausgeteilte Referenzblatt. (4 Punkte)
 
-a) Codieren Sie `addi x14, x11, -28`. Tragen Sie alle Felder binär ein und geben Sie das vollständige 32-Bit-Maschinenwort hexadezimal an. (4 Punkte)
-
-| `imm[11:0]` | `rs1` | `funct3` | `rd` | `opcode` |
-|:---:|:---:|:---:|:---:|:---:|
-| | | | | |
-
-b) Das Instruktionswort aus a) liegt ab Byteadresse `0x5400`. Geben Sie die vier Bytewerte mit ihren Adressen an. (2 Punkte)
+c) Das Instruktionswort aus b) liegt ab Byteadresse `0x1800` im Little-Endian-Speicher. Geben Sie die vier Bytewerte mit ihren Adressen an. (1 Punkt)
 
 ::: {.content-hidden when-profile="solution"}
-Maschinenwörter, Byteadressen und Begründung:
+Adressrechnung, Instruktion, Felder und Bytefolge:
 
-\vspace{8cm}
+\vspace{10cm}
 :::
 
 ::: {.content-visible when-profile="solution"}
@@ -478,17 +474,23 @@ Maschinenwörter, Byteadressen und Begründung:
 
 ## Musterlösung und Bewertung
 
-a) Das zwölfbittige Zweierkomplement ist $4096-28=4068$, also `0xFE4` = `1111 1110 0100`.
+a) `s1` enthält $\mathtt{0x6000}+4\cdot5=\mathtt{0x6014}$. Die Zieladresse ist $\mathtt{0x6000}+4\cdot2=\mathtt{0x6008}$ (0,5 Punkte). Der benötigte Byteoffset ist $\mathtt{0x6008}-\mathtt{0x6014}=-12$ (0,5 Punkte). Er zählt Byte, nicht Arrayelemente.
 
-| `imm[11:0]` | `rs1` | `funct3` | `rd` | `opcode` |
-|:---:|:---:|:---:|:---:|:---:|
-| `111111100100` | `01011` | `000` | `01110` | `0010011` |
+b) `sw a2, -12(s1)`, gleichwertig `sw x12, -12(x9)` (1 Punkt). Der Wert 13 bestimmt nicht die Registerfelder; codiert werden die Nummern der Register, die Adresse beziehungsweise Schreibdaten bereitstellen.
 
-Maschinenwort `0xFE458713`. Ein Punkt für das Immediate, ein Punkt für beide Registernummern (je 0,5), ein Punkt für die korrekte Feldanordnung mit `funct3` und Opcode, ein Punkt für das zusammengesetzte Hexwort.
+Das zwölfbittige Immediate ist $4096-12=4084$, also `0xFF4` = `1111 1111 0100`. Im S-Format verteilen sich seine Bits auf zwei Felder:
 
-b) `0x5400`: `0x13`, `0x5401`: `0x87`, `0x5402`: `0x45`, `0x5403`: `0xFE`. Je 0,5 Punkte. Little Endian legt das niederwertigste Byte an der kleinsten Adresse ab; die Feldpositionen innerhalb des Instruktionsworts ändern sich dadurch nicht.
+| imm[11:5] | rs2 | rs1 | funct3 | imm[4:0] | opcode |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| `1111111` | `01100` | `01001` | `010` | `10100` | `0100011` |
 
-Korrekturhinweis: Ein falsch gebildetes Immediate wird dort bewertet. Korrekte Feldanordnung und Hexzusammensetzung aus diesem Muster bleiben getrennt bewertbar. In b) wird die Little-Endian-Zerlegung des in a) angegebenen Maschinenworts bewertet; ein dortiger Codierfehler wird nicht erneut abgezogen.
+Je 0,5 Punkte für die beiden Immediate-Teile. Ein Punkt für Register- und Funktionsfelder mit richtiger Feldanordnung (je 0,5 für Quellenzuordnung und übrige Felder/Anordnung). `rs1` wählt die Basis `s1`, `rs2` die Schreibdaten `a2`; ein `rd`-Feld existiert bei `sw` nicht.
+
+Das zusammengesetzte Maschinenwort ist `0xFEC4AA23` (1 Punkt).
+
+c) `0x1800`: `0x23`, `0x1801`: `0xAA`, `0x1802`: `0xC4`, `0x1803`: `0xFE`. Je 0,25 Punkte. Gefragt sind die Bytes der Instruktion, nicht die Bytes des gespeicherten Datenwerts 13.
+
+Korrekturhinweis: Ein falsch berechneter Offset wird in a) bewertet. Die korrekte Codierung des eigenen Offsets einschließlich Immediate-Aufteilung und Hexzusammensetzung bleibt separat bewertbar. Bei c) wird die Little-Endian-Zerlegung des in b) angegebenen Instruktionsworts bewertet; ein vorheriger Codierfehler wird nicht erneut abgezogen.
 :::
 
 ::: {.content-visible when-profile="solution"}
@@ -502,7 +504,7 @@ Diese Übersicht dient der Korrektur und enthält keine zusätzlichen Aufgaben.
 |:---:|:---|:---|
 | 1 | 1–3, 5: Abstraktion, Bitmuster, Logik, Speicherung, Byteordnung | Aufgabe 2 |
 | 2 | 1, 4: Register, Immediates und Codierung | Aufgaben 3 und 7 |
-| 3 | 5–6: Erweiterung, Speicher und Branches | Aufgaben 3 und 5 |
+| 3 | 5–6: Erweiterung, Speicher und Branches | Aufgaben 3, 5 und 7 |
 | 4 | 7: ABI und Registererhaltung | Aufgaben 3–4 |
 | 5 | 1: ISA und Umsetzung | Aufgabe 5 |
 | 6 | 8: Hauptsteuerung und ALU-Steuerung | Aufgabe 5 |
