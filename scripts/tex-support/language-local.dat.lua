@@ -1,0 +1,25 @@
+-- German pattern metadata from the pinned texlive-lang-german Debian package.
+['german'] = {
+  loader = 'loadhyph-de-1901.tex',
+  lefthyphenmin = 2,
+  righthyphenmin = 2,
+  synonyms = {},
+  patterns = 'hyph-de-1901.pat.txt',
+  hyphenation = '',
+},
+['ngerman'] = {
+  loader = 'loadhyph-de-1996.tex',
+  lefthyphenmin = 2,
+  righthyphenmin = 2,
+  synonyms = {},
+  patterns = 'hyph-de-1996.pat.txt',
+  hyphenation = '',
+},
+['swissgerman'] = {
+  loader = 'loadhyph-de-ch-1901.tex',
+  lefthyphenmin = 2,
+  righthyphenmin = 2,
+  synonyms = {},
+  patterns = 'hyph-de-ch-1901.pat.txt',
+  hyphenation = '',
+},

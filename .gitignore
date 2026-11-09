@@ -4,8 +4,15 @@
 # Das interne Verzeichnis von Quarto (Zustand, Preview-Server)
 /.quarto/
 
+# Gemeinsame, heruntergeladene Build-Toolchain
+/.tools/
+
 # Das Standard-Ausgabeverzeichnis der generierten Website
 /_site/
+
+# Cache von quarto-livefigures (WaveDrom/PlantUML-Render)
+/_livefigures/
+**/_livefigures/
 
 # Handout-Render (Profil „handout“ → HTML + PDF)
 /_handout/
@@ -38,13 +45,11 @@ vorlesungen/*.pdf
 # -------------------------------------------------------------------
 # Lokale Workspace-Einstellungen
 .vscode/
+.idea/
 
-# Lokale Folien-Reviews (Screenshots, Temporäre SVG-/PDF-Audits)
+# KI-Projektregeln werden als AGENTS.md versioniert.
+# Lokale Review-/Render-Artefakte ignorieren:
 .cursor/slide-review/
-
-# ACHTUNG: `.cursor/rules/` und ggf. `.cursorrules` werden hier ABSICHTLICH
-# NICHT ausgeschlossen — sie sollen mit ins Repository, damit das
-# KI-Wissen für zukünftige Semester erhalten bleibt.
 
 # -------------------------------------------------------------------
 # 4. Betriebssystem-Dateien
@@ -59,22 +64,22 @@ ehthumbs.db
 desktop.ini
 
 # -------------------------------------------------------------------
-# 5. Lokale Kompilate & Binärdateien (C / Assembler)
+# 5. Python & lokale Kompilate
 # -------------------------------------------------------------------
-# Falls du C-Code oder Assembler lokal kompilierst,
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Falls Sie Quellcode lokal kompilieren,
 # sollen die ausführbaren Dateien nicht ins Git-Repo.
 *.o
-*.out
 *.exe
 *.bin
 *.hex
 **/*.quarto_ipynb
 
-# Labor-PDFs (Build-Artefakte)
+# Labor-/Übungsblatt-PDFs (Build-Artefakte)
 labs/*.pdf
 labs/*.tex
 labs/_output/
-
-# Python-Cache
-__pycache__/
-*.pyc

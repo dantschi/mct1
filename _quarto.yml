@@ -6,6 +6,14 @@ project:
     - "vorlesungen/"
     - "!labs/"
 
+# Zusätzliche Diagrammformate; Mermaid bleibt Quarto-nativ.
+filters:
+  - at: pre-ast
+    path: livefigures
+
+livefigures:
+  kroki-url: https://kroki.io
+
 website:
   title: "Mikrocomputertechnik 1"
   description: "Vorlesung Mikrocomputertechnik 1 (MCT1) an der DHBW Stuttgart"

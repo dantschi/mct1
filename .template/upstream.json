@@ -1,0 +1,117 @@
+{
+  "repository": "https://github.com/dantschi/dhbw-quarto-template",
+  "baseline_commit": "7280ff5b16df46c9d6c36c6753521e20f4826ffb",
+  "baseline_tree": "ddc296273e514b533da0316656a82220595f7af9",
+  "mct1_initial_commit": "5fb2a92cf16d9ebd552154ca1884dcaebc6ae8c7",
+  "source_commit": "578e3da2f55d82325007576e2a3043f4070dc85d",
+  "integration_date": "2026-11-09",
+  "commits_reviewed": [
+    {
+      "commit": "8381a6417aadfba4ff0dab930b98082d69ec2fa5",
+      "date": "2026-07-19T10:12:27+02:00",
+      "subject": "Simplify publish workflow: warn on handout failure, render all lectures."
+    },
+    {
+      "commit": "1314d0718846035b512b8a0a32f228a22e436427",
+      "date": "2026-07-20T20:53:11+02:00",
+      "subject": "Improve Mermaid/handout rendering and ignore local MCT leftovers."
+    },
+    {
+      "commit": "c23b61c1bf41d36fd9832da696c94d06abde735b",
+      "date": "2026-07-20T20:57:34+02:00",
+      "subject": "Re-enable GitHub Pages publish in the CI workflow."
+    },
+    {
+      "commit": "2ea6e403119b02a1cefb329f826bfd4438506576",
+      "date": "2026-07-20T21:01:28+02:00",
+      "subject": "Use DHBW logo and link PDF handouts from the README."
+    },
+    {
+      "commit": "5e4e63ad1540c08f1e7247ac6226ae15657b21d8",
+      "date": "2026-07-20T21:34:16+02:00",
+      "subject": "Fix .gitignore: track assets/images and drop MCT leftovers."
+    },
+    {
+      "commit": "7c12e45754b04bf5655047111bed30d2f364d4b7",
+      "date": "2026-07-24T09:25:27+02:00",
+      "subject": "Neutralize remaining MCT naming and add UTF-8 slide guard."
+    },
+    {
+      "commit": "efd484eabc72d9e357715b8c6d2c1b590aef89be",
+      "date": "2026-07-24T09:50:32+02:00",
+      "subject": "Add generic labs pipeline from the mct1 course setup."
+    },
+    {
+      "commit": "9170284ca28dec03193a419157b3b4ccc202e79e",
+      "date": "2026-09-26T08:50:53+02:00",
+      "subject": "Adopt MCT1-style Pages layout and port EZS template tooling."
+    },
+    {
+      "commit": "e589324dd67a26fe9edaa4df79148416d2db619b",
+      "date": "2026-10-03T14:26:57+02:00",
+      "subject": "Keep handout slide boxes on one page."
+    },
+    {
+      "commit": "a1654f3a57a3497df524ccf6f12d8d8756517b18",
+      "date": "2026-10-09T14:18:43+02:00",
+      "subject": "Require complete speaker notes for every lecture slide."
+    },
+    {
+      "commit": "9f738312ce2655bece2b31e2ddfe97943fc015eb",
+      "date": "2026-10-12T15:03:27+02:00",
+      "subject": "Add quizacademy CSV conventions as a Cursor rule."
+    },
+    {
+      "commit": "4398e107291b0028bacb6e30b2d70d28d7033a7c",
+      "date": "2026-11-04T11:35:30Z",
+      "subject": "Migrate AI teaching rules to AGENTS.md and add subject guidance"
+    },
+    {
+      "commit": "413275de31ca451c8f1e2fe226f1404c010501dd",
+      "date": "2026-11-04T12:40:20+01:00",
+      "subject": "Merge pull request #1 from dantschi/work"
+    },
+    {
+      "commit": "ddc835043af82efe55000aefeb4d0e7ef98ded66",
+      "date": "2026-11-04T15:57:47Z",
+      "subject": "Unify cloud and CI toolchains and require complete material builds"
+    },
+    {
+      "commit": "8eec6c356b3f3c15bef44d649c9185715942a6d7",
+      "date": "2026-11-06T13:08:54Z",
+      "subject": "Add teaching workflow skills and document their usage"
+    },
+    {
+      "commit": "be1a8f6896ebb4afd094fb0a0d1ec53376afaa9b",
+      "date": "2026-11-06T13:55:24Z",
+      "subject": "Add verified starter-code packages for programming labs"
+    },
+    {
+      "commit": "6a4bf0ca47d1231c5d73c40d5685b2410b658492",
+      "date": "2026-11-06T15:12:10Z",
+      "subject": "Keep terminology consistent across teaching materials"
+    },
+    {
+      "commit": "ed1aad38fbdbad2bae70c8fcba271f703577b42f",
+      "date": "2026-11-07T09:20:51Z",
+      "subject": "Strengthen understanding and exam preparation in task design"
+    },
+    {
+      "commit": "144b88cd7f8968a1f8f6d290dc30d035f725b945",
+      "date": "2026-11-07T15:33:59Z",
+      "subject": "Start each lecture with an activating prior-knowledge question"
+    },
+    {
+      "commit": "578e3da2f55d82325007576e2a3043f4070dc85d",
+      "date": "2026-11-07T15:42:01Z",
+      "subject": "Separate template guide from course homepage in README"
+    }
+  ],
+  "example_directory": ".template/examples",
+  "course_sources_preserved": [
+    "vorlesungen/*.qmd",
+    "labs/lab_0*.qmd",
+    "labs/probeklausur.qmd",
+    "quizacademy/*.csv"
+  ]
+}

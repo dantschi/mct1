@@ -1,8 +1,12 @@
 project:
   type: default
 
+lang: de
+
 format:
   pdf:
+    subtitle: "Mikrocomputertechnik 1"
+    papersize: a4
     toc: false
     number-sections: false
     colorlinks: true
